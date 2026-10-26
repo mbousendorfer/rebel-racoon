@@ -18,16 +18,16 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2136";
-import { isFlagOn } from "../../feature-flags.js?v=2136";
-import { parseHashParams } from "../../url-state.js?v=2136";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2136";
-import { showToast } from "../../components/toast.js?v=2136";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2136";
-import { getContextById } from "../../contexts-store.js?v=2136";
-import { escapeHtml } from "../../utils.js?v=2136";
-import * as ce from "../../caption-editor.js?v=2136";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2136";
+import { navigate } from "../../router.js?v=2137";
+import { isFlagOn } from "../../feature-flags.js?v=2137";
+import { parseHashParams } from "../../url-state.js?v=2137";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2137";
+import { showToast } from "../../components/toast.js?v=2137";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2137";
+import { getContextById } from "../../contexts-store.js?v=2137";
+import { escapeHtml } from "../../utils.js?v=2137";
+import * as ce from "../../caption-editor.js?v=2137";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2137";
 import {
   framingContext,
   initialSegments,
@@ -50,7 +50,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2136";
+} from "../../clip-framing.js?v=2137";
 import {
   fmtMs,
   fmtPrecise,
@@ -63,13 +63,17 @@ import {
   SUBTITLE_IDS,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2136";
-import { primeDraftSetup } from "./project.js?v=2136";
+} from "./shared.js?v=2137";
+import { primeDraftSetup } from "./project.js?v=2137";
 
 const MIN_CLIP_MS = 5000;
 const MAX_CLIP_MS = 300000;
 const FRAME_MS = 40;
 const CARD_MS = 2000; // intro / outro card length
+
+// The tools that work on words show the transcript; the ones that work on the
+// image give its width back to the stage. The toggle overrides it either way.
+const WORD_TOOLS = new Set(["trim", "subtitles", "cleanup", "text"]);
 
 const TOOLS = [
   { id: "trim", label: "Trim", icon: "ap-icon-clock", hint: "Start and end of the clip" },
@@ -134,6 +138,7 @@ export function renderClipEditor(params, el) {
     playing: false,
     raf: 0,
     snap: true,
+    transcript: null, // null = by tool (WORD_TOOLS), else the user's choice
     selectedText: null,
     drag: null,
     disposers: [],
@@ -205,22 +210,34 @@ function shellHTML() {
 
     <main class="clips-ed__main">
       <div class="clips-ed__stage" data-clips-stage>
-        <div class="clips-ed__source" data-clips-source style="aspect-ratio:${ed.ctx.W}/${ed.ctx.H}">
-          <video class="clips-ed__video" data-clips-video playsinline preload="auto"></video>
-          <canvas class="clips-ed__overlay" data-clips-overlay></canvas>
-          <span class="clips-ed__stage-label">Source</span>
-        </div>
-        <div class="clips-ed__output-wrap" data-clips-output-wrap>
-          <div class="clips-ed__output" data-ce-stage data-clips-output>
-            <canvas class="clips-ed__out-canvas" data-clips-out></canvas>
-            <div class="cap-ed__deadzones" data-ce-deadzones></div>
-            <div class="clips-ed__texts" data-clips-texts data-ce-no-toggle></div>
-            <img class="clips-ed__logo" data-clips-logo alt="" hidden />
-            <div class="cap-ed-box" data-ce-box></div>
-            <div class="cap-ed-frame" data-ce-frame>${handles}</div>
+        <section class="clips-ed__monitor clips-ed__monitor--source" aria-label="Source">
+          <header class="clips-ed__monitor-bar">
+            <span class="clips-ed__monitor-name">Source</span>
+            <span class="clips-ed__monitor-meta">${ed.ctx.W}×${ed.ctx.H} · <span data-clips-src-tc>0:00.0</span></span>
+          </header>
+          <div class="clips-ed__monitor-body" data-clips-source-body>
+            <div class="clips-ed__source" data-clips-source>
+              <video class="clips-ed__video" data-clips-video playsinline preload="auto"></video>
+              <canvas class="clips-ed__overlay" data-clips-overlay></canvas>
+            </div>
           </div>
-          <span class="clips-ed__stage-label" data-clips-output-label></span>
-        </div>
+        </section>
+        <section class="clips-ed__monitor clips-ed__monitor--output" aria-label="Output">
+          <header class="clips-ed__monitor-bar">
+            <span class="clips-ed__monitor-name">Output</span>
+            <span class="clips-ed__monitor-meta" data-clips-output-label></span>
+          </header>
+          <div class="clips-ed__monitor-body" data-clips-output-wrap>
+            <div class="clips-ed__output" data-ce-stage data-clips-output>
+              <canvas class="clips-ed__out-canvas" data-clips-out></canvas>
+              <div class="cap-ed__deadzones" data-ce-deadzones></div>
+              <div class="clips-ed__texts" data-clips-texts data-ce-no-toggle></div>
+              <img class="clips-ed__logo" data-clips-logo alt="" hidden />
+              <div class="cap-ed-box" data-ce-box></div>
+              <div class="cap-ed-frame" data-ce-frame>${handles}</div>
+            </div>
+          </div>
+        </section>
       </div>
 
       <div class="clips-ed__transport">
@@ -229,6 +246,9 @@ function shellHTML() {
         </button>
         <span class="clips-ed__time"><span data-clips-cur>0:00.0</span> / <span data-clips-len>0:00.0</span></span>
         <span class="clips-ed__transport-hint">Space play · S split · ←/→ frame by frame</span>
+        <button type="button" class="ap-button ghost grey clips-ed__transcript-toggle" data-clips-ed="transcript" aria-pressed="false">
+          <i class="ap-icon-alt-text" aria-hidden="true"></i><span>Transcript</span>
+        </button>
       </div>
 
       <div class="clips-ed__timeline" data-clips-timeline></div>
@@ -350,6 +370,8 @@ function syncTime() {
     cur.textContent = ed.phase === "clip" ? fmtPrecise(ed.t - ed.w.startMs) : ed.phase === "intro" ? "Intro" : "Outro";
   const len = ed.el.querySelector("[data-clips-len]");
   if (len) len.textContent = fmtPrecise(clipLen());
+  const stc = ed.el.querySelector("[data-clips-src-tc]");
+  if (stc) stc.textContent = fmtPrecise(ed.t);
   ce.setTime(relSec(), ed.playing);
   const ph = ed.el.querySelector("[data-clips-playhead]");
   if (ph) ph.style.left = pctIn(ed.t);
@@ -363,34 +385,40 @@ function syncTime() {
 
 // ── Painting the stage ───────────────────────────────────────────────
 
-function sizeCanvases() {
-  const wrap = ed.el.querySelector("[data-clips-output-wrap]");
-  const out = ed.el.querySelector("[data-clips-output]");
-  const stage = ed.el.querySelector("[data-clips-stage]");
-  const r = ratio();
-  // The output frame: as big as the stage allows at the clip's ratio.
-  const reframing = ed.tool === "reframe";
-  const sw = stage.clientWidth;
-  const sh = stage.clientHeight - 28;
-  const availW = reframing ? sw * (r < 1 ? 0.3 : 0.42) : sw * 0.9;
-  let h = sh;
-  let w = h * r;
-  if (w > availW) {
-    w = availW;
-    h = w / r;
+// Fit a frame of `aspect` (w/h) inside a monitor's body.
+function fitIn(body, aspect) {
+  const bw = body.clientWidth;
+  const bh = body.clientHeight;
+  let w = bw;
+  let h = w / aspect;
+  if (h > bh) {
+    h = bh;
+    w = h * aspect;
   }
-  out.style.width = `${Math.round(w)}px`;
-  out.style.height = `${Math.round(h)}px`;
-  wrap.style.flex = "none";
+  return { w: Math.max(1, Math.round(w)), h: Math.max(1, Math.round(h)) };
+}
+
+function sizeCanvases() {
   const dpr = window.devicePixelRatio || 1;
+  const out = ed.el.querySelector("[data-clips-output]");
+  const o = fitIn(ed.el.querySelector("[data-clips-output-wrap]"), ratio());
+  out.style.width = `${o.w}px`;
+  out.style.height = `${o.h}px`;
   const oc = ed.el.querySelector("[data-clips-out]");
-  oc.width = Math.round(w * dpr);
-  oc.height = Math.round(h * dpr);
+  oc.width = Math.round(o.w * dpr);
+  oc.height = Math.round(o.h * dpr);
+  const src = ed.el.querySelector("[data-clips-source]");
+  const body = ed.el.querySelector("[data-clips-source-body]");
+  if (body.clientWidth) {
+    const f = fitIn(body, ed.ctx.W / ed.ctx.H);
+    src.style.width = `${f.w}px`;
+    src.style.height = `${f.h}px`;
+  }
   const ov = ed.el.querySelector("[data-clips-overlay]");
   ov.width = Math.round(ov.clientWidth * dpr);
   ov.height = Math.round(ov.clientHeight * dpr);
   const label = ed.el.querySelector("[data-clips-output-label]");
-  if (label) label.textContent = `Output · ${formatLabel(ed.w.ratioId)}`;
+  if (label) label.textContent = formatLabel(ed.w.ratioId);
 }
 
 function currentRes() {
@@ -629,8 +657,19 @@ function msAt(clientX) {
 
 // ── Panels ───────────────────────────────────────────────────────────
 
+function transcriptShown() {
+  return ed.transcript ?? WORD_TOOLS.has(ed.tool);
+}
+
 function applyTool() {
-  ed.el.querySelector("[data-clips-ed-root]").dataset.tool = ed.tool;
+  // A new tool starts from its own default; the toggle only lasts within one.
+  if (ed.lastTool !== ed.tool) ed.transcript = null;
+  ed.lastTool = ed.tool;
+  const root = ed.el.querySelector("[data-clips-ed-root]");
+  root.dataset.tool = ed.tool;
+  root.dataset.transcript = transcriptShown() ? "on" : "off";
+  const tgl = ed.el.querySelector('[data-clips-ed="transcript"]');
+  if (tgl) tgl.setAttribute("aria-pressed", String(transcriptShown()));
   ed.el.querySelectorAll("[data-clips-tool]").forEach((b) => {
     const on = b.dataset.clipsTool === ed.tool;
     b.classList.toggle("is-on", on);
@@ -1041,6 +1080,9 @@ function handleClick(e) {
       return navigate(`/clips/${ed.video.id}?tab=drafts`);
     case "play":
       return togglePlay();
+    case "transcript":
+      ed.transcript = !transcriptShown();
+      return applyTool();
     case "set-start":
       return setRange(ed.t, ed.w.endMs);
     case "set-end":

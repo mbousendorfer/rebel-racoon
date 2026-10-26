@@ -1292,23 +1292,72 @@ body.clips-space .app-content {
   flex: 1;
   min-height: 0;
   display: flex;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-sm) 0;
+}
+
+/* Two monitors, each in its own frame — the Source and Output monitors of an
+   editing app: a title bar (name · what it shows · its timecode), then the
+   picture on black. Reframe shows both (you act on the source, you judge the
+   output); every other tool only the output. */
+.clips-ed__monitor {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--app-vc-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-vc-surface);
+  overflow: hidden;
+}
+
+.clips-ed__monitor--source {
+  display: none;
+  flex: 1.8 1 0;
+}
+
+.clips-ed[data-tool="reframe"] .clips-ed__monitor--source {
+  display: flex;
+}
+
+.clips-ed__monitor--output {
+  flex: 1 1 0;
+}
+
+.clips-ed__monitor-bar {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-lg);
-  padding: var(--ref-spacing-md) var(--ref-spacing-md) 0;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+  height: 32px;
+  padding: 0 var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--app-vc-border);
+  font-size: var(--sys-text-style-caption-size);
+}
+
+.clips-ed__monitor-name {
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--app-vc-text);
+}
+
+.clips-ed__monitor-meta {
+  color: var(--app-vc-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.clips-ed__monitor-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--ref-spacing-sm);
+  background: #000;
+  overflow: hidden;
 }
 
 .clips-ed__source {
   position: relative;
-  display: none;
-  flex: 1 1 auto;
-  max-width: 62%;
-  max-height: 100%;
   background: #000;
-}
-
-.clips-ed[data-tool="reframe"] .clips-ed__source {
-  display: block;
 }
 
 .clips-ed__video,
@@ -1324,22 +1373,17 @@ body.clips-space .app-content {
   touch-action: none;
 }
 
-.clips-ed__output-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
+.clips-ed__transcript-toggle[aria-pressed="true"] {
+  color: var(--ref-color-electric-blue-60);
 }
 
-.clips-ed__stage-label {
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
+/* Image tools give the transcript's column back to the stage. */
+.clips-ed[data-transcript="off"] {
+  grid-template-columns: minmax(0, 1fr) 340px 76px;
 }
 
-.clips-ed__source .clips-ed__stage-label {
-  position: absolute;
-  left: 0;
-  top: calc(100% + var(--ref-spacing-xxs));
+.clips-ed[data-transcript="off"] .clips-ed__transcript {
+  display: none;
 }
 
 .clips-ed__output {
