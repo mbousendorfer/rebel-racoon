@@ -7,35 +7,35 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2223";
-import { isFlagOn } from "../../feature-flags.js?v=2223";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2223";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2223";
-import { showToast } from "../../components/toast.js?v=2223";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2223";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2223";
-import { networkVoice } from "../../voice-parts.js?v=2223";
-import { renderPostCard } from "../../components/post-card.js?v=2223";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2223";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2223";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2223";
+import { navigate } from "../../router.js?v=2224";
+import { isFlagOn } from "../../feature-flags.js?v=2224";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2224";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2224";
+import { showToast } from "../../components/toast.js?v=2224";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2224";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2224";
+import { networkVoice } from "../../voice-parts.js?v=2224";
+import { renderPostCard } from "../../components/post-card.js?v=2224";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2224";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2224";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2224";
 import {
   getConnectedProfiles,
   renderProfileTag,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-} from "../../social-profiles.js?v=2223";
-import { getContextById } from "../../contexts-store.js?v=2223";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2223";
-import { captionStateFor } from "../../clip-captions.js?v=2223";
+} from "../../social-profiles.js?v=2224";
+import { getContextById } from "../../contexts-store.js?v=2224";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2224";
+import { captionStateFor } from "../../clip-captions.js?v=2224";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2223";
-import { escapeHtml } from "../../utils.js?v=2223";
+} from "../../posts-store.js?v=2224";
+import { escapeHtml } from "../../utils.js?v=2224";
 import {
   getVideo,
   draftKey,
@@ -46,7 +46,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2223";
+} from "../../videos-store.js?v=2224";
 import {
   fmtMs,
   formatSelect,
@@ -65,7 +65,7 @@ import {
   SUBTITLE_IDS,
   bestFor,
   CTA_OPTIONS,
-} from "./shared.js?v=2223";
+} from "./shared.js?v=2224";
 
 let target = null;
 let videoId = null;
@@ -198,16 +198,27 @@ function patchSelection(v) {
 
 const ctaLabel = (n) => (n ? `Write posts for ${n} clip${n === 1 ? "" : "s"}` : "Tick a clip to post it");
 
-// The topbar names the video and leads back; on step 1 its right side holds the
-// page's next step (O3: the page's primary, rightmost), counted in clips.
+// The topbar names the video and leads back. Its right side holds the video's
+// own settings — the look of every clip that has none of its own (a clip
+// overrides it in its panel or the editor) — then, on step 1, the page's next
+// step (O3: the page's primary, rightmost), counted in clips.
 function paintTopbarActions(v) {
   const n = v.clips.filter((c) => c.selected).length;
-  const right =
+  const look =
+    v.status !== "analyzing"
+      ? `<div class="clips-topbar-look" role="group" aria-label="Every clip's look, unless it has its own">
+          <span class="clips-topbar-look__label">All clips</span>
+          ${formatSelect(v.settings.ratio)}
+          ${subtitleSelect(v.settings.subtitlePreset)}
+        </div>`
+      : "";
+  const cta =
     v.status !== "analyzing" && tab() !== "drafts"
       ? `<button type="button" class="ap-button primary blue" data-clips-to-drafts ${n ? "" : "disabled"}>
           <span data-clips-cta-label>${ctaLabel(n)}</span><i class="ap-icon-arrow-right" aria-hidden="true"></i>
         </button>`
-      : "<span></span>";
+      : "";
+  const right = look || cta ? `<div class="clips-topbar-actions">${look}${cta}</div>` : "<span></span>";
   setTopbarActions(`/clips/${v.id}`, right, {
     left: `${renderIconBack("/clips", "Back to Clips")}<h1 class="app-topbar__title clips-topbar-title">${escapeHtml(v.name)}</h1>`,
   });
@@ -357,11 +368,6 @@ function renderWorkspace(v) {
           </button>
         </header>
         <p class="clips-bin__hint">Tick the clips to turn into posts. Click one to open it.</p>
-        <div class="clips-bin__look" role="group" aria-labelledby="clips-bin-look">
-          <span class="clips-bin__look-label" id="clips-bin-look">Every clip, unless it has its own</span>
-          ${formatSelect(v.settings.ratio)}
-          ${subtitleSelect(v.settings.subtitlePreset)}
-        </div>
         <ol class="clips-bin__list">${rows}</ol>
       </aside>
       <section class="clips-clip" aria-label="The clip" data-clips-monitors>
@@ -811,7 +817,7 @@ function renderDraftSetup(v, hasDrafts) {
               ? `<section class="clips-write__group">
                   <div class="clips-write__group-head">
                     <h3 class="clips-write__label">How they render</h3>
-                    <button type="button" class="ap-button ghost blue" data-clips-tab="clips">Change at step 1</button>
+                    <span class="clips-write__meta">Set under « All clips » above, or on a clip at step 1</span>
                   </div>
                   <ul class="clips-write__looks">${looks
                     .map(

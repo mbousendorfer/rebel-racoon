@@ -8,11 +8,11 @@
 //   onReady() runs IMMEDIATELY when every network already has a voice — always
 //   the case with the flag off — so callers wrap unconditionally.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2223";
-import { getContextById } from "../contexts-store.js?v=2223";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2223";
-import { missingNetworkVoices, voiceChoices, applyNetworkVoice } from "../network-voice-flow.js?v=2223";
-import { escapeHtml } from "../utils.js?v=2223";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2224";
+import { getContextById } from "../contexts-store.js?v=2224";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2224";
+import { missingNetworkVoices, voiceChoices, applyNetworkVoice } from "../network-voice-flow.js?v=2224";
+import { escapeHtml } from "../utils.js?v=2224";
 
 const MODAL_ID = "network-voice";
 

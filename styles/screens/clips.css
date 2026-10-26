@@ -21,6 +21,30 @@
   margin: 0 auto;
 }
 
+/* The project's top bar, right: the video's look (every clip's, unless it
+   has its own), then the step's primary. */
+.clips-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-md);
+}
+
+.clips-topbar-look {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-topbar-look__label {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  white-space: nowrap;
+}
+
+.clips-topbar-look .ap-select {
+  width: auto;
+}
+
 .clips-topbar-title {
   margin-left: var(--ref-spacing-xs);
   overflow: hidden;
@@ -612,24 +636,6 @@
 
 .clips-bin__head .ap-checkbox-container span {
   font-weight: var(--sys-text-style-body-bold-weight);
-}
-
-/* The video's look — every clip's, unless it has its own (its inspector). */
-.clips-bin__look {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
-  border-bottom: 1px solid var(--ref-color-grey-20);
-}
-
-.clips-bin__look-label {
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-}
-
-.clips-bin__look .ap-select {
-  width: 100%;
 }
 
 .clips-bin__hint {
