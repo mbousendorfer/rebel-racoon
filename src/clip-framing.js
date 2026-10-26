@@ -3,8 +3,10 @@
 // A port of prod's crop-editor playground (content/studio/playgrounds/
 // crop-editor/index.html), minus its DOM: the auto framing the backend computed
 // for a clip (crop zones, camera cuts, faces) and the edits a user makes on top
-// of it — split, One / Two / Fit layouts, zoom, move boundaries, follow the
-// speaker, apply to every shot of a camera, reset.
+// of it — split, One / Two / Fit layouts, zoom, move boundaries, reset. As in
+// prod (platform#87544): no follow the speaker (it panned onto the largest
+// face, not the framed person), no apply to every shot of a camera, no faces
+// shown nor clicked, and in Two each window has its own zoom.
 //
 // Pure functions over plain data, so the clip cards (live previews) and the
 // editor share one engine. Everything is in SOURCE-absolute ms and normalised
@@ -14,7 +16,7 @@
 // the same way.
 //
 //   segment = { id, startMs, endMs, layout: AUTO|ONE|TWO|FIT, origin: AUTO|USER,
-//               follow, one: {cx, cy, zoom}, two: {top, bottom, zoom},
+//               one: {cx, cy, zoom}, two: {top: {cx, cy, zoom}, bottom},
 //               auto, camera }
 
 export const MIN_SEG_MS = 500;
@@ -114,10 +116,10 @@ export function cameraName(id) {
 
 function defaultTwo(auto) {
   if (auto?.layout === "TWO") {
-    const c = (r) => ({ cx: r.x + r.w / 2, cy: r.y + r.h / 2 });
-    return { top: c(auto.two.top), bottom: c(auto.two.bottom), zoom: clamp(1 / auto.two.top.h, 1, 3) };
+    const c = (r) => ({ cx: r.x + r.w / 2, cy: r.y + r.h / 2, zoom: clamp(1 / r.h, 1, 3) });
+    return { top: c(auto.two.top), bottom: c(auto.two.bottom) };
   }
-  return { top: { cx: 0.3, cy: 0.4 }, bottom: { cx: 0.7, cy: 0.4 }, zoom: 1.8 };
+  return { top: { cx: 0.3, cy: 0.4, zoom: 1.8 }, bottom: { cx: 0.7, cy: 0.4, zoom: 1.8 } };
 }
 
 let uid = 0;
@@ -127,7 +129,6 @@ function makeSeg(ctx, startMs, endMs, auto, base) {
     : {
         layout: "AUTO",
         origin: "AUTO",
-        follow: false,
         one: { cx: autoCx(auto) ?? 0.5, cy: 0.5, zoom: 1 },
         two: defaultTwo(auto),
       };
@@ -195,13 +196,6 @@ function interpolate(points, t) {
   return a.map((v, i) => v + (b[i] - v) * k);
 }
 
-function followCx(ctx, seg, t) {
-  const pts = ctx.samples
-    .filter((s) => s.cx != null && s.t >= seg.startMs - 1000 && s.t <= seg.endMs + 1000)
-    .map((s) => [s.t, s.cx]);
-  return pts.length ? interpolate(pts, t)[1] : seg.one.cx;
-}
-
 // Two panes need a portrait output — the playground disables Two for
 // landscape and square, so an auto or manual Two falls back to Fit there.
 const twoFits = (ratio) => ratio < 1;
@@ -229,13 +223,12 @@ export function resolve(ctx, seg, t, ratio) {
       kind: "two",
       split: 0.5,
       rects: [
-        windowRect(ctx, seg.two.top.cx, seg.two.top.cy, seg.two.zoom, pane),
-        windowRect(ctx, seg.two.bottom.cx, seg.two.bottom.cy, seg.two.zoom, pane),
+        windowRect(ctx, seg.two.top.cx, seg.two.top.cy, seg.two.top.zoom, pane),
+        windowRect(ctx, seg.two.bottom.cx, seg.two.bottom.cy, seg.two.bottom.zoom, pane),
       ],
     };
   }
-  const cx = seg.follow ? followCx(ctx, seg, t) : seg.one.cx;
-  return { kind: "one", rects: [windowRect(ctx, cx, seg.one.cy, seg.one.zoom, ratio)] };
+  return { kind: "one", rects: [windowRect(ctx, seg.one.cx, seg.one.cy, seg.one.zoom, ratio)] };
 }
 
 export function segmentAt(segments, t) {
@@ -270,18 +263,7 @@ export function drawOutput(c2d, video, ctx, res, ow, oh) {
   }
 }
 
-// ── Faces ────────────────────────────────────────────────────────────
-
-function nearestSample(ctx, t) {
-  if (!ctx.samples.length) return null;
-  const s = ctx.samples.reduce((best, x) => (Math.abs(x.t - t) < Math.abs(best.t - t) ? x : best));
-  return Math.abs(s.t - t) <= 600 ? s : null;
-}
-
-export function faceAt(ctx, t, px, py) {
-  const s = nearestSample(ctx, t);
-  return s ? s.regions.find(([x, y, w, h]) => px >= x && px <= x + w && py >= y && py <= y + h) || null : null;
-}
+// ── Faces (read, never shown) ────────────────────────────────────────
 
 function maxFacesIn(ctx, a, b) {
   return Math.max(0, ...ctx.samples.filter((s) => s.t >= a - 500 && s.t <= b + 500).map((s) => s.count));
@@ -313,28 +295,11 @@ export function toManual(ctx, seg, t, ratio) {
   seg.one = r ? { cx: r.x + r.w / 2, cy: r.y + r.h / 2, zoom: clamp(1 / r.h, 1, 2.5) } : { cx: 0.5, cy: 0.5, zoom: 1 };
 }
 
-export function centreOnFace(ctx, seg, [x, y, w, h], t, ratio) {
-  const fx = x + w / 2;
-  const fy = y + h / 2;
-  const isTwo = seg.layout === "TWO" || (seg.layout === "AUTO" && seg.auto.layout === "TWO" && twoFits(ratio));
-  if (isTwo) {
-    if (seg.layout === "AUTO") toManual(ctx, seg, t, ratio);
-    const key = Math.abs(seg.two.top.cx - fx) <= Math.abs(seg.two.bottom.cx - fx) ? "top" : "bottom";
-    seg.two[key] = { cx: fx, cy: fy };
-  } else {
-    if (seg.layout !== "ONE") toManual(ctx, seg, t, ratio);
-    seg.layout = "ONE";
-    seg.one.cx = fx;
-    seg.one.cy = fy;
-    seg.follow = false;
-  }
-  seg.origin = "USER";
-}
-
 export function setLayout(ctx, seg, layout, t, ratio) {
   if (layout === "ONE" && seg.layout === "AUTO") {
     toManual(ctx, seg, t, ratio);
-    if (seg.layout === "TWO") seg.one = { cx: seg.two.top.cx, cy: seg.two.top.cy, zoom: clamp(seg.two.zoom, 1, 2.5) };
+    if (seg.layout === "TWO")
+      seg.one = { cx: seg.two.top.cx, cy: seg.two.top.cy, zoom: clamp(seg.two.top.zoom, 1, 2.5) };
   }
   if (layout === "TWO" && seg.auto.layout !== "TWO") {
     const s = ctx.samples.find((x) => x.t >= seg.startMs - 500 && x.t <= seg.endMs + 500 && x.count >= 2);
@@ -343,7 +308,7 @@ export function setLayout(ctx, seg, layout, t, ratio) {
         .slice()
         .sort((a, b) => b[2] * b[3] - a[2] * a[3])
         .slice(0, 2)
-        .map(([x, y, w, h]) => ({ cx: x + w / 2, cy: y + h / 2 }))
+        .map(([x, y, w, h]) => ({ cx: x + w / 2, cy: y + h / 2, zoom: 1.8 }))
         .sort((a, b) => a.cx - b.cx);
       seg.two.top = faces[0];
       seg.two.bottom = faces[1];
@@ -400,16 +365,6 @@ export function settleBoundary(ctx, segments, k) {
   const right = segments[k];
   left.auto = autoFor(ctx, left.startMs, left.endMs);
   right.auto = autoFor(ctx, right.startMs, right.endMs);
-}
-
-export function applyToCamera(segments, seg) {
-  let n = 0;
-  for (const s of segments) {
-    if (s === seg || s.camera !== seg.camera) continue;
-    Object.assign(s, clone({ layout: seg.layout, origin: seg.origin, follow: seg.follow, one: seg.one, two: seg.two }));
-    n += 1;
-  }
-  return n;
 }
 
 export function resetSegment(ctx, seg) {

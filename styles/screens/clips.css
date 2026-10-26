@@ -1458,12 +1458,6 @@ body.clips-editing .app-content {
   width: 100%;
 }
 
-.clips-ed__apply {
-  padding: var(--ref-spacing-sm);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-md);
-}
-
 .clips-ed__panel-foot {
   margin-top: auto;
   padding-top: var(--ref-spacing-sm);
@@ -1855,9 +1849,11 @@ body.clips-editing .app-content {
   justify-content: center;
   padding: 0 6px;
   overflow: hidden;
-  border: 2px dashed var(--cam);
+  /* No colour per camera (prod): grey = my framing, white = yours; the cuts
+     and the current part are what the lane marks. */
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-sm);
-  background: color-mix(in srgb, var(--cam) 24%, var(--ref-color-white));
+  background: var(--ref-color-grey-10);
   color: var(--ref-color-grey-100);
   font: inherit;
   font-size: 11px;
@@ -1873,11 +1869,12 @@ body.clips-editing .app-content {
 }
 
 .clips-tl__seg.is-edited {
-  border-style: solid;
+  background: var(--ref-color-white);
 }
 
 .clips-tl__seg.is-current {
-  box-shadow: 0 0 0 2px var(--ref-color-grey-100);
+  border-color: var(--ref-color-electric-blue-100);
+  box-shadow: 0 0 0 1px var(--ref-color-electric-blue-100);
 }
 
 .clips-tl__seg-cam {
@@ -2023,12 +2020,6 @@ body.clips-editing .app-content {
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
-}
-
-.clips-tl__swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
 }
 
 /* ── Panel + rail ── */

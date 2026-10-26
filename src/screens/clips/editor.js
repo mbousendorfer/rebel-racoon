@@ -22,19 +22,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2202";
-import { isFlagOn } from "../../feature-flags.js?v=2202";
-import { parseHashParams } from "../../url-state.js?v=2202";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2202";
-import { showToast } from "../../components/toast.js?v=2202";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2202";
-import { open as openRename } from "../../components/rename-modal.js?v=2202";
-import { getContextById } from "../../contexts-store.js?v=2202";
-import { escapeHtml } from "../../utils.js?v=2202";
-import * as ce from "../../caption-editor.js?v=2202";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2202";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2202";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2202";
+import { navigate } from "../../router.js?v=2203";
+import { isFlagOn } from "../../feature-flags.js?v=2203";
+import { parseHashParams } from "../../url-state.js?v=2203";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2203";
+import { showToast } from "../../components/toast.js?v=2203";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2203";
+import { open as openRename } from "../../components/rename-modal.js?v=2203";
+import { getContextById } from "../../contexts-store.js?v=2203";
+import { escapeHtml } from "../../utils.js?v=2203";
+import * as ce from "../../caption-editor.js?v=2203";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2203";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2203";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2203";
 import {
   framingContext,
   initialSegments,
@@ -42,8 +42,6 @@ import {
   resolve,
   segmentAt,
   drawOutput,
-  faceAt,
-  centreOnFace,
   setLayout,
   toManual,
   split,
@@ -51,13 +49,12 @@ import {
   moveBoundary,
   settleBoundary,
   snapMs,
-  applyToCamera,
   resetSegment,
   twoBlockedReason,
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2202";
+} from "../../clip-framing.js?v=2203";
 import {
   fmtMs,
   fmtPrecise,
@@ -71,8 +68,8 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2202";
-import { primeDraftSetup } from "./project.js?v=2202";
+} from "./shared.js?v=2203";
+import { primeDraftSetup } from "./project.js?v=2203";
 
 const MIN_CLIP_MS = 5000;
 const MAX_CLIP_MS = 300000;
@@ -85,15 +82,6 @@ const TOOLS = [
   { id: "subtitles", label: "Subtitles", icon: "ap-icon-closed-captions", hint: "Subtitle style" },
   { id: "text", label: "Text", icon: "ap-icon-alt-text", hint: "Titles and text on the video" },
   { id: "brand", label: "Brand", icon: "ap-icon-target", hint: "Logo, intro and outro" },
-];
-
-// Camera colours on the framing track are categorical DATA labels — the
-// chart palette, never the interactive blue.
-const CAMERA_COLORS = [
-  "var(--app-chart-data-1)",
-  "var(--app-chart-data-2)",
-  "var(--app-chart-data-3)",
-  "var(--app-chart-data-4)",
 ];
 
 // The safe-area guide's choices: where each network's buttons cover the video.
@@ -202,8 +190,8 @@ function paintTopbar() {
       <i class="ap-icon-pen" aria-hidden="true"></i>
     </button>`;
   const right = `
-    <button type="button" class="ap-icon-button transparent" data-clips-ed="undo" aria-label="Undo" data-tooltip="Undo (⌘Z)" ${ed.undo.length ? "" : "disabled"}><i class="ap-icon-rotate-left" aria-hidden="true"></i></button>
-    <button type="button" class="ap-icon-button transparent" data-clips-ed="redo" aria-label="Redo" data-tooltip="Redo (⇧⌘Z)" ${ed.redo.length ? "" : "disabled"}><i class="ap-icon-rotate-right" aria-hidden="true"></i></button>
+    <button type="button" class="ap-button ghost grey" data-clips-ed="undo" data-tooltip="⌘Z" ${ed.undo.length ? "" : "disabled"}><span>Undo</span></button>
+    <button type="button" class="ap-button ghost grey" data-clips-ed="redo" data-tooltip="⇧⌘Z" ${ed.redo.length ? "" : "disabled"}><span>Redo</span></button>
     <button type="button" class="ap-button stroked grey" data-clips-ed="save" ${ed.dirty ? "" : "disabled"}><span>Save</span></button>
     <button type="button" class="ap-button primary orange" data-clips-ed="draft"><i class="ap-icon-archie-official" aria-hidden="true"></i><span>Create draft</span></button>`;
   setTopbarActions(`/clips/${ed.video.id}/edit/${ed.clip.id}`, `<div class="clips-ed__topbar-actions">${right}</div>`, {
@@ -694,18 +682,6 @@ function paintTimeline() {
   }
   const segs = ed.w.segments;
   const cur = segmentAt(segs, ed.t);
-  const cams = [...new Set(segs.map((s) => s.camera))];
-  const camColor = (id) =>
-    id === "TWO"
-      ? "var(--app-chart-data-5)"
-      : id === "FIT"
-        ? "var(--app-chart-neutral)"
-        : CAMERA_COLORS[
-            Math.max(
-              0,
-              ed.ctx.cameras.findIndex((c) => c.id === id),
-            ) % CAMERA_COLORS.length
-          ];
   const layoutLabel = (s) =>
     s.layout === "AUTO" ? `Auto · ${autoKind(s)}` : LAYOUTS.find((l) => l.id === s.layout)?.label || s.layout;
   const segHTML = segs
@@ -713,10 +689,10 @@ function paintTimeline() {
       (
         s,
       ) => `<button type="button" class="clips-tl__seg${s.id === cur.id ? " is-current" : ""}${s.origin === "USER" ? " is-edited" : ""}" data-clips-seg="${s.id}"
-        style="left:${pctIn(s.startMs)};width:calc(${((s.endMs - s.startMs) / v.span) * 100}% - 2px);--cam:${camColor(s.camera)}"
+        style="left:${pctIn(s.startMs)};width:calc(${((s.endMs - s.startMs) / v.span) * 100}% - 2px)"
         aria-label="${escapeHtml(cameraName(s.camera))}, ${escapeHtml(layoutLabel(s))}, ${fmtPrecise(s.startMs - ed.w.startMs)}">
         <span class="clips-tl__seg-cam">${escapeHtml(cameraShort(s.camera))}</span>
-        <span class="clips-tl__seg-lay">${escapeHtml(layoutLabel(s))}${s.follow ? " · follow" : ""}</span>
+        <span class="clips-tl__seg-lay">${escapeHtml(layoutLabel(s))}</span>
       </button>`,
     )
     .join("");
@@ -777,12 +753,7 @@ function paintTimeline() {
         }
       </div>
     </div>
-    <div class="clips-tl__legend">${cams
-      .map(
-        (id) =>
-          `<span class="clips-tl__legend-item"><span class="clips-tl__swatch" style="background:${camColor(id)}"></span>${escapeHtml(cameraName(id))}</span>`,
-      )
-      .join("")}<span class="clips-tl__legend-item">Dotted: Auto · Solid: yours</span>
+    <div class="clips-tl__legend"><span class="clips-tl__legend-item">Grey: my framing · White: yours</span>
       <label class="ap-toggle-container clips-tl__snap"><input type="checkbox" data-clips-snap ${ed.snap ? "checked" : ""} /><i></i><span>Snap to camera cuts</span></label></div>`;
 }
 
@@ -884,7 +855,6 @@ function reframePanel() {
   const i = segs.indexOf(seg);
   const r = ratio();
   const blocked = twoBlockedReason(ed.ctx, seg, r);
-  const sameCam = segs.filter((s) => s.camera === seg.camera).length;
   const hints = {
     AUTO: `I chose ${autoKind(seg)}`,
     ONE: "One window",
@@ -909,9 +879,13 @@ function reframePanel() {
       </div>
     </label>`;
   }).join("");
-  const zoom = seg.layout === "ONE" ? seg.one.zoom : seg.layout === "TWO" ? seg.two.zoom : null;
+  // No zoom slider (prod): a window zooms from its corners on the source.
+  const gesture =
+    seg.layout === "TWO"
+      ? "drag a window on the source to move it, a corner to zoom that window."
+      : "drag the window on the source to move it, a corner to zoom.";
   return `
-    <p class="clips-ed__panel-lead">The clip is cut in parts, one per camera shot. I framed each one — drag the window on the source to take over.</p>
+    <p class="clips-ed__panel-lead">The clip is cut in parts, one per camera shot. I framed each one — ${gesture}</p>
     <div class="clips-ed__seg-head">
       <span class="clips-ed__seg-name">Part ${i + 1} of ${segs.length}</span>
       <span class="clips-ed__seg-tags">
@@ -931,32 +905,8 @@ function reframePanel() {
       <div class="clips-ed__layouts" role="radiogroup" aria-label="Layout">${layoutBtns}</div>
     </div>
     ${
-      zoom != null
-        ? `<div class="clips-ed__group">
-            <span class="clips-ed__label">Zoom ${zoom.toFixed(2)}×</span>
-            <input type="range" class="ap-slider" min="1" max="${seg.layout === "TWO" ? 3 : 2.5}" step="0.05" value="${zoom}" data-clips-zoom
-              style="--fill:${((zoom - 1) / ((seg.layout === "TWO" ? 3 : 2.5) - 1)) * 100}%" aria-label="Zoom" />
-          </div>`
-        : ""
-    }
-    ${
-      seg.layout === "ONE"
-        ? `<label class="ap-toggle-container clips-ed__toggle"><input type="checkbox" data-clips-follow ${seg.follow ? "checked" : ""} /><i></i><span>Follow the speaker</span></label>`
-        : ""
-    }
-    ${
       seg.layout === "TWO"
-        ? `<button type="button" class="ap-button stroked grey" data-clips-ed="swap"><i class="ap-icon-refresh" aria-hidden="true"></i><span>Swap top and bottom</span></button>`
-        : ""
-    }
-    ${
-      seg.camera && sameCam > 1 && seg.origin === "USER"
-        ? `<div class="clips-ed__group clips-ed__apply">
-            <p class="clips-ed__hint">${escapeHtml(cameraName(seg.camera))} comes back ${sameCam - 1} more time${sameCam === 2 ? "" : "s"} in this clip.</p>
-            <button type="button" class="ap-button stroked grey" data-clips-ed="apply-cam">
-              <i class="ap-icon-stack" aria-hidden="true"></i><span>Use this framing on all ${sameCam} shots</span>
-            </button>
-          </div>`
+        ? `<button type="button" class="ap-button stroked grey" data-clips-ed="swap" ${r < 1 ? "" : "disabled"}><i class="ap-icon-refresh" aria-hidden="true"></i><span>Swap top and bottom</span></button>`
         : ""
     }
     <div class="clips-ed__panel-foot">
@@ -1295,11 +1245,6 @@ function handleClick(e) {
       return setRange(ed.w.startMs, ed.t);
     case "split":
       return doSplit();
-    case "apply-cam":
-      return edit(() => {
-        const n = applyToCamera(ed.w.segments, seg);
-        showToast(`Applied to ${n} more ${n === 1 ? "shot" : "shots"}`);
-      });
     case "reset-seg":
       return edit(() => resetSegment(ed.ctx, seg));
     case "reset-all":
@@ -1374,12 +1319,25 @@ function handleClick(e) {
     fmt.closest("details")?.removeAttribute("open");
     const id = fmt.dataset.clipsFormat === "video" ? ed.video.settings.ratio : fmt.dataset.clipsFormat;
     if (id === ed.w.ratioId) return undefined;
-    return edit(() => {
-      ed.w.ratioId = id;
-      sizeCanvases();
-      ce.repaintStage();
-      paintTexts();
+    // A framing is made for one format (prod): a new one starts again from
+    // the auto framing — asked first when the framing holds edits.
+    const apply = () =>
+      edit(() => {
+        ed.w.ratioId = id;
+        ed.w.segments = initialSegments(ed.ctx, ed.w.startMs, ed.w.endMs);
+        sizeCanvases();
+        ce.repaintStage();
+        paintTexts();
+      });
+    if (!ed.w.segments.some((x) => x.origin === "USER")) return apply();
+    openConfirm({
+      title: "Change the format?",
+      body: `Your framing was made for ${formatLabel(ed.w.ratioId)}. In ${formatLabel(id)}, I frame the clip again from scratch.`,
+      confirmLabel: "Change the format",
+      cancelLabel: "Cancel",
+      onConfirm: apply,
     });
+    return undefined;
   }
   const dz = t.closest("[data-clips-deadzones]");
   if (dz) {
@@ -1461,25 +1419,10 @@ function doSplit() {
   syncTlTools();
 }
 
-let liveZoomUndo = false;
 function handleInput(e) {
   if (!ed) return;
   const t = e.target;
   const seg = segmentAt(ed.w.segments, ed.t);
-  if (t.matches("[data-clips-zoom]")) {
-    if (!liveZoomUndo) {
-      pushUndo();
-      liveZoomUndo = true;
-    }
-    if (seg.layout === "AUTO") toManual(ed.ctx, seg, ed.t, ratio());
-    (seg.layout === "TWO" ? seg.two : seg.one).zoom = Number(t.value);
-    seg.origin = "USER";
-    t.style.setProperty("--fill", `${((t.value - t.min) / (t.max - t.min)) * 100}%`);
-    t.closest(".clips-ed__group").querySelector(".clips-ed__label").textContent = `Zoom ${Number(t.value).toFixed(2)}×`;
-    setDirtyQuiet();
-    paintFrame();
-    return;
-  }
   if (t.matches("[data-clips-logo-size]")) {
     ed.w.brand.logoSize = Number(t.value);
     t.style.setProperty("--fill", `${((t.value - t.min) / (t.max - t.min)) * 100}%`);
@@ -1511,17 +1454,10 @@ function handleChange(e) {
   if (!ed) return;
   const t = e.target;
   const seg = segmentAt(ed.w.segments, ed.t);
-  if (t.matches("[data-clips-zoom]")) {
-    liveZoomUndo = false;
-    paintPanel();
-    paintTimeline();
-    return;
-  }
   // The edge's field saves on Enter only (handleKey) — a change on blur is
   // dropped: an inline edit never saves on blur.
   if (t.matches("[data-clips-time]")) return undefined;
   if (t.matches("[data-clips-layout-pick]")) return edit(() => setLayout(ed.ctx, seg, t.value, ed.t, ratio()));
-  if (t.matches("[data-clips-follow]")) return edit(() => ((seg.follow = t.checked), (seg.origin = "USER")));
   if (t.matches("[data-clips-snap]")) {
     ed.snap = t.checked;
     return undefined;
@@ -1723,7 +1659,7 @@ function onDragEnd() {
 }
 
 // The crop window on the source: drag inside to move it, drag a corner to
-// zoom, click a face to centre on it — the playground's gestures.
+// zoom (in Two, that window only). Faces are never shown nor clicked (prod).
 function startCropDrag(e) {
   const ov = ed.el.querySelector("[data-clips-overlay]");
   const r = ov.getBoundingClientRect();
@@ -1752,13 +1688,12 @@ function startCropDrag(e) {
     const W = ed.ctx.W;
     const H = ed.ctx.H;
     if (cornerIdx >= 0) {
-      const target = seg.layout === "TWO" ? seg.two : seg.one;
       const c = seg.layout === "TWO" ? seg.two[pane === 0 ? "top" : "bottom"] : seg.one;
       const half = Math.max(
         Math.abs(qy - c.cy),
         (Math.abs(qx - c.cx) * W) / H / (seg.layout === "TWO" ? ratio() * 2 : ratio()),
       );
-      target.zoom = Math.max(1, Math.min(seg.layout === "TWO" ? 3 : 2.5, 1 / (2 * half)));
+      c.zoom = Math.max(1, Math.min(seg.layout === "TWO" ? 3 : 2.5, 1 / (2 * half)));
     } else if (seg.layout === "TWO") {
       const key = pane === 0 ? "top" : "bottom";
       seg.two[key].cx = clamp01(start[key].cx + dx);
@@ -1766,7 +1701,6 @@ function startCropDrag(e) {
     } else {
       seg.one.cx = clamp01(start.cx + dx);
       seg.one.cy = clamp01(start.cy + dy);
-      seg.follow = false;
     }
     seg.origin = "USER";
     paintFrame();
@@ -1774,11 +1708,7 @@ function startCropDrag(e) {
   const up = () => {
     window.removeEventListener("pointermove", move);
     window.removeEventListener("pointerup", up);
-    if (!moved) {
-      const face = faceAt(ed.ctx, ed.t, px, py);
-      if (face) centreOnFace(ed.ctx, seg, face, ed.t, ratio());
-      else return void ed.undo.pop();
-    }
+    if (!moved) return void ed.undo.pop();
     setDirty();
     paintPanel();
     paintTimeline();
