@@ -13,35 +13,35 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=2214";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2214";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2214";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2214";
-import { showToast } from "./components/toast.js?v=2214";
-import { recordReasons } from "./feedback-store.js?v=2214";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2214";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2214";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2214";
+import * as inlineQuestion from "./inline-question.js?v=2223";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2223";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2223";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2223";
+import { showToast } from "./components/toast.js?v=2223";
+import { recordReasons } from "./feedback-store.js?v=2223";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2223";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2223";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2223";
 import {
   analyzeWebsite,
   analyzeBrandFiles,
   analyzeInterview,
   nextInterviewQuestion,
   INTERVIEW_OPENING,
-} from "./context-mock-analysis.js?v=2214";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2214";
-import { cloneItems, optimizeForNetwork, playbookNetworks } from "./voice-parts.js?v=2214";
-import { connectors as connectorMocks } from "./mocks.js?v=2214";
+} from "./context-mock-analysis.js?v=2223";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2223";
+import { cloneItems, withNetworkVoices } from "./voice-parts.js?v=2223";
+import { connectors as connectorMocks } from "./mocks.js?v=2223";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=2214";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2214";
-import { isFlagOn } from "./feature-flags.js?v=2214";
-import { startDemo } from "./demo-flow.js?v=2214";
-import { navigate } from "./router.js?v=2214";
-import { setHandoff } from "./handoff.js?v=2214";
+} from "./social-profiles.js?v=2223";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2223";
+import { isFlagOn } from "./feature-flags.js?v=2223";
+import { startDemo } from "./demo-flow.js?v=2223";
+import { navigate } from "./router.js?v=2223";
+import { setHandoff } from "./handoff.js?v=2223";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -992,12 +992,11 @@ export function save(sessionId) {
     voiceNever: cloneItems(d.voiceNever),
     voiceByPost: cloneItems(d.voiceByPost),
     voiceSometimes: cloneItems(d.voiceSometimes),
-    // A NEW Playbook: each network it publishes on gets the Brand voice,
-    // optimized for it (flag voicePerNetwork — stored either way, shown under
-    // the flag). Re-saving an existing one never rewrites its network voices.
-    ...(!d.editingId && {
-      voiceByNetwork: Object.fromEntries(playbookNetworks(d).map((n) => [n, optimizeForNetwork(d, n)])),
-    }),
+    // A NEW Playbook: each network it publishes on gets its voice — learned
+    // from the account's posts, else the Brand voice optimized for it — or the
+    // one the review showed (flag voicePerNetwork — stored either way, shown
+    // under the flag). Re-saving an existing one never rewrites them.
+    ...(!d.editingId && { voiceByNetwork: withNetworkVoices(d) }),
     brandPersonality: d.brandPersonality || "",
     brandTypography: d.brandTypography ? { ...d.brandTypography } : null,
     brandColors: Array.isArray(d.brandColors) ? d.brandColors.map((c) => ({ ...c })) : [],

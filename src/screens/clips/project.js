@@ -7,33 +7,35 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2214";
-import { isFlagOn } from "../../feature-flags.js?v=2214";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2214";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2214";
-import { showToast } from "../../components/toast.js?v=2214";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2214";
-import { renderPostCard } from "../../components/post-card.js?v=2214";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2214";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2214";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2214";
+import { navigate } from "../../router.js?v=2223";
+import { isFlagOn } from "../../feature-flags.js?v=2223";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2223";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2223";
+import { showToast } from "../../components/toast.js?v=2223";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2223";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2223";
+import { networkVoice } from "../../voice-parts.js?v=2223";
+import { renderPostCard } from "../../components/post-card.js?v=2223";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2223";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2223";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2223";
 import {
   getConnectedProfiles,
   renderProfileTag,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-} from "../../social-profiles.js?v=2214";
-import { getContextById } from "../../contexts-store.js?v=2214";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2214";
-import { captionStateFor } from "../../clip-captions.js?v=2214";
+} from "../../social-profiles.js?v=2223";
+import { getContextById } from "../../contexts-store.js?v=2223";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2223";
+import { captionStateFor } from "../../clip-captions.js?v=2223";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2214";
-import { escapeHtml } from "../../utils.js?v=2214";
+} from "../../posts-store.js?v=2223";
+import { escapeHtml } from "../../utils.js?v=2223";
 import {
   getVideo,
   draftKey,
@@ -44,7 +46,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2214";
+} from "../../videos-store.js?v=2223";
 import {
   fmtMs,
   formatSelect,
@@ -63,7 +65,7 @@ import {
   SUBTITLE_IDS,
   bestFor,
   CTA_OPTIONS,
-} from "./shared.js?v=2214";
+} from "./shared.js?v=2223";
 
 let target = null;
 let videoId = null;
@@ -630,13 +632,13 @@ function renderDrafts(v, posts) {
       </div>
     </div>
     <div class="clips-drafts posts">
-      ${posts.map(renderDraft).join("")}
+      ${posts.map((p) => renderDraft(p, getContextById(v.contextId))).join("")}
     </div>`;
 }
 
 // A scheduled draft stays in the list, said so above its card — this space is
 // where the video's whole output is read, scheduled or not.
-function renderDraft(p) {
+function renderDraft(p, pb) {
   const scheduled = p.status === "scheduled";
   const when =
     scheduled && p.scheduledFor
@@ -649,7 +651,12 @@ function renderDraft(p) {
       : "";
   return `<div class="clips-drafts__item">
     ${scheduled ? `<p class="clips-drafts__status"><span class="ap-status green">Scheduled${when ? ` · ${escapeHtml(when)}` : ""}</span></p>` : ""}
-    ${renderPostCard(p, { railActions: scheduled ? ["delete"] : ["schedule", "delete"] })}
+    ${renderPostCard(p, {
+      railActions: scheduled ? ["delete"] : ["schedule", "delete"],
+      // Which voice wrote it (flag voicePerNetwork), and the way to its Playbook.
+      playbookId: pb?.id || null,
+      voice: pb ? networkVoice(pb, p.network) : null,
+    })}
   </div>`;
 }
 
@@ -907,6 +914,16 @@ function writeDrafts() {
   const clips = v.clips.filter((c) => c.selected);
   const accounts = getConnectedProfiles().filter((p) => draftSetup.accounts?.has(p.id));
   if (!clips.length || !accounts.length) return;
+  // Every network gets its voice before a word is written (flag voicePerNetwork)
+  // — asked in a dialog, the space has no chat.
+  requireNetworkVoicesInDialog(
+    v.contextId,
+    accounts.map((a) => a.platform),
+    () => renderAndWrite(v, clips, accounts),
+  );
+}
+
+function renderAndWrite(v, clips, accounts) {
   const pb = getContextById(v.contextId);
   const key = draftKey(v.id);
   draftSetup.writing = {
@@ -1076,6 +1093,11 @@ function onClick(e) {
       v,
       getPosts(key).filter((p) => p.status !== "scheduled"),
     );
+  }
+  const voice = t.closest("[data-post-voice]");
+  if (voice) {
+    const net = voice.dataset.postVoiceNet;
+    return navigate(`/playbook/${voice.dataset.postVoice}?tab=voice${net ? `&voice=${net}` : ""}`);
   }
   const del = t.closest("[data-post-delete]");
   if (del) {

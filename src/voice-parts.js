@@ -10,10 +10,10 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2214";
-import { isFlagOn } from "./feature-flags.js?v=2214";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2214";
-import { networkMeta, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=2214";
+import { escapeHtml } from "./utils.js?v=2223";
+import { isFlagOn } from "./feature-flags.js?v=2223";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2223";
+import { networkMeta, normalizeNetwork, getConnectedProfileById, profileForNetwork } from "./social-profiles.js?v=2223";
 
 const VOICE_PARTS = [
   { field: "voiceSummary", title: "How the Brand sounds", kind: "text" },
@@ -75,7 +75,10 @@ export function baseValue(ctx, field) {
 // The flat parts above are the Brand voice. `ctx.voiceByNetwork[network]` is a
 // whole voice for one network the Playbook publishes on — the same five parts,
 // plus:
-//   optimizedBy  "archie" (optimizeForNetwork) | "you" (copied to edit by hand)
+//   optimizedBy  "learned" (learnNetworkVoice — from the account's own posts,
+//                + learnedFrom / postCount) | "archie" (optimizeForNetwork) |
+//                "you" (copied to edit by hand) | "brand" (the Brand voice as it
+//                is: a voice is DEFINED, but not optimized — allowed, warned)
 //   baseStamp    voiceStamp() of the Brand voice it was made from — the Brand
 //                voice changing never rewrites it; the network says so instead
 // A rule Archie (or the user) made for this network carries `adapted: true` and
@@ -113,6 +116,40 @@ export function optimizeForNetwork(ctx, network) {
   return { ...voice, optimizedBy: "archie", baseStamp: voiceStamp(ctx) };
 }
 
+// Below this many posts an account has nothing to learn from — its network's
+// voice is optimized from the Brand voice instead.
+const LEARN_MIN_POSTS = 10;
+
+export const canLearnFrom = (account) => (account?.postCount || 0) >= LEARN_MIN_POSTS;
+
+// The network's voice, learned from the account's own posts. ponytail: the
+// mock reuses the network's adaptations; in the product they're read from the
+// posts.
+export function learnNetworkVoice(ctx, network, account) {
+  return {
+    ...optimizeForNetwork(ctx, network),
+    optimizedBy: "learned",
+    learnedFrom: account.handle,
+    postCount: account.postCount,
+  };
+}
+
+// The best voice Archie can give a network on its own: learned from the
+// account's posts when it has enough, else the Brand voice optimized for it.
+export function bestNetworkVoice(ctx, network) {
+  const account = profileForNetwork(network);
+  return canLearnFrom(account) ? learnNetworkVoice(ctx, network, account) : optimizeForNetwork(ctx, network);
+}
+
+// Every network of the Playbook with a voice — the best one where it has none
+// yet, its own kept. Creation and its review read it this way.
+export function withNetworkVoices(ctx) {
+  return {
+    ...Object.fromEntries(playbookNetworks(ctx).map((n) => [n, bestNetworkVoice(ctx, n)])),
+    ...(ctx?.voiceByNetwork || {}),
+  };
+}
+
 // The Brand voice copied as-is, for the user to make it the network's own.
 export function copyBrandVoice(ctx) {
   const voice = { voiceSummary: baseValue(ctx, "voiceSummary") };
@@ -120,22 +157,31 @@ export function copyBrandVoice(ctx) {
   return { ...voice, optimizedBy: "you", baseStamp: voiceStamp(ctx) };
 }
 
+const OPTIMIZED_BY = ["learned", "archie", "you", "brand"];
+
 export function cloneNetworkVoice(v) {
-  const out = { voiceSummary: String(v?.voiceSummary || ""), optimizedBy: v?.optimizedBy === "you" ? "you" : "archie" };
+  const out = {
+    voiceSummary: String(v?.voiceSummary || ""),
+    optimizedBy: OPTIMIZED_BY.includes(v?.optimizedBy) ? v.optimizedBy : "archie",
+  };
   LIST_PARTS.forEach((f) => (out[f] = cloneItems(v?.[f])));
   out.baseStamp = String(v?.baseStamp || "");
+  if (v?.learnedFrom) Object.assign(out, { learnedFrom: String(v.learnedFrom), postCount: Number(v.postCount) || 0 });
   return out;
 }
 
 // Which voice a network writes in, and in what state:
 //   "brand"     the flag is off, or no network named
-//   "borrowed"  the network has no voice of its own yet — the Brand voice
+//   "borrowed"  the network has no voice yet — nothing is written for it
+//               before it gets one (network-voice-flow.js)
+//   "plain"     the Brand voice as it is, chosen for it — written, but warned
 //   "stale"     its own voice, made from a Brand voice that has changed since
 //   "own"       its own voice
 export function networkVoice(ctx, network) {
   const own = networkVoiceOn() && network ? ctx?.voiceByNetwork?.[network] : null;
   if (!networkVoiceOn() || !network) return { state: "brand", voice: ctx };
   if (!own) return { state: "borrowed", voice: ctx };
+  if (own.optimizedBy === "brand") return { state: "plain", voice: ctx };
   return { state: own.baseStamp === voiceStamp(ctx) ? "own" : "stale", voice: own };
 }
 

@@ -33,10 +33,10 @@ import {
   postUserProfilesTurn,
   reportDraftFailure,
   GENERATION_TOOLS,
-} from "./assistant.js?v=2214";
-import { getTopPosts, getTopPost } from "./top-posts-store.js?v=2214";
-import { addPostDraft } from "./posts-store.js?v=2214";
-import { addReadySource } from "./sources-stream.js?v=2214";
+} from "./assistant.js?v=2223";
+import { getTopPosts, getTopPost } from "./top-posts-store.js?v=2223";
+import { addPostDraft } from "./posts-store.js?v=2223";
+import { addReadySource } from "./sources-stream.js?v=2223";
 import {
   getConnectedProfiles,
   BRAND_INITIALS,
@@ -45,11 +45,12 @@ import {
   networkMeta,
   normalizeNetwork,
   getConnectedProfileById,
-} from "./social-profiles.js?v=2214";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2214";
-import { SORTS, PERIODS } from "./components/top-post-card.js?v=2214";
-import * as inlineQuestion from "./inline-question.js?v=2214";
-import { playbookForNewWork } from "./active-playbook.js?v=2214";
+} from "./social-profiles.js?v=2223";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2223";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2223";
+import { SORTS, PERIODS } from "./components/top-post-card.js?v=2223";
+import * as inlineQuestion from "./inline-question.js?v=2223";
+import { playbookForNewWork } from "./active-playbook.js?v=2223";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;
@@ -636,7 +637,12 @@ export function executeRepurpose(sessionId, postIds, targets) {
   const pickedTargets = normalizeTargets(targets);
   // The Playbook chosen on step 1 governs the drafts' voice — stamp it on each.
   const contextId = repurposeContexts.get(sessionId) || null;
+  // No explicit targets → each post back on its own network.
+  const nets = pickedTargets.length ? pickedTargets.map((t) => t.network) : posts.map((p) => p.network);
+  requireNetworkVoices(sessionId, nets, () => writeRepurpose(sessionId, posts, pickedTargets, contextId), contextId);
+}
 
+function writeRepurpose(sessionId, posts, pickedTargets, contextId) {
   withPendingChip(
     sessionId,
     () => {
@@ -682,7 +688,13 @@ export function executeRepurpose(sessionId, postIds, targets) {
         drafts,
       });
     },
-    (err) => reportDraftFailure(sessionId, err, () => executeRepurpose(sessionId, postIds, targets), "top-posts-flow"),
+    (err) =>
+      reportDraftFailure(
+        sessionId,
+        err,
+        () => writeRepurpose(sessionId, posts, pickedTargets, contextId),
+        "top-posts-flow",
+      ),
   );
 }
 

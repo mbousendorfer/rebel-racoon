@@ -21,15 +21,16 @@ import {
   postActivity,
   postDraftResult,
   GENERATION_TOOLS,
-} from "./assistant.js?v=2214";
-import * as inlineQuestion from "./inline-question.js?v=2214";
-import { addPostDraft } from "./posts-store.js?v=2214";
-import { getSessionById } from "./sessions-store.js?v=2214";
-import { getContextById } from "./contexts-store.js?v=2214";
-import { playbookForNewWork } from "./active-playbook.js?v=2214";
-import { getConnectedProfiles, buildConnectedProfileItems } from "./social-profiles.js?v=2214";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2214";
-import { createPlan, updatePlan, getPlans } from "./post-plan-store.js?v=2214";
+} from "./assistant.js?v=2223";
+import * as inlineQuestion from "./inline-question.js?v=2223";
+import { addPostDraft } from "./posts-store.js?v=2223";
+import { getSessionById } from "./sessions-store.js?v=2223";
+import { getContextById } from "./contexts-store.js?v=2223";
+import { playbookForNewWork } from "./active-playbook.js?v=2223";
+import { getConnectedProfiles, buildConnectedProfileItems } from "./social-profiles.js?v=2223";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2223";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2223";
+import { createPlan, updatePlan, getPlans } from "./post-plan-store.js?v=2223";
 
 // "write / draft / create a post about X" — the ask this flow answers. The
 // topic is everything after "about".
@@ -194,7 +195,11 @@ function askAccounts(sessionId, planId) {
       const picked = connected.filter((a) => [].concat(ids).includes(a.id));
       if (!picked.length) return;
       postUserProfilesTurn(sessionId, picked);
-      writeFromPlan(sessionId, planId, picked);
+      requireNetworkVoices(
+        sessionId,
+        picked.map((a) => a.platform),
+        () => writeFromPlan(sessionId, planId, picked),
+      );
     },
     onSkip: () => {},
   });

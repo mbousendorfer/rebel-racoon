@@ -19,19 +19,19 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2214";
-import { isPortraitFormat } from "../clip-formats.js?v=2214";
-import { presetById } from "../clip-captions.js?v=2214";
-import { renderFeedbackControl } from "./feedback-control.js?v=2214";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2223";
+import { isPortraitFormat } from "../clip-formats.js?v=2223";
+import { presetById } from "../clip-captions.js?v=2223";
+import { renderFeedbackControl } from "./feedback-control.js?v=2223";
 import {
   networkMeta,
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
-} from "../social-profiles.js?v=2214";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2214";
-import { REVEAL_MS } from "../archie-pixels.js?v=2214";
+} from "../social-profiles.js?v=2223";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2223";
+import { REVEAL_MS } from "../archie-pixels.js?v=2223";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -137,13 +137,20 @@ function renderEmptyMedia(post, opts) {
 // Which voice wrote this draft (flag voicePerNetwork): `opts.voice` is
 // voice-parts' networkVoice() for the draft's network, resolved by the host
 // (the card never reads a Playbook). The voice's name opens it in the Playbook.
+// Written in the Brand voice (as it is, or before the network had one): said,
+// with the way to optimize it — allowed, never silent.
 function renderVoiceLine(net, opts) {
   const state = opts.voice?.state;
   if (!state || state === "brand" || !opts.playbookId) return "";
-  const own = state !== "borrowed";
-  const name = own ? `${networkLabel(net)} voice` : "Brand voice";
+  const pb = escapeAttr(opts.playbookId);
+  if (state === "plain" || state === "borrowed")
+    return `<p class="posts__card-voice posts__card-voice--warn">
+      <i class="ap-icon-warning_fill ap-icon-sm" aria-hidden="true"></i>
+      <span>Written in the Brand voice, not optimized for ${escapeText(networkLabel(net))}.
+        <button type="button" class="ap-link small" data-post-voice="${pb}" data-post-voice-net="${escapeAttr(net)}">Optimize it</button></span>
+    </p>`;
   return `<p class="posts__card-voice">Written in the
-    <button type="button" class="ap-link small" data-post-voice="${escapeAttr(opts.playbookId)}" data-post-voice-net="${own ? escapeAttr(net) : ""}">${escapeText(name)}</button>
+    <button type="button" class="ap-link small" data-post-voice="${pb}" data-post-voice-net="${escapeAttr(net)}">${escapeText(`${networkLabel(net)} voice`)}</button>
   </p>`;
 }
 
@@ -224,7 +231,12 @@ export function renderPostCard(post, opts = {}) {
     // ponytail: shown on a length heuristic, not a measured overflow — a short
     // post never clamps, a borderline one may show a toggle that reveals little.
     const clamps = usedCharacters(post) > 180 || post.text.length > 2;
-    editorBody = `<div class="posts__card-body${clamps ? " posts__card-body--clamp" : ""}">${bodyParagraphs} ${hashtags} ${cta}</div>${
+    // The text itself is the way into the editor (right-panel.js,
+    // data-post-edit-body): it reads as a field on hover, says so in a tooltip.
+    const editable = inlineEdit
+      ? ` posts__card-body--editable" data-post-edit-body="${post.id}" data-tooltip="Click to edit the text"`
+      : '"';
+    editorBody = `<div class="posts__card-body${clamps ? " posts__card-body--clamp" : ""}${editable}>${bodyParagraphs} ${hashtags} ${cta}</div>${
       clamps
         ? `<button type="button" class="ap-link small posts__card-readmore" data-post-readmore="${post.id}" aria-expanded="false" data-more="${READ_MORE[net] || "See more"}">${READ_MORE[net] || "See more"}</button>`
         : ""
@@ -240,8 +252,9 @@ export function renderPostCard(post, opts = {}) {
 
   const editActions = editing
     ? `<div class="posts__card-edit-actions">
+        <span class="posts__card-edit-keys"><kbd>Esc</kbd> to cancel · <kbd>⌘</kbd>+<kbd>Enter</kbd> to save</span>
         <button type="button" class="ap-button ghost grey" data-post-edit-cancel="${post.id}">Cancel</button>
-        <button type="button" class="ap-button primary orange" data-post-edit-save="${post.id}">Save changes</button>
+        <button type="button" class="ap-button primary blue" data-post-edit-save="${post.id}">Save changes</button>
       </div>`
     : "";
 
