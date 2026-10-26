@@ -2,15 +2,15 @@
 // videos, and the one way in, adding a video. The flow starts with the video;
 // the posts come last (screens/clips/project.js).
 
-import { navigate } from "../../router.js?v=2171";
-import { isFlagOn } from "../../feature-flags.js?v=2171";
-import { renderTopbar } from "../../components/topbar.js?v=2171";
-import { showToast } from "../../components/toast.js?v=2171";
-import { renderEmptyState } from "../../components/empty-state.js?v=2171";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2171";
-import { isDemo } from "../../demo-mode.js?v=2171";
-import { getPosts } from "../../posts-store.js?v=2171";
-import { escapeHtml } from "../../utils.js?v=2171";
+import { navigate } from "../../router.js?v=2172";
+import { isFlagOn } from "../../feature-flags.js?v=2172";
+import { renderTopbar } from "../../components/topbar.js?v=2172";
+import { showToast } from "../../components/toast.js?v=2172";
+import { renderEmptyState } from "../../components/empty-state.js?v=2172";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2172";
+import { isDemo } from "../../demo-mode.js?v=2172";
+import { getPosts } from "../../posts-store.js?v=2172";
+import { escapeHtml } from "../../utils.js?v=2172";
 import {
   getVideos,
   addVideo,
@@ -18,9 +18,9 @@ import {
   lengthProblem,
   standInForUrl,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2171";
-import { fmtMs, previewMarkup, mountPreviews } from "./shared.js?v=2171";
-import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2171";
+} from "../../videos-store.js?v=2172";
+import { fmtMs, previewMarkup, mountPreviews } from "./shared.js?v=2172";
+import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2172";
 
 let target = null;
 let disposeShowcase = null;
