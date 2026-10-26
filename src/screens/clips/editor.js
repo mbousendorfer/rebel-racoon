@@ -22,19 +22,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2204";
-import { isFlagOn } from "../../feature-flags.js?v=2204";
-import { parseHashParams } from "../../url-state.js?v=2204";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2204";
-import { showToast } from "../../components/toast.js?v=2204";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2204";
-import { open as openRename } from "../../components/rename-modal.js?v=2204";
-import { getContextById } from "../../contexts-store.js?v=2204";
-import { escapeHtml } from "../../utils.js?v=2204";
-import * as ce from "../../caption-editor.js?v=2204";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2204";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2204";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2204";
+import { navigate } from "../../router.js?v=2206";
+import { isFlagOn } from "../../feature-flags.js?v=2206";
+import { parseHashParams } from "../../url-state.js?v=2206";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2206";
+import { showToast } from "../../components/toast.js?v=2206";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2206";
+import { open as openRename } from "../../components/rename-modal.js?v=2206";
+import { getContextById } from "../../contexts-store.js?v=2206";
+import { escapeHtml } from "../../utils.js?v=2206";
+import * as ce from "../../caption-editor.js?v=2206";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2206";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2206";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2206";
 import {
   framingContext,
   initialSegments,
@@ -54,7 +54,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2204";
+} from "../../clip-framing.js?v=2206";
 import {
   fmtMs,
   fmtPrecise,
@@ -68,8 +68,8 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2204";
-import { primeDraftSetup } from "./project.js?v=2204";
+} from "./shared.js?v=2206";
+import { primeDraftSetup } from "./project.js?v=2206";
 
 const MIN_CLIP_MS = 5000;
 const MAX_CLIP_MS = 300000;
@@ -259,10 +259,10 @@ function shellHTML() {
         <span class="clips-ed__at-sep" aria-hidden="true"></span>
         <div class="clips-ed__at" role="group" aria-label="At the playhead">
           <span class="clips-ed__at-label">At the playhead</span>
-          <button type="button" class="ap-button ghost grey" data-clips-ed="set-start" data-tooltip="Key I">${ICON.in}<span>Start clip here</span></button>
-          <button type="button" class="ap-button ghost grey" data-clips-ed="set-end" data-tooltip="Key O">${ICON.out}<span>End clip here</span></button>
-          <button type="button" class="ap-button ghost grey clips-tl__reframe-only" data-clips-ed="split" data-tooltip="A new framing part — the clip stays whole (S)">${ICON.cut}<span>Split part here</span></button>
-          <button type="button" class="ap-button ghost grey" data-clips-ed="add-text"><i class="ap-icon-plus" aria-hidden="true"></i><span>Add text here</span></button>
+          <button type="button" class="ap-button stroked grey" data-clips-ed="set-start" data-tooltip="Key I">${ICON.in}<span>Start clip here</span></button>
+          <button type="button" class="ap-button stroked grey" data-clips-ed="set-end" data-tooltip="Key O">${ICON.out}<span>End clip here</span></button>
+          <button type="button" class="ap-button stroked grey clips-tl__reframe-only" data-clips-ed="split" data-tooltip="A new framing part — the clip stays whole (S)">${ICON.cut}<span>Split part here</span></button>
+          <button type="button" class="ap-button stroked grey" data-clips-ed="add-text"><i class="ap-icon-plus" aria-hidden="true"></i><span>Add text here</span></button>
         </div>
       </div>
 

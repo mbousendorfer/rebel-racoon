@@ -2419,14 +2419,17 @@ body.clips-editing .app-content {
 
 /* What acts at the playhead, named — object in each verb (« Split part
    here » can't read as cutting the clip). Snap, a setting, sits at the end. */
+/* Four stroked buttons — secondary actions with an edge, so they read as
+   buttons and not as floating labels; the DS button's own gap spaces icon and
+   label. The hint before them is set apart by its own margin. */
 .clips-ed__at {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xxxs);
+  gap: var(--ref-spacing-xs);
 }
 
 .clips-ed__at-label {
-  margin-right: var(--ref-spacing-xxs);
+  margin-right: var(--ref-spacing-xs);
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
 }
@@ -2436,10 +2439,6 @@ body.clips-editing .app-content {
   height: 24px;
   margin: 0 var(--ref-spacing-xs);
   background: var(--ref-color-grey-20);
-}
-
-.clips-ed__at .clips-glyph {
-  margin-right: var(--ref-spacing-xxs);
 }
 
 .clips-ed__at-label {
