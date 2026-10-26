@@ -20,18 +20,18 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2172";
-import { isFlagOn } from "../../feature-flags.js?v=2172";
-import { parseHashParams } from "../../url-state.js?v=2172";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2172";
-import { showToast } from "../../components/toast.js?v=2172";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2172";
-import { getContextById } from "../../contexts-store.js?v=2172";
-import { escapeHtml } from "../../utils.js?v=2172";
-import * as ce from "../../caption-editor.js?v=2172";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2172";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2172";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2172";
+import { navigate } from "../../router.js?v=2173";
+import { isFlagOn } from "../../feature-flags.js?v=2173";
+import { parseHashParams } from "../../url-state.js?v=2173";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2173";
+import { showToast } from "../../components/toast.js?v=2173";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2173";
+import { getContextById } from "../../contexts-store.js?v=2173";
+import { escapeHtml } from "../../utils.js?v=2173";
+import * as ce from "../../caption-editor.js?v=2173";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2173";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2173";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2173";
 import {
   framingContext,
   initialSegments,
@@ -54,7 +54,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2172";
+} from "../../clip-framing.js?v=2173";
 import {
   fmtMs,
   fmtPrecise,
@@ -68,8 +68,8 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2172";
-import { primeDraftSetup } from "./project.js?v=2172";
+} from "./shared.js?v=2173";
+import { primeDraftSetup } from "./project.js?v=2173";
 
 const MIN_CLIP_MS = 5000;
 const MAX_CLIP_MS = 300000;
@@ -767,16 +767,20 @@ function paintTimeline() {
           <div class="clips-tl__dim" style="left:0;width:${pctIn(ed.w.startMs)}"></div>
           <div class="clips-tl__dim" style="left:${pctIn(ed.w.endMs)};right:0"></div>
           <div class="clips-tl__cleans" data-clips-cleans>${cleanMarks()}</div>
-          <div class="clips-tl__window" style="left:${pctIn(ed.w.startMs)};width:${(clipLen() / v.span) * 100}%">
+          <div class="clips-tl__window" data-clips-slide style="left:${pctIn(ed.w.startMs)};width:${(clipLen() / v.span) * 100}%"
+            data-tooltip="Drag to move the clip in the video">
             ${b.intro ? `<span class="clips-tl__card clips-tl__card--intro">Intro</span>` : ""}
             ${b.outro ? `<span class="clips-tl__card clips-tl__card--outro">Outro</span>` : ""}
-            <span class="clips-tl__handle clips-tl__handle--l" data-clips-trim="start" aria-label="Clip start"></span>
-            <span class="clips-tl__handle clips-tl__handle--r" data-clips-trim="end" aria-label="Clip end"></span>
+            <span class="clips-tl__handle clips-tl__handle--l" data-clips-trim="start" aria-label="Drag to change the start" data-tooltip="Start · drag"></span>
+            <span class="clips-tl__handle clips-tl__handle--r" data-clips-trim="end" aria-label="Drag to change the end" data-tooltip="End · drag"></span>
           </div>
         </div>
         <div class="clips-tl__frames" data-clips-scrub>${cuts}${segHTML}${bounds}</div>
         <div class="clips-tl__texts" data-clips-scrub>${texts}</div>
-        <div class="clips-tl__playhead" data-clips-playhead style="left:${pctIn(ed.t)}"></div>
+        <div class="clips-tl__playhead" data-clips-playhead style="left:${pctIn(ed.t)}">
+          <span class="clips-tl__knob" data-clips-knob aria-hidden="true"></span>
+        </div>
+        ${ed.drag?.label ? `<span class="clips-tl__readout" style="left:${pctIn(ed.drag.at)}">${escapeHtml(ed.drag.label)}</span>` : ""}
       </div>
     </div>
     <p class="clips-tl__legend">${cams
@@ -1328,12 +1332,10 @@ function handleClick(e) {
   }
   const segBtn = t.closest("[data-clips-seg]");
   if (segBtn) {
+    // The playhead goes where you clicked — inside that part, so it's the one
+    // the panel edits.
     const s = ed.w.segments.find((x) => x.id === segBtn.dataset.clipsSeg);
-    if (s) seek(s.startMs + 1);
-    if (ed.tool !== "reframe") {
-      ed.tool = "reframe";
-      applyTool();
-    }
+    if (s) seek(Math.max(s.startMs + 1, Math.min(s.endMs - 1, msAt(e.clientX))));
     return undefined;
   }
   const fmt = t.closest("[data-clips-format]");
@@ -1560,6 +1562,18 @@ function handlePointerDown(e) {
   const t = e.target;
   const trim = t.closest("[data-clips-trim]");
   if (trim) return startDrag(e, { kind: "trim", edge: trim.dataset.clipsTrim });
+  if (t.closest("[data-clips-knob]")) return startDrag(e, { kind: "scrub" });
+  // The clip's body: a click puts the playhead there, a drag slides the clip
+  // through the video (same length, new place).
+  if (t.closest("[data-clips-slide]"))
+    return startDrag(e, {
+      kind: "slide",
+      x0: e.clientX,
+      ms0: msAt(e.clientX),
+      s0: ed.w.startMs,
+      e0: ed.w.endMs,
+      rel: ed.t - ed.w.startMs,
+    });
   const bound = t.closest("[data-clips-bound]");
   if (bound) return startDrag(e, { kind: "bound", k: Number(bound.dataset.clipsBound), el: bound });
   if (t.closest("[data-clips-splitter]")) return startSplitDrag(e);
@@ -1574,6 +1588,7 @@ function handlePointerDown(e) {
 function startDrag(e, d) {
   e.preventDefault();
   ed.drag = d;
+  ed.el.querySelector("[data-clips-timeline]").dataset.drag = d.kind;
   if (d.kind !== "scrub") pushUndo();
   const move = (ev) => onDragMove(ev);
   const up = () => {
@@ -1591,6 +1606,19 @@ function onDragMove(e) {
   if (!d) return;
   const ms = msAt(e.clientX);
   if (d.kind === "scrub") return seek(snapMs(ed.ctx, ms, { on: ed.snap, radiusMs: 0 }).t);
+  d.lastX = e.clientX;
+  if (d.kind === "slide") {
+    if (!d.moved && Math.abs(e.clientX - d.x0) < 4) return undefined; // still a click
+    d.moved = true;
+    const len = d.e0 - d.s0;
+    const s0 = Math.round(Math.max(0, Math.min(ed.video.durationMs - len, d.s0 + (ms - d.ms0))));
+    ed.w.startMs = s0;
+    ed.w.endMs = s0 + len;
+    d.at = s0;
+    d.label = `${fmtPrecise(s0)} → ${fmtPrecise(s0 + len)}`;
+    paintTimeline();
+    return seek(s0 + d.rel);
+  }
   if (d.kind === "trim") {
     const v = ed.viewport;
     if (d.edge === "start")
@@ -1601,12 +1629,16 @@ function onDragMove(e) {
       ed.w.endMs = Math.round(
         Math.min(v.to, Math.max(ed.w.startMs + MIN_CLIP_MS, Math.min(ed.w.startMs + MAX_CLIP_MS, ms))),
       );
+    d.at = d.edge === "start" ? ed.w.startMs : ed.w.endMs;
+    d.label = `${d.edge === "start" ? "In" : "Out"} ${fmtPrecise(d.at)} · ${fmtPrecise(clipLen())}`;
     paintTimeline();
     return seek(d.edge === "start" ? ed.w.startMs : ed.w.endMs - 1);
   }
   if (d.kind === "bound") {
     const { t, snapped } = snapMs(ed.ctx, Math.round(ms), { on: ed.snap });
     const v = moveBoundary(ed.ctx, ed.w.segments, d.k, t);
+    d.at = v;
+    d.label = `${fmtPrecise(v - ed.w.startMs)}${snapped ? " · on the cut" : ""}`;
     paintTimeline();
     ed.el.querySelector(`[data-clips-bound="${d.k}"]`)?.classList.toggle("is-snapped", snapped);
     return seek(v);
@@ -1617,8 +1649,15 @@ function onDragMove(e) {
 function onDragEnd() {
   const d = ed.drag;
   ed.drag = null;
+  delete ed.el.querySelector("[data-clips-timeline]").dataset.drag;
   if (!d) return;
-  if (d.kind === "trim") {
+  if (d.kind === "slide" && !d.moved) {
+    // A click, not a drag: nothing changed, the playhead goes where it was clicked.
+    ed.undo.pop();
+    seek(msAt(d.lastX ?? d.x0));
+    return;
+  }
+  if (d.kind === "trim" || d.kind === "slide") {
     ed.w.segments = retrim(ed.ctx, ed.w.segments, ed.w.startMs, ed.w.endMs);
     ce.setDuration(clipLen() / 1000);
     setDirty();
@@ -1628,6 +1667,11 @@ function onDragEnd() {
     settleBoundary(ed.ctx, ed.w.segments, d.k);
     setDirty();
     paintPanel();
+  }
+  // A grab that changed nothing leaves nothing to undo.
+  if (d.kind !== "scrub" && ed.undo.at(-1) === snapshot()) {
+    ed.undo.pop();
+    syncTopbar();
   }
   paintTimeline();
   paintFrame();

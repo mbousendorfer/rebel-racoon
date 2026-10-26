@@ -1768,6 +1768,7 @@ body.clips-space .app-content {
 
 .clips-ed:not([data-tool="reframe"]) .clips-tl__frames {
   opacity: 0.45;
+  pointer-events: none;
 }
 
 /* ── Timeline ── */
@@ -1802,13 +1803,34 @@ body.clips-space .app-content {
   gap: 6px;
 }
 
+/* Each thing on the timeline says what it does under the cursor: a click on
+   a track moves the playhead (default arrow), the clip's body slides (grab),
+   its edges and the parts' boundaries resize (ew-resize), parts and texts are
+   picked (pointer). Never a resize cursor on what doesn't resize. */
 .clips-tl__ruler,
 .clips-tl__trim,
 .clips-tl__frames,
 .clips-tl__texts {
   position: relative;
-  cursor: ew-resize;
   touch-action: none;
+}
+
+/* While a drag runs, its cursor holds everywhere, even off the element. */
+.clips-ed__timeline[data-drag="slide"],
+.clips-ed__timeline[data-drag="slide"] * {
+  cursor: grabbing;
+}
+
+.clips-ed__timeline[data-drag="trim"],
+.clips-ed__timeline[data-drag="trim"] *,
+.clips-ed__timeline[data-drag="bound"],
+.clips-ed__timeline[data-drag="bound"] * {
+  cursor: ew-resize;
+}
+
+.clips-ed__timeline[data-drag="scrub"],
+.clips-ed__timeline[data-drag="scrub"] * {
+  cursor: grabbing;
 }
 
 .clips-tl__tick {
@@ -1856,17 +1878,49 @@ body.clips-space .app-content {
   background: var(--app-vc-accent-soft);
   border: 2px solid var(--app-vc-accent);
   border-radius: var(--app-radius-sm);
-  pointer-events: none;
+  cursor: grab;
+  transition: background-color 120ms ease;
 }
 
+.clips-tl__window:hover {
+  background: color-mix(in srgb, var(--app-vc-accent) 24%, transparent);
+}
+
+.clips-ed__timeline[data-drag="slide"] .clips-tl__window {
+  background: color-mix(in srgb, var(--app-vc-accent) 30%, transparent);
+}
+
+/* The edges: a solid tab with a grip, wider under the pointer. */
 .clips-tl__handle {
   position: absolute;
   top: -2px;
   bottom: -2px;
+  z-index: 1;
   width: 12px;
   background: var(--ref-color-electric-blue-100);
   cursor: ew-resize;
-  pointer-events: auto;
+  transition: width 120ms ease;
+}
+
+.clips-tl__handle::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 14px;
+  border-inline: 1px solid var(--app-light-ref-color-white);
+  transform: translate(-50%, -50%);
+  opacity: 0.85;
+}
+
+.clips-tl__handle:hover,
+.clips-ed__timeline[data-drag="trim"] .clips-tl__handle {
+  width: 16px;
+}
+
+.clips-tl__card {
+  pointer-events: none;
 }
 
 .clips-tl__handle--l {
@@ -1917,6 +1971,11 @@ body.clips-space .app-content {
   text-align: left;
   white-space: nowrap;
   cursor: pointer;
+}
+
+.clips-tl__seg:hover {
+  outline: 1px solid var(--ref-color-electric-blue-60);
+  outline-offset: 1px;
 }
 
 .clips-tl__seg.is-edited {
@@ -1987,6 +2046,10 @@ body.clips-space .app-content {
   cursor: pointer;
 }
 
+.clips-tl__text:hover {
+  border-color: var(--ref-color-electric-blue-60);
+}
+
 .clips-tl__text.is-current {
   border-color: var(--ref-color-electric-blue-100);
 }
@@ -2002,15 +2065,39 @@ body.clips-space .app-content {
   z-index: 3;
 }
 
-.clips-tl__playhead::before {
-  content: "";
+/* The playhead's knob is its handle: grab it to scrub. */
+.clips-tl__knob {
   position: absolute;
-  top: -4px;
-  left: -5px;
-  width: 12px;
-  height: 12px;
+  top: -6px;
+  left: -6px;
+  width: 14px;
+  height: 14px;
   border-radius: var(--app-radius-circle);
   background: var(--ref-color-orange-100);
+  pointer-events: auto;
+  cursor: grab;
+  transition: transform 120ms ease;
+}
+
+.clips-tl__knob:hover {
+  transform: scale(1.2);
+}
+
+/* What a drag is setting, read live above the timeline. */
+.clips-tl__readout {
+  position: absolute;
+  top: 0; /* over the ruler, which reads the same time */
+  z-index: 4;
+  padding: 2px var(--ref-spacing-xxs);
+  border-radius: var(--app-radius-sm);
+  background: var(--app-vc-surface-overlay);
+  border: 1px solid var(--app-vc-border-strong);
+  color: var(--ref-color-grey-100);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
 .clips-tl__legend {
