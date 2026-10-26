@@ -590,6 +590,24 @@
   font-weight: var(--sys-text-style-body-bold-weight);
 }
 
+/* The video's look — every clip's, unless it has its own (its inspector). */
+.clips-bin__look {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+
+.clips-bin__look-label {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-bin__look .ap-select {
+  width: 100%;
+}
+
 .clips-bin__hint {
   margin: 0;
   padding: 0 var(--ref-spacing-md) var(--ref-spacing-xs);
@@ -1035,6 +1053,33 @@
   color: var(--ref-color-grey-100);
 }
 
+/* How the clips render, by look: what step 1 and the editor set, read-only. */
+.clips-write__looks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clips-write__look {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+}
+
+.clips-write__look-name {
+  color: var(--ref-color-grey-100);
+}
+
+.clips-write__look-meta {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  text-align: right;
+}
+
 /* The clips, summed up: small portrait thumbnails, then « +4 ». */
 .clips-write__strip {
   display: flex;
@@ -1089,16 +1134,10 @@
   color: var(--ref-color-grey-80);
 }
 
-.clips-write__connect,
-.clips-write__row {
+.clips-write__connect {
   display: flex;
   flex-wrap: wrap;
   gap: var(--ref-spacing-xs);
-}
-
-.clips-write__row .ap-select {
-  width: auto;
-  min-width: 240px;
 }
 
 /* A choice per line: the DS radio, its name, what it does. */

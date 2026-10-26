@@ -7,33 +7,33 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2210";
-import { isFlagOn } from "../../feature-flags.js?v=2210";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2210";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2210";
-import { showToast } from "../../components/toast.js?v=2210";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2210";
-import { renderPostCard } from "../../components/post-card.js?v=2210";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2210";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2210";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2210";
+import { navigate } from "../../router.js?v=2213";
+import { isFlagOn } from "../../feature-flags.js?v=2213";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2213";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2213";
+import { showToast } from "../../components/toast.js?v=2213";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2213";
+import { renderPostCard } from "../../components/post-card.js?v=2213";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2213";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2213";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2213";
 import {
   getConnectedProfiles,
   renderProfileTag,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-} from "../../social-profiles.js?v=2210";
-import { getContextById } from "../../contexts-store.js?v=2210";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2210";
-import { captionStateFor } from "../../clip-captions.js?v=2210";
+} from "../../social-profiles.js?v=2213";
+import { getContextById } from "../../contexts-store.js?v=2213";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2213";
+import { captionStateFor } from "../../clip-captions.js?v=2213";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2210";
-import { escapeHtml } from "../../utils.js?v=2210";
+} from "../../posts-store.js?v=2213";
+import { escapeHtml } from "../../utils.js?v=2213";
 import {
   getVideo,
   draftKey,
@@ -44,7 +44,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2210";
+} from "../../videos-store.js?v=2213";
 import {
   fmtMs,
   formatSelect,
@@ -63,7 +63,7 @@ import {
   SUBTITLE_IDS,
   bestFor,
   CTA_OPTIONS,
-} from "./shared.js?v=2210";
+} from "./shared.js?v=2213";
 
 let target = null;
 let videoId = null;
@@ -355,6 +355,11 @@ function renderWorkspace(v) {
           </button>
         </header>
         <p class="clips-bin__hint">Tick the clips to turn into posts. Click one to open it.</p>
+        <div class="clips-bin__look" role="group" aria-labelledby="clips-bin-look">
+          <span class="clips-bin__look-label" id="clips-bin-look">Every clip, unless it has its own</span>
+          ${formatSelect(v.settings.ratio)}
+          ${subtitleSelect(v.settings.subtitlePreset)}
+        </div>
         <ol class="clips-bin__list">${rows}</ol>
       </aside>
       <section class="clips-clip" aria-label="The clip" data-clips-monitors>
@@ -708,7 +713,9 @@ function renderDraftSetup(v, hasDrafts) {
       <span class="clips-write__choice-text"><span class="clips-write__choice-name">${escapeHtml(label)}</span><span class="clips-write__choice-hint">${escapeHtml(hint)}</span></span>
     </label>`;
 
-  const ownLook = clips.filter((c) => c.ratio || c.captionCustom).length;
+  // How they render: set at step 1 (the video's look) or on a clip (its own),
+  // summed up by look — nothing to choose here.
+  const looks = lookGroups(v, clips);
 
   // How the post ends: the real call to action, said in each option.
   const ctaText = pb?.cta || "";
@@ -776,7 +783,7 @@ function renderDraftSetup(v, hasDrafts) {
     <section class="clips-write" aria-labelledby="clips-write-title">
       <header class="clips-write__head">
         <h2 class="clips-write__title" id="clips-write-title">Write posts from ${plural(clips.length, "clip")}</h2>
-        <p class="clips-write__sub">I render the clips with these settings, then write one post per clip and account${pb ? `, in ${escapeHtml(pb.name)}'s voice` : ""}. Nothing is published: the drafts land on this page, ready to schedule.</p>
+        <p class="clips-write__sub">I render the clips as they look at step 1, then write one post per clip and account${pb ? `, in ${escapeHtml(pb.name)}'s voice` : ""}. Nothing is published: the drafts land on this page, ready to schedule.</p>
       </header>
       <div class="clips-write__grid">
         <div class="clips-write__form">
@@ -792,15 +799,24 @@ function renderDraftSetup(v, hasDrafts) {
                 : `<p class="clips-write__empty">No clip picked.</p>`
             }
           </section>
-          <section class="clips-write__group">
-            <div class="clips-write__group-head"><h3 class="clips-write__label">Format</h3></div>
-            <div class="clips-write__row">${formatSelect(v.settings.ratio)}</div>
-          </section>
-          <section class="clips-write__group">
-            <div class="clips-write__group-head"><h3 class="clips-write__label">Subtitles</h3></div>
-            <div class="clips-write__row">${subtitleSelect(v.settings.subtitlePreset)}</div>
-            ${ownLook ? `<p class="clips-write__meta">${plural(ownLook, "clip")} ${ownLook === 1 ? "keeps its" : "keep their"} own ratio or subtitles, set in the editor.</p>` : ""}
-          </section>
+          ${
+            looks.length
+              ? `<section class="clips-write__group">
+                  <div class="clips-write__group-head">
+                    <h3 class="clips-write__label">How they render</h3>
+                    <button type="button" class="ap-button ghost blue" data-clips-tab="clips">Change at step 1</button>
+                  </div>
+                  <ul class="clips-write__looks">${looks
+                    .map(
+                      (l) => `<li class="clips-write__look">
+                        <span class="clips-write__look-name">${escapeHtml(l.label)}</span>
+                        <span class="clips-write__look-meta">${escapeHtml(l.who)}</span>
+                      </li>`,
+                    )
+                    .join("")}</ul>
+                </section>`
+              : ""
+          }
           <section class="clips-write__group">
             <div class="clips-write__group-head"><h3 class="clips-write__label">Call to action</h3></div>
             <div class="clips-write__choices" role="radiogroup" aria-label="Call to action">${ctaChoices}</div>
@@ -855,6 +871,26 @@ function renderDraftSetup(v, hasDrafts) {
     </section>`;
 }
 
+// The selected clips grouped by how they render: the format and the subtitles
+// each one gets — the video's (step 1) unless the clip has its own.
+function lookGroups(v, clips) {
+  const groups = new Map();
+  clips.forEach((c) => {
+    const preset = clipCaptionState(v, c).presetId;
+    const label = `${formatLabel(postFormat(v, c))} · ${preset === "none" ? "No subtitles" : `${presetLabel(preset)} subtitles`}`;
+    const own = Boolean(c.ratio || c.captionCustom);
+    const key = `${label}|${own}`;
+    if (!groups.has(key)) groups.set(key, { label, own, nums: [] });
+    groups.get(key).nums.push(v.clips.indexOf(c) + 1);
+  });
+  return [...groups.values()].map((g) => ({
+    label: g.label,
+    who: g.own
+      ? `${g.nums.length === 1 ? "Clip" : "Clips"} ${g.nums.join(", ")} — set on the clip`
+      : `${g.nums.length} clip${g.nums.length === 1 ? "" : "s"} — the video's look`,
+  }));
+}
+
 // The draft is posted as the account: the preview and the written draft show it.
 function accountAuthor(account, pb) {
   return {
@@ -877,7 +913,10 @@ function writeDrafts() {
     stage: "render",
     clips: clips.length,
     posts: clips.length * accounts.length,
-    look: `${formatLabel(v.settings.ratio)} · ${v.settings.subtitlePreset === "none" ? "no subtitles" : `${presetLabel(v.settings.subtitlePreset)} subtitles`}`,
+    look: (() => {
+      const g = lookGroups(v, clips);
+      return g.length === 1 ? g[0].label : `${g.length} looks`;
+    })(),
   };
   paint();
   setTimeout(() => {
