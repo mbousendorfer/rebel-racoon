@@ -31,6 +31,7 @@
 /* ── The library: hero ───────────────────────────────────────────── */
 
 .clips-library-page {
+  container-type: inline-size; /* the hero and the grid answer to the page's width, sidebar or not */
   gap: var(--ref-spacing-xl);
 }
 
@@ -73,6 +74,7 @@
 
 .clips-hero__form {
   display: flex;
+  flex-wrap: wrap; /* the button goes under the link rather than over the showcase */
   align-items: center;
   gap: var(--ref-spacing-xs);
   width: 100%;
@@ -80,7 +82,7 @@
 }
 
 .clips-hero__url {
-  flex: 1;
+  flex: 1 1 240px;
   min-width: 0;
 }
 
@@ -169,6 +171,7 @@
 
 .clips-showcase__clips {
   flex: none;
+  /* The three clips keep their size; the source thumbnail is what gives way. */
   display: flex;
   gap: var(--ref-spacing-xs);
 }
@@ -192,6 +195,27 @@
 
 .clips-showcase__clip .clips-preview__caption {
   font-size: 9px;
+}
+
+/* Too narrow for copy and showcase side by side: the showcase goes under the
+   copy, full width. Narrower still, the source and its arrow go — the three
+   clips alone say what the space makes. */
+@container (max-width: 1040px) {
+  .clips-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ref-spacing-lg);
+  }
+}
+
+@container (max-width: 520px) {
+  .clips-hero {
+    padding: var(--ref-spacing-md);
+  }
+
+  .clips-showcase__source,
+  .clips-showcase__arrow {
+    display: none;
+  }
 }
 
 @keyframes clips-rise {
@@ -229,7 +253,7 @@
 
 .clips-library__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: var(--ref-spacing-lg) var(--ref-spacing-md);
 }
 
