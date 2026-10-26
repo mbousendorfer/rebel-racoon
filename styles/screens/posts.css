@@ -762,7 +762,8 @@
   justify-content: flex-end;
   align-items: center;
   gap: var(--ref-spacing-xxs);
-  margin-top: var(--ref-spacing-xxs);
+  /* Right edge on the editor's, which overhangs the text by 8px + its 1px edge. */
+  margin-right: calc(var(--ref-spacing-xxs) * -1 - 1px);
 }
 
 /* The editor's keys, the composer hint's look (session.css). */
