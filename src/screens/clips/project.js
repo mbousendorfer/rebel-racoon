@@ -7,18 +7,18 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2145";
-import { isFlagOn } from "../../feature-flags.js?v=2145";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2145";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2145";
-import { showToast } from "../../components/toast.js?v=2145";
-import { renderPostCard } from "../../components/post-card.js?v=2145";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2145";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2145";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2145";
-import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2145";
-import { getContextById } from "../../contexts-store.js?v=2145";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2145";
+import { navigate } from "../../router.js?v=2146";
+import { isFlagOn } from "../../feature-flags.js?v=2146";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2146";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2146";
+import { showToast } from "../../components/toast.js?v=2146";
+import { renderPostCard } from "../../components/post-card.js?v=2146";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2146";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2146";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2146";
+import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2146";
+import { getContextById } from "../../contexts-store.js?v=2146";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2146";
 import {
   getPosts,
   addPostDraft,
@@ -26,8 +26,8 @@ import {
   insertPost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2145";
-import { escapeHtml } from "../../utils.js?v=2145";
+} from "../../posts-store.js?v=2146";
+import { escapeHtml } from "../../utils.js?v=2146";
 import {
   getVideo,
   draftKey,
@@ -38,7 +38,7 @@ import {
   restoreClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2145";
+} from "../../videos-store.js?v=2146";
 import {
   fmtMs,
   formatSelect,
@@ -53,7 +53,7 @@ import {
   ratioOf,
   clipSegments,
   CTA_OPTIONS,
-} from "./shared.js?v=2145";
+} from "./shared.js?v=2146";
 
 let target = null;
 let videoId = null;
@@ -330,17 +330,9 @@ function renderWorkspace(v) {
       </aside>
       <section class="clips-stage" aria-label="Monitors">
         <div class="clips-monitors" data-clips-monitors>
-          <section class="clips-ed__monitor clips-monitor--source" aria-label="Source">
-            <header class="clips-ed__monitor-bar">
-              <span class="clips-ed__monitor-name">Source</span>
-              <span class="clips-ed__monitor-meta">${v.width}×${v.height} · <span data-clips-src-tc>0:00</span></span>
-            </header>
-            <div class="clips-ed__monitor-body" data-clips-src-body>
-              <div class="clips-monitor__screen" data-clips-src-screen>
-                <video data-clips-src playsinline preload="auto" src="${escapeHtml(v.url)}"></video>
-              </div>
-            </div>
-          </section>
+          <!-- The long video feeds the clip monitor; it isn't shown here — this
+               page is about the clips. The timeline says where each one sits. -->
+          <video class="clips-preview__video" data-clips-src playsinline preload="auto" src="${escapeHtml(v.url)}"></video>
           <section class="clips-ed__monitor clips-monitor--program" aria-label="Clip" data-clips-program></section>
         </div>
         <div class="clips-transport">
@@ -463,11 +455,6 @@ function sizeProgram() {
   const v = getVideo(videoId);
   const c = v && focused(v);
   if (!c) return;
-  fit(
-    target.querySelector("[data-clips-src-body]"),
-    target.querySelector("[data-clips-src-screen]"),
-    v.width / v.height,
-  );
   const f = fit(
     target.querySelector("[data-clips-prog-body]"),
     target.querySelector("[data-clips-prog-screen]"),
@@ -531,8 +518,6 @@ function syncClock(v) {
   // Until the source can seek, the playhead stands where it is going: the
   // focused clip's start.
   const t = video.readyState >= 1 ? video.currentTime * 1000 : c?.startMs || 0;
-  const tc = target.querySelector("[data-clips-src-tc]");
-  if (tc) tc.textContent = fmtMs(t);
   const ctc = target.querySelector("[data-clips-clip-tc]");
   if (ctc && c) ctc.textContent = fmtMs(Math.max(0, Math.min(c.endMs, t) - c.startMs));
   const ph = target.querySelector("[data-clips-ph]");
@@ -585,8 +570,6 @@ function focusClip(v, id, { seek = true } = {}) {
   if (seek && c) {
     const ph = target.querySelector("[data-clips-ph]");
     if (ph) ph.style.left = `${(c.startMs / v.durationMs) * 100}%`;
-    const tc = target.querySelector("[data-clips-src-tc]");
-    if (tc) tc.textContent = fmtMs(c.startMs);
     if (video && video.readyState >= 1) video.currentTime = c.startMs / 1000 + 0.05;
   }
   target

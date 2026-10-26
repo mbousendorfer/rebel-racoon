@@ -695,9 +695,8 @@
   display: flex;
 }
 
-.clips-monitor--source {
-  flex: 1.7 1 0;
-  border-right: 1px solid var(--app-vc-border);
+.clips-monitors {
+  position: relative;
 }
 
 .clips-monitor--program {

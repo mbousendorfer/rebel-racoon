@@ -16,8 +16,8 @@
 // the underlying stores mutate (assistant thread, sources-stream, library,
 // right-panel mode, sessions).
 
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2145";
-import { getPath } from "../router.js?v=2145";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2146";
+import { getPath } from "../router.js?v=2146";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -25,14 +25,14 @@ import {
   openSources as openSourcesPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=2145";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2145";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2145";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2145";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2145";
-import { subscribe as subscribeSessions } from "../sessions-store.js?v=2145";
-import { addMention } from "../composer-mentions.js?v=2145";
-import { isFlagOn } from "../feature-flags.js?v=2145";
+} from "./right-panel.js?v=2146";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2146";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2146";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2146";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2146";
+import { subscribe as subscribeSessions } from "../sessions-store.js?v=2146";
+import { addMention } from "../composer-mentions.js?v=2146";
+import { isFlagOn } from "../feature-flags.js?v=2146";
 
 // Two-level structure:
 //   .conversation-status-column   — fills grid column 3 with white bg

@@ -1,8 +1,8 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2145";
-import { conceptHint, conceptText } from "../concepts.js?v=2145";
-import { getPath, navigate } from "../router.js?v=2145";
-import { parseHashParams } from "../url-state.js?v=2145";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2145";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2146";
+import { conceptHint, conceptText } from "../concepts.js?v=2146";
+import { getPath, navigate } from "../router.js?v=2146";
+import { parseHashParams } from "../url-state.js?v=2146";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2146";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -18,38 +18,38 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=2145";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2145";
-import { contentCounts } from "./right-panel/overview-view.js?v=2145";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2145";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2145";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2145";
+} from "./right-panel.js?v=2146";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2146";
+import { contentCounts } from "./right-panel/overview-view.js?v=2146";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2146";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2146";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2146";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=2145";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2145";
-import { open as openRenameModal } from "./rename-modal.js?v=2145";
+} from "./conversation-status-card.js?v=2146";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2146";
+import { open as openRenameModal } from "./rename-modal.js?v=2146";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=2145";
-import { isFlagOn } from "../feature-flags.js?v=2145";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=2145";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2145";
-import { findCadence } from "../topics-catalog.js?v=2145";
+} from "../contexts-store.js?v=2146";
+import { isFlagOn } from "../feature-flags.js?v=2146";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=2146";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2146";
+import { findCadence } from "../topics-catalog.js?v=2146";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=2145";
+} from "../top-posts-flow.js?v=2146";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2145";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2146";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -380,7 +380,7 @@ export function initTopbar() {
     // renderWelcomeAltExit() above. The wizard chrome no longer carries
     // its own Exit affordance; this is the only entry.
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=2145").then(({ open }) => {
+      import("./confirm-modal.js?v=2146").then(({ open }) => {
         open({
           title: "Discard this Playbook?",
           body: "Your answers so far will be lost. You can create a Playbook again anytime.",
