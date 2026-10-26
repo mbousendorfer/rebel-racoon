@@ -563,7 +563,7 @@
 
 .clips-ws {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: 280px minmax(0, 1fr) 300px;
   min-height: 0;
 }
 
@@ -679,57 +679,35 @@
   color: var(--app-vc-text);
 }
 
-/* Monitors. */
+/* Monitors: framed like the editor's (title bar, picture on black), side by
+   side, edge to edge; the transport docked under them. */
 .clips-stage {
   display: flex;
   flex-direction: column;
   min-height: 0;
   min-width: 0;
-  background: var(--app-vc-surface-sunken);
+  background: var(--app-vc-surface);
 }
 
 .clips-monitors {
   flex: 1;
   min-height: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-lg);
-  padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-xs);
-}
-
-.clips-monitor {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  height: 100%;
-  min-height: 0;
-  margin: 0;
-  justify-content: center;
 }
 
 .clips-monitor--source {
-  flex: 1 1 auto;
-  min-width: 0;
-  max-width: 62%;
+  flex: 1.7 1 0;
+  border-right: 1px solid var(--app-vc-border);
 }
 
 .clips-monitor--program {
-  flex: none;
+  flex: 1 1 0;
 }
 
 .clips-monitor__screen {
   position: relative;
-  max-height: calc(100% - 24px);
-  max-width: 100%;
-  border-radius: var(--app-radius-sm);
-  overflow: hidden;
   background: #000;
-  box-shadow: 0 0 0 1px var(--app-vc-border);
-}
-
-.clips-monitor--program .clips-monitor__screen {
-  height: calc(100% - 24px);
+  overflow: hidden;
 }
 
 .clips-monitor__screen video,
@@ -738,19 +716,6 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-}
-
-.clips-monitor figcaption {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--ref-spacing-sm);
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--app-vc-text-muted);
-}
-
-.clips-monitor__tc {
-  font-variant-numeric: tabular-nums;
-  color: var(--app-vc-text);
 }
 
 .clips-monitor__off {
@@ -767,12 +732,15 @@
   display: none;
 }
 
-/* Transport. */
+/* Transport, docked. */
 .clips-transport {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-lg);
+  height: 56px;
+  padding: 0 var(--ref-spacing-md);
+  border-top: 1px solid var(--app-vc-border);
 }
 
 .clips-transport__play {
@@ -795,30 +763,52 @@
 }
 
 .clips-transport__tc {
+  min-width: 96px;
   font-variant-numeric: tabular-nums;
   color: var(--app-vc-text);
 }
 
-.clips-transport__spacer {
-  flex: 1;
-}
-
-/* The focused clip's info. */
-.clips-focus {
+/* The inspector: the clip in the monitors, named and described. */
+.clips-inspector {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  padding: 0 var(--ref-spacing-lg) var(--ref-spacing-md);
+  gap: var(--ref-spacing-sm);
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--ref-spacing-md);
+  border-left: 1px solid var(--app-vc-border);
+  background: var(--app-vc-surface);
 }
 
-.clips-focus__range {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--app-vc-text-muted);
+.clips-inspector__head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-inspector__num {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--app-radius-sm);
+  background: var(--app-vc-accent);
+  color: var(--app-vc-text);
+  font-weight: var(--sys-text-style-body-bold-weight);
   font-variant-numeric: tabular-nums;
 }
 
-.clips-focus__title {
+.clips-inspector__of {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--app-vc-text-muted);
+}
+
+.clips-inspector__pick {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.clips-inspector__title {
   margin: 0;
   font-size: var(--sys-text-style-h3-size);
   line-height: var(--sys-text-style-h3-line-height);
@@ -826,16 +816,55 @@
   color: var(--app-vc-text);
 }
 
-.clips-focus__why {
+.clips-inspector__facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ref-spacing-sm);
   margin: 0;
-  max-width: 80ch;
+  padding: var(--ref-spacing-sm) 0;
+  border-block: 1px solid var(--app-vc-border);
+}
+
+.clips-inspector__facts div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.clips-inspector__facts dt {
+  font-size: var(--sys-text-style-caption-size);
   color: var(--app-vc-text-muted);
 }
 
-.clips-focus__own {
+.clips-inspector__facts dd {
+  margin: 0;
+  color: var(--app-vc-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.clips-inspector__label {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--app-vc-text);
+}
+
+.clips-inspector__why p {
+  margin: var(--ref-spacing-xxxs) 0 0;
+  color: var(--app-vc-text-muted);
+}
+
+.clips-inspector__own {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--ref-spacing-xxs);
   margin: 0;
+}
+
+.clips-inspector__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xs);
+  margin-top: auto;
+  padding-top: var(--ref-spacing-sm);
 }
 
 /* The timeline. */

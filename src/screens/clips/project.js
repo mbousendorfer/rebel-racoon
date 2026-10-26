@@ -7,18 +7,18 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2143";
-import { isFlagOn } from "../../feature-flags.js?v=2143";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2143";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2143";
-import { showToast } from "../../components/toast.js?v=2143";
-import { renderPostCard } from "../../components/post-card.js?v=2143";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2143";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2143";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2143";
-import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2143";
-import { getContextById } from "../../contexts-store.js?v=2143";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2143";
+import { navigate } from "../../router.js?v=2145";
+import { isFlagOn } from "../../feature-flags.js?v=2145";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2145";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2145";
+import { showToast } from "../../components/toast.js?v=2145";
+import { renderPostCard } from "../../components/post-card.js?v=2145";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2145";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2145";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2145";
+import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2145";
+import { getContextById } from "../../contexts-store.js?v=2145";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2145";
 import {
   getPosts,
   addPostDraft,
@@ -26,8 +26,8 @@ import {
   insertPost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2143";
-import { escapeHtml } from "../../utils.js?v=2143";
+} from "../../posts-store.js?v=2145";
+import { escapeHtml } from "../../utils.js?v=2145";
 import {
   getVideo,
   draftKey,
@@ -38,7 +38,7 @@ import {
   restoreClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2143";
+} from "../../videos-store.js?v=2145";
 import {
   fmtMs,
   formatSelect,
@@ -53,7 +53,7 @@ import {
   ratioOf,
   clipSegments,
   CTA_OPTIONS,
-} from "./shared.js?v=2143";
+} from "./shared.js?v=2145";
 
 let target = null;
 let videoId = null;
@@ -144,8 +144,7 @@ function patchSelection(v) {
   const all = n === v.clips.length && n > 0;
   for (const c of v.clips) {
     target.querySelector(`[data-clips-focus="${CSS.escape(c.id)}"]`)?.classList.toggle("is-selected", c.selected);
-    const box = target.querySelector(`[data-clips-select="${CSS.escape(c.id)}"]`);
-    if (box) box.checked = c.selected;
+    target.querySelectorAll(`[data-clips-select="${CSS.escape(c.id)}"]`).forEach((box) => (box.checked = c.selected));
     target.querySelector(`[data-clips-block="${CSS.escape(c.id)}"]`)?.classList.toggle("is-selected", c.selected);
   }
   const allBox = target.querySelector("[data-clips-select-all]");
@@ -330,26 +329,28 @@ function renderWorkspace(v) {
         <ol class="clips-bin__list">${rows}</ol>
       </aside>
       <section class="clips-stage" aria-label="Monitors">
-        <div class="clips-monitors">
-          <figure class="clips-monitor clips-monitor--source">
-            <div class="clips-monitor__screen" style="aspect-ratio:${v.width}/${v.height}">
-              <video data-clips-src playsinline preload="auto" src="${escapeHtml(v.url)}"></video>
+        <div class="clips-monitors" data-clips-monitors>
+          <section class="clips-ed__monitor clips-monitor--source" aria-label="Source">
+            <header class="clips-ed__monitor-bar">
+              <span class="clips-ed__monitor-name">Source</span>
+              <span class="clips-ed__monitor-meta">${v.width}×${v.height} · <span data-clips-src-tc>0:00</span></span>
+            </header>
+            <div class="clips-ed__monitor-body" data-clips-src-body>
+              <div class="clips-monitor__screen" data-clips-src-screen>
+                <video data-clips-src playsinline preload="auto" src="${escapeHtml(v.url)}"></video>
+              </div>
             </div>
-            <figcaption><span>Source</span><span class="clips-monitor__tc" data-clips-src-tc>0:00</span></figcaption>
-          </figure>
-          <figure class="clips-monitor clips-monitor--program" data-clips-program></figure>
+          </section>
+          <section class="clips-ed__monitor clips-monitor--program" aria-label="Clip" data-clips-program></section>
         </div>
         <div class="clips-transport">
           <button type="button" class="ap-icon-button transparent" data-clips-ws="prev" aria-label="Previous clip" data-tooltip="Previous clip"><i class="ap-icon-chevron-left" aria-hidden="true"></i></button>
           <button type="button" class="clips-transport__play" data-clips-ws="play" aria-label="Play the clip"><i class="ap-icon-play" aria-hidden="true" data-clips-play-icon></i></button>
           <button type="button" class="ap-icon-button transparent" data-clips-ws="next" aria-label="Next clip" data-tooltip="Next clip"><i class="ap-icon-chevron-right" aria-hidden="true"></i></button>
           <span class="clips-transport__tc"><span data-clips-clip-tc>0:00</span> / <span data-clips-clip-len>0:00</span></span>
-          <span class="clips-transport__spacer"></span>
-          <a class="ap-button stroked grey" data-clips-edit-link href="#"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit clip</span></a>
-          <button type="button" class="ap-icon-button transparent" data-clips-ws="remove" aria-label="Remove clip" data-tooltip="Remove clip"><i class="ap-icon-trash" aria-hidden="true"></i></button>
         </div>
-        <div class="clips-focus" data-clips-focus-info></div>
       </section>
+      <aside class="clips-inspector" aria-label="The clip" data-clips-focus-info></aside>
     </div>
     ${renderTimeline(v)}`;
 }
@@ -392,12 +393,17 @@ function paintFocus(v) {
   const prog = target.querySelector("[data-clips-program]");
   if (prog)
     prog.innerHTML = `
-      <div class="clips-monitor__screen" style="aspect-ratio:${ratio.replace(":", "/")}">
-        <canvas data-clips-prog></canvas>
-        ${cap.presetId !== "none" ? `<span class="clips-preview__caption"><span class="cap-ed-preview-${escapeHtml(cap.presetId)}">${escapeHtml(line)}</span></span>` : ""}
-        <span class="clips-monitor__off" data-clips-off hidden>Outside this clip</span>
-      </div>
-      <figcaption><span>Clip ${i + 1} · ${escapeHtml(formatLabel(ratio))}</span><span class="clips-monitor__tc">${fmtMs(c.endMs - c.startMs)}</span></figcaption>`;
+      <header class="clips-ed__monitor-bar">
+        <span class="clips-ed__monitor-name">Clip ${i + 1}</span>
+        <span class="clips-ed__monitor-meta">${escapeHtml(formatLabel(ratio))} · ${fmtMs(c.endMs - c.startMs)}</span>
+      </header>
+      <div class="clips-ed__monitor-body" data-clips-prog-body>
+        <div class="clips-monitor__screen" data-clips-prog-screen>
+          <canvas data-clips-prog></canvas>
+          ${cap.presetId !== "none" ? `<span class="clips-preview__caption"><span class="cap-ed-preview-${escapeHtml(cap.presetId)}">${escapeHtml(line)}</span></span>` : ""}
+          <span class="clips-monitor__off" data-clips-off hidden>Outside this clip</span>
+        </div>
+      </div>`;
   const own = [
     c.ratio ? formatLabel(c.ratio) : "",
     c.captionCustom ? presetLabel(cap.presetId) : "",
@@ -407,12 +413,26 @@ function paintFocus(v) {
   const info = target.querySelector("[data-clips-focus-info]");
   if (info)
     info.innerHTML = `
-      <p class="clips-focus__range">Clip ${i + 1} · ${fmtMs(c.startMs)} → ${fmtMs(c.endMs)}</p>
-      <h2 class="clips-focus__title">${escapeHtml(c.title)}</h2>
-      ${c.why ? `<p class="clips-focus__why">${escapeHtml(c.why)}</p>` : ""}
-      ${own.length ? `<p class="clips-focus__own">${own.map((o) => `<span class="ap-tag grey">${escapeHtml(o)}</span>`).join("")}</p>` : ""}`;
-  const edit = target.querySelector("[data-clips-edit-link]");
-  if (edit) edit.setAttribute("href", `#/clips/${v.id}/edit/${c.id}`);
+      <header class="clips-inspector__head">
+        <span class="clips-inspector__num">${i + 1}</span>
+        <span class="clips-inspector__of">Clip ${i + 1} of ${v.clips.length}</span>
+        <label class="ap-checkbox-container clips-inspector__pick">
+          <input type="checkbox" data-clips-select="${c.id}" ${c.selected ? "checked" : ""} /><i></i><span>In the drafts</span>
+        </label>
+      </header>
+      <h2 class="clips-inspector__title">${escapeHtml(c.title)}</h2>
+      <dl class="clips-inspector__facts">
+        <div><dt>In the video</dt><dd>${fmtMs(c.startMs)} → ${fmtMs(c.endMs)}</dd></div>
+        <div><dt>Length</dt><dd>${fmtMs(c.endMs - c.startMs)}</dd></div>
+        <div><dt>Format</dt><dd>${escapeHtml(formatLabel(ratio))}</dd></div>
+        <div><dt>Subtitles</dt><dd>${escapeHtml(presetLabel(cap.presetId))}</dd></div>
+      </dl>
+      ${c.why ? `<div class="clips-inspector__why"><span class="clips-inspector__label">Why this clip</span><p>${escapeHtml(c.why)}</p></div>` : ""}
+      ${own.length ? `<p class="clips-inspector__own">${own.map((o) => `<span class="ap-tag grey">${escapeHtml(o)}</span>`).join("")}</p>` : ""}
+      <footer class="clips-inspector__foot">
+        <button type="button" class="ap-button ghost grey" data-clips-ws="remove"><i class="ap-icon-trash" aria-hidden="true"></i><span>Remove</span></button>
+        <a class="ap-button stroked grey" href="#/clips/${v.id}/edit/${c.id}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit clip</span></a>
+      </footer>`;
   const len = target.querySelector("[data-clips-clip-len]");
   if (len) len.textContent = fmtMs(c.endMs - c.startMs);
   target
@@ -425,25 +445,59 @@ function paintFocus(v) {
   paintProgram(v);
 }
 
+// Fit each monitor's picture in its body, at its own aspect.
+function fit(body, screen, aspect) {
+  if (!body || !screen) return null;
+  let w = body.clientWidth;
+  let h = w / aspect;
+  if (h > body.clientHeight) {
+    h = body.clientHeight;
+    w = h * aspect;
+  }
+  screen.style.width = `${Math.round(w)}px`;
+  screen.style.height = `${Math.round(h)}px`;
+  return { w, h };
+}
+
 function sizeProgram() {
+  const v = getVideo(videoId);
+  const c = v && focused(v);
+  if (!c) return;
+  fit(
+    target.querySelector("[data-clips-src-body]"),
+    target.querySelector("[data-clips-src-screen]"),
+    v.width / v.height,
+  );
+  const f = fit(
+    target.querySelector("[data-clips-prog-body]"),
+    target.querySelector("[data-clips-prog-screen]"),
+    ratioOf(clipRatioId(v, c)),
+  );
   const canvas = target.querySelector("[data-clips-prog]");
-  if (!canvas) return;
-  const r = canvas.getBoundingClientRect();
+  if (!canvas || !f) return;
   const dpr = window.devicePixelRatio || 1;
-  canvas.width = Math.max(1, Math.round(r.width * dpr));
-  canvas.height = Math.max(1, Math.round(r.height * dpr));
+  canvas.width = Math.max(1, Math.round(f.w * dpr));
+  canvas.height = Math.max(1, Math.round(f.h * dpr));
 }
 
 function mountWorkspace(v) {
   const video = target.querySelector("[data-clips-src]");
   if (!video) return;
-  const c = focused(v);
+  // The source lands on the clip in the monitors — whichever it is by the
+  // time the (long) video's metadata arrives.
   video.addEventListener("loadedmetadata", () => {
+    const c = focused(v);
     if (c) video.currentTime = c.startMs / 1000 + 0.05;
   });
   video.addEventListener("seeked", () => !ws.playing && syncClock(v));
   video.addEventListener("loadeddata", () => syncClock(v));
   paintFocus(v);
+  const ro = new ResizeObserver(() => {
+    sizeProgram();
+    paintProgram(v);
+  });
+  ro.observe(target.querySelector("[data-clips-monitors]"));
+  disposers.push(() => ro.disconnect());
   mountFilmstrip(v, target.querySelector("[data-clips-film]"));
   syncClock(v);
 }
@@ -473,8 +527,10 @@ function paintProgram(v) {
 function syncClock(v) {
   const video = target?.querySelector("[data-clips-src]");
   if (!video) return;
-  const t = video.currentTime * 1000;
   const c = focused(v);
+  // Until the source can seek, the playhead stands where it is going: the
+  // focused clip's start.
+  const t = video.readyState >= 1 ? video.currentTime * 1000 : c?.startMs || 0;
   const tc = target.querySelector("[data-clips-src-tc]");
   if (tc) tc.textContent = fmtMs(t);
   const ctc = target.querySelector("[data-clips-clip-tc]");
@@ -518,13 +574,21 @@ function setPlayIcon(on) {
   if (i) i.className = on ? "ap-icon-pause" : "ap-icon-play";
 }
 
+// Focusing a clip moves the playhead to its start at once — the source
+// follows as soon as it can seek.
 function focusClip(v, id, { seek = true } = {}) {
   stopPlayback();
   ws.focusId = id;
   paintFocus(v);
   const c = focused(v);
   const video = target.querySelector("[data-clips-src]");
-  if (seek && video && c && video.readyState >= 1) video.currentTime = c.startMs / 1000 + 0.05;
+  if (seek && c) {
+    const ph = target.querySelector("[data-clips-ph]");
+    if (ph) ph.style.left = `${(c.startMs / v.durationMs) * 100}%`;
+    const tc = target.querySelector("[data-clips-src-tc]");
+    if (tc) tc.textContent = fmtMs(c.startMs);
+    if (video && video.readyState >= 1) video.currentTime = c.startMs / 1000 + 0.05;
+  }
   target
     .querySelector(`[data-clips-focus="${CSS.escape(id)}"]`)
     ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
