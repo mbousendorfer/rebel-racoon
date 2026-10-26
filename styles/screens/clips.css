@@ -533,17 +533,6 @@
   max-width: none;
 }
 
-.clips-topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-}
-
-.clips-topbar-actions .ap-select {
-  width: auto;
-  min-width: 200px;
-}
-
 .clips-bar {
   display: flex;
   align-items: flex-end;
@@ -555,6 +544,28 @@
 
 .clips-bar .ap-tabs-nav {
   border-bottom: 0;
+  align-items: center;
+}
+
+.clips-step__num {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--app-radius-circle);
+  border: 1px solid currentColor;
+  font-size: 11px;
+  font-weight: var(--sys-text-style-caption-bold-weight);
+}
+
+.clips-step__meta {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--app-vc-text-muted);
+}
+
+.clips-bar__arrow {
+  color: var(--app-vc-text-subtle);
+  padding: 0 var(--ref-spacing-xxs);
 }
 
 .clips-bar > .ap-button {
@@ -577,8 +588,38 @@
 }
 
 .clips-bin__head {
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-xs) 0 var(--ref-spacing-md);
+}
+
+.clips-bin__head .ap-checkbox-container span {
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.clips-bin__hint {
+  margin: 0;
+  padding: 0 var(--ref-spacing-md) var(--ref-spacing-xs);
   border-bottom: 1px solid var(--app-vc-border);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--app-vc-text-muted);
+}
+
+/* The page's one action, at the foot of the clips it acts on. */
+.clips-bin__foot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+  margin-top: auto;
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  border-top: 1px solid var(--app-vc-border);
+}
+
+.clips-bin__count {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--app-vc-text-muted);
 }
 
 .clips-bin__list {
@@ -618,12 +659,15 @@
   transform: scale(0.98);
 }
 
+/* Focus = the clip in the monitor: a light outline, like the active clip of
+   an editing app. Selection is the checkbox alone; unticked clips fade. */
 .clips-bin__item.is-focused {
-  border-color: var(--app-vc-accent);
-  background: var(--app-vc-accent-soft);
+  border-color: var(--app-vc-text-muted);
+  background: var(--app-vc-surface-raised);
 }
 
-.clips-bin__item:not(.is-selected) .clips-bin__thumb {
+.clips-bin__item:not(.is-selected) .clips-bin__thumb,
+.clips-bin__item:not(.is-selected) .clips-bin__text {
   opacity: 0.45;
 }
 
@@ -802,11 +846,6 @@
   color: var(--app-vc-text-muted);
 }
 
-.clips-inspector__pick {
-  margin-left: auto;
-  white-space: nowrap;
-}
-
 .clips-inspector__title {
   margin: 0;
   font-size: var(--sys-text-style-h3-size);
@@ -815,30 +854,27 @@
   color: var(--app-vc-text);
 }
 
-.clips-inspector__facts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--ref-spacing-sm);
-  margin: 0;
-  padding: var(--ref-spacing-sm) 0;
-  border-block: 1px solid var(--app-vc-border);
+.clips-inspector__edit {
+  align-self: flex-start;
 }
 
-.clips-inspector__facts div {
+.clips-inspector__controls {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--ref-spacing-xs);
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--app-vc-border);
 }
 
-.clips-inspector__facts dt {
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--app-vc-text-muted);
+.clips-setup__looks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
 }
 
-.clips-inspector__facts dd {
-  margin: 0;
-  color: var(--app-vc-text);
-  font-variant-numeric: tabular-nums;
+.clips-setup__looks .ap-select {
+  width: auto;
+  min-width: 220px;
 }
 
 .clips-inspector__label {
@@ -849,13 +885,6 @@
 .clips-inspector__why p {
   margin: var(--ref-spacing-xxxs) 0 0;
   color: var(--app-vc-text-muted);
-}
-
-.clips-inspector__own {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xxs);
-  margin: 0;
 }
 
 .clips-inspector__foot {
@@ -894,11 +923,13 @@
   position: relative;
 }
 
+/* The timeline reads; it doesn't edit (that's the editor's). A click places
+   the playhead, a clip block focuses its clip. */
 .clips-tl2__ruler,
 .clips-tl2__film,
 .clips-tl2__clips {
   position: relative;
-  cursor: ew-resize;
+  cursor: pointer;
   touch-action: none;
 }
 
@@ -981,15 +1012,12 @@
     transform 160ms var(--app-ease-out);
 }
 
-.clips-tl2__clip.is-selected {
-  border-color: var(--app-vc-accent);
-  background: var(--app-vc-accent-soft);
-  color: var(--app-vc-text);
+.clips-tl2__clip:not(.is-selected) {
+  opacity: 0.4;
 }
 
 .clips-tl2__clip.is-focused {
-  border-color: var(--app-vc-text);
-  background: var(--app-vc-accent);
+  border: 2px solid var(--app-vc-text);
   color: var(--app-vc-text);
 }
 

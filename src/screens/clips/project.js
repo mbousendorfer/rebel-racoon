@@ -7,18 +7,19 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2146";
-import { isFlagOn } from "../../feature-flags.js?v=2146";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2146";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2146";
-import { showToast } from "../../components/toast.js?v=2146";
-import { renderPostCard } from "../../components/post-card.js?v=2146";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2146";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2146";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2146";
-import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2146";
-import { getContextById } from "../../contexts-store.js?v=2146";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2146";
+import { navigate } from "../../router.js?v=2149";
+import { isFlagOn } from "../../feature-flags.js?v=2149";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2149";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2149";
+import { showToast } from "../../components/toast.js?v=2149";
+import { renderPostCard } from "../../components/post-card.js?v=2149";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2149";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2149";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2149";
+import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2149";
+import { getContextById } from "../../contexts-store.js?v=2149";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2149";
+import { captionStateFor } from "../../clip-captions.js?v=2149";
 import {
   getPosts,
   addPostDraft,
@@ -26,19 +27,20 @@ import {
   insertPost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2146";
-import { escapeHtml } from "../../utils.js?v=2146";
+} from "../../posts-store.js?v=2149";
+import { escapeHtml } from "../../utils.js?v=2149";
 import {
   getVideo,
   draftKey,
   updateSettings,
+  updateClip,
   setSelection,
   addClip,
   removeClip,
   restoreClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2146";
+} from "../../videos-store.js?v=2149";
 import {
   fmtMs,
   formatSelect,
@@ -52,8 +54,12 @@ import {
   presetLabel,
   ratioOf,
   clipSegments,
+  dsSelect,
+  RATIO_IDS,
+  SUBTITLE_IDS,
+  bestFor,
   CTA_OPTIONS,
-} from "./shared.js?v=2146";
+} from "./shared.js?v=2149";
 
 let target = null;
 let videoId = null;
@@ -124,7 +130,11 @@ function onStore() {
   const v = getVideo(videoId);
   if (!target || !v) return;
   if (sig(v) !== signature) return paint();
-  if (v.status !== "analyzing") return patchSelection(v);
+  if (v.status !== "analyzing") {
+    // A clip's own format or subtitles changed in the inspector, or a tick.
+    if (tab() === "clips") paintFocus(v);
+    return patchSelection(v);
+  }
   const pct = Math.round(v.progress * 100);
   const fill = target.querySelector(".clips-analyzing .clips-progress__fill");
   if (fill) fill.style.width = `${pct}%`;
@@ -151,36 +161,23 @@ function patchSelection(v) {
   if (allBox) {
     allBox.checked = all;
     allBox.indeterminate = n > 0 && !all;
-    const label = allBox.closest("label")?.querySelector("span");
-    if (label) label.textContent = `${n} of ${v.clips.length} selected`;
   }
-  const cta = document.querySelector("[data-clips-to-drafts]");
-  if (cta) {
-    cta.disabled = !n;
-    cta.querySelector("span").textContent = `Create drafts${n ? ` (${n})` : ""}`;
-  }
+  const count = target.querySelector("[data-clips-post-count]");
+  if (count) count.textContent = postCount(n);
+  const cta = target.querySelector("[data-clips-to-drafts]");
+  if (cta) cta.disabled = !n;
+  const step = target.querySelector("[data-clips-step-count]");
+  if (step) step.textContent = `${n} of ${v.clips.length}`;
 }
 
-// The page's actions live in the topbar, like an editor's export bar: the
-// whole video's Format and Subtitles, then Create drafts.
+const postCount = (n) => (n ? `${n} clip${n === 1 ? "" : "s"} to post` : "No clip to post yet");
+
+// The topbar names the video and leads back; the page's one action sits at the
+// foot of the bin, next to the clips it acts on.
 function paintTopbarActions(v) {
-  const n = v.clips.filter((c) => c.selected).length;
-  const ready = v.status === "ready";
-  setTopbarActions(
-    `/clips/${v.id}`,
-    ready
-      ? `<div class="clips-topbar-actions">
-          ${formatSelect(v.settings.ratio)}
-          ${subtitleSelect(v.settings.subtitlePreset)}
-          <button type="button" class="ap-button primary orange" data-clips-to-drafts ${n ? "" : "disabled"}>
-            <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Create drafts${n ? ` (${n})` : ""}</span>
-          </button>
-        </div>`
-      : "<span></span>",
-    {
-      left: `${renderIconBack("/clips", "Back to Clips")}<h1 class="app-topbar__title clips-topbar-title">${escapeHtml(v.name)}</h1>`,
-    },
-  );
+  setTopbarActions(`/clips/${v.id}`, "<span></span>", {
+    left: `${renderIconBack("/clips", "Back to Clips")}<h1 class="app-topbar__title clips-topbar-title">${escapeHtml(v.name)}</h1>`,
+  });
 }
 
 function paint() {
@@ -202,18 +199,12 @@ function paint() {
     <div class="clips-view clips-project">
       <div class="clips-bar">
         <div class="ap-tabs clips-bar__tabs">
-          <div class="ap-tabs-nav" role="tablist" aria-label="Clips and drafts">
-            ${tabButton("clips", "ap-icon-video", "Clips", v.clips.length, t)}
-            ${tabButton("drafts", "ap-icon-file--text", "Drafts", posts.length, t)}
+          <div class="ap-tabs-nav" role="tablist" aria-label="Steps">
+            ${stepButton("clips", 1, "Pick the clips", `<span data-clips-step-count>${v.clips.filter((c) => c.selected).length} of ${v.clips.length}</span>`, t)}
+            <span class="clips-bar__arrow" aria-hidden="true"><i class="ap-icon-chevron-right"></i></span>
+            ${stepButton("drafts", 2, "Write the posts", posts.length ? `${posts.length} draft${posts.length === 1 ? "" : "s"}` : "", t)}
           </div>
         </div>
-        ${
-          t === "clips"
-            ? `<button type="button" class="ap-button stroked grey" data-clips-add-clip>
-                <i class="ap-icon-plus" aria-hidden="true"></i><span>Add a clip</span>
-              </button>`
-            : ""
-        }
       </div>
       ${t === "drafts" ? `<div class="clips-view__page">${renderDrafts(v, posts)}</div>` : renderWorkspace(v)}
     </div>`;
@@ -241,11 +232,13 @@ function swapPlayers(v, posts) {
   }
 }
 
-function tabButton(id, icon, label, count, current) {
+// The page is two steps in a row, not two parallel views: the DS tabs, read as
+// a numbered path.
+function stepButton(id, n, label, meta, current) {
   const on = id === current;
-  return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}" data-clips-tab="${id}">
-    <i class="${icon}" aria-hidden="true"></i><span>${label}</span>
-    <span class="ap-counter normal ${on ? "blue" : "grey"}">${count}</span>
+  return `<button type="button" class="ap-tabs-tab clips-step${on ? " active" : ""}" role="tab" aria-selected="${on}" data-clips-tab="${id}">
+    <span class="clips-step__num">${n}</span><span>${label}</span>
+    ${meta ? `<span class="clips-step__meta">${meta}</span>` : ""}
   </button>`;
 }
 
@@ -307,7 +300,7 @@ function renderWorkspace(v) {
         c,
         i,
       ) => `<li class="clips-bin__item${c.selected ? " is-selected" : ""}${c.id === ws.focusId ? " is-focused" : ""}" data-clips-focus="${c.id}" style="--i:${i}">
-        <label class="ap-checkbox-container clips-bin__check" aria-label="Select clip ${i + 1}">
+        <label class="ap-checkbox-container clips-bin__check" aria-label="Post clip ${i + 1}" data-tooltip="Post this clip">
           <input type="checkbox" data-clips-select="${c.id}" ${c.selected ? "checked" : ""} /><i></i>
         </label>
         <span class="clips-bin__thumb">${previewMarkup(v, { ...c, ratio: "9:16" }, { captions: false })}</span>
@@ -322,11 +315,21 @@ function renderWorkspace(v) {
     <div class="clips-ws">
       <aside class="clips-bin" aria-label="Clips">
         <header class="clips-bin__head">
-          <label class="ap-checkbox-container">
-            <input type="checkbox" data-clips-select-all ${all ? "checked" : ""} /><i></i><span>${n} of ${v.clips.length} selected</span>
+          <label class="ap-checkbox-container" aria-label="Post every clip">
+            <input type="checkbox" data-clips-select-all ${all ? "checked" : ""} /><i></i><span>Clips</span>
           </label>
+          <button type="button" class="ap-button ghost grey" data-clips-add-clip data-tooltip="A 30-second clip at the playhead">
+            <i class="ap-icon-plus" aria-hidden="true"></i><span>Add</span>
+          </button>
         </header>
+        <p class="clips-bin__hint">Tick the clips to turn into posts. Click one to watch it.</p>
         <ol class="clips-bin__list">${rows}</ol>
+        <footer class="clips-bin__foot">
+          <span class="clips-bin__count" data-clips-post-count>${postCount(n)}</span>
+          <button type="button" class="ap-button primary orange" data-clips-to-drafts ${n ? "" : "disabled"}>
+            <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Write the posts</span>
+          </button>
+        </footer>
       </aside>
       <section class="clips-stage" aria-label="Monitors">
         <div class="clips-monitors" data-clips-monitors>
@@ -396,34 +399,43 @@ function paintFocus(v) {
           <span class="clips-monitor__off" data-clips-off hidden>Outside this clip</span>
         </div>
       </div>`;
-  const own = [
-    c.ratio ? formatLabel(c.ratio) : "",
-    c.captionCustom ? presetLabel(cap.presetId) : "",
-    c.segments?.some((s) => s.origin === "USER") ? "Reframed" : "",
-    c.texts?.length ? `${c.texts.length} text${c.texts.length === 1 ? "" : "s"}` : "",
-  ].filter(Boolean);
   const info = target.querySelector("[data-clips-focus-info]");
   if (info)
     info.innerHTML = `
       <header class="clips-inspector__head">
         <span class="clips-inspector__num">${i + 1}</span>
-        <span class="clips-inspector__of">Clip ${i + 1} of ${v.clips.length}</span>
-        <label class="ap-checkbox-container clips-inspector__pick">
-          <input type="checkbox" data-clips-select="${c.id}" ${c.selected ? "checked" : ""} /><i></i><span>In the drafts</span>
-        </label>
+        <span class="clips-inspector__of">Clip ${i + 1} of ${v.clips.length} · ${fmtMs(c.startMs)} → ${fmtMs(c.endMs)} in the video</span>
       </header>
       <h2 class="clips-inspector__title">${escapeHtml(c.title)}</h2>
-      <dl class="clips-inspector__facts">
-        <div><dt>In the video</dt><dd>${fmtMs(c.startMs)} → ${fmtMs(c.endMs)}</dd></div>
-        <div><dt>Length</dt><dd>${fmtMs(c.endMs - c.startMs)}</dd></div>
-        <div><dt>Format</dt><dd>${escapeHtml(formatLabel(ratio))}</dd></div>
-        <div><dt>Subtitles</dt><dd>${escapeHtml(presetLabel(cap.presetId))}</dd></div>
-      </dl>
+      <a class="ap-button stroked grey clips-inspector__edit" href="#/clips/${v.id}/edit/${c.id}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit clip</span></a>
       ${c.why ? `<div class="clips-inspector__why"><span class="clips-inspector__label">Why this clip</span><p>${escapeHtml(c.why)}</p></div>` : ""}
-      ${own.length ? `<p class="clips-inspector__own">${own.map((o) => `<span class="ap-tag grey">${escapeHtml(o)}</span>`).join("")}</p>` : ""}
+      <div class="clips-inspector__controls">
+        <span class="clips-inspector__label">How it looks</span>
+        ${dsSelect({
+          label: "Format",
+          valueHtml: escapeHtml(c.ratio ? formatLabel(c.ratio) : `Video's · ${formatLabel(v.settings.ratio)}`),
+          current: c.ratio || "video",
+          attr: "data-clips-clip-ratio",
+          options: [
+            { id: "video", label: `Same as the video · ${formatLabel(v.settings.ratio)}` },
+            ...RATIO_IDS.map((id) => ({ id, label: formatLabel(id), meta: bestFor(id) })),
+          ],
+        })}
+        ${dsSelect({
+          label: "Subtitles",
+          valueHtml: escapeHtml(
+            c.captionCustom ? presetLabel(cap.presetId) : `Video's · ${presetLabel(v.settings.subtitlePreset)}`,
+          ),
+          current: c.captionCustom ? cap.presetId : "video",
+          attr: "data-clips-clip-preset",
+          options: [
+            { id: "video", label: `Same as the video · ${presetLabel(v.settings.subtitlePreset)}` },
+            ...SUBTITLE_IDS.map((id) => ({ id, label: presetLabel(id) })),
+          ],
+        })}
+      </div>
       <footer class="clips-inspector__foot">
-        <button type="button" class="ap-button ghost grey" data-clips-ws="remove"><i class="ap-icon-trash" aria-hidden="true"></i><span>Remove</span></button>
-        <a class="ap-button stroked grey" href="#/clips/${v.id}/edit/${c.id}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit clip</span></a>
+        <button type="button" class="ap-button ghost grey" data-clips-ws="remove"><i class="ap-icon-trash" aria-hidden="true"></i><span>Remove this clip</span></button>
       </footer>`;
   const len = target.querySelector("[data-clips-clip-len]");
   if (len) len.textContent = fmtMs(c.endMs - c.startMs);
@@ -746,10 +758,17 @@ function renderDraftSetup(v, hasDrafts) {
       <header class="clips-setup__head">
         <h2 class="clips-setup__title" id="clips-setup-title">Where should I post these?</h2>
         <p class="clips-setup__sub">
-          ${clips.length} clip${clips.length === 1 ? "" : "s"} selected · ${escapeHtml(formatLabel(v.settings.ratio))} ·
-          ${escapeHtml(presetLabel(v.settings.subtitlePreset))}. One draft per clip and account${pb ? `, written in ${escapeHtml(pb.name)}'s voice` : ""}.
+          ${clips.length} clip${clips.length === 1 ? "" : "s"} to post. One draft per clip and account${pb ? `, written in ${escapeHtml(pb.name)}'s voice` : ""}.
         </p>
       </header>
+      <div class="clips-setup__group">
+        <h3 class="clips-setup__label">How the clips look</h3>
+        <p class="clips-setup__hint">For every clip — a clip that has its own format or subtitles keeps them.</p>
+        <div class="clips-setup__looks">
+          ${formatSelect(v.settings.ratio)}
+          ${subtitleSelect(v.settings.subtitlePreset)}
+        </div>
+      </div>
       <div class="clips-setup__group">
         <h3 class="clips-setup__label">Accounts</h3>
         ${accountBlock}
@@ -825,6 +844,24 @@ function onClick(e) {
   const tabBtn = t.closest("[data-clips-tab]");
   if (tabBtn) return setHashQuery(path(), tabBtn.dataset.clipsTab === "drafts" ? { tab: "drafts" } : {});
 
+  const clipRatio = t.closest("[data-clips-clip-ratio]");
+  if (clipRatio) {
+    clipRatio.closest("details")?.removeAttribute("open");
+    const id = clipRatio.dataset.clipsClipRatio;
+    return updateClip(v.id, ws.focusId, { ratio: id === "video" ? null : id });
+  }
+  const clipPreset = t.closest("[data-clips-clip-preset]");
+  if (clipPreset) {
+    clipPreset.closest("details")?.removeAttribute("open");
+    const id = clipPreset.dataset.clipsClipPreset;
+    return updateClip(
+      v.id,
+      ws.focusId,
+      id === "video"
+        ? { captionState: null, captionCustom: false }
+        : { captionState: captionStateFor(id), captionCustom: true },
+    );
+  }
   const ratio = t.closest("[data-clips-ratio]");
   if (ratio) {
     ratio.closest("details")?.removeAttribute("open");
@@ -854,9 +891,10 @@ function onClick(e) {
   if (row && !t.closest("label")) return focusClip(v, row.dataset.clipsFocus);
 
   if (t.closest("[data-clips-add-clip]")) {
-    // A 30 s range in the first gap after the last clip, opened on Trim.
-    const last = v.clips[v.clips.length - 1];
-    const startMs = Math.min(v.durationMs - 30000, last ? last.endMs + 5000 : 0);
+    // A 30 s range from the playhead, opened on Trim.
+    const video = target.querySelector("[data-clips-src]");
+    const at = video && video.readyState >= 1 ? video.currentTime * 1000 : focused(v)?.endMs || 0;
+    const startMs = Math.min(v.durationMs - 30000, at);
     const clip = addClip(v.id, { startMs: Math.max(0, startMs), endMs: Math.max(0, startMs) + 30000 });
     return navigate(`/clips/${v.id}/edit/${clip.id}?tool=trim`);
   }
