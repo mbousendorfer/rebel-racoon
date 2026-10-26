@@ -7,28 +7,28 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2188";
-import { isFlagOn } from "../../feature-flags.js?v=2188";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2188";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2188";
-import { showToast } from "../../components/toast.js?v=2188";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2188";
-import { renderPostCard } from "../../components/post-card.js?v=2188";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2188";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2188";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2188";
-import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2188";
-import { getContextById } from "../../contexts-store.js?v=2188";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2188";
-import { captionStateFor } from "../../clip-captions.js?v=2188";
+import { navigate } from "../../router.js?v=2190";
+import { isFlagOn } from "../../feature-flags.js?v=2190";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2190";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2190";
+import { showToast } from "../../components/toast.js?v=2190";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2190";
+import { renderPostCard } from "../../components/post-card.js?v=2190";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2190";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2190";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2190";
+import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2190";
+import { getContextById } from "../../contexts-store.js?v=2190";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2190";
+import { captionStateFor } from "../../clip-captions.js?v=2190";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2188";
-import { escapeHtml } from "../../utils.js?v=2188";
+} from "../../posts-store.js?v=2190";
+import { escapeHtml } from "../../utils.js?v=2190";
 import {
   getVideo,
   draftKey,
@@ -39,7 +39,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2188";
+} from "../../videos-store.js?v=2190";
 import {
   fmtMs,
   formatSelect,
@@ -58,7 +58,7 @@ import {
   SUBTITLE_IDS,
   bestFor,
   CTA_OPTIONS,
-} from "./shared.js?v=2188";
+} from "./shared.js?v=2190";
 
 let target = null;
 let videoId = null;
@@ -161,20 +161,28 @@ function patchSelection(v) {
     allBox.checked = all;
     allBox.indeterminate = n > 0 && !all;
   }
-  const count = target.querySelector("[data-clips-post-count]");
-  if (count) count.textContent = postCount(n);
-  const cta = target.querySelector("[data-clips-to-drafts]");
-  if (cta) cta.disabled = !n;
+  const cta = document.getElementById("topbar")?.querySelector("[data-clips-to-drafts]");
+  if (cta) {
+    cta.disabled = !n;
+    cta.querySelector("[data-clips-cta-label]").textContent = ctaLabel(n);
+  }
   const step = target.querySelector("[data-clips-step-count]");
   if (step) step.textContent = `${n} of ${v.clips.length}`;
 }
 
-const postCount = (n) => (n ? `${n} clip${n === 1 ? "" : "s"} to post` : "No clip to post yet");
+const ctaLabel = (n) => (n ? `Write posts for ${n} clip${n === 1 ? "" : "s"}` : "Tick a clip to post it");
 
-// The topbar names the video and leads back; the page's one action sits at the
-// foot of the bin, next to the clips it acts on.
+// The topbar names the video and leads back; on step 1 its right side holds the
+// page's next step (O3: the page's primary, rightmost), counted in clips.
 function paintTopbarActions(v) {
-  setTopbarActions(`/clips/${v.id}`, "<span></span>", {
+  const n = v.clips.filter((c) => c.selected).length;
+  const right =
+    v.status !== "analyzing" && tab() !== "drafts"
+      ? `<button type="button" class="ap-button primary blue" data-clips-to-drafts ${n ? "" : "disabled"}>
+          <span data-clips-cta-label>${ctaLabel(n)}</span><i class="ap-icon-arrow-right" aria-hidden="true"></i>
+        </button>`
+      : "<span></span>";
+  setTopbarActions(`/clips/${v.id}`, right, {
     left: `${renderIconBack("/clips", "Back to Clips")}<h1 class="app-topbar__title clips-topbar-title">${escapeHtml(v.name)}</h1>`,
   });
 }
@@ -318,18 +326,9 @@ function renderWorkspace(v) {
           <label class="ap-checkbox-container" aria-label="Post every clip">
             <input type="checkbox" data-clips-select-all ${all ? "checked" : ""} /><i></i><span>Clips</span>
           </label>
-          <button type="button" class="ap-button ghost grey" data-clips-add-clip data-tooltip="A 30-second clip at the playhead">
-            <i class="ap-icon-plus" aria-hidden="true"></i><span>Add</span>
-          </button>
         </header>
         <p class="clips-bin__hint">Tick the clips to turn into posts. Click one to watch it.</p>
         <ol class="clips-bin__list">${rows}</ol>
-        <footer class="clips-bin__foot">
-          <span class="clips-bin__count" data-clips-post-count>${postCount(n)}</span>
-          <button type="button" class="ap-button primary blue" data-clips-to-drafts ${n ? "" : "disabled"}>
-            <span>Write the posts</span><i class="ap-icon-arrow-right" aria-hidden="true"></i>
-          </button>
-        </footer>
       </aside>
       <section class="clips-stage" aria-label="Monitors">
         <div class="clips-monitors" data-clips-monitors>
@@ -367,7 +366,12 @@ function renderTimeline(v) {
     .join("");
   return `
     <section class="clips-tl2" aria-label="Timeline">
-      <div class="clips-tl2__labels" aria-hidden="true"><span></span><span>Video</span><span>Clips</span></div>
+      <div class="clips-tl2__labels">
+        <span></span><span>Video</span>
+        <span class="clips-tl2__head">Clips
+          <button type="button" class="ap-icon-button transparent" data-clips-add-clip aria-label="Add a clip at the playhead" data-tooltip="Add a 30-second clip at the playhead"><i class="ap-icon-plus" aria-hidden="true"></i></button>
+        </span>
+      </div>
       <div class="clips-tl2__tracks" data-clips-tracks>
         <div class="clips-tl2__ruler" data-clips-scrub>${ticks}</div>
         <div class="clips-tl2__film" data-clips-film data-clips-scrub></div>
@@ -407,7 +411,20 @@ function paintFocus(v) {
         <span class="clips-inspector__of">Clip ${i + 1} of ${v.clips.length} · ${fmtMs(c.startMs)} → ${fmtMs(c.endMs)} in the video</span>
       </header>
       <h2 class="clips-inspector__title">${escapeHtml(c.title)}</h2>
-      <a class="ap-button stroked grey clips-inspector__edit" href="#/clips/${v.id}/edit/${c.id}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit clip</span></a>
+      <div class="clips-inspector__actions">
+        <a class="ap-button stroked grey" href="#/clips/${v.id}/edit/${c.id}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit clip</span></a>
+        <details class="clips-more">
+          <summary class="ap-icon-button transparent" aria-label="More actions for this clip" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
+          <div class="ap-action-dropdown clips-more__menu" role="menu">
+            <button type="button" role="menuitem" class="ap-action-dropdown-item red-mode" data-clips-ws="remove">
+              <i class="ap-icon-trash" aria-hidden="true"></i>
+              <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container">
+                <span class="ap-action-dropdown-item-label">Remove this clip</span>
+              </div></div>
+            </button>
+          </div>
+        </details>
+      </div>
       ${c.why ? `<div class="clips-inspector__why"><span class="clips-inspector__label">Why this clip</span><p>${escapeHtml(c.why)}</p></div>` : ""}
       <div class="clips-inspector__controls">
         <span class="clips-inspector__label">How it looks</span>
@@ -433,10 +450,7 @@ function paintFocus(v) {
             ...SUBTITLE_IDS.map((id) => ({ id, label: presetLabel(id) })),
           ],
         })}
-      </div>
-      <footer class="clips-inspector__foot">
-        <button type="button" class="ap-button ghost red" data-clips-ws="remove"><i class="ap-icon-trash" aria-hidden="true"></i><span>Remove this clip</span></button>
-      </footer>`;
+      </div>`;
   const len = target.querySelector("[data-clips-clip-len]");
   if (len) len.textContent = fmtMs(c.endMs - c.startMs);
   target
@@ -836,6 +850,10 @@ function onClick(e) {
   const v = getVideo(videoId);
   if (!v) return;
   const t = e.target;
+  // The clip's ⋯ menu closes on any click outside it, and after its item.
+  (target || document).querySelectorAll("details.clips-more[open]").forEach((d) => {
+    if (!d.contains(t) || t.closest("[role=menuitem]")) d.removeAttribute("open");
+  });
 
   const tabBtn = t.closest("[data-clips-tab]");
   if (tabBtn) return setHashQuery(path(), tabBtn.dataset.clipsTab === "drafts" ? { tab: "drafts" } : {});

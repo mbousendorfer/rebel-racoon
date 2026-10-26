@@ -598,22 +598,6 @@
   color: var(--ref-color-grey-80);
 }
 
-/* The page's one action, at the foot of the clips it acts on. */
-.clips-bin__foot {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xs);
-  margin-top: auto;
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
-.clips-bin__count {
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-}
-
 .clips-bin__list {
   list-style: none;
   margin: 0;
@@ -837,10 +821,6 @@
   color: var(--ref-color-grey-100);
 }
 
-.clips-inspector__edit {
-  align-self: flex-start;
-}
-
 .clips-inspector__controls {
   display: flex;
   flex-direction: column;
@@ -870,18 +850,10 @@
   color: var(--ref-color-grey-80);
 }
 
-.clips-inspector__foot {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--ref-spacing-xs);
-  margin-top: auto;
-  padding-top: var(--ref-spacing-sm);
-}
-
 /* The timeline. */
 .clips-tl2 {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
+  grid-template-columns: 88px minmax(0, 1fr);
   gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-xs) var(--ref-spacing-md) var(--ref-spacing-sm);
   border-top: 1px solid var(--ref-color-grey-20);
@@ -2406,4 +2378,39 @@ body.clips-editing .app-content {
   top: 22px;
   border-color: var(--ref-color-red-100);
   color: var(--ref-color-red-100);
+}
+
+/* The clip's actions, together under its title: Edit, and the ⋯ menu that
+   holds Remove (a destructive action sits in a menu, confirmed). */
+.clips-inspector__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.clips-more {
+  position: relative;
+}
+
+.clips-more > summary {
+  list-style: none;
+}
+
+.clips-more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.clips-more__menu {
+  position: absolute;
+  top: calc(100% + var(--ref-spacing-xxxs));
+  right: 0; /* opens toward the panel, never past the window's edge */
+  z-index: 20;
+  min-width: 200px;
+}
+
+/* The Clips track's header: its name and its one action, Add a clip. */
+.clips-tl2__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
