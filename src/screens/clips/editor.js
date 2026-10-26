@@ -18,16 +18,16 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2137";
-import { isFlagOn } from "../../feature-flags.js?v=2137";
-import { parseHashParams } from "../../url-state.js?v=2137";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2137";
-import { showToast } from "../../components/toast.js?v=2137";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2137";
-import { getContextById } from "../../contexts-store.js?v=2137";
-import { escapeHtml } from "../../utils.js?v=2137";
-import * as ce from "../../caption-editor.js?v=2137";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2137";
+import { navigate } from "../../router.js?v=2143";
+import { isFlagOn } from "../../feature-flags.js?v=2143";
+import { parseHashParams } from "../../url-state.js?v=2143";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2143";
+import { showToast } from "../../components/toast.js?v=2143";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2143";
+import { getContextById } from "../../contexts-store.js?v=2143";
+import { escapeHtml } from "../../utils.js?v=2143";
+import * as ce from "../../caption-editor.js?v=2143";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2143";
 import {
   framingContext,
   initialSegments,
@@ -50,7 +50,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2137";
+} from "../../clip-framing.js?v=2143";
 import {
   fmtMs,
   fmtPrecise,
@@ -63,8 +63,8 @@ import {
   SUBTITLE_IDS,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2137";
-import { primeDraftSetup } from "./project.js?v=2137";
+} from "./shared.js?v=2143";
+import { primeDraftSetup } from "./project.js?v=2143";
 
 const MIN_CLIP_MS = 5000;
 const MAX_CLIP_MS = 300000;
@@ -82,7 +82,6 @@ const TOOLS = [
   { id: "cleanup", label: "Clean up", icon: "ap-icon-sparkles", hint: "Filler words and pauses" },
   { id: "text", label: "Text", icon: "ap-icon-alt-text", hint: "Titles and text on the video" },
   { id: "brand", label: "Brand", icon: "ap-icon-target", hint: "Logo, intro and outro" },
-  { id: "format", label: "Format", icon: "ap-icon-arrow-expand", hint: "Shape of the video" },
 ];
 
 // Camera colours on the framing track are categorical DATA labels — the
@@ -222,6 +221,8 @@ function shellHTML() {
             </div>
           </div>
         </section>
+        <div class="clips-ed__splitter" data-clips-splitter role="separator" aria-orientation="vertical"
+          aria-label="Resize Source and Output" aria-valuemin="30" aria-valuemax="80" aria-valuenow="64" tabindex="0"></div>
         <section class="clips-ed__monitor clips-ed__monitor--output" aria-label="Output">
           <header class="clips-ed__monitor-bar">
             <span class="clips-ed__monitor-name">Output</span>
@@ -245,7 +246,24 @@ function shellHTML() {
           <i class="ap-icon-play" aria-hidden="true" data-clips-play-icon></i>
         </button>
         <span class="clips-ed__time"><span data-clips-cur>0:00.0</span> / <span data-clips-len>0:00.0</span></span>
-        <span class="clips-ed__transport-hint">Space play · S split · ←/→ frame by frame</span>
+        <div class="clips-ed__tl-tools" role="toolbar" aria-label="Framing parts">
+          <button type="button" class="clips-ed__tl-tool" data-clips-ed="split" data-tooltip="Split the part at the playhead (S)">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="4" width="5" height="8" rx="1.2"/><rect x="10" y="4" width="5" height="8" rx="1.2"/><path d="M8 1.5v13"/></svg>
+            <span>Split</span>
+          </button>
+          <button type="button" class="clips-ed__tl-tool" data-clips-ed="merge-prev" aria-label="Merge with the previous part" data-tooltip="Merge with the previous part">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3v10"/><path d="M14 8H5"/><path d="M8 5 5 8l3 3"/></svg>
+          </button>
+          <button type="button" class="clips-ed__tl-tool" data-clips-ed="merge-next" aria-label="Merge with the next part" data-tooltip="Merge with the next part">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M14 3v10"/><path d="M2 8h9"/><path d="M8 5l3 3-3 3"/></svg>
+          </button>
+          <span class="clips-ed__tl-sep" aria-hidden="true"></span>
+          <button type="button" class="clips-ed__tl-tool" data-clips-ed="snap" aria-pressed="true" data-tooltip="Boundaries and the playhead stick to camera cuts">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v6a4 4 0 0 0 8 0V2"/><path d="M4 5h3M9 5h3"/></svg>
+            <span>Snap</span>
+          </button>
+        </div>
+        <span class="clips-ed__transport-spacer"></span>
         <button type="button" class="ap-button ghost grey clips-ed__transcript-toggle" data-clips-ed="transcript" aria-pressed="false">
           <i class="ap-icon-alt-text" aria-hidden="true"></i><span>Transcript</span>
         </button>
@@ -364,6 +382,16 @@ function setPlayIcon() {
   if (i) i.className = ed.playing ? "ap-icon-pause" : "ap-icon-play";
 }
 
+// The timeline tools follow the part under the playhead.
+function syncTlTools() {
+  const segs = ed.w.segments;
+  const i = segs.indexOf(segmentAt(segs, ed.t));
+  const q = (a) => ed.el.querySelector(`[data-clips-ed="${a}"]`);
+  if (q("merge-prev")) q("merge-prev").disabled = i <= 0;
+  if (q("merge-next")) q("merge-next").disabled = i >= segs.length - 1;
+  q("snap")?.setAttribute("aria-pressed", String(ed.snap));
+}
+
 function syncTime() {
   const cur = ed.el.querySelector("[data-clips-cur]");
   if (cur)
@@ -376,7 +404,11 @@ function syncTime() {
   const ph = ed.el.querySelector("[data-clips-playhead]");
   if (ph) ph.style.left = pctIn(ed.t);
   const seg = segmentAt(ed.w.segments, ed.t);
-  if (ed.tool === "reframe" && seg.id !== ed.panelSeg) paintPanel();
+  if (seg.id !== ed.panelSeg) {
+    if (ed.tool === "reframe") paintPanel();
+    else ed.panelSeg = seg.id;
+    syncTlTools();
+  }
   ed.el
     .querySelectorAll("[data-clips-seg]")
     .forEach((n) => n.classList.toggle("is-current", n.dataset.clipsSeg === seg.id));
@@ -417,8 +449,29 @@ function sizeCanvases() {
   const ov = ed.el.querySelector("[data-clips-overlay]");
   ov.width = Math.round(ov.clientWidth * dpr);
   ov.height = Math.round(ov.clientHeight * dpr);
-  const label = ed.el.querySelector("[data-clips-output-label]");
-  if (label) label.textContent = formatLabel(ed.w.ratioId);
+  paintFormatPicker();
+}
+
+// The output's shape lives on the Output monitor, like a canvas ratio in an
+// editing app — a setting of the frame, not a tool. The video's format by
+// default; a clip can take its own.
+function paintFormatPicker() {
+  const host = ed.el.querySelector("[data-clips-output-label]");
+  if (!host) return;
+  const videoRatio = ed.video.settings.ratio;
+  const own = ed.w.ratioId !== videoRatio;
+  host.innerHTML = dsSelect({
+    label: own ? "This clip" : "Video",
+    valueHtml: escapeHtml(formatLabel(ed.w.ratioId)),
+    current: own ? ed.w.ratioId : "video",
+    attr: "data-clips-format",
+    ariaLabel: "Format of this clip",
+    extraClass: "clips-ed__format",
+    options: [
+      { id: "video", label: `Same as the video · ${formatLabel(videoRatio)}` },
+      ...RATIO_IDS.map((id) => ({ id, label: formatLabel(id), meta: bestFor(id) })),
+    ],
+  });
 }
 
 function currentRes() {
@@ -667,6 +720,7 @@ function applyTool() {
   ed.lastTool = ed.tool;
   const root = ed.el.querySelector("[data-clips-ed-root]");
   root.dataset.tool = ed.tool;
+  root.querySelector("[data-clips-stage]")?.style.setProperty("--clips-split", `${splitPct}%`);
   root.dataset.transcript = transcriptShown() ? "on" : "off";
   const tgl = ed.el.querySelector('[data-clips-ed="transcript"]');
   if (tgl) tgl.setAttribute("aria-pressed", String(transcriptShown()));
@@ -676,6 +730,7 @@ function applyTool() {
     b.setAttribute("aria-selected", String(on));
   });
   ce.setCleanupMode(ed.tool === "cleanup");
+  syncTlTools();
   sizeCanvases();
   paintPanel();
   paintTexts();
@@ -694,7 +749,6 @@ function paintPanel() {
     cleanup: cleanupPanel,
     text: textPanel,
     brand: brandPanel,
-    format: formatPanel,
   }[ed.tool]();
   host.innerHTML = `<h2 class="clips-ed__panel-title">${tool.label}</h2>${body}`;
   if (ed.tool === "subtitles" || ed.tool === "cleanup") ce.refreshControls();
@@ -726,15 +780,26 @@ function reframePanel() {
   const sameCam = segs.filter((s) => s.camera === seg.camera).length;
   const hints = {
     AUTO: "As I framed it",
-    ONE: "One window, on whoever you put it on",
-    TWO: "Two windows, stacked",
-    FIT: "The whole frame, on a blurred fill",
+    ONE: "One window",
+    TWO: "Two, stacked",
+    FIT: "Whole frame, blurred fill",
+  };
+  // Each layout drawn as what it does to a vertical frame — read at a glance.
+  const glyph = {
+    AUTO: `<i class="ap-icon-sparkles"></i>`,
+    ONE: `<b class="clips-layout__person"></b>`,
+    TWO: `<b class="clips-layout__person"></b><b class="clips-layout__person"></b>`,
+    FIT: `<b class="clips-layout__inset"></b>`,
   };
   const layoutBtns = LAYOUTS.map((l) => {
     const off = l.id === "TWO" && blocked && seg.layout !== "TWO";
-    return `<label class="ap-radio-container clips-ed__layout${off ? " is-off" : ""}">
+    return `<label class="ap-radio-card card clips-layout${off ? " is-off" : ""}">
       <input type="radio" name="clips-layout" value="${l.id}" data-clips-layout-pick ${seg.layout === l.id ? "checked" : ""} ${off ? "disabled" : ""} />
-      <span>${l.label}<span class="clips-ed__layout-hint">${escapeHtml(off ? blocked : hints[l.id])}</span></span>
+      <div>
+        <span class="clips-layout__glyph clips-layout__glyph--${l.id.toLowerCase()}" aria-hidden="true">${glyph[l.id]}</span>
+        <span class="clips-layout__name">${l.label}</span>
+        <span class="clips-layout__hint">${escapeHtml(off ? blocked : hints[l.id])}</span>
+      </div>
     </label>`;
   }).join("");
   const zoom = seg.layout === "ONE" ? seg.one.zoom : seg.layout === "TWO" ? seg.two.zoom : null;
@@ -744,6 +809,7 @@ function reframePanel() {
       <span class="clips-ed__seg-name">Part ${i + 1} of ${segs.length}</span>
       <span class="ap-tag grey">${escapeHtml(cameraName(seg.camera))}</span>
       <span class="ap-tag ${seg.origin === "USER" ? "blue" : "grey"}">${seg.origin === "USER" ? "Framed by you" : "Auto"}</span>
+      ${seg.origin === "USER" ? `<button type="button" class="ap-link clips-ed__seg-reset" data-clips-ed="reset-seg">Reset</button>` : ""}
     </div>
     <p class="clips-ed__fact">${fmtPrecise(seg.startMs - ed.w.startMs)} → ${fmtPrecise(seg.endMs - ed.w.startMs)} · ${((seg.endMs - seg.startMs) / 1000).toFixed(1)}s</p>
     <div class="clips-ed__group">
@@ -764,23 +830,24 @@ function reframePanel() {
         ? `<label class="ap-toggle-container clips-ed__toggle"><input type="checkbox" data-clips-follow ${seg.follow ? "checked" : ""} /><i></i><span>Follow the speaker</span></label>`
         : ""
     }
-    ${seg.layout === "TWO" ? `<button type="button" class="ap-button stroked grey" data-clips-ed="swap">Swap top and bottom</button>` : ""}
-    <div class="clips-ed__group">
-      <span class="clips-ed__label">Parts</span>
-      <div class="clips-ed__row">
-        <button type="button" class="ap-button stroked grey" data-clips-ed="split" data-tooltip="S">Split here</button>
-        <button type="button" class="ap-button stroked grey" data-clips-ed="merge-prev" ${i === 0 ? "disabled" : ""}>Merge with previous</button>
-        <button type="button" class="ap-button stroked grey" data-clips-ed="merge-next" ${i === segs.length - 1 ? "disabled" : ""}>Merge with next</button>
-      </div>
-      <button type="button" class="ap-button stroked grey" data-clips-ed="apply-cam" ${!seg.camera || sameCam < 2 ? "disabled" : ""}>
-        Apply to all ${escapeHtml(cameraName(seg.camera))} shots (${sameCam})
-      </button>
-    </div>
-    <div class="clips-ed__row">
-      <button type="button" class="ap-button ghost grey" data-clips-ed="reset-seg" ${seg.origin === "AUTO" ? "disabled" : ""}>Reset this part</button>
-      <button type="button" class="ap-button ghost grey" data-clips-ed="reset-all">Reset all to auto</button>
-    </div>
-    <label class="ap-checkbox-container clips-ed__snap"><input type="checkbox" data-clips-snap ${ed.snap ? "checked" : ""} /><i></i><span>Snap to camera cuts</span></label>`;
+    ${
+      seg.layout === "TWO"
+        ? `<button type="button" class="ap-button stroked grey" data-clips-ed="swap"><i class="ap-icon-refresh" aria-hidden="true"></i><span>Swap top and bottom</span></button>`
+        : ""
+    }
+    ${
+      seg.camera && sameCam > 1
+        ? `<div class="clips-ed__group clips-ed__apply">
+            <p class="clips-ed__hint">${escapeHtml(cameraName(seg.camera))} comes back ${sameCam - 1} more time${sameCam === 2 ? "" : "s"} in this clip.</p>
+            <button type="button" class="ap-button stroked grey" data-clips-ed="apply-cam">
+              <i class="ap-icon-stack" aria-hidden="true"></i><span>Use this framing on all ${sameCam} shots</span>
+            </button>
+          </div>`
+        : ""
+    }
+    <div class="clips-ed__panel-foot">
+      <button type="button" class="ap-button ghost grey" data-clips-ed="reset-all"><i class="ap-icon-reset" aria-hidden="true"></i><span>Reset every part to auto</span></button>
+    </div>`;
 }
 
 function subtitlesPanel() {
@@ -891,21 +958,6 @@ function brandPanel() {
     }`;
 }
 
-function formatPanel() {
-  const own = ed.w.ratioId !== ed.video.settings.ratio;
-  return `
-    <p class="clips-ed__panel-lead">The whole video is in ${escapeHtml(formatLabel(ed.video.settings.ratio))}. Give this clip its own shape if it's going somewhere else.</p>
-    <div class="clips-ed__formats" role="radiogroup" aria-label="Format">
-      ${RATIO_IDS.map(
-        (id) => `<label class="ap-radio-card card clips-ed__format">
-          <input type="radio" name="clips-ratio" value="${id}" data-clips-ratio-pick ${id === ed.w.ratioId ? "checked" : ""} />
-          <div><span><span class="clips-ed__ratio-glyph" style="aspect-ratio:${id.replace(":", "/")}"></span>${escapeHtml(formatLabel(id))}</span>${bestFor(id)}</div>
-        </label>`,
-      ).join("")}
-    </div>
-    ${own ? `<button type="button" class="ap-button ghost grey" data-clips-ed="ratio-reset">Use the video's format</button>` : ""}`;
-}
-
 // ── Edits ────────────────────────────────────────────────────────────
 
 const snapshot = () => JSON.stringify(ed.w);
@@ -956,6 +1008,7 @@ function edit(fn, { timeline = true } = {}) {
   fn();
   setDirty();
   paintPanel();
+  syncTlTools();
   if (timeline) paintTimeline();
   paintFrame();
 }
@@ -1087,6 +1140,9 @@ function handleClick(e) {
       return setRange(ed.t, ed.w.endMs);
     case "set-end":
       return setRange(ed.w.startMs, ed.t);
+    case "snap":
+      ed.snap = !ed.snap;
+      return syncTlTools();
     case "split":
       return doSplit();
     case "merge-prev":
@@ -1126,8 +1182,6 @@ function handleClick(e) {
       });
     case "brand-reset":
       return edit(() => (ed.w.brand = { ...ed.look.brand }));
-    case "ratio-reset":
-      return edit(() => (ed.w.ratioId = ed.video.settings.ratio));
     default:
       break;
   }
@@ -1140,6 +1194,18 @@ function handleClick(e) {
       applyTool();
     }
     return undefined;
+  }
+  const fmt = t.closest("[data-clips-format]");
+  if (fmt) {
+    fmt.closest("details")?.removeAttribute("open");
+    const id = fmt.dataset.clipsFormat === "video" ? ed.video.settings.ratio : fmt.dataset.clipsFormat;
+    if (id === ed.w.ratioId) return undefined;
+    return edit(() => {
+      ed.w.ratioId = id;
+      sizeCanvases();
+      ce.repaintStage();
+      paintTexts();
+    });
   }
   const corner = t.closest("[data-clips-corner]");
   if (corner) {
@@ -1194,6 +1260,10 @@ function redo() {
 }
 
 function doSplit() {
+  if (ed.tool !== "reframe") {
+    ed.tool = "reframe";
+    applyTool();
+  }
   const { t } = snapMs(ed.ctx, Math.round(ed.t), { on: ed.snap });
   pushUndo();
   if (!split(ed.ctx, ed.w.segments, t)) {
@@ -1205,6 +1275,7 @@ function doSplit() {
   paintPanel();
   paintTimeline();
   paintFrame();
+  syncTlTools();
 }
 
 let liveZoomUndo = false;
@@ -1281,14 +1352,6 @@ function handleChange(e) {
     return undefined;
   }
   if (t.matches("[data-clips-brand]")) return edit(() => (ed.w.brand[t.dataset.clipsBrand] = t.checked));
-  if (t.matches("[data-clips-ratio-pick]")) {
-    return edit(() => {
-      ed.w.ratioId = t.value;
-      sizeCanvases();
-      ce.repaintStage();
-      paintTexts();
-    });
-  }
   if (t.matches("[data-clips-text-field]") || t.matches("[data-clips-logo-size]")) {
     pushUndo();
     paintTimeline();
@@ -1298,6 +1361,11 @@ function handleChange(e) {
 
 function handleKey(e) {
   if (!ed) return;
+  if (e.target.closest?.("[data-clips-splitter]") && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+    e.preventDefault();
+    applySplit(splitPct + (e.key === "ArrowLeft" ? -2 : 2));
+    return;
+  }
   if (e.target.closest?.("input, textarea, select, [contenteditable=true]")) return;
   if (document.body.classList.contains("has-modal")) return;
   if (e.code === "Space") {
@@ -1327,6 +1395,7 @@ function handlePointerDown(e) {
   if (trim) return startDrag(e, { kind: "trim", edge: trim.dataset.clipsTrim });
   const bound = t.closest("[data-clips-bound]");
   if (bound) return startDrag(e, { kind: "bound", k: Number(bound.dataset.clipsBound), el: bound });
+  if (t.closest("[data-clips-splitter]")) return startSplitDrag(e);
   if (t.closest("[data-clips-overlay]")) return startCropDrag(e);
   const text = t.closest("[data-clips-text]");
   if (text) return startTextDrag(e, text);
@@ -1464,6 +1533,37 @@ function startCropDrag(e) {
 }
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
+
+// Source / Output split, in % of the stage: dragged, or nudged with the arrow
+// keys on the focused handle. Kept for the session.
+let splitPct = 64;
+
+function applySplit(pct) {
+  splitPct = Math.max(30, Math.min(80, pct));
+  const stage = ed.el.querySelector("[data-clips-stage]");
+  stage.style.setProperty("--clips-split", `${splitPct}%`);
+  ed.el.querySelector("[data-clips-splitter]")?.setAttribute("aria-valuenow", String(Math.round(splitPct)));
+  sizeCanvases();
+  paintFrame();
+  ce.repaintStage();
+}
+
+function startSplitDrag(e) {
+  const handle = e.target.closest("[data-clips-splitter]");
+  const stage = ed.el.querySelector("[data-clips-stage]");
+  const r = stage.getBoundingClientRect();
+  e.preventDefault();
+  handle.classList.add("is-dragging");
+  handle.setPointerCapture?.(e.pointerId);
+  const move = (ev) => applySplit(((ev.clientX - r.left) / r.width) * 100);
+  const up = () => {
+    handle.classList.remove("is-dragging");
+    window.removeEventListener("pointermove", move);
+    window.removeEventListener("pointerup", up);
+  };
+  window.addEventListener("pointermove", move);
+  window.addEventListener("pointerup", up);
+}
 
 function startTextDrag(e, node) {
   const out = ed.el.querySelector("[data-clips-output]");

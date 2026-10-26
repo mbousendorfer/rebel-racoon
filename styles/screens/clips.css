@@ -1292,8 +1292,7 @@ body.clips-space .app-content {
   flex: 1;
   min-height: 0;
   display: flex;
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-sm) var(--ref-spacing-sm) 0;
+  border-bottom: 1px solid var(--app-vc-border);
 }
 
 /* Two monitors, each in its own frame — the Source and Output monitors of an
@@ -1305,15 +1304,13 @@ body.clips-space .app-content {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  border: 1px solid var(--app-vc-border);
-  border-radius: var(--app-radius-md);
   background: var(--app-vc-surface);
-  overflow: hidden;
 }
 
+/* The split is the user's (the handle below); 64 % by default. */
 .clips-ed__monitor--source {
   display: none;
-  flex: 1.8 1 0;
+  flex: 0 0 var(--clips-split, 64%);
 }
 
 .clips-ed[data-tool="reframe"] .clips-ed__monitor--source {
@@ -1329,10 +1326,24 @@ body.clips-space .app-content {
   align-items: center;
   justify-content: space-between;
   gap: var(--ref-spacing-sm);
-  height: 32px;
-  padding: 0 var(--ref-spacing-sm);
+  min-height: 44px;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-sm);
   border-bottom: 1px solid var(--app-vc-border);
   font-size: var(--sys-text-style-caption-size);
+}
+
+/* The format picker in the Output bar: hugs its value, opens to the left so
+   its options stay on screen. */
+.clips-ed__format {
+  width: auto;
+  position: relative;
+  z-index: 4;
+}
+
+.clips-ed__format .ap-select-dropdown {
+  right: 0;
+  left: auto;
+  min-width: 300px;
 }
 
 .clips-ed__monitor-name {
@@ -1350,9 +1361,52 @@ body.clips-space .app-content {
   min-height: 0;
   display: grid;
   place-items: center;
-  padding: var(--ref-spacing-sm);
   background: #000;
   overflow: hidden;
+}
+
+/* The handle between the two monitors: a hairline that widens into a grip on
+   hover, like an editor's panel divider. */
+.clips-ed__splitter {
+  display: none;
+  position: relative;
+  flex: 0 0 1px;
+  background: var(--app-vc-border);
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.clips-ed[data-tool="reframe"] .clips-ed__splitter {
+  display: block;
+}
+
+.clips-ed__splitter::before {
+  content: "";
+  position: absolute;
+  inset: 0 -5px;
+}
+
+.clips-ed__splitter::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -2px;
+  width: 5px;
+  height: 40px;
+  margin-top: -20px;
+  border-radius: var(--app-radius-pill);
+  background: var(--app-vc-border-strong);
+  transition: background-color 150ms ease;
+}
+
+.clips-ed__splitter:hover::after,
+.clips-ed__splitter.is-dragging::after,
+.clips-ed__splitter:focus-visible::after {
+  background: var(--app-vc-accent);
+}
+
+.clips-ed__splitter:focus-visible {
+  outline: none;
 }
 
 .clips-ed__source {
@@ -1371,6 +1425,96 @@ body.clips-space .app-content {
 .clips-ed__overlay {
   cursor: grab;
   touch-action: none;
+}
+
+/* The timeline's own tools, between the timecode and the transcript toggle:
+   cutting and joining framing parts belongs to the timeline, like a razor. */
+.clips-ed__tl-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: var(--ref-spacing-md);
+  padding: 2px;
+  border: 1px solid var(--app-vc-border);
+  border-radius: var(--app-radius-md);
+}
+
+.clips-ed__tl-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  height: 28px;
+  padding: 0 var(--ref-spacing-xs);
+  border: 0;
+  border-radius: var(--app-radius-sm);
+  background: transparent;
+  color: var(--app-vc-text-muted);
+  font: inherit;
+  font-size: var(--sys-text-style-caption-bold-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    transform 160ms var(--app-ease-out);
+}
+
+.clips-ed__tl-tool svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .clips-ed__tl-tool:hover:not(:disabled) {
+    background: var(--app-vc-hover);
+    color: var(--app-vc-text);
+  }
+}
+
+.clips-ed__tl-tool:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.clips-ed__tl-tool:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.clips-ed__tl-tool[aria-pressed="true"] {
+  background: var(--app-vc-accent-soft);
+  color: var(--ref-color-electric-blue-60);
+}
+
+.clips-ed__tl-sep {
+  width: 1px;
+  height: 18px;
+  margin: 0 2px;
+  background: var(--app-vc-border);
+}
+
+.clips-ed__transport-spacer {
+  flex: 1;
+}
+
+.clips-ed__seg-reset {
+  margin-left: auto;
+}
+
+.clips-ed__apply {
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--app-vc-border);
+  border-radius: var(--app-radius-md);
+}
+
+.clips-ed__panel-foot {
+  margin-top: auto;
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--app-vc-border);
 }
 
 .clips-ed__transcript-toggle[aria-pressed="true"] {
@@ -1486,12 +1630,6 @@ body.clips-space .app-content {
 .clips-ed__time {
   font-variant-numeric: tabular-nums;
   color: var(--ref-color-grey-100);
-}
-
-.clips-ed__transport-hint {
-  margin-left: auto;
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
 }
 
 /* ── Timeline ── */
@@ -1820,31 +1958,136 @@ body.clips-space .app-content {
   color: var(--ref-color-grey-100);
 }
 
+/* Layout: four radio cards in a 2×2 grid, each a drawing of what the layout
+   does to a vertical frame. The DS radio dot sits in the card's corner. */
 .clips-ed__layouts {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--ref-spacing-xs);
 }
 
-.clips-ed__layout {
-  align-items: flex-start;
+.clips-layout.ap-radio-card {
+  padding: var(--ref-spacing-sm);
+  transition:
+    border-color 150ms ease,
+    transform 160ms var(--app-ease-out);
 }
 
-.clips-ed__layout::before {
-  margin-top: 2px;
+.clips-layout.ap-radio-card:active {
+  transform: scale(0.97);
 }
 
-.clips-ed__layout > span {
+.clips-layout.ap-radio-card::before {
+  position: absolute;
+  top: var(--ref-spacing-xs);
+  left: var(--ref-spacing-xs);
+}
+
+.clips-layout > div {
+  align-items: center;
+  text-align: center;
+  gap: 2px;
+}
+
+.clips-layout__glyph {
+  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  color: var(--ref-color-grey-100);
+  align-items: center;
+  justify-content: flex-end;
+  width: 34px;
+  height: 60px;
+  margin-bottom: var(--ref-spacing-xs);
+  border: 1.5px solid var(--app-vc-border-strong);
+  border-radius: 5px;
+  background: var(--app-vc-surface-sunken);
+  overflow: hidden;
+  transition: border-color 150ms ease;
 }
 
-.clips-ed__layout-hint {
+.clips-layout:has(input:checked) .clips-layout__glyph {
+  border-color: var(--ref-color-electric-blue-60);
+}
+
+/* A person: a head and shoulders, in the subtle text tone (blue when picked). */
+.clips-layout__person {
+  position: relative;
+  flex: 1;
+  width: 100%;
+}
+
+.clips-layout__person::before,
+.clips-layout__person::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  background: var(--app-vc-text-subtle);
+  transform: translateX(-50%);
+}
+
+.clips-layout__person::before {
+  bottom: 42%;
+  width: 34%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+
+.clips-layout__person::after {
+  bottom: 0;
+  width: 70%;
+  height: 38%;
+  border-radius: 10px 10px 0 0;
+}
+
+.clips-layout__glyph--two .clips-layout__person + .clips-layout__person {
+  border-top: 1.5px solid var(--app-vc-border-strong);
+}
+
+.clips-layout:has(input:checked) .clips-layout__person::before,
+.clips-layout:has(input:checked) .clips-layout__person::after {
+  background: var(--ref-color-electric-blue-60);
+}
+
+.clips-layout__glyph--auto {
+  justify-content: center;
+  font-size: 18px;
+  color: var(--app-vc-text-subtle);
+}
+
+.clips-layout:has(input:checked) .clips-layout__glyph--auto {
+  color: var(--ref-color-electric-blue-60);
+}
+
+/* Fit: the whole 16:9 frame, small, on a blurred fill. */
+.clips-layout__glyph--fit {
+  justify-content: center;
+  background: linear-gradient(
+    180deg,
+    var(--app-vc-surface-overlay),
+    var(--app-vc-surface-sunken),
+    var(--app-vc-surface-overlay)
+  );
+}
+
+.clips-layout__inset {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-block: 1.5px solid var(--app-vc-text-subtle);
+  background: var(--app-vc-surface-raised);
+}
+
+.clips-layout:has(input:checked) .clips-layout__inset {
+  border-color: var(--ref-color-electric-blue-60);
+}
+
+.clips-layout__name {
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.clips-layout__hint {
   font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--app-vc-text-muted);
 }
 
 .clips-ed__toggle {
@@ -1881,21 +2124,6 @@ body.clips-space .app-content {
   border-radius: var(--app-radius-sm);
   font: inherit;
   color: var(--ref-color-grey-100);
-}
-
-.clips-ed__formats {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-}
-
-.clips-ed__ratio-glyph {
-  display: inline-block;
-  height: 16px;
-  margin-right: var(--ref-spacing-xs);
-  border: 1.5px solid var(--ref-color-grey-100);
-  border-radius: 2px;
-  vertical-align: middle;
 }
 
 .clips-ed__rail {
