@@ -767,7 +767,10 @@
   min-height: 0;
   min-width: 0;
   padding: var(--ref-spacing-md);
-  background: var(--ref-color-grey-bg);
+  /* The stage: the clip plays on the DS's darkest surface, like a viewer —
+     the footage reads, the white details card sits on it. The rest of the
+     space stays light. */
+  background: var(--ref-color-grey-150);
 }
 
 .clips-clip__player {
@@ -814,7 +817,7 @@
 .clips-transport__tc {
   flex: none;
   font-variant-numeric: tabular-nums;
-  color: var(--ref-color-grey-100);
+  color: var(--ref-color-white); /* on the dark stage */
 }
 
 /* The clip's details: a white surface right against its picture. */
