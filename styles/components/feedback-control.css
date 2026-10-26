@@ -1,27 +1,139 @@
 /* feedback-control — the shared "how's this?" control on Archie-generated
-   elements (drafts, images, clips). Thumbs reuse the DS .ap-icon-button +
+   elements (the drafts' message-actions bar, clips). Thumbs reuse the DS .ap-icon-button +
    .rpanel-ideas__thumb active flip (defined in right-panel.css); this file
-   owns the strip/label, the collapsible reason panel, and its comment box.
+   owns the drafts' bar, the collapsible reason panel, and its comment box.
    Reason chips reuse .ap-filter-chip (ds-patches.css). */
 
-/* ── Strip variant (drafts card footer, image modal) ──────────────────── */
-.fb--strip {
+/* ── Message-actions bar (under a draft) ──────────────────────────────
+   After affectUI's Message Actions: icons only, each action shows what it
+   did in place — copy blurs into a green check, a vote pops, read aloud
+   becomes four bouncing bars. Both glyphs of an action are rendered;
+   `.is-on` on the button crossfades .fb__idle → .fb__done. */
+.fb--bar {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
-  padding-top: var(--ref-spacing-xxs);
 }
 
-.fb__row {
+.fb__bar {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxxs);
 }
 
-.fb__label {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
+.fb__copy,
+.fb__speak {
+  position: relative;
+}
+.fb__idle,
+.fb__done {
+  transition:
+    opacity 0.2s var(--app-ease-out),
+    filter 0.2s var(--app-ease-out),
+    transform 0.2s var(--app-ease-out);
+}
+.fb__done {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  opacity: 0;
+  filter: blur(4px);
+  transform: scale(0.6);
+  pointer-events: none;
+}
+.is-on > .fb__idle {
+  opacity: 0;
+  filter: blur(4px);
+  transform: scale(0.6);
+}
+.is-on > .fb__done {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+.fb__copy .fb__done {
+  color: var(--ref-color-green-100);
+}
+
+/* Read aloud — four bars, the reading glyph. Blue: it is the pressed
+   control's own state, not a tint on data. */
+.fb__eq {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 16px;
+  height: 16px;
+}
+.fb__eq > span {
+  width: 2px;
+  height: 100%;
+  border-radius: 1px;
+  background: var(--ref-color-electric-blue-100);
+  transform: scaleY(0.3);
+}
+.is-on .fb__eq > span {
+  animation: fb-eq 0.9s ease-in-out infinite;
+}
+.fb__eq > span:nth-child(2) {
+  animation-delay: -0.6s;
+}
+.fb__eq > span:nth-child(3) {
+  animation-delay: -0.3s;
+}
+.fb__eq > span:nth-child(4) {
+  animation-delay: -0.75s;
+}
+@keyframes fb-eq {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/* A vote pops (class set for one beat by onFeedbackClick). */
+.fb__thumb.is-popping i {
+  animation: fb-pop 0.3s var(--app-ease-bounce);
+}
+@keyframes fb-pop {
+  50% {
+    transform: scale(1.3);
+  }
+}
+
+/* The reasons row unfolds under the bar; after Send it says thanks in
+   place, then folds away. */
+.fb--bar .fb__panel:not([hidden]) {
+  animation: fb-unfold 0.2s var(--app-ease-out);
+}
+@keyframes fb-unfold {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.fb__thanks {
+  display: none;
+  margin: 0;
+  color: var(--ref-color-grey-100);
+}
+.fb__panel.is-sent > :not(.fb__thanks) {
+  display: none;
+}
+.fb__panel.is-sent > .fb__thanks {
+  display: block;
+}
+
+.fb__live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .fb__thumbs {
@@ -95,7 +207,17 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fb__comment {
+  .fb__comment,
+  .fb__idle,
+  .fb__done {
     transition: none;
+  }
+  .fb__thumb.is-popping i,
+  .is-on .fb__eq > span,
+  .fb--bar .fb__panel:not([hidden]) {
+    animation: none;
+  }
+  .is-on .fb__eq > span {
+    transform: scaleY(0.7);
   }
 }

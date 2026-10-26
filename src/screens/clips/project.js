@@ -7,19 +7,19 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2162";
-import { isFlagOn } from "../../feature-flags.js?v=2162";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2162";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2162";
-import { showToast } from "../../components/toast.js?v=2162";
-import { renderPostCard } from "../../components/post-card.js?v=2162";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2162";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2162";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2162";
-import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2162";
-import { getContextById } from "../../contexts-store.js?v=2162";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2162";
-import { captionStateFor } from "../../clip-captions.js?v=2162";
+import { navigate } from "../../router.js?v=1";
+import { isFlagOn } from "../../feature-flags.js?v=1";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=1";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=1";
+import { showToast } from "../../components/toast.js?v=1";
+import { renderPostCard } from "../../components/post-card.js?v=1";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=1";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=1";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=1";
+import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=1";
+import { getContextById } from "../../contexts-store.js?v=1";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=1";
+import { captionStateFor } from "../../clip-captions.js?v=1";
 import {
   getPosts,
   addPostDraft,
@@ -27,8 +27,8 @@ import {
   insertPost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2162";
-import { escapeHtml } from "../../utils.js?v=2162";
+} from "../../posts-store.js?v=1";
+import { escapeHtml } from "../../utils.js?v=1";
 import {
   getVideo,
   draftKey,
@@ -40,7 +40,7 @@ import {
   restoreClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2162";
+} from "../../videos-store.js?v=1";
 import {
   fmtMs,
   formatSelect,
@@ -59,7 +59,7 @@ import {
   SUBTITLE_IDS,
   bestFor,
   CTA_OPTIONS,
-} from "./shared.js?v=2162";
+} from "./shared.js?v=1";
 
 let target = null;
 let videoId = null;

@@ -20,18 +20,18 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2162";
-import { isFlagOn } from "../../feature-flags.js?v=2162";
-import { parseHashParams } from "../../url-state.js?v=2162";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2162";
-import { showToast } from "../../components/toast.js?v=2162";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2162";
-import { getContextById } from "../../contexts-store.js?v=2162";
-import { escapeHtml } from "../../utils.js?v=2162";
-import * as ce from "../../caption-editor.js?v=2162";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2162";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2162";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2162";
+import { navigate } from "../../router.js?v=1";
+import { isFlagOn } from "../../feature-flags.js?v=1";
+import { parseHashParams } from "../../url-state.js?v=1";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=1";
+import { showToast } from "../../components/toast.js?v=1";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=1";
+import { getContextById } from "../../contexts-store.js?v=1";
+import { escapeHtml } from "../../utils.js?v=1";
+import * as ce from "../../caption-editor.js?v=1";
+import { DEAD_ZONES } from "../../clip-captions.js?v=1";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=1";
 import {
   framingContext,
   initialSegments,
@@ -54,7 +54,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2162";
+} from "../../clip-framing.js?v=1";
 import {
   fmtMs,
   fmtPrecise,
@@ -68,8 +68,8 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2162";
-import { primeDraftSetup } from "./project.js?v=2162";
+} from "./shared.js?v=1";
+import { primeDraftSetup } from "./project.js?v=1";
 
 const MIN_CLIP_MS = 5000;
 const MAX_CLIP_MS = 300000;
