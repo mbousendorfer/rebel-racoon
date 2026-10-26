@@ -1487,14 +1487,6 @@ body.clips-space .app-content {
 
 /* The timeline's own tools, between the timecode and the transcript toggle:
    cutting and joining framing parts belongs to the timeline, like a razor. */
-/* The timeline toolbar reads left to right in the order you work: play and
-   where you are │ the clip's In / Out │ the framing parts (Reframe only). */
-.clips-ed__tl-tools {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
 .clips-ed__tl-tool {
   display: inline-flex;
   align-items: center;
@@ -1544,13 +1536,6 @@ body.clips-space .app-content {
 .clips-ed__tl-tool[aria-pressed="true"] {
   background: var(--app-vc-accent-soft);
   color: var(--ref-color-electric-blue-60);
-}
-
-.clips-ed__tl-sep {
-  width: 1px;
-  height: 18px;
-  margin: 0 var(--ref-spacing-xs);
-  background: var(--app-vc-border);
 }
 
 .clips-ed__seg-reset {
@@ -1688,46 +1673,8 @@ body.clips-space .app-content {
   color: var(--ref-color-grey-80);
 }
 
-/* In / Out: the trim, on the transport right above the handles it moves. */
-.clips-ed__inout {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-}
-
-.clips-ed__inout-field {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  margin-left: var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-}
-
-.clips-ed__inout-field:first-child {
-  margin-left: 0;
-}
-
-.clips-ed__inout-field .ap-input-group {
-  width: 84px;
-}
-
-.clips-ed__inout-field input {
-  font-variant-numeric: tabular-nums;
-}
-
-/* The error hangs under the fields, without pushing the transport. */
-.clips-ed__inout .clips-ed__error {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  white-space: nowrap;
-}
-
-/* Split / Merge / Snap act on framing parts: Reframe's tools only. Elsewhere
-   the framing track stays as a quiet reference and its legend goes. */
-.clips-ed:not([data-tool="reframe"]) .clips-ed__tl-tools,
+/* Outside Reframe the framing track stays as a quiet reference and its legend
+   goes. */
 .clips-ed:not([data-tool="reframe"]) .clips-tl__legend {
   display: none;
 }
@@ -1747,7 +1694,7 @@ body.clips-space .app-content {
 
 .clips-tl {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
+  grid-template-columns: 132px minmax(0, 1fr);
   gap: var(--ref-spacing-xs);
   padding-top: var(--ref-spacing-xs);
   user-select: none;
@@ -1760,6 +1707,81 @@ body.clips-space .app-content {
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
   align-items: center;
+}
+
+/* A track's header: its name, then the actions that act on that track — so
+   an action's place says what it applies to (Cut on Framing never reads as
+   cutting the clip). */
+.clips-tl__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+.clips-tl__head-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clips-tl__head-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.clips-tl__head .clips-ed__tl-tool {
+  height: 24px;
+  padding: 0 var(--ref-spacing-xxxs);
+}
+
+/* Framing's actions belong to Reframe, where the parts can be picked. */
+.clips-ed:not([data-tool="reframe"]) .clips-tl__reframe-only {
+  display: none;
+}
+
+/* The clip's start and end, on its edges in the ruler — a click to type. */
+.clips-tl__edge {
+  position: absolute;
+  top: 0;
+  z-index: 3;
+}
+
+.clips-tl__edge--start {
+  transform: translateX(-100%);
+}
+
+.clips-tl__edge-time,
+.clips-tl__edge-input {
+  height: 18px;
+  padding: 0 var(--ref-spacing-xxs);
+  border: 1px solid var(--app-vc-accent);
+  border-radius: var(--app-radius-sm);
+  background: var(--app-vc-surface);
+  color: var(--ref-color-electric-blue-60);
+  font: inherit;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.clips-tl__edge-time {
+  cursor: text;
+}
+
+.clips-tl__edge-time:hover {
+  background: var(--app-vc-accent-soft);
+}
+
+.clips-tl__edge-time.is-error {
+  border-color: var(--ref-color-red-100);
+  color: var(--ref-color-red-100);
+}
+
+.clips-tl__edge-input {
+  width: 64px;
+  color: var(--ref-color-grey-100);
+  outline: none;
 }
 
 .clips-tl__tracks {
@@ -1975,6 +1997,34 @@ body.clips-space .app-content {
   width: 2px;
   background: var(--ref-color-grey-100);
   opacity: 0;
+}
+
+.clips-tl__join {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  display: none;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--app-vc-border-strong);
+  border-radius: var(--app-radius-circle);
+  background: var(--app-vc-surface-overlay);
+  color: var(--ref-color-grey-100);
+  font: inherit;
+  font-size: 11px;
+  line-height: 14px;
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+
+.clips-tl__bound:hover .clips-tl__join {
+  display: block;
+}
+
+.clips-tl__join:hover {
+  border-color: var(--ref-color-electric-blue-60);
+  color: var(--ref-color-electric-blue-60);
 }
 
 .clips-tl__bound:hover::before,
@@ -2402,13 +2452,6 @@ body.clips-space .app-content {
   color: var(--ref-color-grey-80);
 }
 
-/* Trim's error, under the field it's about. */
-.clips-ed__error {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-red-100);
-}
-
 /* What Clean up hid from the subtitles, marked on the Clip track. */
 .clips-tl__cleans {
   position: absolute;
@@ -2465,4 +2508,11 @@ body.clips-space .app-content {
   height: 16px;
   margin-right: var(--ref-spacing-xxs);
   vertical-align: -3px;
+}
+
+/* A typed time that can't be used: said under its edge, in the track. */
+.clips-tl__readout.is-error {
+  top: 22px;
+  border-color: var(--ref-color-red-100);
+  color: var(--ref-color-red-100);
 }

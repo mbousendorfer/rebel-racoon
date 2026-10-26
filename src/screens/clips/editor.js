@@ -22,18 +22,18 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2175";
-import { isFlagOn } from "../../feature-flags.js?v=2175";
-import { parseHashParams } from "../../url-state.js?v=2175";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2175";
-import { showToast } from "../../components/toast.js?v=2175";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2175";
-import { getContextById } from "../../contexts-store.js?v=2175";
-import { escapeHtml } from "../../utils.js?v=2175";
-import * as ce from "../../caption-editor.js?v=2175";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2175";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2175";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2175";
+import { navigate } from "../../router.js?v=2178";
+import { isFlagOn } from "../../feature-flags.js?v=2178";
+import { parseHashParams } from "../../url-state.js?v=2178";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2178";
+import { showToast } from "../../components/toast.js?v=2178";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2178";
+import { getContextById } from "../../contexts-store.js?v=2178";
+import { escapeHtml } from "../../utils.js?v=2178";
+import * as ce from "../../caption-editor.js?v=2178";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2178";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2178";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2178";
 import {
   framingContext,
   initialSegments,
@@ -56,7 +56,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2175";
+} from "../../clip-framing.js?v=2178";
 import {
   fmtMs,
   fmtPrecise,
@@ -70,8 +70,8 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2175";
-import { primeDraftSetup } from "./project.js?v=2175";
+} from "./shared.js?v=2178";
+import { primeDraftSetup } from "./project.js?v=2178";
 
 const MIN_CLIP_MS = 5000;
 const MAX_CLIP_MS = 300000;
@@ -259,42 +259,11 @@ function shellHTML() {
         </section>
       </div>
 
-      <div class="clips-ed__transport" role="toolbar" aria-label="Timeline">
+      <div class="clips-ed__transport" role="toolbar" aria-label="Playback">
         <button type="button" class="ap-icon-button transparent" data-clips-ed="play" aria-label="Play" data-tooltip="Play / pause (Space)">
           <i class="ap-icon-play" aria-hidden="true" data-clips-play-icon></i>
         </button>
         <span class="clips-ed__time"><span data-clips-cur>0:00.0</span> / <span data-clips-len>0:00.0</span><span class="clips-ed__time-src"> · <span data-clips-at>0:00.0</span> in the video</span></span>
-        <span class="clips-ed__tl-sep" aria-hidden="true"></span>
-        <div class="clips-ed__inout" role="group" aria-label="The clip's start and end in the video">
-          <label class="clips-ed__inout-field"><span>In</span>
-            <span class="ap-input-group"><input type="text" data-clips-time="start" aria-label="Start in the video" /></span></label>
-          <button type="button" class="clips-ed__tl-tool" data-clips-ed="set-start" aria-label="Start at the playhead" data-tooltip="Start at the playhead (I)">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2v12"/><path d="M13 8H6"/><path d="M9 5 6 8l3 3"/></svg>
-          </button>
-          <label class="clips-ed__inout-field"><span>Out</span>
-            <span class="ap-input-group"><input type="text" data-clips-time="end" aria-label="End in the video" /></span></label>
-          <button type="button" class="clips-ed__tl-tool" data-clips-ed="set-end" aria-label="End at the playhead" data-tooltip="End at the playhead (O)">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 2v12"/><path d="M3 8h7"/><path d="M7 5l3 3-3 3"/></svg>
-          </button>
-          <span class="clips-ed__error" data-clips-trim-error role="alert"></span>
-        </div>
-        <div class="clips-ed__tl-tools" role="group" aria-label="Framing parts">
-          <span class="clips-ed__tl-sep" aria-hidden="true"></span>
-          <button type="button" class="clips-ed__tl-tool" data-clips-ed="split" data-tooltip="Split the part at the playhead (S)">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="4" width="5" height="8" rx="1.2"/><rect x="10" y="4" width="5" height="8" rx="1.2"/><path d="M8 1.5v13"/></svg>
-            <span>Split</span>
-          </button>
-          <button type="button" class="clips-ed__tl-tool" data-clips-ed="merge-prev" aria-label="Merge with the previous part" data-tooltip="Merge with the previous part">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3v10"/><path d="M14 8H5"/><path d="M8 5 5 8l3 3"/></svg>
-          </button>
-          <button type="button" class="clips-ed__tl-tool" data-clips-ed="merge-next" aria-label="Merge with the next part" data-tooltip="Merge with the next part">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M14 3v10"/><path d="M2 8h9"/><path d="M8 5l3 3-3 3"/></svg>
-          </button>
-          <button type="button" class="clips-ed__tl-tool" data-clips-ed="snap" aria-pressed="true" data-tooltip="Boundaries and the playhead stick to camera cuts">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v6a4 4 0 0 0 8 0V2"/><path d="M4 5h3M9 5h3"/></svg>
-            <span>Snap</span>
-          </button>
-        </div>
       </div>
 
       <div class="clips-ed__timeline" data-clips-timeline></div>
@@ -424,14 +393,9 @@ function setPlayIcon() {
   if (i) i.className = ed.playing ? "ap-icon-pause" : "ap-icon-play";
 }
 
-// The timeline tools follow the part under the playhead.
+// The Snap toggle in the Framing header shows its state.
 function syncTlTools() {
-  const segs = ed.w.segments;
-  const i = segs.indexOf(segmentAt(segs, ed.t));
-  const q = (a) => ed.el.querySelector(`[data-clips-ed="${a}"]`);
-  if (q("merge-prev")) q("merge-prev").disabled = i <= 0;
-  if (q("merge-next")) q("merge-next").disabled = i >= segs.length - 1;
-  q("snap")?.setAttribute("aria-pressed", String(ed.snap));
+  ed.el.querySelector('[data-clips-ed="snap"]')?.setAttribute("aria-pressed", String(ed.snap));
 }
 
 function syncTime() {
@@ -664,18 +628,35 @@ function pctIn(ms) {
   return `${((ms - v.from) / v.span) * 100}%`;
 }
 
-// The transport's In / Out: the clip's range in the video, kept in step with
-// the handles (a field being typed in is left alone).
-function paintInOut() {
-  ed.el.querySelectorAll("[data-clips-time]").forEach((i) => {
-    if (i !== document.activeElement) i.value = fmtPrecise(i.dataset.clipsTime === "start" ? ed.w.startMs : ed.w.endMs);
-  });
-  const err = ed.el.querySelector("[data-clips-trim-error]");
-  if (err) err.textContent = ed.trimError;
+// The clip's start and end, written on its edges in the ruler (the video's
+// time). A click turns one into a field to type the time in.
+function edgeTime(edge) {
+  const ms = edge === "start" ? ed.w.startMs : ed.w.endMs;
+  const err = ed.trimError && ed.trimErrorAt === edge;
+  const label = edge === "start" ? "Clip start" : "Clip end";
+  if (ed.editEdge === edge)
+    return `<span class="clips-tl__edge clips-tl__edge--${edge}" style="left:${pctIn(ms)}">
+      <input class="clips-tl__edge-input" data-clips-time="${edge}" value="${fmtPrecise(ms)}" aria-label="${label} in the video" /></span>`;
+  return `<span class="clips-tl__edge clips-tl__edge--${edge}" style="left:${pctIn(ms)}">
+      <button type="button" class="clips-tl__edge-time${err ? " is-error" : ""}" data-clips-edge-time="${edge}"
+        aria-label="${label}: ${fmtPrecise(ms)} — type a time" data-tooltip="${escapeHtml(err ? ed.trimError : `${label} — click to type a time`)}">${fmtPrecise(ms)}</button></span>`;
 }
 
+// A track's header: its name and the actions that act on it — the place an
+// action sits says what it applies to.
+function trackHead(name, actions = "") {
+  return `<div class="clips-tl__head"><span class="clips-tl__head-name">${name}</span><span class="clips-tl__head-actions">${actions}</span></div>`;
+}
+
+const ICON = {
+  in: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2v12"/><path d="M13 8H6"/><path d="M9 5 6 8l3 3"/></svg>`,
+  out: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 2v12"/><path d="M3 8h7"/><path d="M7 5l3 3-3 3"/></svg>`,
+  cut: `<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="4" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><path d="M5.5 10.5 12 2M10.5 10.5 4 2"/></svg>`,
+  snap: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v6a4 4 0 0 0 8 0V2"/><path d="M4 5h3M9 5h3"/></svg>`,
+  plus: `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>`,
+};
+
 function paintTimeline() {
-  paintInOut();
   const host = ed.el.querySelector("[data-clips-timeline]");
   if (!host) return;
   if (!ed.drag) ed.viewport = view();
@@ -726,7 +707,11 @@ function paintTimeline() {
     .join("");
   const bounds = segs
     .slice(1)
-    .map((s, k) => `<span class="clips-tl__bound" data-clips-bound="${k + 1}" style="left:${pctIn(s.startMs)}"></span>`)
+    .map(
+      (s, k) => `<span class="clips-tl__bound" data-clips-bound="${k + 1}" style="left:${pctIn(s.startMs)}">
+        <button type="button" class="clips-tl__join" data-clips-join="${k + 1}" aria-label="Join the two parts" data-tooltip="Join the two parts">×</button>
+      </span>`,
+    )
     .join("");
   const cuts = ed.ctx.cuts
     .filter((c) => c > ed.w.startMs && c < ed.w.endMs)
@@ -743,11 +728,25 @@ function paintTimeline() {
   const b = ed.w.brand;
   host.innerHTML = `
     <div class="clips-tl" data-clips-tl>
-      <div class="clips-tl__labels" aria-hidden="true">
-        <span></span><span>Clip</span><span>Framing</span><span>Text</span>
+      <div class="clips-tl__labels">
+        <span></span>
+        ${trackHead(
+          "Clip",
+          `<button type="button" class="clips-ed__tl-tool" data-clips-ed="set-start" aria-label="Start the clip at the playhead" data-tooltip="Start the clip at the playhead (I)">${ICON.in}</button>
+           <button type="button" class="clips-ed__tl-tool" data-clips-ed="set-end" aria-label="End the clip at the playhead" data-tooltip="End the clip at the playhead (O)">${ICON.out}</button>`,
+        )}
+        ${trackHead(
+          "Framing",
+          `<button type="button" class="clips-ed__tl-tool clips-tl__reframe-only" data-clips-ed="split" aria-label="Cut the framing at the playhead" data-tooltip="Cut the framing at the playhead — a new part, the clip stays whole (S)">${ICON.cut}</button>
+           <button type="button" class="clips-ed__tl-tool clips-tl__reframe-only" data-clips-ed="snap" aria-pressed="${ed.snap}" aria-label="Snap to camera cuts" data-tooltip="Parts' edges and the playhead snap to camera cuts">${ICON.snap}</button>`,
+        )}
+        ${trackHead(
+          "Text",
+          `<button type="button" class="clips-ed__tl-tool" data-clips-ed="add-text" aria-label="Add a text at the playhead" data-tooltip="Add a text at the playhead">${ICON.plus}</button>`,
+        )}
       </div>
       <div class="clips-tl__tracks" data-clips-tracks>
-        <div class="clips-tl__ruler" data-clips-scrub>${ticks}</div>
+        <div class="clips-tl__ruler" data-clips-scrub>${ticks}${edgeTime("start")}${edgeTime("end")}</div>
         <div class="clips-tl__trim" data-clips-scrub>
           <div class="clips-tl__wave">${wave}</div>
           <div class="clips-tl__dim" style="left:0;width:${pctIn(ed.w.startMs)}"></div>
@@ -767,6 +766,11 @@ function paintTimeline() {
           <span class="clips-tl__knob" data-clips-knob aria-hidden="true"></span>
         </div>
         ${ed.drag?.label ? `<span class="clips-tl__readout" style="left:${pctIn(ed.drag.at)}">${escapeHtml(ed.drag.label)}</span>` : ""}
+        ${
+          ed.trimError && !ed.drag
+            ? `<span class="clips-tl__readout is-error" role="alert" style="left:${pctIn(ed.trimErrorAt === "start" ? ed.w.startMs : ed.w.endMs)}">${escapeHtml(ed.trimError)}</span>`
+            : ""
+        }
       </div>
     </div>
     <p class="clips-tl__legend">${cams
@@ -1122,10 +1126,11 @@ function edit(fn, { timeline = true } = {}) {
   paintFrame();
 }
 
-// Trim's errors sit next to the In / Out fields, where the time was typed.
-function trimError(msg) {
+// Trim's errors sit on the edge whose time was typed.
+function trimError(msg, edge = ed.trimErrorAt) {
   ed.trimError = msg;
-  paintInOut();
+  ed.trimErrorAt = edge;
+  paintTimeline();
 }
 
 function setRange(startMs, endMs) {
@@ -1213,6 +1218,18 @@ function bindAll() {
   topbar?.addEventListener("input", onInput);
   root.addEventListener("input", onInput);
   root.addEventListener("change", onChange);
+  // Leaving an edge's field without changing it puts the time back.
+  const onFocusOut = (e) => {
+    if (!e.target.matches?.(".clips-tl__edge-input")) return;
+    setTimeout(() => {
+      if (ed?.editEdge) {
+        ed.editEdge = null;
+        paintTimeline();
+      }
+    });
+  };
+  root.addEventListener("focusout", onFocusOut);
+  ed.disposers.push(() => root.removeEventListener("focusout", onFocusOut));
   root.addEventListener("pointerdown", onDown);
   document.addEventListener("keydown", onKey);
   ed.disposers.push(bindSelectDismiss(root));
@@ -1265,9 +1282,6 @@ function handleClick(e) {
       return syncTlTools();
     case "split":
       return doSplit();
-    case "merge-prev":
-    case "merge-next":
-      return edit(() => merge(ed.ctx, ed.w.segments, seg, act === "merge-prev" ? -1 : 1));
     case "apply-cam":
       return edit(() => {
         const n = applyToCamera(ed.w.segments, seg);
@@ -1300,6 +1314,10 @@ function handleClick(e) {
         ed.selectedText = id;
         paintTexts();
       });
+      if (ed.tool !== "text") {
+        ed.tool = "text";
+        applyTool();
+      }
       // The playhead goes to the new text, so it shows at full strength.
       return seek(ed.w.startMs + txById(ed.selectedText).startMs + 1);
     case "cap-video": {
@@ -1315,6 +1333,20 @@ function handleClick(e) {
       return edit(() => (ed.w.brand = { ...ed.look.brand }));
     default:
       break;
+  }
+  const edgeBtn = t.closest("[data-clips-edge-time]");
+  if (edgeBtn) {
+    ed.editEdge = edgeBtn.dataset.clipsEdgeTime;
+    paintTimeline();
+    const input = ed.el.querySelector(".clips-tl__edge-input");
+    input?.focus();
+    input?.select();
+    return undefined;
+  }
+  const join = t.closest("[data-clips-join]");
+  if (join) {
+    const k = Number(join.dataset.clipsJoin);
+    return edit(() => merge(ed.ctx, ed.w.segments, ed.w.segments[k], -1));
   }
   const segBtn = t.closest("[data-clips-seg]");
   if (segBtn) {
@@ -1478,12 +1510,14 @@ function handleChange(e) {
     return;
   }
   if (t.matches("[data-clips-time]")) {
+    const edge = t.dataset.clipsTime;
+    ed.editEdge = null;
+    ed.trimErrorAt = edge;
     const ms = parseTime(t.value);
-    if (ms == null) return trimError("Type a time like 1:32.5");
-    if (t.dataset.clipsTime === "start") setRange(ms, ed.w.endMs);
+    if (ms == null) return trimError("Type a time like 1:32.5", edge);
+    if (edge === "start") setRange(ms, ed.w.endMs);
     else setRange(ed.w.startMs, ms);
-    t.value = fmtPrecise(t.dataset.clipsTime === "start" ? ed.w.startMs : ed.w.endMs); // 0:33 → 0:33.0
-    return undefined;
+    return paintTimeline();
   }
   if (t.matches("[data-clips-layout-pick]")) return edit(() => setLayout(ed.ctx, seg, t.value, ed.t, ratio()));
   if (t.matches("[data-clips-follow]")) return edit(() => ((seg.follow = t.checked), (seg.origin = "USER")));
@@ -1512,6 +1546,15 @@ function handleChange(e) {
 
 function handleKey(e) {
   if (!ed) return;
+  // The field typed on a clip edge: Enter confirms, Escape gives up.
+  if (e.target.matches?.(".clips-tl__edge-input")) {
+    if (e.key === "Enter") e.target.blur();
+    if (e.key === "Escape") {
+      ed.editEdge = null;
+      paintTimeline();
+    }
+    return;
+  }
   if (e.target.closest?.("[data-clips-splitter]") && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
     e.preventDefault();
     applySplit(splitPct + (e.key === "ArrowLeft" ? -2 : 2));
@@ -1546,6 +1589,9 @@ function handleKey(e) {
 function handlePointerDown(e) {
   if (!ed || e.button !== 0) return;
   const t = e.target;
+  // The controls on the timeline (an edge's time, its field, a cut's join) are
+  // clicks — they don't start a scrub or a drag.
+  if (t.closest("[data-clips-edge-time], [data-clips-time], [data-clips-join]")) return undefined;
   const trim = t.closest("[data-clips-trim]");
   if (trim) return startDrag(e, { kind: "trim", edge: trim.dataset.clipsTrim });
   if (t.closest("[data-clips-knob]")) return startDrag(e, { kind: "scrub" });
