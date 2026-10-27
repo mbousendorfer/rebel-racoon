@@ -1885,9 +1885,11 @@ body.has-modal {
    for a network's voice, one look everywhere, built like the memory was: on
    butter, Archie speaks (the network, the source, his sentence); below, on
    white, each added rule marked +. Compact: one line per rule. */
+/* A set width: the chat bubble sizes to its content, and the card is a size
+   container (its tiles reflow on its own width, not the window's). */
 .voice-edit {
-  width: 100%;
-  max-width: 560px;
+  width: 560px;
+  max-width: 100%;
   margin: var(--ref-spacing-xxs) 0;
 }
 /* Alone in its turn: level with Archie's avatar. */
@@ -1895,6 +1897,7 @@ body.has-modal {
   margin-top: 0;
 }
 .voice-edit__card {
+  container-type: inline-size;
   overflow: hidden;
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
@@ -2007,35 +2010,48 @@ body.has-modal {
 /* The Voice step in the thread (voice-intro-modal.js voiceAskHtml) — the voice
    edit's sibling: on butter what's missing, on white the ways to add rules as
    tiles (card hover = blue border), then the way out. */
-/* What rules for the network cover — secondary to Archie's sentence. */
-.voice-ask__covers {
-  margin: 0;
-  padding-left: calc(24px + var(--ref-spacing-xxs));
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
-}
-.voice-ask__covers strong {
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--ref-color-grey-100);
-}
 .voice-ask__body {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
 }
-.voice-ask__lead {
+/* Examples of rules for the network: each one a quiet chip. */
+.voice-ask__examples {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding-bottom: var(--ref-spacing-xs);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+.voice-ask__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.voice-ask__chips li {
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
+  border-radius: var(--app-radius-pill);
+  background: var(--ref-color-grey-05);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-100);
+}
+.voice-ask__label {
   margin: 0;
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-80);
 }
-/* The best way first, on its own row; the others share the row below. */
+/* The best way first, on its own row; the others share ONE row below,
+   in as many equal columns as there are (--others). */
 .voice-ask__options {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(var(--others, 3), minmax(0, 1fr));
   gap: var(--ref-spacing-xxs);
 }
 .voice-ask__option.is-best {
@@ -2053,6 +2069,15 @@ body.has-modal {
 }
 .voice-ask__option:not(.is-best) .voice-ask__hint {
   white-space: normal;
+}
+@container (max-width: 420px) {
+  .voice-ask__options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .voice-ask__option:not(.is-best) {
+    flex-direction: row;
+    align-items: center;
+  }
 }
 .voice-ask__option {
   display: flex;
@@ -2081,9 +2106,9 @@ body.has-modal {
   width: 32px;
   height: 32px;
   border-radius: var(--app-radius-lg);
-  background: var(--app-butter);
+  background: var(--ref-color-grey-05);
   font-size: var(--sys-icon-css-sm);
-  color: var(--app-butter-accent);
+  color: var(--ref-color-grey-100);
 }
 .voice-ask__text {
   display: flex;

@@ -18,11 +18,11 @@
 //   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2260";
-import { getContextById } from "../contexts-store.js?v=2260";
-import { playbookForNewWork } from "../active-playbook.js?v=2260";
-import { isNewUser } from "../user-mode.js?v=2260";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2260";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2262";
+import { getContextById } from "../contexts-store.js?v=2262";
+import { playbookForNewWork } from "../active-playbook.js?v=2262";
+import { isNewUser } from "../user-mode.js?v=2262";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2262";
 import {
   networkVoiceOn,
   networkVoice,
@@ -31,18 +31,18 @@ import {
   voiceParts,
   cloneItems,
   baseValue,
-} from "../voice-parts.js?v=2260";
+} from "../voice-parts.js?v=2262";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2260";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2260";
-import "../archie-pixels.js?v=2260";
-import { navigate } from "../router.js?v=2260";
-import { escapeHtml } from "../utils.js?v=2260";
+} from "../network-voice-flow.js?v=2262";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2262";
+import "../archie-pixels.js?v=2262";
+import { navigate } from "../router.js?v=2262";
+import { escapeHtml } from "../utils.js?v=2262";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -212,8 +212,12 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
 export function voiceAskHtml(ctx, net, { id, choices = [], giving = false, resolved = false }) {
   const label = escapeHtml(networkLabel(net));
   const traits = NETWORK_VOICE_TRAITS[net] || [];
-  const covers = traits.length
-    ? `<p class="voice-ask__covers">Rules for ${label} cover things like ${traits.map((t) => `<strong>${escapeHtml(t)}</strong>`).join(" · ")}.</p>`
+  // What a rule for the network looks like — examples, each one its own chip.
+  const examples = traits.length
+    ? `<div class="voice-ask__examples">
+        <p class="voice-ask__label">Rules for ${label} would say things like</p>
+        <ul class="voice-ask__chips">${traits.map((t) => `<li>${escapeHtml(t)}</li>`).join("")}</ul>
+      </div>`
     : "";
   const tiles = choices.filter((c) => c.tile);
   const hasDefault = choices.some((c) => c.value === "default");
@@ -233,15 +237,16 @@ export function voiceAskHtml(ctx, net, { id, choices = [], giving = false, resol
                   giving
                     ? `These drafts follow your default voice.`
                     : `I'd write for ${label} with your default voice — what works elsewhere may not work there.`
-                }</p>${covers}`
+                }</p>`
           }
         </div>
         ${
           resolved
             ? ""
             : `<div class="voice-ask__body">
-          <p class="voice-ask__lead">How should I add them?</p>
-          <div class="voice-ask__options">${tiles
+          ${examples}
+          <p class="voice-ask__label">How should I add them?</p>
+          <div class="voice-ask__options" style="--others:${Math.max(tiles.length - 1, 1)}">${tiles
             .map(
               (c, i) => `<button type="button" class="voice-ask__option${i ? "" : " is-best"}" ${pick(c.value)}>
                 <span class="voice-ask__icon" aria-hidden="true"><i class="${c.icon}"></i></span>
