@@ -19,19 +19,19 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2252";
-import { isPortraitFormat } from "../clip-formats.js?v=2252";
-import { presetById } from "../clip-captions.js?v=2252";
-import { renderFeedbackControl } from "./feedback-control.js?v=2252";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2254";
+import { isPortraitFormat } from "../clip-formats.js?v=2254";
+import { presetById } from "../clip-captions.js?v=2254";
+import { renderFeedbackControl } from "./feedback-control.js?v=2254";
 import {
   networkMeta,
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
-} from "../social-profiles.js?v=2252";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2252";
-import { REVEAL_MS } from "../archie-pixels.js?v=2252";
+} from "../social-profiles.js?v=2254";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2254";
+import { REVEAL_MS } from "../archie-pixels.js?v=2254";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -148,15 +148,15 @@ function renderVoiceStatus(net, opts, post) {
     return `<div class="ap-status-card orange posts__card-voice-status" role="status">
     <div class="upper">
       <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-      <div class="flow"><span>Written in the default voice — ${label} has no voice of its own.</span></div>
-      <button type="button" class="ap-link small standalone" data-post-voice="${escapeAttr(opts.playbookId)}" data-post-voice-net="${escapeAttr(net)}">Give ${label} its own voice</button>
+      <div class="flow"><span>Written with your default voice — no rules for ${label} yet.</span></div>
+      <button type="button" class="ap-link small standalone" data-post-voice="${escapeAttr(opts.playbookId)}" data-post-voice-net="${escapeAttr(net)}">Add rules for ${label}</button>
     </div>
   </div>`;
   if (opts.voiceStale && post.status !== "scheduled")
     return `<div class="ap-status-card blue posts__card-voice-status" role="status">
     <div class="upper">
       <i class="ap-icon-info_fill" aria-hidden="true"></i>
-      <div class="flow"><span>The ${label} voice changed after this draft was written.</span></div>
+      <div class="flow"><span>Your ${label} rules changed since this draft was written.</span></div>
       <button type="button" class="ap-link small standalone" data-post-voice-rewrite="${escapeAttr(post.id)}">Rewrite it</button>
     </div>
   </div>`;

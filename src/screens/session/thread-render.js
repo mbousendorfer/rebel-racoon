@@ -13,26 +13,26 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2252";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2252";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2252";
-import { getTopPost } from "../../top-posts-store.js?v=2252";
-import { getTopicById } from "../../topics-store.js?v=2252";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2252";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2252";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2252";
-import { getIdeas } from "../../library.js?v=2252";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2252";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2252";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2252";
-import { getPlans } from "../../post-plan-store.js?v=2252";
-import { isFlagOn } from "../../feature-flags.js?v=2252";
-import { CURRENT_USER } from "../../org.js?v=2252";
-import { getSessionById } from "../../sessions-store.js?v=2252";
-import { getContextById } from "../../contexts-store.js?v=2252";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2252";
-import { getFocusKey } from "../../components/right-panel.js?v=2252";
-import { learnedVoiceHtml } from "../../components/voice-intro-modal.js?v=2252";
+} from "./thread-turns.js?v=2254";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2254";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2254";
+import { getTopPost } from "../../top-posts-store.js?v=2254";
+import { getTopicById } from "../../topics-store.js?v=2254";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2254";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2254";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2254";
+import { getIdeas } from "../../library.js?v=2254";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2254";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2254";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2254";
+import { getPlans } from "../../post-plan-store.js?v=2254";
+import { isFlagOn } from "../../feature-flags.js?v=2254";
+import { CURRENT_USER } from "../../org.js?v=2254";
+import { getSessionById } from "../../sessions-store.js?v=2254";
+import { getContextById } from "../../contexts-store.js?v=2254";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2254";
+import { getFocusKey } from "../../components/right-panel.js?v=2254";
+import { learnedVoiceHtml } from "../../components/voice-intro-modal.js?v=2254";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -452,15 +452,15 @@ function renderVoiceLearnedTurn(message) {
   const label = escapeHtml(networkLabel(message.network));
   const id = escapeHtml(message.id);
   const ask = message.resolved
-    ? `<a class="ap-link" href="#/playbook/${escapeHtml(message.contextId)}?tab=voice&amp;voice=${escapeHtml(message.network)}">See the ${label} voice</a> in the Playbook.`
-    : `Should I write with it, or do you want to change something first?
+    ? `<a class="ap-link" href="#/playbook/${escapeHtml(message.contextId)}?tab=voice&amp;voice=${escapeHtml(message.network)}">See ${label} in your Voice profile</a>`
+    : `Add them and I'll write with them — or edit them first.
       <div class="voice-learned__actions">
         <button type="button" class="ap-button stroked grey" data-voice-learned="${id}" data-voice-action="edit">Edit in the Playbook</button>
-        <button type="button" class="ap-button primary blue" data-voice-learned="${id}" data-voice-action="use">Use this voice</button>
+        <button type="button" class="ap-button primary blue" data-voice-learned="${id}" data-voice-action="use">Add to Voice profile</button>
       </div>`;
   return renderMessageBubble({
     role: "assistant",
-    text: `Here's the ${label} voice I learned.
+    text: `Here's what I'd add to your Voice profile for ${label}.
       ${learnedVoiceHtml(ctx, message.network, message.voice, { pending: !message.resolved })}
       ${ask}`,
   });

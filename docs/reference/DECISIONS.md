@@ -318,10 +318,11 @@ Behind `voicePerNetwork`. Revu avec l'utilisateur le 2026-10-27 (« tout a l'air
 - **La default voice, pas la « Brand voice ».** C'est la voix d'origine du Playbook, la première, celle de tous les réseaux ; « Brand voice » ne disait rien. Renommée partout dans l'UI.
 - **Un seul état « default »** pour un réseau sans voix à lui. `borrowed` (jamais réglé) et `plain` (« Use the Brand voice as it is » choisi) étaient deux états pour la même chose vue de l'utilisateur ; seul reste `chosen`, pour ne pas reposer la question.
 - **Les mêmes choix partout** — posts · document · questions · edit (+ default voice quand un draft attend). Avant : quatre jeux différents selon le chat, Clips, la fiche et l'intro.
-- **Apprendre propose, l'utilisateur dispose.** Ce qu'Archie apprend est montré puis **utilisé** (seul moment où c'est enregistré) ou **édité** dans le Playbook. Avant : la voix était écrite dès l'apprentissage, et « valider » ne voulait rien dire.
+- **Apprendre propose, l'utilisateur dispose.** Ce qu'Archie apprend est montré puis **ajouté au Voice profile** (seul moment où c'est enregistré) ou **édité** dans le Playbook. Avant : la voix était écrite dès l'apprentissage, et « valider » ne voulait rien dire.
 - **Après « Edit in the Playbook », le flux ne reprend pas tout seul** : on redemande à Archie.
 - **Une voix qui change ne réécrit pas les drafts** — ils le disent (status card « The X voice changed… » + Rewrite it). Pas de réécriture automatique, même depuis « Give X its own voice ».
-- **« Optimize it » renommé « Give X its own voice »** : optimiser n'est jamais un bouton (une voix est apprise ou éditée), le mot contredisait la règle.
+- **« Optimize it » renommé « Add rules for X »** : optimiser n'est jamais un bouton (une voix est apprise ou éditée), le mot contredisait la règle.
+- **On n'« apprend » pas une voix, on ajoute des règles au Voice profile.** Archie propose des _rules for X_ par-dessus la default voice ; l'action est _Add to Voice profile_. « 1 voice learned », « Use this voice », « Give X its own voice » ont été retirés (2026-10-27).
 - **Le feedback d'un draft peut mettre à jour la voix** — seulement s'il parle d'écriture, et comme une proposition.
 - **L'onboarding : le dialog seul** (+ l'infobox de la fiche), pour les utilisateurs existants ; le dialog en trois temps est gardé tel quel.
 

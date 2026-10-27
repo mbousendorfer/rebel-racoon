@@ -20,13 +20,13 @@
 // list scroll position survives — same rationale as the clip/idea thumbs it
 // replaces.
 
-import { escapeAttr, escapeText } from "../utils.js?v=2252";
-import { showToast } from "./toast.js?v=2252";
-import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2252";
-import { getContextById } from "../contexts-store.js?v=2252";
-import { networkLabel } from "../social-profiles.js?v=2252";
-import { feedbackNetworkVoice } from "../voice-parts.js?v=2252";
-import { openVoiceProposal } from "./voice-proposal-modal.js?v=2252";
+import { escapeAttr, escapeText } from "../utils.js?v=2254";
+import { showToast } from "./toast.js?v=2254";
+import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2254";
+import { getContextById } from "../contexts-store.js?v=2254";
+import { networkLabel } from "../social-profiles.js?v=2254";
+import { feedbackNetworkVoice } from "../voice-parts.js?v=2254";
+import { openVoiceProposal } from "./voice-proposal-modal.js?v=2254";
 
 // "What was off?" reasons per element kind. value = stable key, label = UI.
 const REASONS = {
@@ -208,9 +208,9 @@ function offerVoiceUpdate(playbookId, net, feedback) {
     net,
     voice: proposal.voice,
     only: proposal.added,
-    title: `Thanks — should I update the ${label} voice?`,
-    useLabel: "Use this change",
-    onUse: () => showToast(`${label} voice updated. The drafts written before it say so.`, { duration: 3200 }),
+    title: `Thanks — add this to your ${label} rules?`,
+    useLabel: "Add to Voice profile",
+    onUse: () => showToast(`Added to your ${label} rules.`, { duration: 3200 }),
   });
   return true;
 }

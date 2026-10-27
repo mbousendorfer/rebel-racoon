@@ -15,9 +15,9 @@
 //     `only`: the rules the proposal adds (shown alone).
 //     onUse runs after the voice is saved.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2252";
-import { getContextById } from "../contexts-store.js?v=2252";
-import { networkLabel } from "../social-profiles.js?v=2252";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2254";
+import { getContextById } from "../contexts-store.js?v=2254";
+import { networkLabel } from "../social-profiles.js?v=2254";
 import {
   INTERVIEW,
   learnPhases,
@@ -25,9 +25,9 @@ import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
-} from "../network-voice-flow.js?v=2252";
-import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2252";
-import { escapeHtml } from "../utils.js?v=2252";
+} from "../network-voice-flow.js?v=2254";
+import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2254";
+import { escapeHtml } from "../utils.js?v=2254";
 
 const MODAL_ID = "voice-proposal";
 
@@ -84,9 +84,9 @@ export function openVoiceInterview({ net, onDone, onCancel = null }) {
   const label = networkLabel(net);
   show();
   current = { kind: "interview", net, onDone, onCancel };
-  titleEl.textContent = `Tell me how you write on ${label}`;
+  titleEl.textContent = `How you write on ${label}`;
   bodyEl.innerHTML = `
-    <p class="voice-proposal-modal__lead">Answer in your own words — any question can stay empty.</p>
+    <p class="voice-proposal-modal__lead">Answer in your own words. Leave any question empty.</p>
     ${INTERVIEW.map(
       (q) => `<div class="ap-form-field">
         <label for="vp-${q.key}">${escapeHtml(q.ask(label))}</label>
@@ -95,7 +95,7 @@ export function openVoiceInterview({ net, onDone, onCancel = null }) {
         </div>
       </div>`,
     ).join("")}`;
-  footEl.innerHTML = button("close", "ghost grey", "Cancel") + button("answers", "primary orange", "Write the voice");
+  footEl.innerHTML = button("close", "ghost grey", "Cancel") + button("answers", "primary orange", "Write the rules");
   setTimeout(() => bodyEl.querySelector("textarea")?.focus({ preventScroll: true }), 0);
 }
 
@@ -116,9 +116,10 @@ export function openVoiceProposal(opts) {
   const label = networkLabel(net);
   show();
   current = { kind: "proposal", ...opts };
-  titleEl.textContent = opts.title || `Your ${label} voice`;
+  titleEl.textContent = opts.title || `New rules for ${label}`;
   footEl.innerHTML =
-    button("close", "ghost grey", "Cancel") + button("use", "primary blue", opts.useLabel || "Use this voice", true);
+    button("close", "ghost grey", "Cancel") +
+    button("use", "primary blue", opts.useLabel || "Add to Voice profile", true);
   // Learning takes a moment, and says what it's doing.
   const phases = opts.phases || (voice ? null : learnPhases(net, from));
   if (!phases) return showProposal(voice);
@@ -148,7 +149,7 @@ function showProposal(voice) {
   bodyEl.innerHTML = learnedVoiceHtml(getContextById(c.ctxId), c.net, voice, { only: c.only || null });
   footEl.innerHTML =
     button("edit", "stroked grey", "Edit in the Playbook") +
-    button("use", "primary blue", c.useLabel || "Use this voice");
+    button("use", "primary blue", c.useLabel || "Add to Voice profile");
   footEl.querySelector(".primary").focus({ preventScroll: true });
 }
 

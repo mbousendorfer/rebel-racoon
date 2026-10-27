@@ -14,19 +14,19 @@
 //   `giving` (« Give X its own voice » on a draft): asked even for a network on
 //   the default voice, without that answer.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2252";
-import { getContextById } from "../contexts-store.js?v=2252";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2252";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2254";
+import { getContextById } from "../contexts-store.js?v=2254";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2254";
 import {
   missingNetworkVoices,
   voiceChoices,
   useDefaultVoice,
   editNetworkVoiceInPlaybook,
   documentName,
-} from "../network-voice-flow.js?v=2252";
-import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2252";
-import { openVoiceProposal, openVoiceInterview } from "./voice-proposal-modal.js?v=2252";
-import { escapeHtml } from "../utils.js?v=2252";
+} from "../network-voice-flow.js?v=2254";
+import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2254";
+import { openVoiceProposal, openVoiceInterview } from "./voice-proposal-modal.js?v=2254";
+import { escapeHtml } from "../utils.js?v=2254";
 
 const MODAL_ID = "network-voice";
 
@@ -90,14 +90,14 @@ export function requireNetworkVoicesInDialog(contextId, networks, onReady, { giv
   pending = { contextId, networks: missing, allNetworks: networks, onReady, giving };
   const one = networkLabel(missing[0]);
   titleEl.textContent = giving
-    ? `Give ${one} a voice of its own`
+    ? `Find what works on ${one}`
     : missing.length === 1
-      ? `${one} needs a voice first`
-      : `${missing.length} networks need a voice first`;
+      ? `How should I write on ${one}?`
+      : `How should I write on these ${missing.length} networks?`;
   bodyEl.innerHTML = `<p class="network-voice-modal__lead">${
     giving
-      ? `These drafts are written in the default voice. Once ${escapeHtml(one)} has its own, each one says so and you can rewrite it.`
-      : "I write every draft in its network's voice. Choose one before I write."
+      ? `These drafts use your default voice. Once ${escapeHtml(one)} has its own rules, you can rewrite each one.`
+      : `I don't know how you write on ${missing.length === 1 ? escapeHtml(one) : "these networks"} yet. Pick how I should learn it before I write.`
   }</p>${missing.map((n) => groupHtml(n, giving)).join("")}`;
   backdrop.hidden = false;
   backdrop.classList.add("open");

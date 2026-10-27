@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2252";
-import { conceptHint } from "./concepts.js?v=2252";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2254";
+import { conceptHint } from "./concepts.js?v=2254";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2252";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2252";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2252";
-import { isFlagOn } from "./feature-flags.js?v=2252";
-import { clipLookOf } from "./videos-store.js?v=2252";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2252";
-import { parseHashParams } from "./url-state.js?v=2252";
+} from "./playbook-brand-kit.js?v=2254";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2254";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2254";
+import { isFlagOn } from "./feature-flags.js?v=2254";
+import { clipLookOf } from "./videos-store.js?v=2254";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2254";
+import { parseHashParams } from "./url-state.js?v=2254";
 import {
   isListPart,
   voiceParts,
@@ -50,12 +50,12 @@ import {
   cloneNetworkVoice,
   markAdapted,
   withNetworkVoices,
-} from "./voice-parts.js?v=2252";
-import { showToast } from "./components/toast.js?v=2252";
-import { introSeen } from "./components/voice-intro-modal.js?v=2252";
-import { consumeHandoff } from "./handoff.js?v=2252";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2252";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2252";
+} from "./voice-parts.js?v=2254";
+import { showToast } from "./components/toast.js?v=2254";
+import { introSeen } from "./components/voice-intro-modal.js?v=2254";
+import { consumeHandoff } from "./handoff.js?v=2254";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2254";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2254";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2048,8 +2048,8 @@ function voiceIntroHtml(data) {
     <i class="ap-icon-info_fill" aria-hidden="true"></i>
     <div class="ap-infobox-content">
       <div class="ap-infobox-texts">
-        <span class="ap-infobox-title">Each network now gets its own voice</span>
-        <span class="ap-infobox-message">I write every draft the way its network reads it, from a voice I learn from your posts.</span>
+        <span class="ap-infobox-title">Each network can now have its own rules</span>
+        <span class="ap-infobox-message">On top of your default voice, I learn what works on each network from your posts.</span>
         <button type="button" class="ap-link" data-vi-open="${esc(data.id || "")}">Show me</button>
       </div>
     </div>
@@ -2558,9 +2558,9 @@ function networkVoiceLead(net, voice) {
   const label = networkLabel(net);
   if (voice?.optimizedBy === "learned")
     return voice.postCount
-      ? `How I write on ${label}, learned from ${voice.postCount} posts of ${voice.learnedFrom}. What's only ${label}'s is tagged.`
-      : `How I write on ${label}, learned from ${voice.learnedFrom}. What's only ${label}'s is tagged.`;
-  return `How I write on ${label}, as you set it. What's only ${label}'s is tagged.`;
+      ? `Your default voice, plus rules for ${label} learned from ${voice.postCount} posts of ${voice.learnedFrom} — tagged « For ${label} ».`
+      : `Your default voice, plus rules for ${label} learned from ${voice.learnedFrom} — tagged « For ${label} ».`;
+  return `Your default voice, plus rules for ${label} you wrote — tagged « For ${label} ».`;
 }
 
 // A warning infobox on a network's voice tab: its title, its message, an
@@ -2592,12 +2592,12 @@ function renderNetworkVoiceRead(data) {
       ? `${learnMenu(net)}<button type="button" class="ap-button stroked blue" data-pb2-voice-own><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></button>`
       : "";
     const notice = voiceNotice(
-      `${label} uses the default voice`,
-      `It has no length, format or hashtag habits of its own, so drafts may miss what works on ${label}.`,
+      `${label} follows your default voice`,
+      `No rules for ${label} yet — length, format, hashtags — so drafts may miss what works there.`,
     );
     return `${tabs}${pb2TabHead("voice", actions, {
       noEdit: true,
-      lead: `Give ${label} a voice of its own: let me learn it from your posts, a document or a few questions, or edit it yourself.`,
+      lead: `Add rules for ${label}: I can learn them from your posts, a document or a few questions — or write them yourself with Edit.`,
     })}${voiceIntroHtml(data)}${notice}<div class="pb2-grid pb2-grid--borrowed">${pb2VoiceParts(data).join("")}</div>`;
   }
   return `${tabs}${pb2TabHead("voice", canEditView() ? learnMenu(net) : "", { lead: networkVoiceLead(net, voice) })}${voiceIntroHtml(data)}<div class="pb2-grid">${pb2VoiceParts(
@@ -3074,7 +3074,7 @@ function commitEdit(data) {
   if (voice !== data) {
     const changed = markAdapted(data, voice);
     if (voice.optimizedBy !== "learned") voice.optimizedBy = changed ? "you" : "brand";
-    if (!changed) showToast(`Nothing changed for ${networkLabel(voiceNet)} — it still uses the default voice.`);
+    if (!changed) showToast(`Nothing changed — ${networkLabel(voiceNet)} still follows your default voice.`);
   }
   // A voice saved with a change is stamped: the drafts written before it say so.
   if (editScope === "voice" && isDirty(data)) {

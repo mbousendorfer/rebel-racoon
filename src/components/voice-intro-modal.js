@@ -17,11 +17,11 @@
 //   learnedVoiceHtml(ctx, net, voice?, { only, pending })
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2252";
-import { getContextById } from "../contexts-store.js?v=2252";
-import { playbookForNewWork } from "../active-playbook.js?v=2252";
-import { isNewUser } from "../user-mode.js?v=2252";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2252";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2254";
+import { getContextById } from "../contexts-store.js?v=2254";
+import { playbookForNewWork } from "../active-playbook.js?v=2254";
+import { isNewUser } from "../user-mode.js?v=2254";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2254";
 import {
   networkVoiceOn,
   networkVoice,
@@ -30,18 +30,18 @@ import {
   voiceParts,
   cloneItems,
   baseValue,
-} from "../voice-parts.js?v=2252";
+} from "../voice-parts.js?v=2254";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2252";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2252";
-import "../archie-pixels.js?v=2252";
-import { navigate } from "../router.js?v=2252";
-import { escapeHtml } from "../utils.js?v=2252";
+} from "../network-voice-flow.js?v=2254";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2254";
+import "../archie-pixels.js?v=2254";
+import { navigate } from "../router.js?v=2254";
+import { escapeHtml } from "../utils.js?v=2254";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -163,13 +163,13 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
         .map((i) => ({ part: p.title, ...i })),
     );
   const from = only
-    ? "From your feedback"
+    ? "from your feedback"
     : voice?.postCount
-      ? `Learned from ${voice.postCount} posts of ${voice.learnedFrom}`
+      ? `from ${voice.postCount} posts of ${voice.learnedFrom}`
       : voice?.learnedFrom
-        ? `Learned from ${voice.learnedFrom}`
+        ? `from ${voice.learnedFrom}`
         : "";
-  const name = `${label} voice`;
+  const name = `For ${label}`;
   const card = `
     <section class="voice-edit__card" aria-label="${name}">
       <div class="voice-edit__say">
@@ -183,7 +183,7 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
         </header>
         ${summary ? `<p class="voice-edit__line">${escapeHtml(summary)}</p>` : ""}
       </div>
-      <ul class="voice-edit__changes" aria-label="${only ? "What I'd add" : "What changes from the default voice"}">${changes
+      <ul class="voice-edit__changes" aria-label="${only ? "What I'd add" : "What I'd add to your default voice"}">${changes
         .map(
           (c) => `<li class="voice-edit__change">
             <i class="ap-icon-plus voice-edit__plus" aria-hidden="true"></i>
@@ -196,7 +196,7 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
           </li>`,
         )
         .join("")}</ul>
-      <p class="voice-edit__rest">${only ? `Everything else in the ${label} voice stays as it is.` : "Everything else follows the default voice."}</p>
+      <p class="voice-edit__rest">${only ? `Your other ${label} rules stay as they are.` : "Everything else comes from your default voice."}</p>
     </section>`;
   return `<div class="voice-edit">${card}</div>`;
 }
@@ -315,7 +315,7 @@ function renderSame(ctx) {
   stageEl.classList.remove("is-result");
   titleEl.textContent = "Each network, its own voice";
   subEl.textContent =
-    "One idea, written the way each network reads it. I learn each voice from your posts, and you can edit any of them in the Playbook.";
+    "The same idea, written the way each network reads it. I learn what works on each one from your posts — you review it before it's saved.";
   actionsEl.innerHTML = button("close", "ghost grey", "Not now") + button("next", "primary blue", "Next");
   showVoice("brand");
 }
@@ -362,25 +362,25 @@ const used = new Set();
 let resultNets = [];
 
 function stateText(ctx, net) {
-  if (proposals.has(net)) return used.has(net) ? "In use" : "Learned — not used yet";
+  if (proposals.has(net)) return used.has(net) ? "Added to your Voice profile" : "To review";
   const { state, voice } = networkVoice(ctx, net);
   if (state === "own")
     return voice.optimizedBy === "you"
-      ? "Edited by you"
+      ? "Its own rules, written by you"
       : voice.postCount
-        ? `Learned from ${voice.postCount} posts of ${voice.learnedFrom}`
-        : `Learned from ${voice.learnedFrom}`;
+        ? `Its own rules, from ${voice.postCount} posts of ${voice.learnedFrom}`
+        : `Its own rules, from ${voice.learnedFrom}`;
   const account = profileForNetwork(net);
   return canLearnFrom(account)
-    ? `Uses the default voice — I can learn its own from ${account.postCount} posts of ${account.handle}`
-    : "Uses the default voice — too few posts to learn from; the Playbook has other ways";
+    ? `Default voice — I can learn from ${account.postCount} posts of ${account.handle}`
+    : "Default voice — too few posts to learn from";
 }
 
 const learnable = (ctx, net) => networkVoice(ctx, net).state !== "own" && canLearnFrom(profileForNetwork(net));
 
 function rowHtml(ctx, net) {
   const slot = learnable(ctx, net)
-    ? `<label class="ap-checkbox-container"><input type="checkbox" value="${escapeHtml(net)}" data-vi-check checked aria-label="Learn the ${escapeHtml(networkLabel(net))} voice" /><i></i></label>`
+    ? `<label class="ap-checkbox-container"><input type="checkbox" value="${escapeHtml(net)}" data-vi-check checked aria-label="Learn from ${escapeHtml(networkLabel(net))}" /><i></i></label>`
     : "";
   return `
     <li class="voice-intro__net" data-vi-net="${escapeHtml(net)}">
@@ -443,8 +443,8 @@ function renderStand() {
   modal.classList.add("is-stand");
   titleEl.textContent = `Here's where ${brandOf(ctx)} stands`;
   subEl.textContent = playbookNetworks(ctx).some((n) => learnable(ctx, n))
-    ? "Check the networks I should learn from their posts. You'll see each voice before it's used. The others keep the default voice until you give them one."
-    : "A network gets its own voice from a document, a few questions or your edits — all in the Playbook.";
+    ? "Pick the networks I should learn from. You'll review what I find before anything is saved."
+    : "Add rules for a network from a document, a few questions or by hand — all in your Voice profile.";
   leftEl.innerHTML = `<ul class="voice-intro__nets">${playbookNetworks(ctx)
     .map((n) => rowHtml(ctx, n))
     .join("")}</ul>`;
@@ -464,7 +464,7 @@ function renderStandActions() {
   actionsEl.innerHTML =
     button("done", "ghost grey", "Later") +
     `<button type="button" class="ap-button primary orange" data-vi-action="learn" ${n ? "" : "disabled"}>${
-      n === 1 ? "Learn 1 voice" : `Learn ${n} voices`
+      n === 1 ? "Learn from 1 network" : `Learn from ${n} networks`
     }</button>`;
 }
 
@@ -514,9 +514,9 @@ function learnChecked() {
 function learned(nets) {
   learning = false;
   resultNets = nets;
-  titleEl.textContent = nets.length === 1 ? "1 voice learned" : `${nets.length} voices learned`;
-  subEl.textContent =
-    "Here's what I learned. Use each voice, or edit it in the Playbook first — nothing is saved until you use it.";
+  titleEl.textContent =
+    nets.length === 1 ? `New rules for ${networkLabel(nets[0])}` : `New rules for ${nets.length} networks`;
+  subEl.textContent = "Here's what I'd add to your Voice profile. Nothing is saved until you add it.";
   showLearned(nets[0]);
 }
 
@@ -524,7 +524,7 @@ function showLearned(net) {
   const ctx = getContextById(ctxId);
   modal.dataset.viFirst = net;
   leftEl.innerHTML = `
-    <ul class="voice-intro__voices" aria-label="Voices learned">
+    <ul class="voice-intro__voices" aria-label="Networks to review">
       ${resultNets
         .map(
           (
@@ -545,7 +545,7 @@ function showLearned(net) {
     ? button("done", "primary blue", "Done")
     : used.has(net)
       ? button("done", "ghost grey", "Later")
-      : button("edit", "stroked grey", "Edit in the Playbook") + button("use", "primary blue", "Use this voice");
+      : button("edit", "stroked grey", "Edit in the Playbook") + button("use", "primary blue", "Add to Voice profile");
   actionsEl.querySelector(".primary")?.focus({ preventScroll: true });
 }
 
@@ -555,9 +555,8 @@ function useShown() {
   saveNetworkVoice(ctxId, net, proposals.get(net));
   used.add(net);
   if (resultNets.every((n) => used.has(n))) {
-    titleEl.textContent = resultNets.length === 1 ? "1 voice in use" : `${resultNets.length} voices in use`;
-    subEl.textContent =
-      "Every draft for these networks now starts from its own voice. You can change any of them in the Playbook.";
+    titleEl.textContent = "Added to your Voice profile";
+    subEl.textContent = `I'll write for ${resultNets.length === 1 ? networkLabel(resultNets[0]) : "these networks"} with ${resultNets.length === 1 ? "its" : "their"} own rules from now on. You can change them anytime.`;
   }
   showLearned(resultNets.find((n) => !used.has(n)) || net);
 }

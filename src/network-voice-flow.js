@@ -32,7 +32,7 @@
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2252";
+import * as inlineQuestion from "./inline-question.js?v=2254";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -41,14 +41,14 @@ import {
   finishPending,
   postVoiceTurn,
   resolveTurn,
-} from "./assistant.js?v=2252";
-import { getContextById, updateContext } from "./contexts-store.js?v=2252";
-import { getSessionById } from "./sessions-store.js?v=2252";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2252";
-import { setHandoff } from "./handoff.js?v=2252";
-import { navigate } from "./router.js?v=2252";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2252";
-import { getPosts } from "./posts-store.js?v=2252";
+} from "./assistant.js?v=2254";
+import { getContextById, updateContext } from "./contexts-store.js?v=2254";
+import { getSessionById } from "./sessions-store.js?v=2254";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2254";
+import { setHandoff } from "./handoff.js?v=2254";
+import { navigate } from "./router.js?v=2254";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2254";
+import { getPosts } from "./posts-store.js?v=2254";
 import {
   networkVoiceOn,
   networkVoice,
@@ -57,7 +57,7 @@ import {
   interviewNetworkVoice,
   brandVoiceAsIs,
   playbookNetworks,
-} from "./voice-parts.js?v=2252";
+} from "./voice-parts.js?v=2254";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;
@@ -66,11 +66,11 @@ export const LEARN_PHASE_MS = 1400;
 export function learnPhases(net, from = null) {
   const label = networkLabel(net);
   const account = profileForNetwork(net);
-  if (from && typeof from === "object") return ["Reading your answers…", `Writing your ${label} voice…`];
+  if (from && typeof from === "object") return ["Reading your answers…", `Writing the rules for ${label}…`];
   return [
     from ? `Reading ${from}…` : `Reading ${account.postCount} posts of ${account.handle}…`,
     from ? `Finding how you write on ${label}…` : `Finding what works on ${label}…`,
-    `Writing your ${label} voice…`,
+    `Writing the rules for ${label}…`,
   ];
 }
 
@@ -100,31 +100,31 @@ export function voiceChoices(net, { needed = false, chat = false } = {}) {
   const items = [
     learn && {
       value: "learn",
-      label: `Learn it from ${account.handle}'s posts`,
-      caption: `I read its ${account.postCount} posts and keep what already works on ${label}.`,
+      label: `Learn from ${account.handle}'s posts`,
+      caption: `I read its ${account.postCount} posts and keep what already works for you on ${label}.`,
     },
     {
       value: "document",
-      label: "Learn it from a document",
+      label: "Learn from a document",
       caption:
         account && !learn
-          ? `${account.handle} doesn't have enough posts to learn from — a style guide or a brief works too.`
-          : `A style guide or a brief that says how you write on ${label}.`,
+          ? `${account.handle} has too few posts to learn from — a style guide or a brief works too.`
+          : `A style guide or a brief about how you write on ${label}.`,
     },
     {
       value: "interview",
-      label: `Tell me how you write on ${label}`,
-      caption: `A few quick questions${chat ? " here" : ""}, and I write the voice from your answers.`,
+      label: "Answer a few questions",
+      caption: `Five quick questions about how you write on ${label}${chat ? ", right here" : ""}.`,
     },
     {
       value: "edit",
-      label: "Edit it myself",
-      caption: `I open the ${label} voice in the Playbook, starting from the default voice.`,
+      label: "Write the rules myself",
+      caption: `I open ${label} in your Voice profile, starting from your default voice.`,
     },
     needed && {
       value: "default",
-      label: "Use the default voice",
-      caption: `No length, format or hashtag habits of ${label}'s own — the drafts may miss what works there.`,
+      label: "Use my default voice",
+      caption: `Nothing specific to ${label} — length, format, hashtags — so drafts may miss what works there.`,
     },
   ].filter(Boolean);
   return { account, items };
@@ -204,7 +204,7 @@ export function giveNetworkVoice(sessionId, ctxId, net) {
       if (n)
         postAssistantMessage(
           sessionId,
-          `${label} has its own voice now. ${n === 1 ? `Your ${label} draft was` : `Your ${n} ${label} drafts were`} written before it — rewrite ${n === 1 ? "it" : "any of them"} from ${n === 1 ? "its" : "their"} card.`,
+          `${label} has its own rules now. ${n === 1 ? `Your ${label} draft was` : `Your ${n} ${label} drafts were`} written before them — rewrite ${n === 1 ? "it" : "each one"} from its card.`,
         );
     },
     { giving: true },
@@ -245,14 +245,14 @@ export function answerLearnedVoice(sessionId, turnId, action) {
   awaiting.delete(turnId);
   resolveTurn(sessionId, turnId);
   if (action === "use") {
-    postUserTurn(sessionId, "Use this voice");
+    postUserTurn(sessionId, "Add to Voice profile");
     saveNetworkVoice(wait.ctxId, wait.net, wait.voice);
     return wait.go();
   }
-  postUserTurn(sessionId, "Edit it in the Playbook");
+  postUserTurn(sessionId, "Edit in the Playbook");
   postAssistantMessage(
     sessionId,
-    `I've opened what I learned for ${networkLabel(wait.net)} in the Playbook. Change what you want and save it, then ask me again.`,
+    `I've opened these rules in your Voice profile. Change what you want, save, then ask me again for the drafts.`,
   );
   editNetworkVoiceInPlaybook(wait.ctxId, wait.net, wait.voice);
 }
@@ -268,8 +268,8 @@ function askVoice(sessionId, ctxId, nets, onReady, { announce = true, giving = f
     postAssistantMessage(
       sessionId,
       giving
-        ? `Let's give ${label} a voice of its own.`
-        : `${label} doesn't have a voice yet, and I write every draft in its network's voice.`,
+        ? `Let's find what works for you on ${label}.`
+        : `I don't know how you write on ${label} yet, and every draft follows its network's rules.`,
     );
   inlineQuestion.ask(sessionId, {
     title: `How should I write on ${label}?`,
@@ -284,7 +284,7 @@ function askVoice(sessionId, ctxId, nets, onReady, { announce = true, giving = f
         useDefaultVoice(ctxId, net);
         postAssistantMessage(
           sessionId,
-          `I'll write for ${label} in the default voice. It has no habits of ${label}'s own, so the drafts may miss what works there — you can give ${label} its own voice from the Playbook at any time.`,
+          `I'll write for ${label} with your default voice. You can add rules for ${label} in your Voice profile anytime.`,
         );
         go();
       };
@@ -292,7 +292,7 @@ function askVoice(sessionId, ctxId, nets, onReady, { announce = true, giving = f
       if (choice === "edit") {
         postAssistantMessage(
           sessionId,
-          `I've opened the ${label} voice in the Playbook, starting from the default voice. Save it, then ask me again.`,
+          `I've opened ${label} in your Voice profile, starting from your default voice. Add your rules, save, then ask me again.`,
         );
         return editNetworkVoiceInPlaybook(ctxId, net);
       }
@@ -314,12 +314,12 @@ function askVoice(sessionId, ctxId, nets, onReady, { announce = true, giving = f
       if (choice === "interview") {
         postAssistantMessage(
           sessionId,
-          `Let's write it together: a few quick questions about how you write on ${label}. Answer in your own words, or skip any of them.`,
+          `Five quick questions about how you write on ${label}. Answer in your own words, or skip any of them.`,
         );
         return askInterview(sessionId, net, (answers) => {
           if (Object.keys(answers).length) return learning(answers);
           // Nothing said: the default voice — or, from « Give X its own voice », as it was.
-          if (giving) return postAssistantMessage(sessionId, `OK, ${label} keeps the default voice for now.`);
+          if (giving) return postAssistantMessage(sessionId, `OK — ${label} stays on your default voice for now.`);
           keepDefault();
         });
       }
