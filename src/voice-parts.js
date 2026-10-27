@@ -10,10 +10,10 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2241";
-import { isFlagOn } from "./feature-flags.js?v=2241";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2241";
-import { networkMeta, normalizeNetwork, getConnectedProfileById, profileForNetwork } from "./social-profiles.js?v=2241";
+import { escapeHtml } from "./utils.js?v=2243";
+import { isFlagOn } from "./feature-flags.js?v=2243";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2243";
+import { networkMeta, normalizeNetwork, getConnectedProfileById, profileForNetwork } from "./social-profiles.js?v=2243";
 
 const VOICE_PARTS = [
   { field: "voiceSummary", title: "How the Brand sounds", kind: "text" },
@@ -115,6 +115,27 @@ export function learnNetworkVoice(ctx, network, { from, postCount = 0 }) {
     voice[f] = [...cloneItems(ctx?.[f]), ...(a.add?.[f] || []).map((r) => ({ ...r, adapted: true }))];
   });
   return { ...voice, optimizedBy: "learned", learnedFrom: from, postCount };
+}
+
+// The network's voice, learned from the user's own answers in the chat (the
+// Voice step's interview, network-voice-flow.js): the Brand voice, with what
+// they said as the network's own rules. `answers`: { length, layout, tags,
+// never, example } — any may be empty. ponytail: their words go in as written;
+// in the product a model turns them into rules.
+export function interviewNetworkVoice(ctx, network, answers) {
+  const sentence = (s) => (s && !/[.!?…]$/.test(s) ? `${s}.` : s);
+  const rule = (prefix, text, extra = {}) =>
+    text ? [{ text: sentence(prefix ? `${prefix}: ${text}` : text), adapted: true, ...extra }] : [];
+  const voice = brandVoiceAsIs(ctx);
+  const example = answers.example ? { examples: [answers.example] } : {};
+  voice.voiceAlways = [
+    ...voice.voiceAlways,
+    ...rule("Length", answers.length, example),
+    ...rule("Layout", answers.layout, answers.length ? {} : example),
+  ];
+  voice.voiceSometimes = [...voice.voiceSometimes, ...rule("Hashtags and mentions", answers.tags)];
+  voice.voiceNever = [...voice.voiceNever, ...rule("", answers.never)];
+  return { ...voice, optimizedBy: "learned", learnedFrom: "your answers" };
 }
 
 // What Archie gives a network on its own (creation): its voice learned from the

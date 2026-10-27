@@ -1954,6 +1954,13 @@ body.has-modal {
   margin: 0;
   color: var(--ref-color-grey-100);
 }
+/* A line from the brand's own posts under its rule. */
+.voice-learned__example {
+  display: block;
+  margin-top: var(--ref-spacing-xxs);
+  color: var(--ref-color-grey-80);
+  font-style: italic;
+}
 /* The chat's answer: edit first, or use it — the primary last. */
 .voice-learned__actions {
   display: flex;
