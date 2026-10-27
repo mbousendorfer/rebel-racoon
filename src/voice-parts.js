@@ -10,17 +10,31 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2271";
-import { isFlagOn } from "./feature-flags.js?v=2271";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2271";
-import { networkMeta, normalizeNetwork, getConnectedProfileById, profileForNetwork } from "./social-profiles.js?v=2271";
+import { escapeHtml } from "./utils.js?v=2272";
+import { isFlagOn } from "./feature-flags.js?v=2272";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2272";
+import {
+  networkMeta,
+  networkLabel,
+  networkIcon,
+  normalizeNetwork,
+  getConnectedProfileById,
+  profileForNetwork,
+} from "./social-profiles.js?v=2272";
 
+// `hint`: what the part holds, said under its title — on the Playbook's tab
+// and in a voice proposal (one source for both).
 const VOICE_PARTS = [
-  { field: "voiceSummary", title: "How the Brand sounds", kind: "text" },
-  { field: "voiceAlways", title: "Always", kind: "rules" },
-  { field: "voiceNever", title: "Never", kind: "rules" },
-  { field: "voiceByPost", title: "Depending on the post", kind: "cases" },
-  { field: "voiceSometimes", title: "Now and then", kind: "rules" },
+  { field: "voiceSummary", title: "How the Brand sounds", kind: "text", hint: "The overall tone, in a few sentences." },
+  { field: "voiceAlways", title: "Always", kind: "rules", hint: "Rules every post follows." },
+  { field: "voiceNever", title: "Never", kind: "rules", hint: "What no post ever does, and the words I never use." },
+  {
+    field: "voiceByPost",
+    title: "Depending on the post",
+    kind: "cases",
+    hint: "How each kind of post is written — a launch, a hiring post, a recap.",
+  },
+  { field: "voiceSometimes", title: "Now and then", kind: "rules", hint: "Habits I use sometimes, not in every post." },
 ];
 
 export function voiceParts() {
@@ -37,6 +51,12 @@ export function cloneItems(v) {
   return v
     .map((i) => (typeof i === "string" ? { text: i } : i && typeof i === "object" ? structuredClone(i) : null))
     .filter((i) => i && String(i.text || i.when || "").trim());
+}
+
+// What marks a rule (or the summary) as a network's own — « For LinkedIn ».
+// Shared by the Playbook's network tabs and the voice proposal.
+export function voiceNetTagHtml(net) {
+  return `<span class="ap-tag grey mini pb2-voice-tag"><i class="${networkIcon(net)}" aria-hidden="true"></i><span>For ${escapeHtml(networkLabel(net))}</span></span>`;
 }
 
 // A part's items, read: the rule in ink, a case's kind of post above it in

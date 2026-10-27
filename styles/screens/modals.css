@@ -1977,11 +1977,7 @@ body.has-modal {
   display: flex;
   flex-direction: column;
 }
-/* The destination and the section titles sit at the text's x (under the
-   card's title); the + of each rule in the glyph column. */
-.voice-edit__part {
-  padding-left: calc(16px + var(--ref-spacing-xs));
-}
+/* The destination sits at the text's x (under the card's title). */
 .voice-edit__where {
   margin: 0;
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-xs)
@@ -1997,46 +1993,39 @@ body.has-modal {
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
   border-top: 1px solid var(--ref-color-grey-20);
 }
+/* A section: its title on the card's title rung, what it holds as the
+   secondary line (VOICE_PARTS hint), then its rules in the Voice profile's own
+   look (voice-parts voiceItemsHtml — grey rule boxes, « For X » tags). */
+.voice-edit__part,
+.voice-edit__hint,
+.voice-edit__body {
+  margin: 0;
+  padding-left: calc(16px + var(--ref-spacing-xs));
+}
 .voice-edit__part {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--ref-color-grey-100);
 }
-.voice-edit__rules {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-/* An added rule: + in the glyph column, the rule at the text's x. */
-.voice-edit__change {
-  display: grid;
-  grid-template-columns: 16px minmax(0, 1fr);
-  column-gap: var(--ref-spacing-xs);
-  align-items: start;
-}
-/* The + sits on the rule's FIRST line, whatever its length. */
-.voice-edit__plus {
-  justify-self: center;
-  margin-top: calc((var(--sys-text-style-body-line-height) - var(--sys-icon-css-xs)) / 2);
-  font-size: var(--sys-icon-css-xs);
-  color: var(--app-butter-accent);
-}
-.voice-edit__rule {
-  color: var(--ref-color-grey-100);
-  text-wrap: pretty;
-}
-/* A line from the brand's own posts under its rule. */
-.voice-edit__example {
-  display: block;
-  margin-top: var(--ref-spacing-xxxs);
+.voice-edit__hint {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
+}
+.voice-edit__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxs);
+  margin-top: var(--ref-spacing-xxs);
+}
+.voice-edit__body .voice-rules {
+  align-self: stretch;
+}
+.voice-edit__lead {
+  margin: 0;
+  color: var(--ref-color-grey-100);
 }
 .voice-edit__rest {
   margin: 0;

@@ -7,7 +7,7 @@
  * already used by other modals in this app.
  */
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2271";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2272";
 
 const OVERLAY_ID = "shortcutLegend";
 
