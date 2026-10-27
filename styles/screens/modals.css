@@ -1888,7 +1888,9 @@ body.has-modal {
 /* A set width: the chat bubble sizes to its content, and the card is a size
    container (its tiles reflow on its own width, not the window's). */
 .voice-edit {
-  width: 560px;
+  /* The chat card's width — as a plain value: min(…, 100%) is not definite
+     inside a bubble that sizes to its content, and the card collapses. */
+  width: var(--app-chat-card);
   max-width: 100%;
   margin: var(--ref-spacing-xxs) 0;
 }
@@ -1900,7 +1902,7 @@ body.has-modal {
   container-type: inline-size;
   overflow: hidden;
   border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-card);
+  border-radius: var(--app-radius-lg);
   background: var(--app-surface);
 }
 .voice-edit__say {
@@ -1912,18 +1914,20 @@ body.has-modal {
 }
 .voice-edit__head {
   display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
   min-width: 0;
 }
+/* The head glyph: a bare 16px column, 12px before the title, on its line —
+   every Archie card starts its text at the same x (.drafts-card__icon). */
 .voice-edit__net {
   display: grid;
   place-items: center;
   flex: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--app-surface);
+  align-self: flex-start;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
   font-size: var(--sys-icon-css-sm);
   color: var(--ref-color-grey-100);
 }
@@ -1952,10 +1956,13 @@ body.has-modal {
 .voice-edit__pending {
   flex: none;
 }
+/* Archie's sentence: the thread's secondary line (12/16 grey-80). */
 .voice-edit__line {
   margin: 0;
-  padding-left: calc(24px + var(--ref-spacing-xxs));
-  color: var(--ref-color-grey-100);
+  padding-left: calc(16px + var(--ref-spacing-xs));
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
   text-wrap: pretty;
 }
 .voice-edit__changes {
@@ -1969,8 +1976,8 @@ body.has-modal {
 /* An added rule: + · its part · the rule, the parts in one column. */
 .voice-edit__change {
   display: grid;
-  grid-template-columns: 24px 4.5rem minmax(0, 1fr);
-  column-gap: var(--ref-spacing-xxs);
+  grid-template-columns: 16px 4.5rem minmax(0, 1fr);
+  column-gap: var(--ref-spacing-xs);
   align-items: baseline;
 }
 /* The + sits on the rule's FIRST line, whatever its length. */
@@ -2002,7 +2009,7 @@ body.has-modal {
 .voice-edit__rest {
   margin: 0;
   padding: var(--ref-spacing-xxs) var(--ref-spacing-sm) var(--ref-spacing-xs)
-    calc(var(--ref-spacing-sm) + 24px + var(--ref-spacing-xxs));
+    calc(var(--ref-spacing-sm) + 16px + var(--ref-spacing-xs));
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
