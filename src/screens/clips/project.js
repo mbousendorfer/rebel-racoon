@@ -7,35 +7,36 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2243";
-import { isFlagOn } from "../../feature-flags.js?v=2243";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2243";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2243";
-import { showToast } from "../../components/toast.js?v=2243";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2243";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2243";
-import { networkVoice } from "../../voice-parts.js?v=2243";
-import { renderPostCard } from "../../components/post-card.js?v=2243";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2243";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2243";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2243";
+import { navigate } from "../../router.js?v=2245";
+import { isFlagOn } from "../../feature-flags.js?v=2245";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2245";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2245";
+import { showToast } from "../../components/toast.js?v=2245";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2245";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2245";
+import { rewriteDraftsInVoice } from "../../network-voice-flow.js?v=2245";
+import { networkVoice } from "../../voice-parts.js?v=2245";
+import { renderPostCard } from "../../components/post-card.js?v=2245";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2245";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2245";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2245";
 import {
   getConnectedProfiles,
   renderProfileTag,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-} from "../../social-profiles.js?v=2243";
-import { getContextById } from "../../contexts-store.js?v=2243";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2243";
-import { captionStateFor } from "../../clip-captions.js?v=2243";
+} from "../../social-profiles.js?v=2245";
+import { getContextById } from "../../contexts-store.js?v=2245";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2245";
+import { captionStateFor } from "../../clip-captions.js?v=2245";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2243";
-import { escapeHtml } from "../../utils.js?v=2243";
+} from "../../posts-store.js?v=2245";
+import { escapeHtml } from "../../utils.js?v=2245";
 import {
   getVideo,
   draftKey,
@@ -46,7 +47,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2243";
+} from "../../videos-store.js?v=2245";
 import {
   fmtMs,
   formatSelect,
@@ -65,7 +66,7 @@ import {
   SUBTITLE_IDS,
   bestFor,
   CTA_OPTIONS,
-} from "./shared.js?v=2243";
+} from "./shared.js?v=2245";
 
 let target = null;
 let videoId = null;
@@ -1100,10 +1101,14 @@ function onClick(e) {
       getPosts(key).filter((p) => p.status !== "scheduled"),
     );
   }
+  // « Optimize it » on a draft in the Brand voice: the Voice dialog, then the
+  // video's drafts for that network rewritten in the new voice.
   const voice = t.closest("[data-post-voice]");
   if (voice) {
     const net = voice.dataset.postVoiceNet;
-    return navigate(`/playbook/${voice.dataset.postVoice}?tab=voice${net ? `&voice=${net}` : ""}`);
+    return requireNetworkVoicesInDialog(voice.dataset.postVoice, [net], () => rewriteDraftsInVoice(key, net), {
+      optimize: true,
+    });
   }
   const del = t.closest("[data-post-delete]");
   if (del) {

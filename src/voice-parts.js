@@ -10,10 +10,10 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2243";
-import { isFlagOn } from "./feature-flags.js?v=2243";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2243";
-import { networkMeta, normalizeNetwork, getConnectedProfileById, profileForNetwork } from "./social-profiles.js?v=2243";
+import { escapeHtml } from "./utils.js?v=2245";
+import { isFlagOn } from "./feature-flags.js?v=2245";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2245";
+import { networkMeta, normalizeNetwork, getConnectedProfileById, profileForNetwork } from "./social-profiles.js?v=2245";
 
 const VOICE_PARTS = [
   { field: "voiceSummary", title: "How the Brand sounds", kind: "text" },
@@ -182,8 +182,9 @@ export function cloneNetworkVoice(v) {
 //               before it gets one (network-voice-flow.js)
 //   "plain"     the Brand voice as it is — written, but warned
 //   "own"       its own voice: learned, or edited
+// `network` as a draft names it ("twitter") or as a voice is keyed ("x").
 export function networkVoice(ctx, network) {
-  const own = networkVoiceOn() && network ? ctx?.voiceByNetwork?.[network] : null;
+  const own = networkVoiceOn() && network ? ctx?.voiceByNetwork?.[normalizeNetwork(network)] : null;
   if (!networkVoiceOn() || !network) return { state: "brand", voice: ctx };
   if (!own) return { state: "borrowed", voice: ctx };
   if (own.optimizedBy === "brand") return { state: "plain", voice: ctx };

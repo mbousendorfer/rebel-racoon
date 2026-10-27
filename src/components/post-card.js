@@ -19,19 +19,19 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2243";
-import { isPortraitFormat } from "../clip-formats.js?v=2243";
-import { presetById } from "../clip-captions.js?v=2243";
-import { renderFeedbackControl } from "./feedback-control.js?v=2243";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2245";
+import { isPortraitFormat } from "../clip-formats.js?v=2245";
+import { presetById } from "../clip-captions.js?v=2245";
+import { renderFeedbackControl } from "./feedback-control.js?v=2245";
 import {
   networkMeta,
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
-} from "../social-profiles.js?v=2243";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2243";
-import { REVEAL_MS } from "../archie-pixels.js?v=2243";
+} from "../social-profiles.js?v=2245";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2245";
+import { REVEAL_MS } from "../archie-pixels.js?v=2245";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):

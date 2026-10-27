@@ -14,13 +14,15 @@
 // Clips space, components/network-voice-modal.js):
 //   missingNetworkVoices(ctx, networks) · voiceChoices(net, { chat }) ·
 //   applyNetworkVoice(ctxId, net, choice, from?) · editNetworkVoiceInPlaybook(ctxId, net)
+// « Optimize it » on a draft written in the Brand voice:
+//   optimizeNetworkVoice(sessionId, ctxId, net) · rewriteDraftsInVoice(postsKey, net)
 // The chat's « voice-learned » turn answers through:
 //   answerLearnedVoice(sessionId, turnId, "keep" | "edit")
 //
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2243";
+import * as inlineQuestion from "./inline-question.js?v=2245";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -29,14 +31,16 @@ import {
   finishPending,
   postVoiceTurn,
   resolveTurn,
-} from "./assistant.js?v=2243";
-import { introSeen, markIntroSeen } from "./components/voice-intro-modal.js?v=2243";
-import { getContextById, updateContext } from "./contexts-store.js?v=2243";
-import { getSessionById } from "./sessions-store.js?v=2243";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2243";
-import { setHandoff } from "./handoff.js?v=2243";
-import { navigate } from "./router.js?v=2243";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2243";
+} from "./assistant.js?v=2245";
+import { introSeen, markIntroSeen } from "./components/voice-intro-modal.js?v=2245";
+import { getContextById, updateContext } from "./contexts-store.js?v=2245";
+import { getSessionById } from "./sessions-store.js?v=2245";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2245";
+import { setHandoff } from "./handoff.js?v=2245";
+import { navigate } from "./router.js?v=2245";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2245";
+import { getPosts } from "./posts-store.js?v=2245";
+import { startRewrite } from "./draft-rewrite.js?v=2245";
 import {
   networkVoiceOn,
   networkVoice,
@@ -45,7 +49,7 @@ import {
   interviewNetworkVoice,
   brandVoiceAsIs,
   playbookNetworks,
-} from "./voice-parts.js?v=2243";
+} from "./voice-parts.js?v=2245";
 
 // Learning a voice takes a moment, and says what it's doing: three phases.
 export const LEARN_PHASE_MS = 1400;
@@ -154,6 +158,36 @@ function askInterview(sessionId, net, onDone, answers = {}, k = 0) {
   });
 }
 
+// « Optimize it » on a draft written in the Brand voice (its status card, in
+// the chat's Drafts panel): the Voice step, asked in the chat — even for a
+// network on the Brand voice as it is, without that answer — then the chat's
+// drafts for that network rewritten in the new voice.
+export function optimizeNetworkVoice(sessionId, ctxId, net) {
+  askVoice(
+    sessionId,
+    ctxId,
+    [net],
+    () => {
+      const n = rewriteDraftsInVoice(sessionId, net);
+      const label = networkLabel(net);
+      if (n)
+        postAssistantMessage(
+          sessionId,
+          `I'm rewriting ${n === 1 ? `the ${label} draft` : `the ${n} ${label} drafts`} in its new voice.`,
+        );
+    },
+    { optimizing: true },
+  );
+}
+
+// The drafts of `postsKey` (a chat, or a video's in the Clips space) for one
+// network, rewritten in its voice — the scheduled ones stay as they are.
+export function rewriteDraftsInVoice(postsKey, net) {
+  const drafts = getPosts(postsKey).filter((p) => normalizeNetwork(p.network) === net && p.status !== "scheduled");
+  drafts.forEach((p) => startRewrite(postsKey, p.id, "voice"));
+  return drafts.length;
+}
+
 // The learned voices waiting for an answer: turn id → { ctxId, net, go }.
 const awaiting = new Map();
 
@@ -177,12 +211,17 @@ export function answerLearnedVoice(sessionId, turnId, action) {
 
 // `announce` is false when the question is PUT BACK (the document dialog was
 // dismissed): the thread already says why it's asked.
-function askVoice(sessionId, ctxId, nets, onReady, { announce = true } = {}) {
+// `optimizing`: asked from « Optimize it » — the network may already have the
+// Brand voice as it is, so that answer isn't offered.
+function askVoice(sessionId, ctxId, nets, onReady, { announce = true, optimizing = false } = {}) {
   const [net, ...rest] = nets;
   const label = networkLabel(net);
-  const { account, items } = voiceChoices(net, { chat: true });
+  const { account, items: all } = voiceChoices(net, { chat: true });
+  const items = optimizing ? all.filter((i) => i.value !== "plain") : all;
+  if (announce && optimizing)
+    postAssistantMessage(sessionId, `Let's give ${label} a voice of its own, then I'll rewrite its drafts in it.`);
   // The first time anyone meets network voices, this is the intro (voice-intro-modal.js).
-  if (announce && !introSeen()) {
+  else if (announce && !introSeen()) {
     markIntroSeen();
     postVoiceTurn(sessionId, "voice-intro", { contextId: ctxId, network: net });
   } else if (announce)
@@ -225,8 +264,10 @@ function askVoice(sessionId, ctxId, nets, onReady, { announce = true } = {}) {
           `Let's write it together: a few quick questions about how you write on ${label}. Answer in your own words, or skip any of them.`,
         );
         return askInterview(sessionId, net, (answers) => {
-          // Nothing said: the Brand voice as it is, said so.
+          // Nothing said: the Brand voice as it is, said so — or, from
+          // « Optimize it », left as it was.
           if (!Object.keys(answers).length) {
+            if (optimizing) return postAssistantMessage(sessionId, `OK, ${label} keeps the Brand voice for now.`);
             choice = "plain";
             return next();
           }
@@ -236,7 +277,7 @@ function askVoice(sessionId, ctxId, nets, onReady, { announce = true } = {}) {
       // Backing out of the document dialog puts the question back.
       openFillDocumentModal({
         onConfirm: ({ file, url }) => learning(file?.name || documentName(url)),
-        onDismiss: () => askVoice(sessionId, ctxId, nets, onReady, { announce: false }),
+        onDismiss: () => askVoice(sessionId, ctxId, nets, onReady, { announce: false, optimizing }),
       });
     },
     onSkip: () => postAssistantMessage(sessionId, `OK, I won't write anything for now.`),

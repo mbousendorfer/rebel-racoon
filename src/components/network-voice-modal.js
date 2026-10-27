@@ -6,22 +6,24 @@
 // for the Playbook, and the drafts aren't written.
 //
 // Public API:
-//   requireNetworkVoicesInDialog(contextId, networks, onReady)
+//   requireNetworkVoicesInDialog(contextId, networks, onReady, { optimize })
 //   onReady() runs IMMEDIATELY when every network already has a voice — always
 //   the case with the flag off — so callers wrap unconditionally.
+//   `optimize` (« Optimize it » on a draft): asked for those networks even on
+//   the Brand voice as it is, without that answer; onReady rewrites the drafts.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2243";
-import { getContextById } from "../contexts-store.js?v=2243";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2243";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2245";
+import { getContextById } from "../contexts-store.js?v=2245";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2245";
 import {
   missingNetworkVoices,
   voiceChoices,
   applyNetworkVoice,
   editNetworkVoiceInPlaybook,
   documentName,
-} from "../network-voice-flow.js?v=2243";
-import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2243";
-import { escapeHtml } from "../utils.js?v=2243";
+} from "../network-voice-flow.js?v=2245";
+import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2245";
+import { escapeHtml } from "../utils.js?v=2245";
 
 const MODAL_ID = "network-voice";
 
@@ -62,8 +64,8 @@ function injectOnce() {
   bindOverlayDismissal({ modal, backdrop, close });
 }
 
-const groupHtml = (net) => {
-  const { items } = voiceChoices(net);
+const groupHtml = (net, optimize) => {
+  const items = voiceChoices(net).items.filter((i) => !optimize || i.value !== "plain");
   return `<fieldset class="network-voice-modal__group">
     <legend class="network-voice-modal__legend"><i class="${networkIcon(net)}" aria-hidden="true"></i>How should I write on ${escapeHtml(networkLabel(net))}?</legend>
     ${items
@@ -77,19 +79,24 @@ const groupHtml = (net) => {
   </fieldset>`;
 };
 
-export function requireNetworkVoicesInDialog(contextId, networks, onReady) {
-  const missing = missingNetworkVoices(getContextById(contextId), networks);
+export function requireNetworkVoicesInDialog(contextId, networks, onReady, { optimize = false } = {}) {
+  const missing = optimize ? networks : missingNetworkVoices(getContextById(contextId), networks);
   if (!missing.length) return onReady();
   injectOnce();
   requestOpen(MODAL_ID, close);
-  pending = { contextId, networks: missing, allNetworks: networks, onReady };
-  titleEl.textContent =
-    missing.length === 1
-      ? `${networkLabel(missing[0])} needs a voice first`
+  pending = { contextId, networks: missing, allNetworks: networks, onReady, optimize };
+  const one = networkLabel(missing[0]);
+  titleEl.textContent = optimize
+    ? `Give ${one} a voice of its own`
+    : missing.length === 1
+      ? `${one} needs a voice first`
       : `${missing.length} networks need a voice first`;
-  bodyEl.innerHTML = `<p class="network-voice-modal__lead">I write every draft in its network's voice. Choose one before I write.</p>${missing
-    .map(groupHtml)
-    .join("")}`;
+  bodyEl.innerHTML = `<p class="network-voice-modal__lead">${
+    optimize
+      ? `These drafts are written in the Brand voice. Give ${escapeHtml(one)} a voice of its own and I'll rewrite them in it.`
+      : "I write every draft in its network's voice. Choose one before I write."
+  }</p>${missing.map((n) => groupHtml(n, optimize)).join("")}`;
+  confirmBtn.textContent = optimize ? "Rewrite the drafts" : "Write the drafts";
   backdrop.hidden = false;
   backdrop.classList.add("open");
   modal.classList.add("open");
@@ -123,7 +130,7 @@ function learnFromDocuments(p, [net, ...rest]) {
       applyNetworkVoice(p.contextId, net, "document", file?.name || documentName(url));
       learnFromDocuments(p, rest);
     },
-    onDismiss: () => requireNetworkVoicesInDialog(p.contextId, p.allNetworks, p.onReady),
+    onDismiss: () => requireNetworkVoicesInDialog(p.contextId, p.allNetworks, p.onReady, { optimize: p.optimize }),
   });
 }
 

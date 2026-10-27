@@ -18,8 +18,8 @@
 // the stream is handled by re-looking up the target selector each tick
 // — when it disappears the stream stops and the content commits at once.
 
-import { getPosts, updatePostContent } from "./posts-store.js?v=2243";
-import { escapeText } from "./utils.js?v=2243";
+import { getPosts, updatePostContent } from "./posts-store.js?v=2245";
+import { escapeText } from "./utils.js?v=2245";
 
 const inFlight = new Map(); // postId → AbortController
 
@@ -115,6 +115,18 @@ function fakeRewrite(post, intent = "fresh") {
   }
   if (intent === "formal") {
     return { ...base, text: [pick(FORMAL_HOOKS), ...paras] };
+  }
+
+  // The network's own voice, just given (« Optimize it », network-voice-flow
+  // rewriteDraftsInVoice). ponytail: a rule of thumb per network; in the
+  // product the draft is rewritten from the voice itself.
+  if (intent === "voice") {
+    const joined = paras.join(" ").trim();
+    const sentences = joined.match(/[^.!?]+[.!?]*/g)?.map((x) => x.trim()) || [];
+    if (network === "x" || network === "twitter")
+      return { ...base, hashtags: [], text: [sentences[0] || joined].filter(Boolean) };
+    if (network === "linkedin") return { ...base, text: sentences.length ? sentences : paras };
+    if (network === "instagram") return { ...base, text: sentences.slice(0, 2) };
   }
 
   // fresh — swap intro for a new hook and push the old intro to the bottom.
