@@ -1887,7 +1887,7 @@ body.has-modal {
 
 /* What a learned voice changes (voice-intro-modal.js learnedVoiceHtml) — in the
    chat's Voice step, and on the dialog's stage once learned: a white card with
-   the network's own sentence and the rules it made, then a post before / after. */
+   the network's own sentence and the rules it made. */
 .voice-learned {
   display: flex;
   flex-direction: column;
@@ -1954,13 +1954,14 @@ body.has-modal {
   margin: 0;
   color: var(--ref-color-grey-100);
 }
-.voice-learned__pair {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  align-items: start;
+/* The chat's answer: edit first, or use it — the primary last. */
+.voice-learned__actions {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--ref-spacing-xs);
-  width: 100%;
+  margin-top: var(--ref-spacing-sm);
 }
+
 /* On the dialog's stage: the whole width, scrolled if it must. */
 .voice-intro__stage-inner.is-result {
   width: calc(100% - 2 * var(--ref-spacing-md));

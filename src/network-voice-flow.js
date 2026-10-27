@@ -14,11 +14,13 @@
 // Clips space, components/network-voice-modal.js):
 //   missingNetworkVoices(ctx, networks) · voiceChoices(net) ·
 //   applyNetworkVoice(ctxId, net, choice, docName?) · editNetworkVoiceInPlaybook(ctxId, net)
+// The chat's « voice-learned » turn answers through:
+//   answerLearnedVoice(sessionId, turnId, "keep" | "edit")
 //
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2239";
+import * as inlineQuestion from "./inline-question.js?v=2241";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -26,14 +28,15 @@ import {
   updatePending,
   finishPending,
   postVoiceTurn,
-} from "./assistant.js?v=2239";
-import { introSeen, markIntroSeen } from "./components/voice-intro-modal.js?v=2239";
-import { getContextById, updateContext } from "./contexts-store.js?v=2239";
-import { getSessionById } from "./sessions-store.js?v=2239";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2239";
-import { setHandoff } from "./handoff.js?v=2239";
-import { navigate } from "./router.js?v=2239";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2239";
+  resolveTurn,
+} from "./assistant.js?v=2241";
+import { introSeen, markIntroSeen } from "./components/voice-intro-modal.js?v=2241";
+import { getContextById, updateContext } from "./contexts-store.js?v=2241";
+import { getSessionById } from "./sessions-store.js?v=2241";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2241";
+import { setHandoff } from "./handoff.js?v=2241";
+import { navigate } from "./router.js?v=2241";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2241";
 import {
   networkVoiceOn,
   networkVoice,
@@ -41,7 +44,7 @@ import {
   learnNetworkVoice,
   brandVoiceAsIs,
   playbookNetworks,
-} from "./voice-parts.js?v=2239";
+} from "./voice-parts.js?v=2241";
 
 // Learning a voice takes a moment, and says what it's doing: three phases.
 export const LEARN_PHASE_MS = 1400;
@@ -105,6 +108,27 @@ export function voiceChoices(net) {
   return { account, items };
 }
 
+// The learned voices waiting for an answer: turn id → { ctxId, net, go }.
+const awaiting = new Map();
+
+export function answerLearnedVoice(sessionId, turnId, action) {
+  const wait = awaiting.get(turnId);
+  if (!wait) return;
+  awaiting.delete(turnId);
+  resolveTurn(sessionId, turnId);
+  const label = networkLabel(wait.net);
+  if (action === "keep") {
+    postUserTurn(sessionId, "Use this voice");
+    return wait.go();
+  }
+  postUserTurn(sessionId, "Edit it in the Playbook");
+  postAssistantMessage(
+    sessionId,
+    `I've opened the ${label} voice in the Playbook. Save your changes, then ask me again.`,
+  );
+  editNetworkVoiceInPlaybook(wait.ctxId, wait.net);
+}
+
 // `announce` is false when the question is PUT BACK (the document dialog was
 // dismissed): the thread already says why it's asked.
 function askVoice(sessionId, ctxId, nets, onReady, { announce = true } = {}) {
@@ -128,10 +152,12 @@ function askVoice(sessionId, ctxId, nets, onReady, { announce = true } = {}) {
     onPick: (choice) => {
       inlineQuestion.exit(sessionId);
       postUserTurn(sessionId, items.find((i) => i.value === choice)?.label || "");
+      const go = () => (rest.length ? askVoice(sessionId, ctxId, rest, onReady) : onReady());
+      // A learned voice waits for its answer: use it, or edit it first.
       const next = (docName) => {
-        setVoice(sessionId, ctxId, net, choice, docName);
-        if (rest.length) askVoice(sessionId, ctxId, rest, onReady);
-        else onReady();
+        const turnId = setVoice(sessionId, ctxId, net, choice, docName);
+        if (turnId) awaiting.set(turnId, { ctxId, net, go });
+        else go();
       };
       if (choice === "plain") return next();
       if (choice === "edit") {
@@ -197,8 +223,9 @@ export function applyNetworkVoice(ctxId, net, choice, docName = null) {
   });
 }
 
-// A learned voice shows what it changes (the « voice-learned » turn); the
-// Brand voice as it is says what that costs.
+// A learned voice shows what it changes (the « voice-learned » turn, whose id
+// is returned: it waits for an answer); the Brand voice as it is says what
+// that costs.
 function setVoice(sessionId, ctxId, net, choice, docName) {
   const label = networkLabel(net);
   applyNetworkVoice(ctxId, net, choice, docName);
@@ -207,5 +234,5 @@ function setVoice(sessionId, ctxId, net, choice, docName) {
       sessionId,
       `I'll write for ${label} in the Brand voice as it is. It isn't optimized for ${label}, so the drafts may miss what works there. You can optimize it from the Playbook at any time.`,
     );
-  postVoiceTurn(sessionId, "voice-learned", { contextId: ctxId, network: net });
+  return postVoiceTurn(sessionId, "voice-learned", { contextId: ctxId, network: net });
 }

@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2239";
-import { conceptHint } from "./concepts.js?v=2239";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2241";
+import { conceptHint } from "./concepts.js?v=2241";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2239";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2239";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2239";
-import { isFlagOn } from "./feature-flags.js?v=2239";
-import { clipLookOf } from "./videos-store.js?v=2239";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2239";
-import { parseHashParams } from "./url-state.js?v=2239";
+} from "./playbook-brand-kit.js?v=2241";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2241";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2241";
+import { isFlagOn } from "./feature-flags.js?v=2241";
+import { clipLookOf } from "./videos-store.js?v=2241";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2241";
+import { parseHashParams } from "./url-state.js?v=2241";
 import {
   isListPart,
   voiceParts,
@@ -49,12 +49,12 @@ import {
   brandVoiceAsIs,
   markAdapted,
   withNetworkVoices,
-} from "./voice-parts.js?v=2239";
-import { showToast } from "./components/toast.js?v=2239";
-import { introSeen } from "./components/voice-intro-modal.js?v=2239";
-import { consumeHandoff } from "./handoff.js?v=2239";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2239";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2239";
+} from "./voice-parts.js?v=2241";
+import { showToast } from "./components/toast.js?v=2241";
+import { introSeen } from "./components/voice-intro-modal.js?v=2241";
+import { consumeHandoff } from "./handoff.js?v=2241";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2241";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2241";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -231,16 +231,14 @@ export function mount(target, config) {
   } else {
     phase = "ready";
     paint();
-    // « Edit it myself » from a chat's or the Clips space's Voice step: the
-    // network's tab opens in edit (network-voice-flow.js sets the key).
+    // « Edit it myself » from a chat's or the Clips space's Voice step, or
+    // « Edit in the Playbook » under a voice just learned: the network's tab
+    // opens in edit (network-voice-flow.js sets the key) — its own voice as it
+    // is, else from the Brand voice.
     const edit = isLibrary() ? consumeHandoff("editNetworkVoice") : null;
     const d = cfg.getData();
-    if (
-      edit?.playbookId === d?.id &&
-      edit.net === voiceNet &&
-      ["borrowed", "plain"].includes(networkVoice(d, voiceNet).state)
-    )
-      editNetworkVoiceFromBrand();
+    if (edit?.playbookId === d?.id && edit.net === voiceNet)
+      networkVoice(d, voiceNet).state === "own" ? openEdit(d, "voice") : editNetworkVoiceFromBrand();
   }
 
   const onClickH = (e) => onClick(e);

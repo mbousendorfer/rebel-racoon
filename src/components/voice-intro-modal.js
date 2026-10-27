@@ -13,14 +13,14 @@
 //   init() · maybeOpenVoiceIntro(path)
 //   introSeen() · markIntroSeen() · resetIntro()
 //   voiceComparisonHtml(ctx, { compact })
-//   learnedVoiceHtml(ctx, net, { pixels }) — what a learned voice changes
+//   learnedVoiceHtml(ctx, net) — what a learned voice changes
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2239";
-import { getContextById } from "../contexts-store.js?v=2239";
-import { playbookForNewWork } from "../active-playbook.js?v=2239";
-import { isNewUser } from "../user-mode.js?v=2239";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2239";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2241";
+import { getContextById } from "../contexts-store.js?v=2241";
+import { playbookForNewWork } from "../active-playbook.js?v=2241";
+import { isNewUser } from "../user-mode.js?v=2241";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2241";
 import {
   networkVoiceOn,
   networkVoice,
@@ -29,12 +29,12 @@ import {
   voiceParts,
   cloneItems,
   baseValue,
-} from "../voice-parts.js?v=2239";
-import { applyNetworkVoice, learnPhases, LEARN_PHASE_MS } from "../network-voice-flow.js?v=2239";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2239";
-import "../archie-pixels.js?v=2239";
-import { navigate } from "../router.js?v=2239";
-import { escapeHtml } from "../utils.js?v=2239";
+} from "../voice-parts.js?v=2241";
+import { applyNetworkVoice, learnPhases, LEARN_PHASE_MS } from "../network-voice-flow.js?v=2241";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2241";
+import "../archie-pixels.js?v=2241";
+import { navigate } from "../router.js?v=2241";
+import { escapeHtml } from "../utils.js?v=2241";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -154,10 +154,9 @@ export function voiceComparisonHtml(ctx, { compact = false } = {}) {
 // ── What a learned voice changes ────────────────────────────────────────────
 // Once Archie learned a network's voice, it shows the result rather than
 // saying « done »: where it departs from the Brand voice — its own sentence
-// and the rules it made for the network (`adapted`) — then one post, before
-// and after. The chat's answer to « Learn it », and the dialog's last step.
-// `pixels`: on Archie's field (the chat); the dialog's stage already is one.
-export function learnedVoiceHtml(ctx, net, { pixels = true } = {}) {
+// and the rules it made for the network (`adapted`). The chat's answer to
+// « Learn it », and the dialog's last step.
+export function learnedVoiceHtml(ctx, net) {
   const { voice } = networkVoice(ctx, net);
   const label = escapeHtml(networkLabel(net));
   const summary = String(voice?.voiceSummary || "")
@@ -171,9 +170,6 @@ export function learnedVoiceHtml(ctx, net, { pixels = true } = {}) {
         .map((i) => ({ part: p.title, ...i })),
     );
   const from = voice?.postCount ? `${voice.postCount} posts of ${voice.learnedFrom}` : voice?.learnedFrom;
-  const pair = `
-    <span class="voice-intro__status ap-status mermaid">The same post, before and after</span>
-    <div class="voice-learned__pair">${postCardHtml(ctx, "brand", { compact: true })}${postCardHtml(ctx, net, { compact: true })}</div>`;
   return `
     <div class="voice-learned">
       <section class="voice-learned__card" aria-label="Your ${label} voice">
@@ -196,11 +192,6 @@ export function learnedVoiceHtml(ctx, net, { pixels = true } = {}) {
           .join("")}</dl>
         <p class="voice-learned__rest">Everything else follows the Brand voice.</p>
       </section>
-      ${
-        pixels
-          ? `<div class="voice-compare voice-compare--compact"><archie-pixels data-quiet></archie-pixels><div class="voice-compare__inner">${pair}</div></div>`
-          : pair
-      }
     </div>`;
 }
 
@@ -213,7 +204,7 @@ export function learnedVoiceHtml(ctx, net, { pixels = true } = {}) {
 //   Step 2 — where the Playbook stands: on the left the networks to learn, on
 //            the stage the Playbook's Voice profile filling as they're learned.
 //   Then   — what was learned: one network at a time, what its voice changes
-//            from the Brand voice and a post before and after.
+//            from the Brand voice.
 
 const CYCLE_MS = 5200;
 
@@ -512,8 +503,8 @@ function learned(nets) {
   titleEl.textContent = nets.length === 1 ? "1 voice learned" : `${nets.length} voices learned`;
   subEl.textContent =
     nets.length === 1
-      ? `Here's what I learned for ${networkLabel(nets[0])}: what changes from the Brand voice, and a post before and after.`
-      : "Here's what I learned for each network: what changes from the Brand voice, and a post before and after.";
+      ? `Here's what I learned for ${networkLabel(nets[0])}: what changes from the Brand voice.`
+      : "Here's what I learned for each network: what changes from the Brand voice.";
   showLearned(nets, nets[0]);
   actionsEl.innerHTML = button("see", "stroked grey", "See the voices") + button("done", "primary blue", "Done");
   actionsEl.querySelector(".primary").focus({ preventScroll: true });
@@ -539,7 +530,7 @@ function showLearned(nets, net) {
         .join("")}
     </ul>`;
   stageEl.classList.add("is-result");
-  stageEl.innerHTML = learnedVoiceHtml(ctx, net, { pixels: false });
+  stageEl.innerHTML = learnedVoiceHtml(ctx, net);
 }
 
 function seeVoices() {

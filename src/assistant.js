@@ -6,13 +6,13 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2239";
-import { findConnector } from "./connectors-store.js?v=2239";
-import { createSessionNotifier } from "./store-utils.js?v=2239";
-import { addPostDraft } from "./posts-store.js?v=2239";
-import { showToast } from "./components/toast.js?v=2239";
-import { isFlagOn } from "./feature-flags.js?v=2239";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2239";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2241";
+import { findConnector } from "./connectors-store.js?v=2241";
+import { createSessionNotifier } from "./store-utils.js?v=2241";
+import { addPostDraft } from "./posts-store.js?v=2241";
+import { showToast } from "./components/toast.js?v=2241";
+import { isFlagOn } from "./feature-flags.js?v=2241";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2241";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -841,10 +841,13 @@ export function postImageLookSet(sessionId, { contextId, styleId, label }) {
 //                   post in each network's voice, before asking
 //                   (voiceComparisonHtml);
 //   "voice-learned" once a voice is learned, what it changes from the Brand
-//                   voice and a post before / after (learnedVoiceHtml).
+//                   voice (learnedVoiceHtml), to use or edit — `resolved` once
+//                   answered (resolveTurn).
+// Returns the turn's id.
 export function postVoiceTurn(sessionId, variant, { contextId, network }) {
+  const id = newId();
   getThread(sessionId).push({
-    id: newId(),
+    id,
     role: "assistant",
     variant,
     meta: "Archie",
@@ -853,6 +856,15 @@ export function postVoiceTurn(sessionId, variant, { contextId, network }) {
     status: "ready",
     createdAt: Date.now(),
   });
+  notify(sessionId);
+  return id;
+}
+
+// A turn that asked something, answered: its buttons go.
+export function resolveTurn(sessionId, id) {
+  const msg = getThread(sessionId).find((m) => m.id === id);
+  if (!msg) return;
+  msg.resolved = true;
   notify(sessionId);
 }
 
