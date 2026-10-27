@@ -1971,21 +1971,21 @@ body.has-modal {
   color: var(--ref-color-grey-80);
   text-wrap: pretty;
 }
-/* The rules, grouped under the Voice profile section each goes into. */
+/* The rules, grouped under the Voice profile section each goes into — one
+   band per section, split by a grey-20 hairline, like the tab's blocks. */
 .voice-edit__changes {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) 0;
 }
 /* The destination and the section titles sit at the text's x (under the
    card's title); the + of each rule in the glyph column. */
-.voice-edit__where,
 .voice-edit__part {
   padding-left: calc(16px + var(--ref-spacing-xs));
 }
 .voice-edit__where {
   margin: 0;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-xs)
+    calc(var(--ref-spacing-sm) + 16px + var(--ref-spacing-xs));
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
@@ -1994,6 +1994,8 @@ body.has-modal {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border-top: 1px solid var(--ref-color-grey-20);
 }
 .voice-edit__part {
   margin: 0;
@@ -2038,8 +2040,9 @@ body.has-modal {
 }
 .voice-edit__rest {
   margin: 0;
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm) var(--ref-spacing-xs)
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-xs)
     calc(var(--ref-spacing-sm) + 16px + var(--ref-spacing-xs));
+  border-top: 1px solid var(--ref-color-grey-20);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
