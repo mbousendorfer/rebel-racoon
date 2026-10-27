@@ -14,14 +14,14 @@
 // Public API:
 //   init() · maybeOpenVoiceIntro(path)
 //   introSeen() · markIntroSeen() · resetIntro()
-//   learnedVoiceHtml(ctx, net, voice?, { only, pixels, pending })
+//   learnedVoiceHtml(ctx, net, voice?, { only, pending })
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2248";
-import { getContextById } from "../contexts-store.js?v=2248";
-import { playbookForNewWork } from "../active-playbook.js?v=2248";
-import { isNewUser } from "../user-mode.js?v=2248";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2248";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2249";
+import { getContextById } from "../contexts-store.js?v=2249";
+import { playbookForNewWork } from "../active-playbook.js?v=2249";
+import { isNewUser } from "../user-mode.js?v=2249";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2249";
 import {
   networkVoiceOn,
   networkVoice,
@@ -30,18 +30,18 @@ import {
   voiceParts,
   cloneItems,
   baseValue,
-} from "../voice-parts.js?v=2248";
+} from "../voice-parts.js?v=2249";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2248";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2248";
-import "../archie-pixels.js?v=2248";
-import { navigate } from "../router.js?v=2248";
-import { escapeHtml } from "../utils.js?v=2248";
+} from "../network-voice-flow.js?v=2249";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2249";
+import "../archie-pixels.js?v=2249";
+import { navigate } from "../router.js?v=2249";
+import { escapeHtml } from "../utils.js?v=2249";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -139,15 +139,14 @@ function postCardHtml(ctx, net) {
 // ── A voice edit ────────────────────────────────────────────────────────────
 // What Archie proposes for a network's voice, in ONE look wherever it shows
 // (the chat's Voice step, the proposal dialog, the intro, a draft's feedback):
-// the onboarding's stage — Archie's pixel field — around a white card: the
-// network and where the voice comes from, « Not saved yet » while it waits for
-// its answer; Archie's sentence for the network on butter (his colour, as the
-// memory was); then each rule it adds, marked +, its part in the Voice profile
-// tint. `voice`: the proposal (default: the network's voice as saved).
-// `only`: the rules it ADDS to a voice that already had its own (a draft's
-// feedback) — just those. `pixels`: false where it already sits on the field
-// (the intro's stage). `pending`: the « Not saved yet » pill.
-export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pixels = true, pending = true } = {}) {
+// a card — the network and where the voice comes from, « Not saved yet » while
+// it waits for its answer; Archie's sentence for the network on butter (his
+// colour, as the memory was); then each rule it adds, marked +. Quiet on
+// purpose: a pixel stage and tinted pills around it were too much (2026-10-27).
+// `voice`: the proposal (default: the network's voice as saved). `only`: the
+// rules it ADDS to a voice that already had its own (a draft's feedback) —
+// just those. `pending`: the « Not saved yet » pill.
+export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending = true } = {}) {
   voice = voice || networkVoice(ctx, net).voice;
   const label = escapeHtml(networkLabel(net));
   const summary = only
@@ -195,9 +194,7 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pixels =
         .join("")}</ul>
       <p class="voice-edit__rest">${only ? `Everything else in the ${label} voice stays as it is.` : "Everything else follows the default voice."}</p>
     </section>`;
-  return pixels
-    ? `<div class="voice-edit"><archie-pixels data-quiet></archie-pixels>${card}</div>`
-    : `<div class="voice-edit voice-edit--bare">${card}</div>`;
+  return `<div class="voice-edit">${card}</div>`;
 }
 
 // ── The dialog ──────────────────────────────────────────────────────────────
@@ -539,7 +536,7 @@ function showLearned(net) {
         .join("")}
     </ul>`;
   stageEl.classList.add("is-result");
-  stageEl.innerHTML = learnedVoiceHtml(ctx, net, proposals.get(net), { pixels: false, pending: !used.has(net) });
+  stageEl.innerHTML = learnedVoiceHtml(ctx, net, proposals.get(net), { pending: !used.has(net) });
   actionsEl.innerHTML = resultNets.every((n) => used.has(n))
     ? button("done", "primary blue", "Done")
     : used.has(net)
