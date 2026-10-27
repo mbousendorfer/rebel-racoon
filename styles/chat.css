@@ -840,6 +840,19 @@ span.chat-bubble-choice-chip {
   text-decoration: underline dotted;
   text-underline-offset: 3px;
   cursor: pointer;
+  /* A <button> renders inline-block whatever its display, with centred text:
+     a long ref wrapped as a centred block and orphaned the rest of the
+     sentence in a narrow chat. One line instead, cut at the column's edge,
+     the sentence flowing on after it. The padding/negative margin pair keeps
+     the offset underline inside the clip without moving the line. */
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: inherit;
+  vertical-align: bottom;
+  padding-bottom: var(--ref-spacing-xxxs);
+  margin-bottom: calc(-1 * var(--ref-spacing-xxxs));
 }
 
 .chat-ref:hover {
