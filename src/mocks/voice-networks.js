@@ -71,3 +71,14 @@ export const NETWORK_VOICE_SAMPLE = {
   tiktok: "POV: your Monday report sends itself. #reporting #worksmarter",
   youtube: "How to send your team their numbers every Monday, without opening a dashboard. Full walkthrough below.",
 };
+
+// What makes each network's voice its own, in a few words — the chips under
+// the voice intro's post, and its Playbook card once a voice is learned.
+export const NETWORK_VOICE_TRAITS = {
+  linkedin: ["Longer", "One idea per line", "Ends on a question"],
+  instagram: ["Short caption", "Link in bio", "Hashtags at the end"],
+  facebook: ["Warmer", "Under 80 words", "Asks for a comment"],
+  x: ["One point", "Under 280 characters", "No hashtags"],
+  tiktok: ["One spoken line", "Two or three hashtags"],
+  youtube: ["What you'll get first", "Then the link"],
+};

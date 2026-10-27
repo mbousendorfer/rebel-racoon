@@ -1835,26 +1835,8 @@ body.has-modal {
   color: var(--ref-color-grey-80);
 }
 
-/* The voice intro (voice-intro-modal.js): the same post in each network's
-   voice, then where the Playbook stands. The comparison is shared with the
-   chat and the creation review (.voice-compare). */
-.voice-intro-modal {
-  width: min(calc(100% - 32px), 760px);
-}
-.voice-intro-modal.is-stand {
-  width: min(calc(100% - 32px), 560px);
-}
-.voice-intro-modal .ap-dialog-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-md);
-  overflow-y: auto;
-}
-.voice-intro__lead {
-  margin: 0;
-  color: var(--ref-color-grey-80);
-}
-
+/* The voice intro's comparison (voice-intro-modal.js voiceComparisonHtml): the
+   same post in each network's voice, in the chat and the creation review. */
 .voice-compare {
   display: flex;
   flex-direction: column;
@@ -1907,6 +1889,244 @@ body.has-modal {
   display: inline;
 }
 
+/* In the chat the thread repaints on every turn: no replay there. */
+.voice-compare--compact .voice-compare__w {
+  animation: none;
+}
+
+/* The voice intro dialog (voice-intro-modal.js) — the first-time run's look
+   (welcome.css, .welcome-intro): the words on the left, and on the right, on
+   Archie's warm pixel field, the thing they're about — a post rewritten for
+   each network, then the Playbook's Voice profile filling. */
+.voice-intro-modal {
+  width: min(calc(100% - 32px), 1040px);
+  height: min(calc(100vh - 48px), 640px);
+  padding: 0;
+  overflow: hidden;
+}
+.voice-intro-modal .ap-dialog-close {
+  position: absolute;
+  top: var(--ref-spacing-sm);
+  right: var(--ref-spacing-sm);
+  z-index: 2;
+}
+.voice-intro__split {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+}
+.voice-intro__lede {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: var(--ref-spacing-xl) var(--ref-spacing-lg) var(--ref-spacing-lg);
+  overflow-y: auto;
+}
+.voice-intro__title {
+  margin: 0;
+  font-family: var(--sys-text-style-marketing-font-family);
+  font-size: 36px;
+  line-height: 1.08;
+  font-weight: var(--sys-text-style-marketing-weight);
+  letter-spacing: -0.025em;
+  color: var(--ref-color-grey-100);
+  text-wrap: balance;
+}
+.voice-intro__sub {
+  margin: var(--ref-spacing-sm) 0 0;
+  text-wrap: pretty;
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  color: var(--ref-color-grey-80);
+}
+.voice-intro__left {
+  margin-top: var(--ref-spacing-lg);
+}
+.voice-intro__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xs);
+  margin-top: auto;
+  padding-top: var(--ref-spacing-lg);
+}
+
+/* Step 1, left: the voices, the one on the stage on butter. */
+.voice-intro__voices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.voice-intro__voice {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  width: 100%;
+  padding: var(--ref-spacing-xs);
+  border: 0;
+  border-radius: var(--app-radius-lg);
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--ref-animation-normal) ease;
+}
+.voice-intro__voice:hover {
+  background: var(--app-surface-subtle);
+}
+.voice-intro__voice.is-on {
+  background: var(--app-butter);
+}
+.voice-intro__voice-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.voice-intro__voice-name {
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+.voice-intro__voice-hint {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+.voice-intro__tile {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  font-size: var(--sys-icon-css-sm);
+  color: var(--ref-color-grey-100);
+}
+.voice-intro__tile.is-brand {
+  border-color: transparent;
+  background: var(--ref-color-purple-20);
+  color: var(--ref-color-purple-150);
+}
+
+/* The stage: the pixel field, and the thing on it. */
+.voice-intro__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: var(--ref-spacing-xs);
+  min-height: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  isolation: isolate;
+}
+.voice-intro__stage-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  width: min(440px, calc(100% - 2 * var(--ref-spacing-lg)));
+  max-height: calc(100% - 2 * var(--ref-spacing-lg));
+}
+.voice-intro__status {
+  animation: welcome-intro-land 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Step 1, the post — a white card on the field, no shadow (the dialog has one). */
+.voice-intro__post,
+.voice-intro__card {
+  width: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--ref-spacing-md);
+  border-radius: 16px;
+  background: var(--app-surface);
+  animation: welcome-intro-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.voice-intro__post-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+.voice-intro__avatar,
+.voice-intro__mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--app-surface-subtle);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+.voice-intro__avatar img,
+.voice-intro__mark img {
+  width: 100%;
+  height: 100%;
+  padding: var(--ref-spacing-xxs);
+  object-fit: contain;
+}
+.voice-intro__who {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.voice-intro__who-name {
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+.voice-intro__who-meta {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+.voice-intro__post-net {
+  font-size: var(--sys-icon-css-md);
+}
+.voice-intro__post-text {
+  margin: var(--ref-spacing-sm) 0 0;
+  min-height: 7.5em;
+  white-space: pre-line;
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  color: var(--ref-color-grey-100);
+}
+.voice-intro__post-text .voice-compare__w {
+  animation-delay: calc(250ms + var(--w) * 30ms);
+}
+
+/* What makes the voice its own: the Voice profile's tint, popping in. */
+.voice-intro__traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+}
+.voice-intro__post .voice-intro__traits {
+  margin-top: var(--ref-spacing-sm);
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+.voice-intro__trait {
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  border-radius: var(--app-radius-pill);
+  background: var(--ref-color-purple-20);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+  animation: welcome-intro-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(0.6s + var(--k) * 0.09s);
+}
+
+/* Step 2, left: the networks, the ones to learn checked. */
 .voice-intro__nets {
   display: flex;
   flex-direction: column;
@@ -1917,21 +2137,23 @@ body.has-modal {
 .voice-intro__net {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-sm) 0;
   border-top: 1px solid var(--ref-color-grey-20);
 }
 .voice-intro__net:first-child {
   border-top: 0;
+  padding-top: 0;
 }
 .voice-intro__slot {
-  display: flex;
+  display: grid;
+  place-items: center;
   flex: none;
   width: 20px;
 }
-.voice-intro__glyph {
-  flex: none;
-  font-size: var(--sys-icon-css-md);
+.voice-intro__done {
+  color: var(--ref-color-green-100);
+  animation: app-success-pop 360ms var(--app-ease-bounce) both;
 }
 .voice-intro__text {
   display: flex;
@@ -1949,9 +2171,6 @@ body.has-modal {
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
 }
-.voice-intro__tag {
-  flex: none;
-}
 /* Reading the account's posts: the orange sheen of Archie at work (chat.css). */
 .voice-intro__net.is-learning .voice-intro__state {
   color: transparent;
@@ -1966,10 +2185,113 @@ body.has-modal {
   background-clip: text;
   animation: e-sheen 2s linear infinite;
 }
-.voice-intro__pop {
-  animation: app-success-pop 360ms var(--app-ease-bounce) both;
+
+/* Step 2, the stage: the Playbook card of the first-time run, its Voice
+   profile only — a line per network, a quiet bar until it has a voice. */
+.voice-intro__card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
 }
-/* In the chat the thread repaints on every turn: no replay there. */
-.voice-compare--compact .voice-compare__w {
-  animation: none;
+.voice-intro__mark {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--app-radius-card);
+}
+.voice-intro__card-title {
+  font-size: var(--sys-text-style-h2-size);
+  line-height: var(--sys-text-style-h2-line-height);
+  font-weight: var(--sys-text-style-h2-weight);
+  color: var(--ref-color-grey-100);
+}
+.voice-intro__part {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: var(--ref-spacing-xs);
+  align-items: center;
+  margin-top: var(--ref-spacing-md);
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+.voice-intro__part-tile {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-purple-20);
+  color: var(--ref-color-purple-150);
+  font-size: var(--sys-icon-css-xs);
+}
+.voice-intro__part-name {
+  margin: 0;
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+.voice-intro__fields {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  margin: var(--ref-spacing-sm) 0 0;
+}
+.voice-intro__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+.voice-intro__field dt {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+.voice-intro__field dd {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+}
+.voice-intro__field .voice-intro__trait {
+  animation-delay: calc(var(--k) * 0.06s);
+}
+.voice-intro__field.is-landing .voice-intro__trait {
+  animation-delay: calc(0.1s + var(--k) * 0.09s);
+}
+.voice-intro__plain {
+  font-size: var(--sys-text-style-caption-bold-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+.voice-intro__bar {
+  display: block;
+  width: 70%;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--app-surface-subtle);
+}
+.voice-intro__bar.is-short {
+  width: 40%;
+}
+.voice-intro__field.is-pending .voice-intro__bar {
+  background: var(--app-butter);
+  animation: welcome-flow-breathe 1.4s ease-in-out infinite;
+}
+
+/* A phone: the stage above, a band. */
+@media (max-width: 760px) {
+  .voice-intro__split {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 300px minmax(0, 1fr);
+  }
+  .voice-intro__stage {
+    order: -1;
+  }
+  .voice-intro__lede {
+    padding: var(--ref-spacing-md);
+  }
 }

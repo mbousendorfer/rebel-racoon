@@ -16,16 +16,17 @@
 //   voiceComparisonHtml(ctx, { compact })
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2233";
-import { getContextById } from "../contexts-store.js?v=2233";
-import { playbookForNewWork } from "../active-playbook.js?v=2233";
-import { isNewUser } from "../user-mode.js?v=2233";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2233";
-import { networkVoiceOn, networkVoice, playbookNetworks, canLearnFrom } from "../voice-parts.js?v=2233";
-import { applyNetworkVoice } from "../network-voice-flow.js?v=2233";
-import { NETWORK_VOICE_SAMPLE } from "../mocks.js?v=2233";
-import { navigate } from "../router.js?v=2233";
-import { escapeHtml } from "../utils.js?v=2233";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2235";
+import { getContextById } from "../contexts-store.js?v=2235";
+import { playbookForNewWork } from "../active-playbook.js?v=2235";
+import { isNewUser } from "../user-mode.js?v=2235";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2235";
+import { networkVoiceOn, networkVoice, playbookNetworks, canLearnFrom } from "../voice-parts.js?v=2235";
+import { applyNetworkVoice } from "../network-voice-flow.js?v=2235";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2235";
+import "../archie-pixels.js?v=2235";
+import { navigate } from "../router.js?v=2235";
+import { escapeHtml } from "../utils.js?v=2235";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -100,21 +101,39 @@ export function voiceComparisonHtml(ctx, { compact = false } = {}) {
 }
 
 // ── The dialog ──────────────────────────────────────────────────────────────
+// The first-time run's look (welcome-alt-intro.js): the words on the left, and
+// on the right, on Archie's warm pixel field, the thing they're about.
+//   Step 1 — one post on the stage, rewritten in turn for each network: the
+//            Brand voice first, then each network's own, its traits under it.
+//            The list on the left follows it, and picks one.
+//   Step 2 — where the Playbook stands: on the left the networks to learn, on
+//            the stage the Playbook's Voice profile filling as they're learned.
 
-let backdrop, modal, titleEl, bodyEl, footerEl;
+const CYCLE_MS = 5200;
+
+let backdrop, modal, titleEl, subEl, leftEl, actionsEl, stageEl;
 let ctxId = null;
 let learning = false;
+let shown = "brand"; // step 1: the voice on the stage
+let timer = null;
 
 const HTML = `
 <div class="app-modal-backdrop" id="voiceIntroBackdrop" hidden></div>
 <aside class="ap-dialog voice-intro-modal" id="voiceIntroModal" role="dialog" aria-modal="true"
   aria-labelledby="voiceIntroTitle" aria-hidden="true">
-  <div class="ap-dialog-header">
-    <span class="ap-dialog-title" id="voiceIntroTitle"></span>
-  </div>
   <button class="ap-dialog-close" type="button" data-vi-action="close" aria-label="Close"><i class="ap-icon-close"></i></button>
-  <div class="ap-dialog-content" id="voiceIntroBody"></div>
-  <div class="ap-dialog-footer"><div class="ap-dialog-footer-right" id="voiceIntroFooter"></div></div>
+  <div class="voice-intro__split">
+    <section class="voice-intro__lede">
+      <h2 class="voice-intro__title" id="voiceIntroTitle"></h2>
+      <p class="voice-intro__sub" id="voiceIntroSub"></p>
+      <div class="voice-intro__left" id="voiceIntroLeft"></div>
+      <div class="voice-intro__actions" id="voiceIntroActions"></div>
+    </section>
+    <div class="voice-intro__stage">
+      <archie-pixels data-quiet></archie-pixels>
+      <div class="voice-intro__stage-inner" id="voiceIntroStage"></div>
+    </div>
+  </div>
 </aside>`;
 
 export function init() {
@@ -132,16 +151,20 @@ function injectOnce() {
   backdrop = document.getElementById("voiceIntroBackdrop");
   modal = document.getElementById("voiceIntroModal");
   titleEl = document.getElementById("voiceIntroTitle");
-  bodyEl = document.getElementById("voiceIntroBody");
-  footerEl = document.getElementById("voiceIntroFooter");
+  subEl = document.getElementById("voiceIntroSub");
+  leftEl = document.getElementById("voiceIntroLeft");
+  actionsEl = document.getElementById("voiceIntroActions");
+  stageEl = document.getElementById("voiceIntroStage");
   modal.addEventListener("click", (e) => {
+    const pick = e.target.closest("[data-vi-show]");
+    if (pick) return showVoice(pick.dataset.viShow, { manual: true });
     const action = e.target.closest("[data-vi-action]")?.dataset.viAction;
     if (action === "close" || action === "done") close();
     else if (action === "next") renderStand();
     else if (action === "learn") learnChecked();
     else if (action === "see") seeVoices();
   });
-  modal.addEventListener("change", (e) => e.target.closest("[data-vi-check]") && renderStandFooter());
+  modal.addEventListener("change", (e) => e.target.closest("[data-vi-check]") && renderStandActions());
   bindOverlayDismissal({ modal, backdrop, close: () => !learning && close() });
 }
 
@@ -168,20 +191,87 @@ function openVoiceIntro(contextId = null) {
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
   document.body.classList.add("has-modal");
-  setTimeout(() => footerEl.querySelector(".primary")?.focus({ preventScroll: true }), 0);
+  setTimeout(() => actionsEl.querySelector(".primary")?.focus({ preventScroll: true }), 0);
 }
 
 const button = (action, kind, label) =>
   `<button type="button" class="ap-button ${kind}" data-vi-action="${action}">${escapeHtml(label)}</button>`;
 
+const glyphTile = (net) =>
+  net === "brand"
+    ? `<span class="voice-intro__tile is-brand" aria-hidden="true"><i class="ap-icon-quote"></i></span>`
+    : `<span class="voice-intro__tile" aria-hidden="true"><i class="${networkIcon(net)}"></i></span>`;
+
+// The Brand's own words for its voice: the headline's three, else its tones.
+const brandTraits = (ctx) => {
+  const head = (ctx?.voiceProfile?.headline || "").split(/\s*·\s*/).filter(Boolean);
+  return (head.length ? head : ctx?.tones || []).slice(0, 3);
+};
+const traitsOf = (ctx, net) => (net === "brand" ? brandTraits(ctx) : NETWORK_VOICE_TRAITS[net] || []);
+const traitsHtml = (list) =>
+  `<span class="voice-intro__traits">${list
+    .map((t, i) => `<span class="voice-intro__trait" style="--k:${i}">${escapeHtml(t)}</span>`)
+    .join("")}</span>`;
+
+const brandMark = (ctx) =>
+  ctx?.brandLogo
+    ? `<img src="${escapeHtml(ctx.brandLogo)}" alt="" />`
+    : `<span>${escapeHtml(brandOf(ctx).charAt(0).toUpperCase())}</span>`;
+
 // Step 1 — the « aha »: the same idea, in each network's voice.
 function renderSame(ctx) {
   modal.classList.remove("is-stand");
   titleEl.textContent = "Each network, its own voice";
-  bodyEl.innerHTML = `
-    <p class="voice-intro__lead">Same idea, written the way each network reads it. I learn each voice from your posts, and you can edit any of them in the Playbook.</p>
-    ${voiceComparisonHtml(ctx)}`;
-  footerEl.innerHTML = button("close", "ghost grey", "Not now") + button("next", "primary blue", "Next");
+  subEl.textContent =
+    "One idea, written the way each network reads it. I learn each voice from your posts, and you can edit any of them in the Playbook.";
+  actionsEl.innerHTML = button("close", "ghost grey", "Not now") + button("next", "primary blue", "Next");
+  showVoice("brand");
+}
+
+// The list on the left and the post on the stage, for one voice. Unless the
+// user picked one, the stage moves on to the next by itself.
+function showVoice(net, { manual = false } = {}) {
+  const ctx = getContextById(ctxId);
+  if (!ctx || modal.classList.contains("is-stand")) return;
+  const voices = ["brand", ...comparisonNets(ctx)];
+  shown = net;
+  const label = (n) => (n === "brand" ? "Brand voice" : networkLabel(n));
+  leftEl.innerHTML = `
+    <ul class="voice-intro__voices" aria-label="Voices">
+      ${voices
+        .map(
+          (
+            n,
+          ) => `<li><button type="button" class="voice-intro__voice${n === net ? " is-on" : ""}" data-vi-show="${n}" aria-pressed="${n === net}">
+            ${glyphTile(n)}
+            <span class="voice-intro__voice-text">
+              <span class="voice-intro__voice-name">${escapeHtml(label(n))}</span>
+              <span class="voice-intro__voice-hint">${escapeHtml(n === "brand" ? "How your Brand sounds, everywhere" : traitsOf(ctx, n).join(" · "))}</span>
+            </span>
+          </button></li>`,
+        )
+        .join("")}
+    </ul>`;
+  stageEl.innerHTML = `
+    <div class="voice-intro__status ap-status ${net === "brand" ? "grey" : "mermaid"}" data-vi-status>${
+      net === "brand" ? "Written in the Brand voice" : `Rewritten for ${escapeHtml(networkLabel(net))}`
+    }</div>
+    <article class="voice-intro__post" aria-label="${escapeHtml(label(net))} post">
+      <header class="voice-intro__post-head">
+        <span class="voice-intro__avatar">${brandMark(ctx)}</span>
+        <span class="voice-intro__who">
+          <span class="voice-intro__who-name">${escapeHtml(brandOf(ctx))}</span>
+          <span class="voice-intro__who-meta">${net === "brand" ? "Any network" : escapeHtml(networkLabel(net))}</span>
+        </span>
+        ${net === "brand" ? "" : `<i class="${networkIcon(net)} voice-intro__post-net" aria-hidden="true"></i>`}
+      </header>
+      <p class="voice-intro__post-text">${wordsHtml(fill(NETWORK_VOICE_SAMPLE[net], ctx))}</p>
+      ${traitsHtml(traitsOf(ctx, net))}
+    </article>`;
+  clearTimeout(timer);
+  if (manual) return;
+  const next = voices[(voices.indexOf(net) + 1) % voices.length];
+  timer = setTimeout(() => showVoice(next), net === "brand" ? CYCLE_MS - 1600 : CYCLE_MS);
 }
 
 // Step 2 — where the Playbook stands, and the voices to learn.
@@ -203,77 +293,119 @@ function stateText(ctx, net) {
 const learnable = (ctx, net) => networkVoice(ctx, net).state !== "own" && canLearnFrom(profileForNetwork(net));
 
 function rowHtml(ctx, net) {
-  const own = networkVoice(ctx, net).state === "own";
   const slot = learnable(ctx, net)
     ? `<label class="ap-checkbox-container"><input type="checkbox" value="${escapeHtml(net)}" data-vi-check checked aria-label="Learn the ${escapeHtml(networkLabel(net))} voice" /><i></i></label>`
     : "";
   return `
     <li class="voice-intro__net" data-vi-net="${escapeHtml(net)}">
       <span class="voice-intro__slot">${slot}</span>
-      <i class="${networkIcon(net)} voice-intro__glyph" aria-hidden="true"></i>
+      ${glyphTile(net)}
       <span class="voice-intro__text">
         <span class="voice-intro__name">${escapeHtml(networkLabel(net))}</span>
         <span class="voice-intro__state">${escapeHtml(stateText(ctx, net))}</span>
       </span>
-      <span class="voice-intro__tag">${own ? `<span class="ap-tag green mini">Own voice</span>` : ""}</span>
     </li>`;
+}
+
+// The Playbook card on the stage — the first-time run's, its Voice profile
+// part only, one line per network: its traits once it has its own voice, the
+// Brand voice as it is, or a quiet bar (breathing while it's being learned).
+function cardFieldHtml(ctx, net, { pending = false, landing = false } = {}) {
+  const { state, voice } = networkVoice(ctx, net);
+  const value =
+    state === "own"
+      ? voice.optimizedBy === "you"
+        ? `<span class="voice-intro__plain">As you set it</span>`
+        : traitsHtml(NETWORK_VOICE_TRAITS[net] || [])
+      : state === "plain" && !pending
+        ? `<span class="voice-intro__plain">The Brand voice as it is</span>`
+        : `<span class="voice-intro__bar"></span><span class="voice-intro__bar is-short"></span>`;
+  return `
+    <div class="voice-intro__field${pending ? " is-pending" : ""}${landing ? " is-landing" : ""}" data-vi-field="${escapeHtml(net)}">
+      <dt><i class="${networkIcon(net)}" aria-hidden="true"></i>${escapeHtml(networkLabel(net))}</dt>
+      <dd>${value}</dd>
+    </div>`;
+}
+
+function renderCard(ctx) {
+  stageEl.innerHTML = `
+    <div class="voice-intro__card">
+      <div class="voice-intro__card-head">
+        <span class="voice-intro__mark">${brandMark(ctx)}</span>
+        <span class="voice-intro__card-title">${escapeHtml(ctx.name || brandOf(ctx))}</span>
+      </div>
+      <section class="voice-intro__part">
+        <span class="voice-intro__part-tile" aria-hidden="true"><i class="ap-icon-quote"></i></span>
+        <h3 class="voice-intro__part-name">Voice profile</h3>
+        <dl class="voice-intro__fields">
+          <div class="voice-intro__field">
+            <dt>Brand voice</dt>
+            <dd>${traitsHtml(brandTraits(ctx))}</dd>
+          </div>
+          ${playbookNetworks(ctx)
+            .map((n) => cardFieldHtml(ctx, n))
+            .join("")}
+        </dl>
+      </section>
+    </div>`;
 }
 
 function renderStand() {
   const ctx = getContextById(ctxId);
   if (!ctx) return close();
+  clearTimeout(timer);
   modal.classList.add("is-stand");
   titleEl.textContent = `Here's where ${brandOf(ctx)} stands`;
-  bodyEl.innerHTML = `
-    <p class="voice-intro__lead">${
-      playbookNetworks(ctx).some((n) => learnable(ctx, n))
-        ? "Check the networks I should learn from their posts. The others keep the Brand voice until you give them one."
-        : "A network without its own voice gets one from a document or your edits — both in the Playbook."
-    }</p>
-    <ul class="voice-intro__nets">${playbookNetworks(ctx)
-      .map((n) => rowHtml(ctx, n))
-      .join("")}</ul>`;
-  renderStandFooter();
+  subEl.textContent = playbookNetworks(ctx).some((n) => learnable(ctx, n))
+    ? "Check the networks I should learn from their posts. The others keep the Brand voice until you give them one."
+    : "A network without its own voice gets one from a document or your edits — both in the Playbook.";
+  leftEl.innerHTML = `<ul class="voice-intro__nets">${playbookNetworks(ctx)
+    .map((n) => rowHtml(ctx, n))
+    .join("")}</ul>`;
+  renderCard(ctx);
+  renderStandActions();
 }
 
 const checked = () => [...modal.querySelectorAll("[data-vi-check]:checked")].map((i) => i.value);
 
-function renderStandFooter() {
+function renderStandActions() {
   const ctx = getContextById(ctxId);
   if (!playbookNetworks(ctx).some((n) => learnable(ctx, n))) {
-    footerEl.innerHTML = button("done", "ghost grey", "Later") + button("see", "primary blue", "Open the Playbook");
+    actionsEl.innerHTML = button("done", "ghost grey", "Later") + button("see", "primary blue", "Open the Playbook");
     return;
   }
   const n = checked().length;
-  footerEl.innerHTML =
+  actionsEl.innerHTML =
     button("done", "ghost grey", "Later") +
     `<button type="button" class="ap-button primary orange" data-vi-action="learn" ${n ? "" : "disabled"}>${
       n === 1 ? "Learn 1 voice" : `Learn ${n} voices`
     }</button>`;
 }
 
-// One network after the other: « Reading … », then the voice lands on the
-// Playbook and its tag pops in.
+// One network after the other: « Reading … » on the left while its line on
+// the card breathes, then the voice lands on the Playbook and its traits pop in.
 function learnChecked() {
   const nets = checked();
   if (!nets.length || learning) return;
   learning = true;
-  footerEl.querySelectorAll("button").forEach((b) => (b.disabled = true));
+  actionsEl.querySelectorAll("button").forEach((b) => (b.disabled = true));
   modal.querySelectorAll("[data-vi-check]").forEach((i) => (i.disabled = true));
   const step = ([net, ...rest]) => {
     if (!net) return learned(nets);
     const row = modal.querySelector(`[data-vi-net="${net}"]`);
-    const account = profileForNetwork(net);
+    const field = () => stageEl.querySelector(`[data-vi-field="${net}"]`);
     row.classList.add("is-learning");
-    row.querySelector(".voice-intro__state").textContent = `Reading ${account.handle}'s posts…`;
+    row.querySelector(".voice-intro__state").textContent = `Reading ${profileForNetwork(net).handle}'s posts…`;
+    field().outerHTML = cardFieldHtml(getContextById(ctxId), net, { pending: true });
     setTimeout(() => {
       if (!learning) return;
       applyNetworkVoice(ctxId, net, "learn");
+      const ctx = getContextById(ctxId);
       row.classList.remove("is-learning");
-      row.querySelector(".voice-intro__slot").innerHTML = "";
-      row.querySelector(".voice-intro__state").textContent = stateText(getContextById(ctxId), net);
-      row.querySelector(".voice-intro__tag").innerHTML =
-        `<span class="ap-tag green mini voice-intro__pop">Own voice</span>`;
+      row.querySelector(".voice-intro__slot").innerHTML =
+        `<i class="ap-icon-check voice-intro__done" aria-hidden="true"></i>`;
+      row.querySelector(".voice-intro__state").textContent = stateText(ctx, net);
+      field().outerHTML = cardFieldHtml(ctx, net, { landing: true });
       step(rest);
     }, LEARN_MS);
   };
@@ -284,12 +416,12 @@ function learned(nets) {
   learning = false;
   modal.dataset.viFirst = nets[0];
   titleEl.textContent = nets.length === 1 ? "1 voice learned" : `${nets.length} voices learned`;
-  bodyEl.querySelector(".voice-intro__lead").textContent =
+  subEl.textContent =
     nets.length === 1
       ? `Every draft for ${networkLabel(nets[0])} now starts from its own voice. Open its tab in the Playbook to see — or change — what I learned.`
       : "Every draft for these networks now starts from its own voice. Open their tabs in the Playbook to see — or change — what I learned.";
-  footerEl.innerHTML = button("see", "stroked grey", "See the voices") + button("done", "primary blue", "Done");
-  footerEl.querySelector(".primary").focus({ preventScroll: true });
+  actionsEl.innerHTML = button("see", "stroked grey", "See the voices") + button("done", "primary blue", "Done");
+  actionsEl.querySelector(".primary").focus({ preventScroll: true });
 }
 
 function seeVoices() {
@@ -303,6 +435,7 @@ function seeVoices() {
 
 function close() {
   if (!modal) return;
+  clearTimeout(timer);
   learning = false;
   delete modal.dataset.viFirst;
   modal.classList.remove("open");
