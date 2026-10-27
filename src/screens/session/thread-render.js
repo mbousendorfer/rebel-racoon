@@ -13,26 +13,26 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2238";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2238";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2238";
-import { getTopPost } from "../../top-posts-store.js?v=2238";
-import { getTopicById } from "../../topics-store.js?v=2238";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2238";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2238";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2238";
-import { getIdeas } from "../../library.js?v=2238";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2238";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2238";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2238";
-import { getPlans } from "../../post-plan-store.js?v=2238";
-import { isFlagOn } from "../../feature-flags.js?v=2238";
-import { CURRENT_USER } from "../../org.js?v=2238";
-import { getSessionById } from "../../sessions-store.js?v=2238";
-import { getContextById } from "../../contexts-store.js?v=2238";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2238";
-import { getFocusKey } from "../../components/right-panel.js?v=2238";
-import { voiceComparisonHtml } from "../../components/voice-intro-modal.js?v=2238";
+} from "./thread-turns.js?v=2239";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2239";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2239";
+import { getTopPost } from "../../top-posts-store.js?v=2239";
+import { getTopicById } from "../../topics-store.js?v=2239";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2239";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2239";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2239";
+import { getIdeas } from "../../library.js?v=2239";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2239";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2239";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2239";
+import { getPlans } from "../../post-plan-store.js?v=2239";
+import { isFlagOn } from "../../feature-flags.js?v=2239";
+import { CURRENT_USER } from "../../org.js?v=2239";
+import { getSessionById } from "../../sessions-store.js?v=2239";
+import { getContextById } from "../../contexts-store.js?v=2239";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2239";
+import { getFocusKey } from "../../components/right-panel.js?v=2239";
+import { voiceComparisonHtml, learnedVoiceHtml } from "../../components/voice-intro-modal.js?v=2239";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -215,6 +215,9 @@ function renderTurn(message, sessionId) {
 
   if (message.role === "assistant" && message.variant === "voice-intro") {
     return renderVoiceIntroTurn(message);
+  }
+  if (message.role === "assistant" && message.variant === "voice-learned") {
+    return renderVoiceLearnedTurn(message);
   }
 
   // Clip extraction — pending spinner pill that flips to a ready card with
@@ -454,6 +457,19 @@ function renderVoiceIntroTurn(message) {
     text: `I now write each network in its own voice — here's one idea, the way each of them reads it.
       ${voiceComparisonHtml(ctx, { compact: true })}
       ${label} doesn't have a voice yet, so let's give it one before I write.`,
+  });
+}
+
+// A network's voice, just learned in the Voice step: what it changes from the
+// Brand voice and a post before and after, then where to change it.
+function renderVoiceLearnedTurn(message) {
+  const ctx = getContextById(message.contextId);
+  const label = escapeHtml(networkLabel(message.network));
+  return renderMessageBubble({
+    role: "assistant",
+    text: `Here's the ${label} voice I learned.
+      ${learnedVoiceHtml(ctx, message.network)}
+      I'll write every ${label} draft this way. <a class="ap-link" href="#/playbook/${escapeHtml(message.contextId)}?tab=voice&amp;voice=${escapeHtml(message.network)}">See the whole ${label} voice</a> to change any of it.`,
   });
 }
 

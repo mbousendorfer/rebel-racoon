@@ -6,31 +6,38 @@
 //   · the chat's Voice step (network-voice-flow.js), when the dialog never ran
 //     → Archie's message carries the comparison (`voiceComparisonHtml`);
 //   · the Voice profile tab → an infobox whose « Show me » opens this dialog;
-//   · the creation review (a new user) → the comparison on its Voice tab, and
-//     the save marks the intro seen, so the dialog never follows.
+//   · never for a new user: a creation marks the intro seen (context-builder).
 // One key, owned here: the first door marks it, the others stay as they are.
 //
 // Public API:
 //   init() · maybeOpenVoiceIntro(path)
 //   introSeen() · markIntroSeen() · resetIntro()
 //   voiceComparisonHtml(ctx, { compact })
+//   learnedVoiceHtml(ctx, net, { pixels }) — what a learned voice changes
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2238";
-import { getContextById } from "../contexts-store.js?v=2238";
-import { playbookForNewWork } from "../active-playbook.js?v=2238";
-import { isNewUser } from "../user-mode.js?v=2238";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2238";
-import { networkVoiceOn, networkVoice, playbookNetworks, canLearnFrom } from "../voice-parts.js?v=2238";
-import { applyNetworkVoice } from "../network-voice-flow.js?v=2238";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2238";
-import "../archie-pixels.js?v=2238";
-import { navigate } from "../router.js?v=2238";
-import { escapeHtml } from "../utils.js?v=2238";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2239";
+import { getContextById } from "../contexts-store.js?v=2239";
+import { playbookForNewWork } from "../active-playbook.js?v=2239";
+import { isNewUser } from "../user-mode.js?v=2239";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2239";
+import {
+  networkVoiceOn,
+  networkVoice,
+  playbookNetworks,
+  canLearnFrom,
+  voiceParts,
+  cloneItems,
+  baseValue,
+} from "../voice-parts.js?v=2239";
+import { applyNetworkVoice, learnPhases, LEARN_PHASE_MS } from "../network-voice-flow.js?v=2239";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2239";
+import "../archie-pixels.js?v=2239";
+import { navigate } from "../router.js?v=2239";
+import { escapeHtml } from "../utils.js?v=2239";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
-const LEARN_MS = 1100;
 
 export function introSeen() {
   try {
@@ -144,6 +151,59 @@ export function voiceComparisonHtml(ctx, { compact = false } = {}) {
     </div>`;
 }
 
+// ── What a learned voice changes ────────────────────────────────────────────
+// Once Archie learned a network's voice, it shows the result rather than
+// saying « done »: where it departs from the Brand voice — its own sentence
+// and the rules it made for the network (`adapted`) — then one post, before
+// and after. The chat's answer to « Learn it », and the dialog's last step.
+// `pixels`: on Archie's field (the chat); the dialog's stage already is one.
+export function learnedVoiceHtml(ctx, net, { pixels = true } = {}) {
+  const { voice } = networkVoice(ctx, net);
+  const label = escapeHtml(networkLabel(net));
+  const summary = String(voice?.voiceSummary || "")
+    .replace(baseValue(ctx, "voiceSummary"), "")
+    .trim();
+  const changes = voiceParts()
+    .filter((p) => p.kind !== "text")
+    .flatMap((p) =>
+      cloneItems(voice?.[p.field])
+        .filter((i) => i.adapted)
+        .map((i) => ({ part: p.title, ...i })),
+    );
+  const from = voice?.postCount ? `${voice.postCount} posts of ${voice.learnedFrom}` : voice?.learnedFrom;
+  const pair = `
+    <span class="voice-intro__status ap-status mermaid">The same post, before and after</span>
+    <div class="voice-learned__pair">${postCardHtml(ctx, "brand", { compact: true })}${postCardHtml(ctx, net, { compact: true })}</div>`;
+  return `
+    <div class="voice-learned">
+      <section class="voice-learned__card" aria-label="Your ${label} voice">
+        <header class="voice-learned__head">
+          ${glyphTile(net)}
+          <span class="voice-learned__title">
+            <span class="voice-learned__name">Your ${label} voice</span>
+            ${from ? `<span class="voice-learned__from">Learned from ${escapeHtml(from)}</span>` : ""}
+          </span>
+        </header>
+        ${summary ? `<p class="voice-learned__summary">${escapeHtml(summary)}</p>` : ""}
+        <p class="voice-learned__lead">What changes from the Brand voice</p>
+        <dl class="voice-learned__changes">${changes
+          .map(
+            (c) => `<div class="voice-learned__change">
+              <dt>${escapeHtml(c.part)}</dt>
+              <dd>${c.when ? `<strong>${escapeHtml(c.when)}:</strong> ` : ""}${escapeHtml(c.text)}</dd>
+            </div>`,
+          )
+          .join("")}</dl>
+        <p class="voice-learned__rest">Everything else follows the Brand voice.</p>
+      </section>
+      ${
+        pixels
+          ? `<div class="voice-compare voice-compare--compact"><archie-pixels data-quiet></archie-pixels><div class="voice-compare__inner">${pair}</div></div>`
+          : pair
+      }
+    </div>`;
+}
+
 // ── The dialog ──────────────────────────────────────────────────────────────
 // The first-time run's look (welcome-alt-intro.js): the words on the left, and
 // on the right, on Archie's warm pixel field, the thing they're about.
@@ -152,6 +212,8 @@ export function voiceComparisonHtml(ctx, { compact = false } = {}) {
 //            The list on the left follows it, and picks one.
 //   Step 2 — where the Playbook stands: on the left the networks to learn, on
 //            the stage the Playbook's Voice profile filling as they're learned.
+//   Then   — what was learned: one network at a time, what its voice changes
+//            from the Brand voice and a post before and after.
 
 const CYCLE_MS = 5200;
 
@@ -202,6 +264,8 @@ function injectOnce() {
   modal.addEventListener("click", (e) => {
     const pick = e.target.closest("[data-vi-show]");
     if (pick) return showVoice(pick.dataset.viShow, { manual: true });
+    const result = e.target.closest("[data-vi-result]");
+    if (result) return showLearned(result.dataset.viNets.split(","), result.dataset.viResult);
     const action = e.target.closest("[data-vi-action]")?.dataset.viAction;
     if (action === "close" || action === "done") close();
     else if (action === "next") renderStand();
@@ -249,6 +313,7 @@ const glyphTile = (net) =>
 // Step 1 — the « aha »: the same idea, in each network's voice.
 function renderSame(ctx) {
   modal.classList.remove("is-stand");
+  stageEl.classList.remove("is-result");
   titleEl.textContent = "Each network, its own voice";
   subEl.textContent =
     "One idea, written the way each network reads it. I learn each voice from your posts, and you can edit any of them in the Playbook.";
@@ -411,9 +476,19 @@ function learnChecked() {
     if (!net) return learned(nets);
     const row = modal.querySelector(`[data-vi-net="${net}"]`);
     const field = () => stageEl.querySelector(`[data-vi-field="${net}"]`);
+    const state = row.querySelector(".voice-intro__state");
+    const phases = learnPhases(net);
     row.classList.add("is-learning");
-    row.querySelector(".voice-intro__state").textContent = `Reading ${profileForNetwork(net).handle}'s posts…`;
+    state.textContent = phases[0];
     field().outerHTML = cardFieldHtml(getContextById(ctxId), net, { pending: true });
+    phases.slice(1).forEach((p, i) =>
+      setTimeout(
+        () => {
+          if (learning) state.textContent = p;
+        },
+        LEARN_PHASE_MS * (i + 1),
+      ),
+    );
     setTimeout(() => {
       if (!learning) return;
       applyNetworkVoice(ctxId, net, "learn");
@@ -421,24 +496,50 @@ function learnChecked() {
       row.classList.remove("is-learning");
       row.querySelector(".voice-intro__slot").innerHTML =
         `<i class="ap-icon-check voice-intro__done" aria-hidden="true"></i>`;
-      row.querySelector(".voice-intro__state").textContent = stateText(ctx, net);
+      state.textContent = stateText(ctx, net);
       field().outerHTML = cardFieldHtml(ctx, net, { landing: true });
       step(rest);
-    }, LEARN_MS);
+    }, LEARN_PHASE_MS * phases.length);
   };
   step(nets);
 }
 
+// Learned: the result, network by network — on the left the voices just
+// learned (a click shows one), on the stage what that voice changes.
 function learned(nets) {
   learning = false;
   modal.dataset.viFirst = nets[0];
   titleEl.textContent = nets.length === 1 ? "1 voice learned" : `${nets.length} voices learned`;
   subEl.textContent =
     nets.length === 1
-      ? `Every draft for ${networkLabel(nets[0])} now starts from its own voice. Open its tab in the Playbook to see — or change — what I learned.`
-      : "Every draft for these networks now starts from its own voice. Open their tabs in the Playbook to see — or change — what I learned.";
+      ? `Here's what I learned for ${networkLabel(nets[0])}: what changes from the Brand voice, and a post before and after.`
+      : "Here's what I learned for each network: what changes from the Brand voice, and a post before and after.";
+  showLearned(nets, nets[0]);
   actionsEl.innerHTML = button("see", "stroked grey", "See the voices") + button("done", "primary blue", "Done");
   actionsEl.querySelector(".primary").focus({ preventScroll: true });
+}
+
+function showLearned(nets, net) {
+  const ctx = getContextById(ctxId);
+  modal.dataset.viFirst = net;
+  leftEl.innerHTML = `
+    <ul class="voice-intro__voices" aria-label="Voices learned">
+      ${nets
+        .map(
+          (
+            n,
+          ) => `<li><button type="button" class="voice-intro__voice${n === net ? " is-on" : ""}" data-vi-result="${n}" data-vi-nets="${nets.join(",")}" aria-pressed="${n === net}">
+            ${glyphTile(n)}
+            <span class="voice-intro__voice-text">
+              <span class="voice-intro__voice-name">${escapeHtml(networkLabel(n))}</span>
+              <span class="voice-intro__voice-hint">${escapeHtml(stateText(ctx, n))}</span>
+            </span>
+          </button></li>`,
+        )
+        .join("")}
+    </ul>`;
+  stageEl.classList.add("is-result");
+  stageEl.innerHTML = learnedVoiceHtml(ctx, net, { pixels: false });
 }
 
 function seeVoices() {

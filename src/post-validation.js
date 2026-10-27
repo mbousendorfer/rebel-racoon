@@ -10,7 +10,7 @@
 // errors   block Schedule and Assign (the Drafts panel's « Needs fixes »).
 // warnings publish, but not the way the draft looks (X shows 4 images at most).
 
-import { networkMeta } from "./social-profiles.js?v=2238";
+import { networkMeta } from "./social-profiles.js?v=2239";
 
 // Characters a post consumes against its network limit — body paragraphs,
 // hashtags and the CTA, joined the way they'd publish (blank line between

@@ -1885,6 +1885,95 @@ body.has-modal {
   animation: none;
 }
 
+/* What a learned voice changes (voice-intro-modal.js learnedVoiceHtml) — in the
+   chat's Voice step, and on the dialog's stage once learned: a white card with
+   the network's own sentence and the rules it made, then a post before / after. */
+.voice-learned {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  width: 100%;
+  margin: var(--ref-spacing-xs) 0;
+}
+.voice-learned__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-md);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: var(--app-surface);
+}
+.voice-learned__head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+}
+.voice-learned__title {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.voice-learned__name {
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+.voice-learned__from,
+.voice-learned__rest {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+.voice-learned__summary {
+  margin: 0;
+  color: var(--ref-color-grey-100);
+}
+.voice-learned__lead {
+  margin: var(--ref-spacing-xs) 0 0;
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+.voice-learned__changes {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+.voice-learned__change {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs) 0;
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+.voice-learned__change dt {
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-80);
+}
+.voice-learned__change dd {
+  margin: 0;
+  color: var(--ref-color-grey-100);
+}
+.voice-learned__pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  align-items: start;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+}
+/* On the dialog's stage: the whole width, scrolled if it must. */
+.voice-intro__stage-inner.is-result {
+  width: calc(100% - 2 * var(--ref-spacing-md));
+  overflow-y: auto;
+}
+.voice-intro__stage-inner.is-result .voice-learned {
+  margin: 0;
+  animation: welcome-intro-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.voice-intro__stage-inner.is-result .voice-learned__card {
+  border: 0;
+}
+
 /* The voice intro dialog (voice-intro-modal.js) — the first-time run's look
    (welcome.css, .welcome-intro): the words on the left, and on the right, on
    Archie's warm pixel field, the thing they're about — a post rewritten for

@@ -18,15 +18,22 @@
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2238";
-import { postAssistantMessage, postUserTurn, startPending, finishPending, postVoiceIntro } from "./assistant.js?v=2238";
-import { introSeen, markIntroSeen } from "./components/voice-intro-modal.js?v=2238";
-import { getContextById, updateContext } from "./contexts-store.js?v=2238";
-import { getSessionById } from "./sessions-store.js?v=2238";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2238";
-import { setHandoff } from "./handoff.js?v=2238";
-import { navigate } from "./router.js?v=2238";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2238";
+import * as inlineQuestion from "./inline-question.js?v=2239";
+import {
+  postAssistantMessage,
+  postUserTurn,
+  startPending,
+  updatePending,
+  finishPending,
+  postVoiceTurn,
+} from "./assistant.js?v=2239";
+import { introSeen, markIntroSeen } from "./components/voice-intro-modal.js?v=2239";
+import { getContextById, updateContext } from "./contexts-store.js?v=2239";
+import { getSessionById } from "./sessions-store.js?v=2239";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2239";
+import { setHandoff } from "./handoff.js?v=2239";
+import { navigate } from "./router.js?v=2239";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2239";
 import {
   networkVoiceOn,
   networkVoice,
@@ -34,9 +41,20 @@ import {
   learnNetworkVoice,
   brandVoiceAsIs,
   playbookNetworks,
-} from "./voice-parts.js?v=2238";
+} from "./voice-parts.js?v=2239";
 
-const LEARN_MS = 1800;
+// Learning a voice takes a moment, and says what it's doing: three phases.
+export const LEARN_PHASE_MS = 1400;
+
+export function learnPhases(net, docName = null) {
+  const label = networkLabel(net);
+  const account = profileForNetwork(net);
+  return [
+    docName ? `Reading ${docName}…` : `Reading ${account.postCount} posts of ${account.handle}…`,
+    docName ? `Finding how you write on ${label}…` : `Finding what works on ${label}…`,
+    `Writing your ${label} voice…`,
+  ];
+}
 
 // The networks of a batch that have no voice yet — none with the flag off.
 export function missingNetworkVoices(ctx, networks) {
@@ -96,7 +114,7 @@ function askVoice(sessionId, ctxId, nets, onReady, { announce = true } = {}) {
   // The first time anyone meets network voices, this is the intro (voice-intro-modal.js).
   if (announce && !introSeen()) {
     markIntroSeen();
-    postVoiceIntro(sessionId, { contextId: ctxId, network: net });
+    postVoiceTurn(sessionId, "voice-intro", { contextId: ctxId, network: net });
   } else if (announce)
     postAssistantMessage(
       sessionId,
@@ -125,15 +143,15 @@ function askVoice(sessionId, ctxId, nets, onReady, { announce = true } = {}) {
       }
       // Backing out of the document dialog puts the question back.
       const learning = (docName) => {
-        const pendingId = startPending(
-          sessionId,
-          docName ? `Reading ${docName}…` : `Reading ${account.handle}'s posts…`,
-          ["analyze_tone"],
-        );
+        const phases = learnPhases(net, docName);
+        const pendingId = startPending(sessionId, phases[0]);
+        phases
+          .slice(1)
+          .forEach((p, i) => setTimeout(() => updatePending(sessionId, pendingId, p), LEARN_PHASE_MS * (i + 1)));
         setTimeout(() => {
           finishPending(sessionId, pendingId);
           next(docName);
-        }, LEARN_MS);
+        }, LEARN_PHASE_MS * phases.length);
       };
       if (choice === "learn") return learning();
       openFillDocumentModal({
@@ -179,15 +197,15 @@ export function applyNetworkVoice(ctxId, net, choice, docName = null) {
   });
 }
 
+// A learned voice shows what it changes (the « voice-learned » turn); the
+// Brand voice as it is says what that costs.
 function setVoice(sessionId, ctxId, net, choice, docName) {
   const label = networkLabel(net);
   applyNetworkVoice(ctxId, net, choice, docName);
-  postAssistantMessage(
-    sessionId,
-    choice === "learn"
-      ? `I learned your ${label} voice from ${profileForNetwork(net)?.postCount} posts. It's in the Playbook if you want to change it.`
-      : choice === "document"
-        ? `I learned your ${label} voice from ${docName}. It's in the Playbook if you want to change it.`
-        : `I'll write for ${label} in the Brand voice as it is. It isn't optimized for ${label}, so the drafts may miss what works there. You can optimize it from the Playbook at any time.`,
-  );
+  if (choice === "plain")
+    return postAssistantMessage(
+      sessionId,
+      `I'll write for ${label} in the Brand voice as it is. It isn't optimized for ${label}, so the drafts may miss what works there. You can optimize it from the Playbook at any time.`,
+    );
+  postVoiceTurn(sessionId, "voice-learned", { contextId: ctxId, network: net });
 }

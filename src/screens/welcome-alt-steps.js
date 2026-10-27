@@ -14,8 +14,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2238";
-import { navigate } from "../router.js?v=2238";
+import { html, raw, escapeHtml } from "../utils.js?v=2239";
+import { navigate } from "../router.js?v=2239";
 import {
   getDraft,
   patchDraft,
@@ -23,11 +23,11 @@ import {
   readAltFiles,
   writeAltManually,
   analyzeAltInterview,
-} from "../context-builder.js?v=2238";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2238";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2238";
-import { connectors as connectorMocks } from "../mocks.js?v=2238";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=2238";
+} from "../context-builder.js?v=2239";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2239";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2239";
+import { connectors as connectorMocks } from "../mocks.js?v=2239";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=2239";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {

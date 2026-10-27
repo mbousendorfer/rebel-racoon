@@ -6,13 +6,13 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2238";
-import { findConnector } from "./connectors-store.js?v=2238";
-import { createSessionNotifier } from "./store-utils.js?v=2238";
-import { addPostDraft } from "./posts-store.js?v=2238";
-import { showToast } from "./components/toast.js?v=2238";
-import { isFlagOn } from "./feature-flags.js?v=2238";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2238";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2239";
+import { findConnector } from "./connectors-store.js?v=2239";
+import { createSessionNotifier } from "./store-utils.js?v=2239";
+import { addPostDraft } from "./posts-store.js?v=2239";
+import { showToast } from "./components/toast.js?v=2239";
+import { isFlagOn } from "./feature-flags.js?v=2239";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2239";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -437,6 +437,14 @@ export function startPending(sessionId, meta = null, tools = null) {
   return id;
 }
 
+// A running step's label, changed while it runs (the voice step's phases).
+export function updatePending(sessionId, id, meta) {
+  const msg = getThread(sessionId).find((m) => m.id === id);
+  if (!msg || msg.status !== "loading") return;
+  msg.meta = meta;
+  notify(sessionId);
+}
+
 export function finishPending(sessionId, id) {
   const thread = getThread(sessionId);
   const msg = thread.find((m) => m.id === id);
@@ -828,14 +836,17 @@ export function postImageLookSet(sessionId, { contextId, styleId, label }) {
   notify(sessionId);
 }
 
-// The voice intro, in the chat (network-voice-flow.js): the first time a draft
-// needs a network's voice, Archie shows the same post in each network's voice
-// before asking. Rendered from the Playbook (voiceComparisonHtml).
-export function postVoiceIntro(sessionId, { contextId, network }) {
+// The voice step's turns (network-voice-flow.js), rendered from the Playbook:
+//   "voice-intro"   the first time a draft needs a network's voice, the same
+//                   post in each network's voice, before asking
+//                   (voiceComparisonHtml);
+//   "voice-learned" once a voice is learned, what it changes from the Brand
+//                   voice and a post before / after (learnedVoiceHtml).
+export function postVoiceTurn(sessionId, variant, { contextId, network }) {
   getThread(sessionId).push({
     id: newId(),
     role: "assistant",
-    variant: "voice-intro",
+    variant,
     meta: "Archie",
     contextId,
     network,
