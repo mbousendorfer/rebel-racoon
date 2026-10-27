@@ -1856,6 +1856,12 @@ body.has-modal {
   max-height: 70vh;
   overflow-y: auto;
 }
+/* An interview field: its Voice profile section, then the question. */
+.voice-proposal-modal__part {
+  display: block;
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
 .voice-proposal-modal__lead {
   margin: 0;
   color: var(--ref-color-grey-80);

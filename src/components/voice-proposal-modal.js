@@ -15,9 +15,9 @@
 //     `only`: the rules the proposal adds (shown alone).
 //     onUse runs after the voice is saved.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2268";
-import { getContextById } from "../contexts-store.js?v=2268";
-import { networkLabel } from "../social-profiles.js?v=2268";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2269";
+import { getContextById } from "../contexts-store.js?v=2269";
+import { networkLabel } from "../social-profiles.js?v=2269";
 import {
   INTERVIEW,
   learnPhases,
@@ -25,9 +25,9 @@ import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
-} from "../network-voice-flow.js?v=2268";
-import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2268";
-import { escapeHtml } from "../utils.js?v=2268";
+} from "../network-voice-flow.js?v=2269";
+import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2269";
+import { escapeHtml } from "../utils.js?v=2269";
 
 const MODAL_ID = "voice-proposal";
 
@@ -86,10 +86,10 @@ export function openVoiceInterview({ net, onDone, onCancel = null }) {
   current = { kind: "interview", net, onDone, onCancel };
   titleEl.textContent = `How you write on ${label}`;
   bodyEl.innerHTML = `
-    <p class="voice-proposal-modal__lead">Answer in your own words. Leave any question empty.</p>
+    <p class="voice-proposal-modal__lead">One question per section of your Voice profile. Answer in your own words, or leave any empty.</p>
     ${INTERVIEW.map(
       (q) => `<div class="ap-form-field">
-        <label for="vp-${q.key}">${escapeHtml(q.ask(label))}</label>
+        <label for="vp-${q.key}"><span class="voice-proposal-modal__part">${escapeHtml(q.title)}</span>${escapeHtml(q.ask(label))}</label>
         <div class="ap-textarea-field resizable">
           <textarea id="vp-${q.key}" rows="2" data-vp-answer="${q.key}"></textarea>
         </div>

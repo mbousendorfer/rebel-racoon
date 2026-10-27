@@ -19,12 +19,12 @@
 //             the grid, source card dimmed.
 //   - Add   : a new 30s clip is inserted in the next gap and opened in edit.
 
-import { escapeHtml, formatClock } from "../utils.js?v=2268";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2268";
-import { FORMATS, NETWORK_FORMATS, ratioValue } from "../clip-formats.js?v=2268";
-import { iconFor } from "../file-kinds.js?v=2268";
-import { DEFAULT_PRESET, buildCaptions, videoForClip } from "../clip-captions.js?v=2268";
-import { editorPaneHTML, optionsHTML } from "./video-clips-modal/editor-pane.js?v=2268";
+import { escapeHtml, formatClock } from "../utils.js?v=2269";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2269";
+import { FORMATS, NETWORK_FORMATS, ratioValue } from "../clip-formats.js?v=2269";
+import { iconFor } from "../file-kinds.js?v=2269";
+import { DEFAULT_PRESET, buildCaptions, videoForClip } from "../clip-captions.js?v=2269";
+import { editorPaneHTML, optionsHTML } from "./video-clips-modal/editor-pane.js?v=2269";
 
 const MODAL_ID = "videoClips";
 const MIN_CLIP = 5;
@@ -371,7 +371,7 @@ function renderOptions() {
     b.setAttribute("aria-selected", String(on));
   });
   if (editorTab === "subtitles") {
-    import("../caption-editor.js?v=2268").then(({ refreshControls }) => refreshControls());
+    import("../caption-editor.js?v=2269").then(({ refreshControls }) => refreshControls());
   }
 }
 
@@ -381,7 +381,7 @@ function renderOptions() {
 // onChange folds edits into the draft so Save persists them and Cancel discards.
 function syncCaptionMount() {
   const want = !!editingId;
-  import("../caption-editor.js?v=2268").then((mod) => {
+  import("../caption-editor.js?v=2269").then((mod) => {
     capMod = mod;
     if (want) {
       const shell = bodyEl && bodyEl.querySelector("[data-vc-editor]");
@@ -482,7 +482,7 @@ function onModalClick(event) {
     // without a confirm has no recovery path. Gate on confirm-modal —
     // same pattern as bulk-delete drafts in right-panel.
     const id = editingId;
-    import("./confirm-modal.js?v=2268").then(({ open }) => {
+    import("./confirm-modal.js?v=2269").then(({ open }) => {
       open({
         title: "Delete clip?",
         body: "It will be removed from this video's clips. To get it back, cut it again from the video.",
@@ -1038,7 +1038,7 @@ function close() {
   if (!initialized || !modal?.classList.contains("open")) return;
   // Tear down the embedded caption editor if it's mounted.
   if (captionMounted) {
-    import("../caption-editor.js?v=2268").then(({ unmount }) => unmount());
+    import("../caption-editor.js?v=2269").then(({ unmount }) => unmount());
     captionMounted = false;
   }
   modal.classList.remove("open");

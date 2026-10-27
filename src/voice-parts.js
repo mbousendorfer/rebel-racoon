@@ -10,10 +10,10 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2268";
-import { isFlagOn } from "./feature-flags.js?v=2268";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2268";
-import { networkMeta, normalizeNetwork, getConnectedProfileById, profileForNetwork } from "./social-profiles.js?v=2268";
+import { escapeHtml } from "./utils.js?v=2269";
+import { isFlagOn } from "./feature-flags.js?v=2269";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2269";
+import { networkMeta, normalizeNetwork, getConnectedProfileById, profileForNetwork } from "./social-profiles.js?v=2269";
 
 const VOICE_PARTS = [
   { field: "voiceSummary", title: "How the Brand sounds", kind: "text" },
@@ -117,11 +117,12 @@ export function learnNetworkVoice(ctx, network, { from, postCount = 0 }) {
   return { ...voice, optimizedBy: "learned", learnedFrom: from, postCount };
 }
 
-// The network's voice, learned from the user's own answers in the chat (the
-// Voice step's interview, network-voice-flow.js): the default voice, with what
-// they said as the network's own rules. `answers`: { length, layout, tags,
-// never, example } — any may be empty. ponytail: their words go in as written;
-// in the product a model turns them into rules.
+// The network's voice, learned from the user's own answers (the Voice step's
+// interview, network-voice-flow.js INTERVIEW): ONE question per part of the
+// Voice profile, so each answer lands in its part — the summary sentence goes
+// after the default voice's, every other answer is the part's new rule for
+// the network. `answers`: { [field]: text } — any may be missing. ponytail:
+// their words go in as written; in the product a model turns them into rules.
 export function interviewNetworkVoice(ctx, network, answers) {
   // A rule reads as a sentence: capital first, full stop last.
   const sentence = (s) => {
@@ -129,17 +130,13 @@ export function interviewNetworkVoice(ctx, network, answers) {
     const t = s.charAt(0).toUpperCase() + s.slice(1);
     return /[.!?…]$/.test(t) ? t : `${t}.`;
   };
-  const rule = (prefix, text, extra = {}) =>
-    text ? [{ text: sentence(prefix ? `${prefix}: ${text}` : text), adapted: true, ...extra }] : [];
   const voice = brandVoiceAsIs(ctx);
-  const example = answers.example ? { examples: [answers.example] } : {};
-  voice.voiceAlways = [
-    ...voice.voiceAlways,
-    ...rule("Length", answers.length, example),
-    ...rule("Layout", answers.layout, answers.length ? {} : example),
-  ];
-  voice.voiceSometimes = [...voice.voiceSometimes, ...rule("Hashtags and mentions", answers.tags)];
-  voice.voiceNever = [...voice.voiceNever, ...rule("", answers.never)];
+  VOICE_PARTS.forEach(({ field, kind }) => {
+    const said = sentence((answers?.[field] || "").trim());
+    if (!said) return;
+    if (kind === "text") voice[field] = [voice[field], said].filter(Boolean).join(" ");
+    else voice[field] = [...voice[field], { text: said, adapted: true }];
+  });
   return { ...voice, optimizedBy: "learned", learnedFrom: "your answers" };
 }
 

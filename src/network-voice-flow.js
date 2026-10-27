@@ -33,7 +33,7 @@
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2268";
+import * as inlineQuestion from "./inline-question.js?v=2269";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -43,14 +43,14 @@ import {
   postVoiceTurn,
   resolveTurn,
   getThread,
-} from "./assistant.js?v=2268";
-import { getContextById, updateContext } from "./contexts-store.js?v=2268";
-import { getSessionById } from "./sessions-store.js?v=2268";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2268";
-import { setHandoff } from "./handoff.js?v=2268";
-import { navigate } from "./router.js?v=2268";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2268";
-import { getPosts } from "./posts-store.js?v=2268";
+} from "./assistant.js?v=2269";
+import { getContextById, updateContext } from "./contexts-store.js?v=2269";
+import { getSessionById } from "./sessions-store.js?v=2269";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2269";
+import { setHandoff } from "./handoff.js?v=2269";
+import { navigate } from "./router.js?v=2269";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2269";
+import { getPosts } from "./posts-store.js?v=2269";
 import {
   networkVoiceOn,
   networkVoice,
@@ -59,7 +59,8 @@ import {
   interviewNetworkVoice,
   brandVoiceAsIs,
   playbookNetworks,
-} from "./voice-parts.js?v=2268";
+  voiceParts,
+} from "./voice-parts.js?v=2269";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;
@@ -145,16 +146,16 @@ export function voiceChoices(net, { needed = false, chat = false } = {}) {
 }
 
 // The questions about how the user writes on a network, each skippable.
-export const INTERVIEW = [
-  { key: "length", ask: (l) => `How long is a post of yours on ${l}? One line, a few sentences, a long read…` },
-  { key: "layout", ask: () => "How do you lay it out? Short paragraphs, line breaks, emojis, a list…" },
-  { key: "tags", ask: (l) => `Hashtags and mentions on ${l}: how many, and where?` },
-  { key: "never", ask: (l) => `Anything you'd never do on ${l}?` },
-  {
-    key: "example",
-    ask: (l) => `Paste a post of yours that sounds just right on ${l}. It shows me better than any rule.`,
-  },
-];
+// ONE question per part of the Voice profile, in its order and under its
+// title (voice-parts VOICE_PARTS): each answer lands in that part.
+const QUESTIONS = {
+  voiceSummary: (l) => `How do you sound on ${l}, in a sentence?`,
+  voiceAlways: (l) => `What does every post of yours on ${l} do? Its length, how it opens, its layout…`,
+  voiceNever: (l) => `What would you never do on ${l}?`,
+  voiceByPost: () => "Does it change with the kind of post? An announcement, a tip, a story…",
+  voiceSometimes: (l) => `What do you do now and then on ${l}, not every time? Hashtags, a question at the end…`,
+};
+export const INTERVIEW = voiceParts().map((p) => ({ key: p.field, title: p.title, ask: QUESTIONS[p.field] }));
 
 // What Archie learned, not saved: from the account's posts, a document (`from`
 // its name) or the interview (`from` its answers).
@@ -237,7 +238,7 @@ function askInterview(sessionId, net, onDone, answers = {}, k = 0) {
   };
   inlineQuestion.ask(sessionId, {
     title: question,
-    stepLabel: `Voice · ${k + 1} of ${INTERVIEW.length}`,
+    stepLabel: `Voice profile · ${step.title}`,
     items: [],
     customPlaceholder: "Type your answer…",
     onCustom: (value) => {
@@ -357,7 +358,7 @@ function askVoice(sessionId, ctxId, nets, onReady, { giving = false } = {}) {
     }
     postAssistantMessage(
       sessionId,
-      `${INTERVIEW.length} quick questions about how you write on ${label}. Answer in your own words, or skip any of them.`,
+      `${INTERVIEW.length} quick questions about how you write on ${label} — one per section of your Voice profile. Answer in your own words, or skip any of them.`,
     );
     askInterview(sessionId, net, (answers) => {
       if (Object.keys(answers).length) return learning(choice, answers);

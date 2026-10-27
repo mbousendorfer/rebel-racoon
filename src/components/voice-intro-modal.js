@@ -18,11 +18,11 @@
 //   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2268";
-import { getContextById } from "../contexts-store.js?v=2268";
-import { playbookForNewWork } from "../active-playbook.js?v=2268";
-import { isNewUser } from "../user-mode.js?v=2268";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2268";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2269";
+import { getContextById } from "../contexts-store.js?v=2269";
+import { playbookForNewWork } from "../active-playbook.js?v=2269";
+import { isNewUser } from "../user-mode.js?v=2269";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2269";
 import {
   networkVoiceOn,
   networkVoice,
@@ -31,18 +31,18 @@ import {
   voiceParts,
   cloneItems,
   baseValue,
-} from "../voice-parts.js?v=2268";
+} from "../voice-parts.js?v=2269";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2268";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2268";
-import "../archie-pixels.js?v=2268";
-import { navigate } from "../router.js?v=2268";
-import { escapeHtml } from "../utils.js?v=2268";
+} from "../network-voice-flow.js?v=2269";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2269";
+import "../archie-pixels.js?v=2269";
+import { navigate } from "../router.js?v=2269";
+import { escapeHtml } from "../utils.js?v=2269";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -158,11 +158,17 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
         .trim();
   // Grouped under the Voice profile section each rule goes into — the same
   // titles as the Playbook's tab (Always, Never, Depending on the post…).
+  // The summary part holds the network's own sentence (what follows the
+  // default voice's), shown as that part's one line.
   const groups = voiceParts()
-    .filter((p) => p.kind !== "text")
     .map((p) => ({
       title: p.title,
-      rules: cloneItems(voice?.[p.field]).filter((i) => (only ? only.includes(i.text) : i.adapted)),
+      rules:
+        p.kind === "text"
+          ? summary
+            ? [{ text: summary }]
+            : []
+          : cloneItems(voice?.[p.field]).filter((i) => (only ? only.includes(i.text) : i.adapted)),
     }))
     .filter((g) => g.rules.length);
   const from = only
@@ -184,7 +190,6 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
           </span>
           ${pending ? `<span class="ap-status grey voice-edit__pending">Not saved yet</span>` : ""}
         </header>
-        ${summary ? `<p class="voice-edit__line">${escapeHtml(summary)}</p>` : ""}
       </div>
       <div class="voice-edit__changes">
         <p class="voice-edit__where">Goes into your Voice profile, ${label} tab</p>
