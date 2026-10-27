@@ -18,14 +18,15 @@
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2230";
-import { postAssistantMessage, postUserTurn, startPending, finishPending } from "./assistant.js?v=2230";
-import { getContextById, updateContext } from "./contexts-store.js?v=2230";
-import { getSessionById } from "./sessions-store.js?v=2230";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2230";
-import { setHandoff } from "./handoff.js?v=2230";
-import { navigate } from "./router.js?v=2230";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2230";
+import * as inlineQuestion from "./inline-question.js?v=2233";
+import { postAssistantMessage, postUserTurn, startPending, finishPending, postVoiceIntro } from "./assistant.js?v=2233";
+import { introSeen, markIntroSeen } from "./components/voice-intro-modal.js?v=2233";
+import { getContextById, updateContext } from "./contexts-store.js?v=2233";
+import { getSessionById } from "./sessions-store.js?v=2233";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2233";
+import { setHandoff } from "./handoff.js?v=2233";
+import { navigate } from "./router.js?v=2233";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2233";
 import {
   networkVoiceOn,
   networkVoice,
@@ -33,7 +34,7 @@ import {
   learnNetworkVoice,
   brandVoiceAsIs,
   playbookNetworks,
-} from "./voice-parts.js?v=2230";
+} from "./voice-parts.js?v=2233";
 
 const LEARN_MS = 1800;
 
@@ -92,7 +93,11 @@ function askVoice(sessionId, ctxId, nets, onReady, { announce = true } = {}) {
   const [net, ...rest] = nets;
   const label = networkLabel(net);
   const { account, items } = voiceChoices(net);
-  if (announce)
+  // The first time anyone meets network voices, this is the intro (voice-intro-modal.js).
+  if (announce && !introSeen()) {
+    markIntroSeen();
+    postVoiceIntro(sessionId, { contextId: ctxId, network: net });
+  } else if (announce)
     postAssistantMessage(
       sessionId,
       `${label} doesn't have a voice yet, and I write every draft in its network's voice.`,

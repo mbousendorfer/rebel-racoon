@@ -6,12 +6,13 @@
 // the side-effecting actions wired by the sidebar's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2230";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2230";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2230";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2230";
-import { getRole, setRole, ORG } from "./org.js?v=2230";
-import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2230";
+import { html, raw, escapeHtml } from "./utils.js?v=2233";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2233";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2233";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2233";
+import { getRole, setRole, ORG } from "./org.js?v=2233";
+import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2233";
+import { resetIntro } from "./components/voice-intro-modal.js?v=2233";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
@@ -64,6 +65,12 @@ export function toggleNetwork(network) {
 // Flip a feature flag, then reload so every store / surface re-reads it.
 export function toggleFlag(id) {
   setFlag(id, !getFlags()[id]);
+  window.location.reload();
+}
+
+// The voice intro (flag voicePerNetwork) shows once; this shows it again.
+export function replayVoiceIntro() {
+  resetIntro();
   window.location.reload();
 }
 
@@ -152,6 +159,20 @@ export function renderAdminMenu() {
         <div class="admin-menu__flags">${raw(networkRows)}</div>
       </div>
       ${raw(flagSections)}
+      ${raw(
+        isFlagOn("voicePerNetwork")
+          ? `<div class="admin-menu__section">
+        <span class="admin-menu__section-title">Onboarding</span>
+        <button type="button" class="admin-menu__doc" data-admin-voice-intro>
+          <span class="admin-menu__opt-text">
+            <span class="admin-menu__opt-label">Replay the voice intro</span>
+            <span class="admin-menu__opt-hint">Each network, its own voice — shown again on reload</span>
+          </span>
+          <i class="ap-icon-refresh" aria-hidden="true"></i>
+        </button>
+      </div>`
+          : "",
+      )}
       <div class="admin-menu__section">
         <span class="admin-menu__section-title">Docs</span>
         <a class="admin-menu__doc" href="handoff/overlays.html" target="_blank" rel="noopener">

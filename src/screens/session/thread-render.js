@@ -13,25 +13,26 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2230";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2230";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2230";
-import { getTopPost } from "../../top-posts-store.js?v=2230";
-import { getTopicById } from "../../topics-store.js?v=2230";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2230";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2230";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2230";
-import { getIdeas } from "../../library.js?v=2230";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2230";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2230";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2230";
-import { getPlans } from "../../post-plan-store.js?v=2230";
-import { isFlagOn } from "../../feature-flags.js?v=2230";
-import { CURRENT_USER } from "../../org.js?v=2230";
-import { getSessionById } from "../../sessions-store.js?v=2230";
-import { getContextById } from "../../contexts-store.js?v=2230";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2230";
-import { getFocusKey } from "../../components/right-panel.js?v=2230";
+} from "./thread-turns.js?v=2233";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2233";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2233";
+import { getTopPost } from "../../top-posts-store.js?v=2233";
+import { getTopicById } from "../../topics-store.js?v=2233";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2233";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2233";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2233";
+import { getIdeas } from "../../library.js?v=2233";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2233";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2233";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2233";
+import { getPlans } from "../../post-plan-store.js?v=2233";
+import { isFlagOn } from "../../feature-flags.js?v=2233";
+import { CURRENT_USER } from "../../org.js?v=2233";
+import { getSessionById } from "../../sessions-store.js?v=2233";
+import { getContextById } from "../../contexts-store.js?v=2233";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2233";
+import { getFocusKey } from "../../components/right-panel.js?v=2233";
+import { voiceComparisonHtml } from "../../components/voice-intro-modal.js?v=2233";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -210,6 +211,10 @@ function renderTurn(message, sessionId) {
 
   if (message.role === "assistant" && message.variant === "image-look-set") {
     return renderImageLookSetTurn(message);
+  }
+
+  if (message.role === "assistant" && message.variant === "voice-intro") {
+    return renderVoiceIntroTurn(message);
   }
 
   // Clip extraction — pending spinner pill that flips to a ready card with
@@ -436,6 +441,19 @@ function renderImageLookSetTurn(message) {
       : ctx?.defaultLook?.kind
         ? `${brand}'s images start from another look now — it changed in ${playbook}.`
         : `${brand}'s images no longer start from ${label} — I'll ask the next time you generate one.`,
+  });
+}
+
+// The voice intro, the chat's door: what changed, the same post in each
+// network's voice, then why the question below is asked.
+function renderVoiceIntroTurn(message) {
+  const ctx = getContextById(message.contextId);
+  const label = escapeHtml(networkLabel(message.network));
+  return renderMessageBubble({
+    role: "assistant",
+    text: `I now write each network in its own voice — here's one idea, the way each of them reads it.
+      ${voiceComparisonHtml(ctx, { compact: true })}
+      ${label} doesn't have a voice yet, so let's give it one before I write.`,
   });
 }
 

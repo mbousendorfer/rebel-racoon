@@ -64,7 +64,7 @@ export const socialAccounts = [
     logo: "assets/logos/social/x.svg",
     status: "connected",
     token: "ok",
-    postCount: 0,
+    postCount: 140,
   },
   {
     id: "tt",

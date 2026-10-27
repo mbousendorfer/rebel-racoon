@@ -6,13 +6,13 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2230";
-import { findConnector } from "./connectors-store.js?v=2230";
-import { createSessionNotifier } from "./store-utils.js?v=2230";
-import { addPostDraft } from "./posts-store.js?v=2230";
-import { showToast } from "./components/toast.js?v=2230";
-import { isFlagOn } from "./feature-flags.js?v=2230";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2230";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2233";
+import { findConnector } from "./connectors-store.js?v=2233";
+import { createSessionNotifier } from "./store-utils.js?v=2233";
+import { addPostDraft } from "./posts-store.js?v=2233";
+import { showToast } from "./components/toast.js?v=2233";
+import { isFlagOn } from "./feature-flags.js?v=2233";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2233";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -822,6 +822,23 @@ export function postImageLookSet(sessionId, { contextId, styleId, label }) {
     contextId,
     styleId,
     label,
+    status: "ready",
+    createdAt: Date.now(),
+  });
+  notify(sessionId);
+}
+
+// The voice intro, in the chat (network-voice-flow.js): the first time a draft
+// needs a network's voice, Archie shows the same post in each network's voice
+// before asking. Rendered from the Playbook (voiceComparisonHtml).
+export function postVoiceIntro(sessionId, { contextId, network }) {
+  getThread(sessionId).push({
+    id: newId(),
+    role: "assistant",
+    variant: "voice-intro",
+    meta: "Archie",
+    contextId,
+    network,
     status: "ready",
     createdAt: Date.now(),
   });

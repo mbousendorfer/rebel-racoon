@@ -730,6 +730,13 @@
   text-decoration: none;
   color: inherit;
 }
+button.admin-menu__doc {
+  width: 100%;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
 .admin-menu__doc:hover {
   border-color: var(--ref-color-electric-blue-100);
 }

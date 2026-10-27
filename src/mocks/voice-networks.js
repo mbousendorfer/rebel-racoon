@@ -55,3 +55,19 @@ export const NETWORK_VOICE_ADAPTATIONS = {
     },
   },
 };
+
+// One idea, written once in the Brand voice and then the way each network reads
+// it — the voice intro's « same post, its own voice » (components/voice-intro-modal.js).
+// Each version follows the network's rules above. `{brand}` is the Brand's name.
+export const NETWORK_VOICE_SAMPLE = {
+  brand: "Scheduled reports are live: pick your metrics once and {brand} sends them to your team every Monday.",
+  linkedin:
+    "Nobody opens a dashboard on Monday morning.\n\nSo we stopped asking them to.\n\nPick your metrics once — {brand} sends them to your team every week.\n\nWhich number should your team see first?",
+  instagram:
+    "Monday's numbers, already in your inbox.\nScheduled reports are here — link in bio.\n#reporting #marketingops #mondays",
+  facebook:
+    "Good news for your Mondays: {brand} can now send your team's numbers for you. Which report would you set up first?",
+  x: "Scheduled reports are live. Pick your metrics once, get them every Monday.",
+  tiktok: "POV: your Monday report sends itself. #reporting #worksmarter",
+  youtube: "How to send your team their numbers every Monday, without opening a dashboard. Full walkthrough below.",
+};

@@ -47,6 +47,7 @@ body.has-modal {
 .analyze-profiles-modal,
 .connect-account-modal,
 .network-voice-modal,
+.voice-intro-modal,
 .skip-connect,
 .fill-document-modal,
 .search-modal,
@@ -542,6 +543,7 @@ body.has-modal {
 .analyze-profiles-modal.open,
 .connect-account-modal.open,
 .network-voice-modal.open,
+.voice-intro-modal.open,
 .skip-connect.open,
 .fill-document-modal.open,
 .search-modal.open,
@@ -1831,4 +1833,143 @@ body.has-modal {
 .network-voice-modal__hint {
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
+}
+
+/* The voice intro (voice-intro-modal.js): the same post in each network's
+   voice, then where the Playbook stands. The comparison is shared with the
+   chat and the creation review (.voice-compare). */
+.voice-intro-modal {
+  width: min(calc(100% - 32px), 760px);
+}
+.voice-intro-modal.is-stand {
+  width: min(calc(100% - 32px), 560px);
+}
+.voice-intro-modal .ap-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+  overflow-y: auto;
+}
+.voice-intro__lead {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.voice-compare {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+.voice-compare__brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  border-radius: var(--app-radius-lg);
+  background: var(--ref-color-grey-05);
+}
+.voice-compare__nets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--ref-spacing-sm);
+}
+.voice-compare__net {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+  background: var(--ref-color-white);
+}
+.voice-compare__label {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-bold-size);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+.voice-compare__post {
+  margin: 0;
+  white-space: pre-line;
+  color: var(--ref-color-grey-100);
+}
+.voice-compare--compact .voice-compare__post {
+  font-size: var(--sys-text-style-caption-size);
+}
+/* The post being rewritten: word after word, column after column. */
+.voice-compare__w {
+  animation: posts-card-word-fade-in 240ms ease-out both;
+  animation-delay: calc(300ms + var(--col, 0) * 450ms + var(--w) * 28ms);
+}
+.voice-compare__net .voice-compare__w {
+  display: inline;
+}
+
+.voice-intro__nets {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.voice-intro__net {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm) 0;
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+.voice-intro__net:first-child {
+  border-top: 0;
+}
+.voice-intro__slot {
+  display: flex;
+  flex: none;
+  width: 20px;
+}
+.voice-intro__glyph {
+  flex: none;
+  font-size: var(--sys-icon-css-md);
+}
+.voice-intro__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+.voice-intro__name {
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+.voice-intro__state {
+  align-self: flex-start;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+.voice-intro__tag {
+  flex: none;
+}
+/* Reading the account's posts: the orange sheen of Archie at work (chat.css). */
+.voice-intro__net.is-learning .voice-intro__state {
+  color: transparent;
+  background-image: linear-gradient(
+    100deg,
+    var(--ref-color-grey-100) 42%,
+    var(--ref-color-orange-100) 50%,
+    var(--ref-color-grey-100) 58%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: e-sheen 2s linear infinite;
+}
+.voice-intro__pop {
+  animation: app-success-pop 360ms var(--app-ease-bounce) both;
+}
+/* In the chat the thread repaints on every turn: no replay there. */
+.voice-compare--compact .voice-compare__w {
+  animation: none;
 }

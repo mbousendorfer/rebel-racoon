@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2230";
-import { conceptHint } from "./concepts.js?v=2230";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2233";
+import { conceptHint } from "./concepts.js?v=2233";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2230";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2230";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2230";
-import { isFlagOn } from "./feature-flags.js?v=2230";
-import { clipLookOf } from "./videos-store.js?v=2230";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2230";
-import { parseHashParams } from "./url-state.js?v=2230";
+} from "./playbook-brand-kit.js?v=2233";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2233";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2233";
+import { isFlagOn } from "./feature-flags.js?v=2233";
+import { clipLookOf } from "./videos-store.js?v=2233";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2233";
+import { parseHashParams } from "./url-state.js?v=2233";
 import {
   isListPart,
   voiceParts,
@@ -49,11 +49,12 @@ import {
   brandVoiceAsIs,
   markAdapted,
   withNetworkVoices,
-} from "./voice-parts.js?v=2230";
-import { showToast } from "./components/toast.js?v=2230";
-import { consumeHandoff } from "./handoff.js?v=2230";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2230";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2230";
+} from "./voice-parts.js?v=2233";
+import { showToast } from "./components/toast.js?v=2233";
+import { introSeen, voiceComparisonHtml } from "./components/voice-intro-modal.js?v=2233";
+import { consumeHandoff } from "./handoff.js?v=2233";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2233";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2233";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2027,6 +2028,31 @@ function voiceNetTag(net) {
   return `<span class="ap-tag grey mini pb2-voice-tag"><i class="${networkIcon(net)}" aria-hidden="true"></i><span>For ${esc(networkLabel(net))}</span></span>`;
 }
 
+// The voice intro's doors on this tab (voice-intro-modal.js): in the creation
+// review, the same post in each network's voice — the voices were just
+// learned; on a Playbook, until the intro was seen, an infobox that opens it.
+function voiceIntroHtml(data) {
+  if (!voiceNets(data).length) return "";
+  if (!isLibrary())
+    return voiceNet
+      ? ""
+      : `<div class="pb2-voice-intro">
+          <p class="pb2-voice-intro__lead">Each network gets its own voice: the same idea, written the way each one reads it. Open a network's tab to see how I'll write there.</p>
+          ${voiceComparisonHtml(data)}
+        </div>`;
+  if (introSeen()) return "";
+  return `<div class="ap-infobox info has-title pb2-voice-notice" role="status">
+    <i class="ap-icon-info_fill" aria-hidden="true"></i>
+    <div class="ap-infobox-content">
+      <div class="ap-infobox-texts">
+        <span class="ap-infobox-title">Each network now gets its own voice</span>
+        <span class="ap-infobox-message">I write every draft the way its network reads it, from a voice I learn from your posts.</span>
+        <button type="button" class="ap-link" data-vi-open="${esc(data.id || "")}">Show me</button>
+      </div>
+    </div>
+  </div>`;
+}
+
 function renderVoiceTabs(data) {
   const nets = voiceNets(data);
   if (!nets.length) return "";
@@ -2522,7 +2548,7 @@ function renderVoiceRead2(data, learnMenu) {
     return `${pb2TabHead("voice", learnMenu)}<div class="pb2-grid">${own}</div>`;
   }
   if (voiceNet) return renderNetworkVoiceRead(data);
-  return `${renderVoiceTabs(data)}${pb2TabHead("voice", learnMenu)}<div class="pb2-grid">${pb2VoiceParts(data).join("")}</div>`;
+  return `${renderVoiceTabs(data)}${pb2TabHead("voice", learnMenu)}${voiceIntroHtml(data)}<div class="pb2-grid">${pb2VoiceParts(data).join("")}</div>`;
 }
 
 function networkVoiceLead(net, voice) {
@@ -2575,9 +2601,9 @@ function renderNetworkVoiceRead(data) {
     return `${tabs}${pb2TabHead("voice", actions, {
       noEdit: true,
       lead: `To optimize the ${label} voice, let me learn it from your posts or a document, or edit it yourself.`,
-    })}${notice}<div class="pb2-grid pb2-grid--borrowed">${pb2VoiceParts(data).join("")}</div>`;
+    })}${voiceIntroHtml(data)}${notice}<div class="pb2-grid pb2-grid--borrowed">${pb2VoiceParts(data).join("")}</div>`;
   }
-  return `${tabs}${pb2TabHead("voice", canEditView() ? learnMenu(net) : "", { lead: networkVoiceLead(net, voice) })}<div class="pb2-grid">${pb2VoiceParts(
+  return `${tabs}${pb2TabHead("voice", canEditView() ? learnMenu(net) : "", { lead: networkVoiceLead(net, voice) })}${voiceIntroHtml(data)}<div class="pb2-grid">${pb2VoiceParts(
     voice,
     { brand: data, net },
   ).join("")}</div>`;

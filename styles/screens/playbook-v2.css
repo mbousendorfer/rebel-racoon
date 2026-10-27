@@ -1046,6 +1046,19 @@
   margin-bottom: var(--ref-spacing-md);
 }
 
+/* The creation review's voice intro: the same post in each network's voice
+   (voice-intro-modal.js .voice-compare), above the Brand voice. */
+.pb2-voice-intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  margin-bottom: var(--ref-spacing-md);
+}
+.pb2-voice-intro__lead {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
 .pb2-grid--borrowed .pb2-block {
   background: var(--ref-color-grey-05);
 }
