@@ -2000,6 +2000,99 @@ body.has-modal {
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
 }
+/* The Voice step in the thread (voice-intro-modal.js voiceAskHtml) — the voice
+   edit's sibling: on butter what's missing, on white the ways to add rules as
+   tiles (card hover = blue border), then the way out. */
+.voice-ask .voice-edit__line strong {
+  font-weight: var(--ref-font-weight-bold);
+}
+.voice-ask__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md) var(--ref-spacing-xs);
+}
+.voice-ask__lead {
+  margin: 0;
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+/* The best way first, on its own row; the others share the row below. */
+.voice-ask__options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--ref-spacing-xs);
+}
+.voice-ask__option.is-best {
+  grid-column: 1 / -1;
+}
+.voice-ask__best {
+  flex: none;
+  margin-left: auto;
+}
+/* The others, narrower: the icon above, the words below, nothing cut. */
+.voice-ask__option:not(.is-best) {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+}
+.voice-ask__option:not(.is-best) .voice-ask__hint {
+  white-space: normal;
+}
+.voice-ask__option {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: var(--app-surface);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--ref-animation-normal) ease;
+}
+.voice-ask__option:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+.voice-ask__option:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+}
+.voice-ask__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--app-radius-lg);
+  background: var(--app-butter);
+  font-size: var(--sys-icon-css-sm);
+  color: var(--app-butter-accent);
+}
+.voice-ask__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.voice-ask__name {
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+.voice-ask__hint {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+.voice-ask__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xxs);
+}
+
 /* The chat's answer: edit first, or use it — the primary last. */
 .voice-learned__actions {
   display: flex;

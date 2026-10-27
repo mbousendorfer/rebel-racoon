@@ -323,6 +323,7 @@ Behind `voicePerNetwork`. Revu avec l'utilisateur le 2026-10-27 (« tout a l'air
 - **Une voix qui change ne réécrit pas les drafts** — ils le disent (status card « The X voice changed… » + Rewrite it). Pas de réécriture automatique, même depuis « Give X its own voice ».
 - **« Optimize it » renommé « Add rules for X »** : optimiser n'est jamais un bouton (une voix est apprise ou éditée), le mot contredisait la règle.
 - **On n'« apprend » pas une voix, on ajoute des règles au Voice profile.** Archie propose des _rules for X_ par-dessus la default voice ; l'action est _Add to Voice profile_. « 1 voice learned », « Use this voice », « Give X its own voice » ont été retirés (2026-10-27).
+- **L'étape Voice du chat est un bloc dans la conversation**, pas le Quickpicker : elle explique ce qui manque et guide avec des tuiles (la recommandée en tête). Exception assumée à la règle « question in-chat = Quickpicker » — c'est une décision à expliquer, pas une question à choix.
 - **Le feedback d'un draft peut mettre à jour la voix** — seulement s'il parle d'écriture, et comme une proposition.
 - **L'onboarding : le dialog seul** (+ l'infobox de la fiche), pour les utilisateurs existants ; le dialog en trois temps est gardé tel quel.
 

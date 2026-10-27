@@ -15,13 +15,14 @@
 //   init() · maybeOpenVoiceIntro(path)
 //   introSeen() · markIntroSeen() · resetIntro()
 //   learnedVoiceHtml(ctx, net, voice?, { only, pending })
+//   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2254";
-import { getContextById } from "../contexts-store.js?v=2254";
-import { playbookForNewWork } from "../active-playbook.js?v=2254";
-import { isNewUser } from "../user-mode.js?v=2254";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2254";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2258";
+import { getContextById } from "../contexts-store.js?v=2258";
+import { playbookForNewWork } from "../active-playbook.js?v=2258";
+import { isNewUser } from "../user-mode.js?v=2258";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2258";
 import {
   networkVoiceOn,
   networkVoice,
@@ -30,18 +31,18 @@ import {
   voiceParts,
   cloneItems,
   baseValue,
-} from "../voice-parts.js?v=2254";
+} from "../voice-parts.js?v=2258";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2254";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2254";
-import "../archie-pixels.js?v=2254";
-import { navigate } from "../router.js?v=2254";
-import { escapeHtml } from "../utils.js?v=2254";
+} from "../network-voice-flow.js?v=2258";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2258";
+import "../archie-pixels.js?v=2258";
+import { navigate } from "../router.js?v=2258";
+import { escapeHtml } from "../utils.js?v=2258";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -199,6 +200,63 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
       <p class="voice-edit__rest">${only ? `Your other ${label} rules stay as they are.` : "Everything else comes from your default voice."}</p>
     </section>`;
   return `<div class="voice-edit">${card}</div>`;
+}
+
+// ── The Voice step, in the thread ──────────────────────────────────────────
+// A network with no rules of its own, before a draft for it (or « Add rules
+// for X » on one): a sibling of the voice edit — on butter, Archie says what's
+// missing and what rules for the network cover; on white, the ways to add
+// them as tiles — the best one first, full width, recommended; the others
+// in a row below — then the way out. Once answered,
+// only the butter part stays (the answer is the user's turn below it).
+export function voiceAskHtml(ctx, net, { id, choices = [], giving = false, resolved = false }) {
+  const label = escapeHtml(networkLabel(net));
+  const traits = NETWORK_VOICE_TRAITS[net] || [];
+  const covers = traits.length
+    ? ` Rules for ${label} cover things like ${traits.map((t) => `<strong>${escapeHtml(t)}</strong>`).join(" · ")}.`
+    : "";
+  const tiles = choices.filter((c) => c.tile);
+  const hasDefault = choices.some((c) => c.value === "default");
+  const pick = (value) => `data-voice-ask="${escapeHtml(id)}" data-voice-choice="${value}"`;
+  return `
+    <div class="voice-edit voice-ask${resolved ? " is-resolved" : ""}">
+      <section class="voice-edit__card" aria-label="Rules for ${label}">
+        <div class="voice-edit__say">
+          <header class="voice-edit__head">
+            <span class="voice-edit__net" aria-hidden="true"><i class="${networkIcon(net)}"></i></span>
+            <span class="voice-edit__title"><span class="voice-edit__name">No rules for ${label} yet</span></span>
+          </header>
+          <p class="voice-edit__line">${
+            giving
+              ? `These drafts follow your default voice.`
+              : `I'd write for ${label} with your default voice — what works elsewhere may not work there.`
+          }${covers}</p>
+        </div>
+        ${
+          resolved
+            ? ""
+            : `<div class="voice-ask__body">
+          <p class="voice-ask__lead">How should I add them?</p>
+          <div class="voice-ask__options">${tiles
+            .map(
+              (c, i) => `<button type="button" class="voice-ask__option${i ? "" : " is-best"}" ${pick(c.value)}>
+                <span class="voice-ask__icon" aria-hidden="true"><i class="${c.icon}"></i></span>
+                <span class="voice-ask__text">
+                  <span class="voice-ask__name">${escapeHtml(c.tile)}</span>
+                  <span class="voice-ask__hint">${escapeHtml(c.hint)}</span>
+                </span>
+                ${i ? "" : `<span class="ap-tag green mini voice-ask__best">Recommended</span>`}
+              </button>`,
+            )
+            .join("")}</div>
+          <div class="voice-ask__foot">
+            ${hasDefault ? `<button type="button" class="ap-button ghost grey" ${pick("default")}>Use my default voice</button>` : ""}
+            <button type="button" class="ap-button ghost grey" ${pick("cancel")}>Not now</button>
+          </div>
+        </div>`
+        }
+      </section>
+    </div>`;
 }
 
 // ── The dialog ──────────────────────────────────────────────────────────────

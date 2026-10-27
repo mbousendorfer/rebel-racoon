@@ -21,6 +21,7 @@
 // Public API:
 //   requireNetworkVoices(sessionId, networks, onReady, contextId?)
 //   giveNetworkVoice(sessionId, ctxId, net)  — « Give X its own voice »
+//   answerVoiceAsk(sessionId, turnId, choice)       — a tile of the Voice step
 //   answerLearnedVoice(sessionId, turnId, "use" | "edit")
 // Shared with the dialogs:
 //   missingNetworkVoices(ctx, networks) · voiceChoices(net, { needed, chat }) ·
@@ -32,7 +33,7 @@
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2254";
+import * as inlineQuestion from "./inline-question.js?v=2258";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -41,14 +42,14 @@ import {
   finishPending,
   postVoiceTurn,
   resolveTurn,
-} from "./assistant.js?v=2254";
-import { getContextById, updateContext } from "./contexts-store.js?v=2254";
-import { getSessionById } from "./sessions-store.js?v=2254";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2254";
-import { setHandoff } from "./handoff.js?v=2254";
-import { navigate } from "./router.js?v=2254";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2254";
-import { getPosts } from "./posts-store.js?v=2254";
+} from "./assistant.js?v=2258";
+import { getContextById, updateContext } from "./contexts-store.js?v=2258";
+import { getSessionById } from "./sessions-store.js?v=2258";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2258";
+import { setHandoff } from "./handoff.js?v=2258";
+import { navigate } from "./router.js?v=2258";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2258";
+import { getPosts } from "./posts-store.js?v=2258";
 import {
   networkVoiceOn,
   networkVoice,
@@ -57,7 +58,7 @@ import {
   interviewNetworkVoice,
   brandVoiceAsIs,
   playbookNetworks,
-} from "./voice-parts.js?v=2254";
+} from "./voice-parts.js?v=2258";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;
@@ -100,11 +101,17 @@ export function voiceChoices(net, { needed = false, chat = false } = {}) {
   const items = [
     learn && {
       value: "learn",
+      icon: "ap-icon-double-chat-bubbles",
+      tile: "From your posts",
+      hint: `${account.handle} · ${account.postCount} posts`,
       label: `Learn from ${account.handle}'s posts`,
       caption: `I read its ${account.postCount} posts and keep what already works for you on ${label}.`,
     },
     {
       value: "document",
+      icon: "ap-icon-file--text",
+      tile: "From a document",
+      hint: "A style guide or a brief",
       label: "Learn from a document",
       caption:
         account && !learn
@@ -113,11 +120,17 @@ export function voiceChoices(net, { needed = false, chat = false } = {}) {
     },
     {
       value: "interview",
+      icon: "ap-icon-question",
+      tile: `Answer ${INTERVIEW.length} questions`,
+      hint: "About a minute",
       label: "Answer a few questions",
       caption: `Five quick questions about how you write on ${label}${chat ? ", right here" : ""}.`,
     },
     {
       value: "edit",
+      icon: "ap-icon-pen",
+      tile: "Write them myself",
+      hint: "In your Voice profile",
       label: "Write the rules myself",
       caption: `I open ${label} in your Voice profile, starting from your default voice.`,
     },
@@ -257,78 +270,85 @@ export function answerLearnedVoice(sessionId, turnId, action) {
   editNetworkVoiceInPlaybook(wait.ctxId, wait.net, wait.voice);
 }
 
-// `announce` is false when the question is PUT BACK (the document dialog was
-// dismissed): the thread already says why it's asked. `giving`: from « Give X
-// its own voice » — nothing waits, so the default voice isn't an answer.
-function askVoice(sessionId, ctxId, nets, onReady, { announce = true, giving = false } = {}) {
+// The Voice steps waiting for a pick: turn id → pick(choice).
+const asking = new Map();
+
+export function answerVoiceAsk(sessionId, turnId, choice) {
+  asking.get(turnId)?.(choice);
+}
+
+// The step is a block in the thread (« voice-ask », thread-render): what's
+// missing, what rules for the network cover, the ways to add them as tiles,
+// the best one recommended — then « Use my default voice » and « Not now ».
+// `giving`: from « Add rules for X » — nothing waits, so no default voice.
+function askVoice(sessionId, ctxId, nets, onReady, { giving = false } = {}) {
   const [net, ...rest] = nets;
   const label = networkLabel(net);
   const { items } = voiceChoices(net, { needed: !giving, chat: true });
-  if (announce)
+  const turnId = postVoiceTurn(sessionId, "voice-ask", { contextId: ctxId, network: net, choices: items, giving });
+  const go = () => (rest.length ? askVoice(sessionId, ctxId, rest, onReady) : onReady());
+  // The block keeps its tiles until a choice goes through (a dismissed
+  // document dialog leaves it to pick again).
+  const answered = (echo) => {
+    asking.delete(turnId);
+    resolveTurn(sessionId, turnId);
+    postUserTurn(sessionId, echo);
+  };
+  const keepDefault = () => {
+    useDefaultVoice(ctxId, net);
     postAssistantMessage(
       sessionId,
-      giving
-        ? `Let's find what works for you on ${label}.`
-        : `I don't know how you write on ${label} yet, and every draft follows its network's rules.`,
+      `I'll write for ${label} with your default voice. You can add rules for ${label} in your Voice profile anytime.`,
     );
-  inlineQuestion.ask(sessionId, {
-    title: `How should I write on ${label}?`,
-    stepLabel: "Voice",
-    skipLabel: "Cancel",
-    items,
-    onPick: (choice) => {
-      inlineQuestion.exit(sessionId);
-      postUserTurn(sessionId, items.find((i) => i.value === choice)?.label || "");
-      const go = () => (rest.length ? askVoice(sessionId, ctxId, rest, onReady) : onReady());
-      const keepDefault = () => {
-        useDefaultVoice(ctxId, net);
-        postAssistantMessage(
-          sessionId,
-          `I'll write for ${label} with your default voice. You can add rules for ${label} in your Voice profile anytime.`,
-        );
-        go();
-      };
-      if (choice === "default") return keepDefault();
-      if (choice === "edit") {
-        postAssistantMessage(
-          sessionId,
-          `I've opened ${label} in your Voice profile, starting from your default voice. Add your rules, save, then ask me again.`,
-        );
-        return editNetworkVoiceInPlaybook(ctxId, net);
-      }
-      // Learning takes a moment, then the proposal waits for its answer.
-      const learning = (from = null) => {
-        const phases = learnPhases(net, from);
-        const pendingId = startPending(sessionId, phases[0]);
-        phases
-          .slice(1)
-          .forEach((p, i) => setTimeout(() => updatePending(sessionId, pendingId, p), LEARN_PHASE_MS * (i + 1)));
-        setTimeout(() => {
-          finishPending(sessionId, pendingId);
-          const voice = proposeNetworkVoice(getContextById(ctxId), net, choice, from);
-          const turnId = postVoiceTurn(sessionId, "voice-learned", { contextId: ctxId, network: net, voice });
-          awaiting.set(turnId, { ctxId, net, voice, go });
-        }, LEARN_PHASE_MS * phases.length);
-      };
-      if (choice === "learn") return learning();
-      if (choice === "interview") {
-        postAssistantMessage(
-          sessionId,
-          `Five quick questions about how you write on ${label}. Answer in your own words, or skip any of them.`,
-        );
-        return askInterview(sessionId, net, (answers) => {
-          if (Object.keys(answers).length) return learning(answers);
-          // Nothing said: the default voice — or, from « Give X its own voice », as it was.
-          if (giving) return postAssistantMessage(sessionId, `OK — ${label} stays on your default voice for now.`);
-          keepDefault();
-        });
-      }
-      // Backing out of the document dialog puts the question back.
-      openFillDocumentModal({
-        onConfirm: ({ file, url }) => learning(file?.name || documentName(url)),
-        onDismiss: () => askVoice(sessionId, ctxId, nets, onReady, { announce: false, giving }),
+    go();
+  };
+  // Learning takes a moment, then the proposal waits for its answer.
+  const learning = (choice, from = null) => {
+    const phases = learnPhases(net, from);
+    const pendingId = startPending(sessionId, phases[0]);
+    phases
+      .slice(1)
+      .forEach((p, i) => setTimeout(() => updatePending(sessionId, pendingId, p), LEARN_PHASE_MS * (i + 1)));
+    setTimeout(() => {
+      finishPending(sessionId, pendingId);
+      const voice = proposeNetworkVoice(getContextById(ctxId), net, choice, from);
+      const learnedId = postVoiceTurn(sessionId, "voice-learned", { contextId: ctxId, network: net, voice });
+      awaiting.set(learnedId, { ctxId, net, voice, go });
+    }, LEARN_PHASE_MS * phases.length);
+  };
+  asking.set(turnId, (choice) => {
+    if (choice === "cancel") {
+      answered("Not now");
+      return postAssistantMessage(sessionId, `OK, I won't write anything for now.`);
+    }
+    const item = items.find((i) => i.value === choice);
+    if (!item) return;
+    if (choice === "document")
+      return openFillDocumentModal({
+        onConfirm: ({ file, url }) => {
+          answered(item.label);
+          learning(choice, file?.name || documentName(url));
+        },
       });
-    },
-    onSkip: () => postAssistantMessage(sessionId, `OK, I won't write anything for now.`),
+    answered(item.label);
+    if (choice === "default") return keepDefault();
+    if (choice === "learn") return learning(choice);
+    if (choice === "edit") {
+      postAssistantMessage(
+        sessionId,
+        `I've opened ${label} in your Voice profile, starting from your default voice. Add your rules, save, then ask me again.`,
+      );
+      return editNetworkVoiceInPlaybook(ctxId, net);
+    }
+    postAssistantMessage(
+      sessionId,
+      `${INTERVIEW.length} quick questions about how you write on ${label}. Answer in your own words, or skip any of them.`,
+    );
+    askInterview(sessionId, net, (answers) => {
+      if (Object.keys(answers).length) return learning(choice, answers);
+      // Nothing said: the default voice — or, from « Add rules for X », as it was.
+      if (giving) return postAssistantMessage(sessionId, `OK — ${label} stays on your default voice for now.`);
+      keepDefault();
+    });
   });
 }
