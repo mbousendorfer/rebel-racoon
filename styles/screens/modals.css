@@ -1877,81 +1877,121 @@ body.has-modal {
   -webkit-background-clip: text;
   animation: e-sheen 1.6s linear infinite;
 }
-.voice-proposal-modal .voice-learned {
+.voice-proposal-modal .voice-edit {
   margin: 0;
 }
 
-/* What a learned voice changes (voice-intro-modal.js learnedVoiceHtml) — in the
-   chat's Voice step, and on the dialog's stage once learned: a white card with
-   the network's own sentence and the rules it made. */
-.voice-learned {
+/* A voice edit (voice-intro-modal.js learnedVoiceHtml) — what Archie proposes
+   for a network's voice, one look everywhere: the onboarding's stage (Archie's
+   pixel field) around a white card; Archie's sentence on butter, as the memory
+   was; each added rule marked +, its part in the Voice profile tint. */
+.voice-edit {
+  position: relative;
+  width: 100%;
+  margin: var(--ref-spacing-xs) 0;
+  padding: var(--ref-spacing-sm);
+  border-radius: 16px;
+  overflow: hidden;
+  isolation: isolate;
+}
+.voice-edit--bare {
+  padding: 0;
+  overflow: visible;
+}
+.voice-edit__card {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-sm);
-  width: 100%;
-  margin: var(--ref-spacing-xs) 0;
-}
-.voice-learned__card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-md);
-  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
   background: var(--app-surface);
+  animation: welcome-intro-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.voice-learned__head {
+.voice-edit__head {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-sm);
 }
-.voice-learned__title {
+.voice-edit__title {
   display: flex;
   flex-direction: column;
+  flex: 1;
   min-width: 0;
 }
-.voice-learned__name {
+.voice-edit__name {
   font-weight: var(--ref-font-weight-bold);
   color: var(--ref-color-grey-100);
 }
-.voice-learned__from,
-.voice-learned__rest {
+.voice-edit__from,
+.voice-edit__rest {
   margin: 0;
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
 }
-.voice-learned__summary {
-  margin: 0;
-  color: var(--ref-color-grey-100);
+.voice-edit__pending {
+  flex: none;
 }
-.voice-learned__lead {
-  margin: var(--ref-spacing-xs) 0 0;
+/* Archie's sentence for the network — his colour. */
+.voice-edit__say {
+  display: flex;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-butter);
   font-weight: var(--ref-font-weight-bold);
   color: var(--ref-color-grey-100);
 }
-.voice-learned__changes {
+.voice-edit__say i {
+  flex: none;
+  margin-top: 2px;
+  color: var(--app-butter-accent);
+}
+.voice-edit__changes {
   display: flex;
   flex-direction: column;
+  gap: var(--ref-spacing-xs);
   margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.voice-learned__change {
+/* An added rule: + · its part · the rule — popping in one after the other. */
+.voice-edit__change {
   display: grid;
-  grid-template-columns: 9rem minmax(0, 1fr);
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-xs) 0;
-  border-top: 1px solid var(--ref-color-grey-20);
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--ref-spacing-xs);
+  animation: welcome-intro-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(0.3s + var(--k) * 0.1s);
 }
-.voice-learned__change dt {
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--ref-color-grey-80);
+.voice-edit__plus {
+  align-self: center;
+  font-size: var(--sys-icon-css-sm);
+  color: var(--app-butter-accent);
 }
-.voice-learned__change dd {
-  margin: 0;
+.voice-edit__part {
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  border-radius: var(--app-radius-pill);
+  background: var(--ref-color-purple-20);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+  white-space: nowrap;
+}
+.voice-edit__rule {
   color: var(--ref-color-grey-100);
 }
+/* In the chat the thread repaints on every turn: nothing replays there. */
+.chat-bubble .voice-edit__card,
+.chat-bubble .voice-edit__change {
+  animation: none;
+}
 /* A line from the brand's own posts under its rule. */
-.voice-learned__example {
+.voice-edit__example {
   display: block;
   margin-top: var(--ref-spacing-xxs);
   color: var(--ref-color-grey-80);
@@ -1970,12 +2010,8 @@ body.has-modal {
   width: calc(100% - 2 * var(--ref-spacing-md));
   overflow-y: auto;
 }
-.voice-intro__stage-inner.is-result .voice-learned {
+.voice-intro__stage-inner.is-result .voice-edit {
   margin: 0;
-  animation: welcome-intro-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.voice-intro__stage-inner.is-result .voice-learned__card {
-  border: 0;
 }
 
 /* The voice intro dialog (voice-intro-modal.js) — the first-time run's look
