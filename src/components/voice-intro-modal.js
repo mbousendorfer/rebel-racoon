@@ -18,11 +18,11 @@
 //   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2264";
-import { getContextById } from "../contexts-store.js?v=2264";
-import { playbookForNewWork } from "../active-playbook.js?v=2264";
-import { isNewUser } from "../user-mode.js?v=2264";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2264";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2267";
+import { getContextById } from "../contexts-store.js?v=2267";
+import { playbookForNewWork } from "../active-playbook.js?v=2267";
+import { isNewUser } from "../user-mode.js?v=2267";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2267";
 import {
   networkVoiceOn,
   networkVoice,
@@ -31,18 +31,18 @@ import {
   voiceParts,
   cloneItems,
   baseValue,
-} from "../voice-parts.js?v=2264";
+} from "../voice-parts.js?v=2267";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2264";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2264";
-import "../archie-pixels.js?v=2264";
-import { navigate } from "../router.js?v=2264";
-import { escapeHtml } from "../utils.js?v=2264";
+} from "../network-voice-flow.js?v=2267";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2267";
+import "../archie-pixels.js?v=2267";
+import { navigate } from "../router.js?v=2267";
+import { escapeHtml } from "../utils.js?v=2267";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -156,13 +156,15 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
     : String(voice?.voiceSummary || "")
         .replace(baseValue(ctx, "voiceSummary"), "")
         .trim();
-  const changes = voiceParts()
+  // Grouped under the Voice profile section each rule goes into — the same
+  // titles as the Playbook's tab (Always, Never, Depending on the post…).
+  const groups = voiceParts()
     .filter((p) => p.kind !== "text")
-    .flatMap((p) =>
-      cloneItems(voice?.[p.field])
-        .filter((i) => (only ? only.includes(i.text) : i.adapted))
-        .map((i) => ({ part: p.title, ...i })),
-    );
+    .map((p) => ({
+      title: p.title,
+      rules: cloneItems(voice?.[p.field]).filter((i) => (only ? only.includes(i.text) : i.adapted)),
+    }))
+    .filter((g) => g.rules.length);
   const from = only
     ? "from your feedback"
     : voice?.postCount
@@ -184,19 +186,28 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
         </header>
         ${summary ? `<p class="voice-edit__line">${escapeHtml(summary)}</p>` : ""}
       </div>
-      <ul class="voice-edit__changes" aria-label="${only ? "What I'd add" : "What I'd add to your default voice"}">${changes
-        .map(
-          (c) => `<li class="voice-edit__change">
-            <i class="ap-icon-plus voice-edit__plus" aria-hidden="true"></i>
-            <span class="voice-edit__part">${escapeHtml(c.part)}</span>
-            <span class="voice-edit__rule">${c.when ? `<strong>${escapeHtml(c.when)}:</strong> ` : ""}${escapeHtml(c.text)}${(
-              c.examples || []
+      <div class="voice-edit__changes">
+        <p class="voice-edit__where">Goes into your Voice profile, ${label} tab</p>
+        ${groups
+          .map(
+            (g) => `<section class="voice-edit__group" aria-label="${escapeHtml(g.title)}">
+          <h4 class="voice-edit__part">${escapeHtml(g.title)}</h4>
+          <ul class="voice-edit__rules">${g.rules
+            .map(
+              (c) => `<li class="voice-edit__change">
+              <i class="ap-icon-plus voice-edit__plus" aria-hidden="true"></i>
+              <span class="voice-edit__rule">${c.when ? `<strong>${escapeHtml(c.when)}:</strong> ` : ""}${escapeHtml(c.text)}${(
+                c.examples || []
+              )
+                .map((x) => `<q class="voice-edit__example">${escapeHtml(x)}</q>`)
+                .join("")}</span>
+            </li>`,
             )
-              .map((x) => `<q class="voice-edit__example">${escapeHtml(x)}</q>`)
-              .join("")}</span>
-          </li>`,
-        )
-        .join("")}</ul>
+            .join("")}</ul>
+        </section>`,
+          )
+          .join("")}
+      </div>
       <p class="voice-edit__rest">${only ? `Your other ${label} rules stay as they are.` : "Everything else comes from your default voice."}</p>
     </section>`;
   return `<div class="voice-edit">${card}</div>`;

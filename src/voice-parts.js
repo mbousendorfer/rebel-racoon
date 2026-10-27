@@ -10,10 +10,10 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2264";
-import { isFlagOn } from "./feature-flags.js?v=2264";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2264";
-import { networkMeta, normalizeNetwork, getConnectedProfileById, profileForNetwork } from "./social-profiles.js?v=2264";
+import { escapeHtml } from "./utils.js?v=2267";
+import { isFlagOn } from "./feature-flags.js?v=2267";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2267";
+import { networkMeta, normalizeNetwork, getConnectedProfileById, profileForNetwork } from "./social-profiles.js?v=2267";
 
 const VOICE_PARTS = [
   { field: "voiceSummary", title: "How the Brand sounds", kind: "text" },
@@ -123,7 +123,12 @@ export function learnNetworkVoice(ctx, network, { from, postCount = 0 }) {
 // never, example } — any may be empty. ponytail: their words go in as written;
 // in the product a model turns them into rules.
 export function interviewNetworkVoice(ctx, network, answers) {
-  const sentence = (s) => (s && !/[.!?…]$/.test(s) ? `${s}.` : s);
+  // A rule reads as a sentence: capital first, full stop last.
+  const sentence = (s) => {
+    if (!s) return s;
+    const t = s.charAt(0).toUpperCase() + s.slice(1);
+    return /[.!?…]$/.test(t) ? t : `${t}.`;
+  };
   const rule = (prefix, text, extra = {}) =>
     text ? [{ text: sentence(prefix ? `${prefix}: ${text}` : text), adapted: true, ...extra }] : [];
   const voice = brandVoiceAsIs(ctx);

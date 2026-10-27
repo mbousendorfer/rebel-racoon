@@ -1892,10 +1892,10 @@ body.has-modal {
      inside a bubble that sizes to its content, and the card collapses. */
   width: var(--app-chat-card);
   max-width: 100%;
-  margin: var(--ref-spacing-xxs) 0;
+  margin: var(--ref-spacing-xs) 0;
 }
-/* Alone in its turn: level with Archie's avatar. */
-.voice-edit:first-child {
+/* Alone in its turn (the Voice step): level with Archie's avatar. */
+.voice-ask {
   margin-top: 0;
 }
 .voice-edit__card {
@@ -1965,34 +1965,58 @@ body.has-modal {
   color: var(--ref-color-grey-80);
   text-wrap: pretty;
 }
+/* The rules, grouped under the Voice profile section each goes into. */
 .voice-edit__changes {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  margin: 0;
+  gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm) 0;
+}
+/* The destination and the section titles sit at the text's x (under the
+   card's title); the + of each rule in the glyph column. */
+.voice-edit__where,
+.voice-edit__part {
+  padding-left: calc(16px + var(--ref-spacing-xs));
+}
+.voice-edit__where {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+.voice-edit__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+.voice-edit__part {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+.voice-edit__rules {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  margin: 0;
+  padding: 0;
   list-style: none;
 }
-/* An added rule: + · its part · the rule, the parts in one column. */
+/* An added rule: + in the glyph column, the rule at the text's x. */
 .voice-edit__change {
   display: grid;
-  grid-template-columns: 16px 4.5rem minmax(0, 1fr);
+  grid-template-columns: 16px minmax(0, 1fr);
   column-gap: var(--ref-spacing-xs);
-  align-items: baseline;
+  align-items: start;
 }
 /* The + sits on the rule's FIRST line, whatever its length. */
 .voice-edit__plus {
   justify-self: center;
-  align-self: start;
   margin-top: calc((var(--sys-text-style-body-line-height) - var(--sys-icon-css-xs)) / 2);
   font-size: var(--sys-icon-css-xs);
   color: var(--app-butter-accent);
-}
-.voice-edit__part {
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-80);
 }
 .voice-edit__rule {
   color: var(--ref-color-grey-100);
