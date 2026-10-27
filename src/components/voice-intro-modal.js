@@ -16,17 +16,17 @@
 //   voiceComparisonHtml(ctx, { compact })
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2235";
-import { getContextById } from "../contexts-store.js?v=2235";
-import { playbookForNewWork } from "../active-playbook.js?v=2235";
-import { isNewUser } from "../user-mode.js?v=2235";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2235";
-import { networkVoiceOn, networkVoice, playbookNetworks, canLearnFrom } from "../voice-parts.js?v=2235";
-import { applyNetworkVoice } from "../network-voice-flow.js?v=2235";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2235";
-import "../archie-pixels.js?v=2235";
-import { navigate } from "../router.js?v=2235";
-import { escapeHtml } from "../utils.js?v=2235";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2237";
+import { getContextById } from "../contexts-store.js?v=2237";
+import { playbookForNewWork } from "../active-playbook.js?v=2237";
+import { isNewUser } from "../user-mode.js?v=2237";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2237";
+import { networkVoiceOn, networkVoice, playbookNetworks, canLearnFrom } from "../voice-parts.js?v=2237";
+import { applyNetworkVoice } from "../network-voice-flow.js?v=2237";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2237";
+import "../archie-pixels.js?v=2237";
+import { navigate } from "../router.js?v=2237";
+import { escapeHtml } from "../utils.js?v=2237";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -84,19 +84,63 @@ const wordsHtml = (text) => {
     .join("");
 };
 
+// The Brand's own words for its voice: the headline's three, else its tones.
+const brandTraits = (ctx) => {
+  const head = (ctx?.voiceProfile?.headline || "").split(/\s*·\s*/).filter(Boolean);
+  return (head.length ? head : ctx?.tones || []).slice(0, 3);
+};
+const traitsOf = (ctx, net) => (net === "brand" ? brandTraits(ctx) : NETWORK_VOICE_TRAITS[net] || []);
+const traitsHtml = (list) =>
+  `<span class="voice-intro__traits">${list
+    .map((t, i) => `<span class="voice-intro__trait" style="--k:${i}">${escapeHtml(t)}</span>`)
+    .join("")}</span>`;
+
+// The Brand's square mark — its icon logo; the wordmark would be a smudge at
+// avatar size. Else its initial.
+const brandMark = (ctx) => {
+  const icon = (ctx?.brandLogos || []).find((l) => l.variant === "icon")?.url;
+  return icon
+    ? `<img src="${escapeHtml(icon)}" alt="" />`
+    : `<span>${escapeHtml(brandOf(ctx).charAt(0).toUpperCase())}</span>`;
+};
+
+// One post card — the dialog's stage, and the comparison's. `compact`: smaller
+// type, no reserved height.
+function postCardHtml(ctx, net, { compact = false } = {}) {
+  const label = net === "brand" ? "Brand voice" : networkLabel(net);
+  return `
+    <article class="voice-intro__post${compact ? " voice-intro__post--compact" : ""}" aria-label="${escapeHtml(label)} post">
+      <header class="voice-intro__post-head">
+        <span class="voice-intro__avatar">${brandMark(ctx)}</span>
+        <span class="voice-intro__who">
+          <span class="voice-intro__who-name">${escapeHtml(brandOf(ctx))}</span>
+          <span class="voice-intro__who-meta">${net === "brand" ? "Brand voice · any network" : escapeHtml(networkLabel(net))}</span>
+        </span>
+        ${net === "brand" ? "" : `<i class="${networkIcon(net)} voice-intro__post-net" aria-hidden="true"></i>`}
+      </header>
+      <p class="voice-intro__post-text">${wordsHtml(fill(NETWORK_VOICE_SAMPLE[net], ctx))}</p>
+      ${traitsHtml(traitsOf(ctx, net))}
+    </article>`;
+}
+
+// The comparison, where there's no room for the dialog's turn-by-turn post —
+// the chat's first Voice step, the creation review: the same stage, the Brand
+// voice's post over the networks' own, side by side. `compact` (the chat, whose
+// thread repaints on every turn): no word-by-word replay.
 export function voiceComparisonHtml(ctx, { compact = false } = {}) {
-  const net = (n, i) => `
-    <div class="voice-compare__net" style="--col:${i}">
-      <span class="voice-compare__label"><i class="${networkIcon(n)}" aria-hidden="true"></i>${escapeHtml(networkLabel(n))}</span>
-      <p class="voice-compare__post">${wordsHtml(fill(NETWORK_VOICE_SAMPLE[n], ctx))}</p>
-    </div>`;
   return `
     <div class="voice-compare${compact ? " voice-compare--compact" : ""}">
-      <div class="voice-compare__brand">
-        <span class="voice-compare__label">Brand voice</span>
-        <p class="voice-compare__post">${escapeHtml(fill(NETWORK_VOICE_SAMPLE.brand, ctx))}</p>
+      <archie-pixels data-quiet></archie-pixels>
+      <div class="voice-compare__inner">
+        <div class="voice-compare__brand">${postCardHtml(ctx, "brand", { compact: true })}</div>
+        <span class="voice-intro__status ap-status mermaid">Rewritten for each network</span>
+        <div class="voice-compare__nets">${comparisonNets(ctx)
+          .map(
+            (n, i) =>
+              `<div class="voice-compare__net" style="--col:${i}">${postCardHtml(ctx, n, { compact: true })}</div>`,
+          )
+          .join("")}</div>
       </div>
-      <div class="voice-compare__nets">${comparisonNets(ctx).map(net).join("")}</div>
     </div>`;
 }
 
@@ -202,22 +246,6 @@ const glyphTile = (net) =>
     ? `<span class="voice-intro__tile is-brand" aria-hidden="true"><i class="ap-icon-quote"></i></span>`
     : `<span class="voice-intro__tile" aria-hidden="true"><i class="${networkIcon(net)}"></i></span>`;
 
-// The Brand's own words for its voice: the headline's three, else its tones.
-const brandTraits = (ctx) => {
-  const head = (ctx?.voiceProfile?.headline || "").split(/\s*·\s*/).filter(Boolean);
-  return (head.length ? head : ctx?.tones || []).slice(0, 3);
-};
-const traitsOf = (ctx, net) => (net === "brand" ? brandTraits(ctx) : NETWORK_VOICE_TRAITS[net] || []);
-const traitsHtml = (list) =>
-  `<span class="voice-intro__traits">${list
-    .map((t, i) => `<span class="voice-intro__trait" style="--k:${i}">${escapeHtml(t)}</span>`)
-    .join("")}</span>`;
-
-const brandMark = (ctx) =>
-  ctx?.brandLogo
-    ? `<img src="${escapeHtml(ctx.brandLogo)}" alt="" />`
-    : `<span>${escapeHtml(brandOf(ctx).charAt(0).toUpperCase())}</span>`;
-
 // Step 1 — the « aha »: the same idea, in each network's voice.
 function renderSame(ctx) {
   modal.classList.remove("is-stand");
@@ -256,18 +284,7 @@ function showVoice(net, { manual = false } = {}) {
     <div class="voice-intro__status ap-status ${net === "brand" ? "grey" : "mermaid"}" data-vi-status>${
       net === "brand" ? "Written in the Brand voice" : `Rewritten for ${escapeHtml(networkLabel(net))}`
     }</div>
-    <article class="voice-intro__post" aria-label="${escapeHtml(label(net))} post">
-      <header class="voice-intro__post-head">
-        <span class="voice-intro__avatar">${brandMark(ctx)}</span>
-        <span class="voice-intro__who">
-          <span class="voice-intro__who-name">${escapeHtml(brandOf(ctx))}</span>
-          <span class="voice-intro__who-meta">${net === "brand" ? "Any network" : escapeHtml(networkLabel(net))}</span>
-        </span>
-        ${net === "brand" ? "" : `<i class="${networkIcon(net)} voice-intro__post-net" aria-hidden="true"></i>`}
-      </header>
-      <p class="voice-intro__post-text">${wordsHtml(fill(NETWORK_VOICE_SAMPLE[net], ctx))}</p>
-      ${traitsHtml(traitsOf(ctx, net))}
-    </article>`;
+    ${postCardHtml(ctx, net)}`;
   clearTimeout(timer);
   if (manual) return;
   const next = voices[(voices.indexOf(net) + 1) % voices.length];

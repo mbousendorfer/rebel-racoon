@@ -1835,62 +1835,53 @@ body.has-modal {
   color: var(--ref-color-grey-80);
 }
 
-/* The voice intro's comparison (voice-intro-modal.js voiceComparisonHtml): the
-   same post in each network's voice, in the chat and the creation review. */
+/* The voice intro's comparison (voice-intro-modal.js voiceComparisonHtml), in
+   the chat and the creation review: the dialog's stage — Archie's pixel field
+   — with its post cards, the Brand voice's over the networks' own. */
 .voice-compare {
+  position: relative;
+  padding: var(--ref-spacing-md);
+  border-radius: 16px;
+  overflow: hidden;
+  isolation: isolate;
+}
+.voice-compare__inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--ref-spacing-sm);
 }
 .voice-compare__brand {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  border-radius: var(--app-radius-lg);
-  background: var(--ref-color-grey-05);
+  width: min(100%, 440px);
 }
 .voice-compare__nets {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--ref-spacing-sm);
-}
-.voice-compare__net {
-  display: flex;
-  flex-direction: column;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  align-items: start;
   gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-lg);
-  background: var(--ref-color-white);
+  width: 100%;
 }
-.voice-compare__label {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  font-size: var(--sys-text-style-caption-bold-size);
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--ref-color-grey-100);
-}
-.voice-compare__post {
-  margin: 0;
-  white-space: pre-line;
-  color: var(--ref-color-grey-100);
-}
-.voice-compare--compact .voice-compare__post {
-  font-size: var(--sys-text-style-caption-size);
-}
-/* The post being rewritten: word after word, column after column. */
 .voice-compare__w {
   animation: posts-card-word-fade-in 240ms ease-out both;
-  animation-delay: calc(300ms + var(--col, 0) * 450ms + var(--w) * 28ms);
+  animation-delay: calc(300ms + var(--w) * 28ms);
+}
+/* The networks rewrite the Brand's post, one after the other. */
+.voice-compare__brand .voice-compare__w {
+  animation: none;
 }
 .voice-compare__net .voice-compare__w {
-  display: inline;
+  animation-delay: calc(500ms + var(--col) * 500ms + var(--w) * 24ms);
 }
-
-/* In the chat the thread repaints on every turn: no replay there. */
-.voice-compare--compact .voice-compare__w {
+.voice-compare__net .voice-intro__trait {
+  animation-delay: calc(900ms + var(--col) * 500ms + var(--k) * 90ms);
+}
+/* In the chat the thread repaints on every turn: nothing replays there. */
+.voice-compare--compact .voice-compare__w,
+.voice-compare--compact .voice-intro__trait,
+.voice-compare--compact .voice-intro__post,
+.voice-compare--compact .voice-intro__status {
   animation: none;
 }
 
@@ -2071,8 +2062,7 @@ body.has-modal {
 .voice-intro__mark img {
   width: 100%;
   height: 100%;
-  padding: var(--ref-spacing-xxs);
-  object-fit: contain;
+  object-fit: cover;
 }
 .voice-intro__who {
   display: flex;
@@ -2294,4 +2284,27 @@ body.has-modal {
   .voice-intro__lede {
     padding: var(--ref-spacing-md);
   }
+}
+
+/* A smaller post card — the comparison's. */
+.voice-intro__post--compact {
+  padding: var(--ref-spacing-sm);
+  border-radius: var(--app-radius-card);
+}
+.voice-intro__post--compact .voice-intro__avatar {
+  width: 28px;
+  height: 28px;
+}
+.voice-intro__post--compact .voice-intro__post-net {
+  font-size: var(--sys-icon-css-sm);
+}
+.voice-intro__post--compact .voice-intro__post-text {
+  min-height: 0;
+  margin-top: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+}
+.voice-intro__post--compact .voice-intro__traits {
+  margin-top: var(--ref-spacing-xs);
+  padding-top: var(--ref-spacing-xs);
 }
