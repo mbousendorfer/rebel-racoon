@@ -11,13 +11,13 @@
 // weights and a test on three subjects. The system presets are NOT shown here:
 // they belong to no Playbook, and the fiche lists only what is this brand's.
 
-import { html, toString } from "../lib/html.js?v=2260";
-import { navigate } from "../../../router.js?v=2260";
-import { styleThumb } from "../ui/style-thumb.js?v=2260";
-import { confirmDialog } from "../ui/dialog.js?v=2260";
-import { toast } from "../ui/toast.js?v=2260";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=2260";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=2260";
+import { html, toString } from "../lib/html.js?v=2261";
+import { navigate } from "../../../router.js?v=2261";
+import { styleThumb } from "../ui/style-thumb.js?v=2261";
+import { confirmDialog } from "../ui/dialog.js?v=2261";
+import { toast } from "../ui/toast.js?v=2261";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=2261";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=2261";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 
@@ -66,7 +66,9 @@ function styleCard(style, brand, canEdit) {
     // The style Generate image uses says so (the Images tab's third block sets it).
     meta:
       brand.defaults?.styleId === style.id
-        ? html`<span class="ap-tag grey mini imst-images__used"><span>Default for Generate an image</span></span>`
+        ? html`<span class="ap-tag grey mini imst-images__used" title="Default for Generate an image"
+            ><span>Default</span></span
+          >`
         : sourcesSummary(style),
     openAttrs: canEdit ? html`data-imst-pb-style="edit" ${id}` : null,
     actions: canEdit

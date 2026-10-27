@@ -17,11 +17,11 @@
 //   learnedVoiceHtml(ctx, net, voice?, { only, pending })
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2260";
-import { getContextById } from "../contexts-store.js?v=2260";
-import { playbookForNewWork } from "../active-playbook.js?v=2260";
-import { isNewUser } from "../user-mode.js?v=2260";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2260";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2261";
+import { getContextById } from "../contexts-store.js?v=2261";
+import { playbookForNewWork } from "../active-playbook.js?v=2261";
+import { isNewUser } from "../user-mode.js?v=2261";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2261";
 import {
   networkVoiceOn,
   networkVoice,
@@ -30,18 +30,18 @@ import {
   voiceParts,
   cloneItems,
   baseValue,
-} from "../voice-parts.js?v=2260";
+} from "../voice-parts.js?v=2261";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2260";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2260";
-import "../archie-pixels.js?v=2260";
-import { navigate } from "../router.js?v=2260";
-import { escapeHtml } from "../utils.js?v=2260";
+} from "../network-voice-flow.js?v=2261";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2261";
+import "../archie-pixels.js?v=2261";
+import { navigate } from "../router.js?v=2261";
+import { escapeHtml } from "../utils.js?v=2261";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
