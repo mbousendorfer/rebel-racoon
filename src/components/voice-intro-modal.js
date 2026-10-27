@@ -17,11 +17,11 @@
 //   learnedVoiceHtml(ctx, net, voice?, { only, pending })
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2251";
-import { getContextById } from "../contexts-store.js?v=2251";
-import { playbookForNewWork } from "../active-playbook.js?v=2251";
-import { isNewUser } from "../user-mode.js?v=2251";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2251";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2252";
+import { getContextById } from "../contexts-store.js?v=2252";
+import { playbookForNewWork } from "../active-playbook.js?v=2252";
+import { isNewUser } from "../user-mode.js?v=2252";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2252";
 import {
   networkVoiceOn,
   networkVoice,
@@ -30,18 +30,18 @@ import {
   voiceParts,
   cloneItems,
   baseValue,
-} from "../voice-parts.js?v=2251";
+} from "../voice-parts.js?v=2252";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2251";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2251";
-import "../archie-pixels.js?v=2251";
-import { navigate } from "../router.js?v=2251";
-import { escapeHtml } from "../utils.js?v=2251";
+} from "../network-voice-flow.js?v=2252";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2252";
+import "../archie-pixels.js?v=2252";
+import { navigate } from "../router.js?v=2252";
+import { escapeHtml } from "../utils.js?v=2252";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -175,8 +175,10 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
       <div class="voice-edit__say">
         <header class="voice-edit__head">
           <span class="voice-edit__net" aria-hidden="true"><i class="${networkIcon(net)}"></i></span>
-          <span class="voice-edit__name">${name}</span>
-          ${from ? `<span class="voice-edit__from" title="${escapeHtml(from)}">${escapeHtml(from)}</span>` : ""}
+          <span class="voice-edit__title">
+            <span class="voice-edit__name">${name}</span>
+            ${from ? `<span class="voice-edit__from" title="${escapeHtml(from)}">${escapeHtml(from)}</span>` : ""}
+          </span>
           ${pending ? `<span class="ap-status grey voice-edit__pending">Not saved yet</span>` : ""}
         </header>
         ${summary ? `<p class="voice-edit__line">${escapeHtml(summary)}</p>` : ""}

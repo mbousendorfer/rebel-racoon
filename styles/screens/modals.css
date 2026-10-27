@@ -1920,14 +1920,20 @@ body.has-modal {
   font-size: var(--sys-icon-css-sm);
   color: var(--ref-color-grey-100);
 }
+/* The name and the source share a baseline; the source gives way first. */
+.voice-edit__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xs);
+  flex: 1;
+  min-width: 0;
+}
 .voice-edit__name {
   flex: none;
   font-weight: var(--ref-font-weight-bold);
   color: var(--ref-color-grey-100);
 }
-/* The source trails the name and gives way first. */
 .voice-edit__from {
-  flex: 1;
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
@@ -1938,7 +1944,6 @@ body.has-modal {
 }
 .voice-edit__pending {
   flex: none;
-  margin-left: auto;
 }
 .voice-edit__line {
   margin: 0;
@@ -1961,9 +1966,11 @@ body.has-modal {
   column-gap: var(--ref-spacing-xs);
   align-items: baseline;
 }
+/* The + sits on the rule's FIRST line, whatever its length. */
 .voice-edit__plus {
   justify-self: center;
-  align-self: center;
+  align-self: start;
+  margin-top: calc((var(--sys-text-style-body-line-height) - var(--sys-icon-css-xs)) / 2);
   font-size: var(--sys-icon-css-xs);
   color: var(--app-butter-accent);
 }
