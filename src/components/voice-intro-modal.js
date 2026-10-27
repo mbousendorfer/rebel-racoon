@@ -17,11 +17,11 @@
 //   learnedVoiceHtml(ctx, net, voice?, { only, pending })
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2249";
-import { getContextById } from "../contexts-store.js?v=2249";
-import { playbookForNewWork } from "../active-playbook.js?v=2249";
-import { isNewUser } from "../user-mode.js?v=2249";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2249";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2251";
+import { getContextById } from "../contexts-store.js?v=2251";
+import { playbookForNewWork } from "../active-playbook.js?v=2251";
+import { isNewUser } from "../user-mode.js?v=2251";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2251";
 import {
   networkVoiceOn,
   networkVoice,
@@ -30,18 +30,18 @@ import {
   voiceParts,
   cloneItems,
   baseValue,
-} from "../voice-parts.js?v=2249";
+} from "../voice-parts.js?v=2251";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2249";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2249";
-import "../archie-pixels.js?v=2249";
-import { navigate } from "../router.js?v=2249";
-import { escapeHtml } from "../utils.js?v=2249";
+} from "../network-voice-flow.js?v=2251";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2251";
+import "../archie-pixels.js?v=2251";
+import { navigate } from "../router.js?v=2251";
+import { escapeHtml } from "../utils.js?v=2251";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -138,11 +138,12 @@ function postCardHtml(ctx, net) {
 
 // ── A voice edit ────────────────────────────────────────────────────────────
 // What Archie proposes for a network's voice, in ONE look wherever it shows
-// (the chat's Voice step, the proposal dialog, the intro, a draft's feedback):
-// a card — the network and where the voice comes from, « Not saved yet » while
-// it waits for its answer; Archie's sentence for the network on butter (his
-// colour, as the memory was); then each rule it adds, marked +. Quiet on
-// purpose: a pixel stage and tinted pills around it were too much (2026-10-27).
+// (the chat's Voice step, the proposal dialog, the intro, a draft's feedback),
+// built like the memory was: on butter, Archie speaks — the network, where the
+// voice comes from, « Not saved yet » while it waits for its answer, his
+// sentence for the network; below, on white, each rule it adds, marked +.
+// Compact and quiet on purpose: a pixel stage and tinted pills around it were
+// too much (2026-10-27).
 // `voice`: the proposal (default: the network's voice as saved). `only`: the
 // rules it ADDS to a voice that already had its own (a draft's feedback) —
 // just those. `pending`: the « Not saved yet » pill.
@@ -162,26 +163,27 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
         .map((i) => ({ part: p.title, ...i })),
     );
   const from = only
-    ? "From your feedback on a draft"
+    ? "From your feedback"
     : voice?.postCount
       ? `Learned from ${voice.postCount} posts of ${voice.learnedFrom}`
       : voice?.learnedFrom
         ? `Learned from ${voice.learnedFrom}`
         : "";
+  const name = `${label} voice`;
   const card = `
-    <section class="voice-edit__card" aria-label="${only ? "A change to" : "Your"} ${label} voice">
-      <header class="voice-edit__head">
-        ${glyphTile(net)}
-        <span class="voice-edit__title">
-          <span class="voice-edit__name">${only ? `A change to your ${label} voice` : `Your ${label} voice`}</span>
-          ${from ? `<span class="voice-edit__from">${escapeHtml(from)}</span>` : ""}
-        </span>
-        ${pending ? `<span class="ap-status mermaid voice-edit__pending">Not saved yet</span>` : ""}
-      </header>
-      ${summary ? `<p class="voice-edit__say"><i class="ap-icon-quote" aria-hidden="true"></i><span>${escapeHtml(summary)}</span></p>` : ""}
+    <section class="voice-edit__card" aria-label="${name}">
+      <div class="voice-edit__say">
+        <header class="voice-edit__head">
+          <span class="voice-edit__net" aria-hidden="true"><i class="${networkIcon(net)}"></i></span>
+          <span class="voice-edit__name">${name}</span>
+          ${from ? `<span class="voice-edit__from" title="${escapeHtml(from)}">${escapeHtml(from)}</span>` : ""}
+          ${pending ? `<span class="ap-status grey voice-edit__pending">Not saved yet</span>` : ""}
+        </header>
+        ${summary ? `<p class="voice-edit__line">${escapeHtml(summary)}</p>` : ""}
+      </div>
       <ul class="voice-edit__changes" aria-label="${only ? "What I'd add" : "What changes from the default voice"}">${changes
         .map(
-          (c, k) => `<li class="voice-edit__change" style="--k:${k}">
+          (c) => `<li class="voice-edit__change">
             <i class="ap-icon-plus voice-edit__plus" aria-hidden="true"></i>
             <span class="voice-edit__part">${escapeHtml(c.part)}</span>
             <span class="voice-edit__rule">${c.when ? `<strong>${escapeHtml(c.when)}:</strong> ` : ""}${escapeHtml(c.text)}${(

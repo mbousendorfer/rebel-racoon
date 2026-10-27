@@ -1882,96 +1882,116 @@ body.has-modal {
 }
 
 /* A voice edit (voice-intro-modal.js learnedVoiceHtml) — what Archie proposes
-   for a network's voice, one look everywhere, kept quiet: a card, Archie's
-   sentence on butter (as the memory was), each added rule marked +. */
+   for a network's voice, one look everywhere, built like the memory was: on
+   butter, Archie speaks (the network, the source, his sentence); below, on
+   white, each added rule marked +. Compact: one line per rule. */
 .voice-edit {
   width: 100%;
+  max-width: 560px;
   margin: var(--ref-spacing-xs) 0;
 }
 .voice-edit__card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-md);
+  overflow: hidden;
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
   background: var(--app-surface);
 }
+.voice-edit__say {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  background: var(--app-butter);
+}
 .voice-edit__head {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-sm);
-}
-.voice-edit__title {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+  gap: var(--ref-spacing-xs);
   min-width: 0;
 }
+.voice-edit__net {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--app-surface);
+  font-size: var(--sys-icon-css-sm);
+  color: var(--ref-color-grey-100);
+}
 .voice-edit__name {
+  flex: none;
   font-weight: var(--ref-font-weight-bold);
   color: var(--ref-color-grey-100);
 }
-.voice-edit__from,
-.voice-edit__rest {
-  margin: 0;
+/* The source trails the name and gives way first. */
+.voice-edit__from {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
 }
 .voice-edit__pending {
   flex: none;
+  margin-left: auto;
 }
-/* Archie's sentence for the network — his colour. */
-.voice-edit__say {
-  display: flex;
-  gap: var(--ref-spacing-xs);
+.voice-edit__line {
   margin: 0;
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  border-radius: var(--app-radius-lg);
-  background: var(--app-butter);
-  font-weight: var(--ref-font-weight-bold);
+  padding-left: calc(24px + var(--ref-spacing-xs));
   color: var(--ref-color-grey-100);
-}
-.voice-edit__say i {
-  flex: none;
-  margin-top: 2px;
-  color: var(--app-butter-accent);
+  text-wrap: pretty;
 }
 .voice-edit__changes {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
   margin: 0;
-  padding: 0;
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md) 0;
   list-style: none;
 }
-/* An added rule: + · its part · the rule. */
+/* An added rule: + · its part · the rule, the parts in one column. */
 .voice-edit__change {
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr);
+  grid-template-columns: 24px 4.5rem minmax(0, 1fr);
+  column-gap: var(--ref-spacing-xs);
   align-items: baseline;
-  gap: var(--ref-spacing-xs);
 }
 .voice-edit__plus {
+  justify-self: center;
   align-self: center;
-  font-size: var(--sys-icon-css-sm);
+  font-size: var(--sys-icon-css-xs);
   color: var(--app-butter-accent);
 }
 .voice-edit__part {
-  font-weight: var(--ref-font-weight-bold);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-80);
-  white-space: nowrap;
 }
 .voice-edit__rule {
   color: var(--ref-color-grey-100);
+  text-wrap: pretty;
 }
 /* A line from the brand's own posts under its rule. */
 .voice-edit__example {
   display: block;
-  margin-top: var(--ref-spacing-xxs);
+  margin-top: var(--ref-spacing-xxxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
-  font-style: italic;
+}
+.voice-edit__rest {
+  margin: 0;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md) var(--ref-spacing-sm)
+    calc(var(--ref-spacing-md) + 24px + var(--ref-spacing-xs));
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
 }
 /* The chat's answer: edit first, or use it — the primary last. */
 .voice-learned__actions {
@@ -1991,7 +2011,7 @@ body.has-modal {
   animation: welcome-intro-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .voice-intro__stage-inner.is-result .voice-edit__card {
-  border: 0;
+  border-color: transparent;
 }
 
 /* The voice intro dialog (voice-intro-modal.js) — the first-time run's look
