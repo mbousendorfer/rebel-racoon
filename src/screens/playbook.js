@@ -17,10 +17,10 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=2245";
-import { parseHashParams } from "../url-state.js?v=2245";
-import { escapeHtml as esc } from "../utils.js?v=2245";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2245";
+import { navigate, getPath } from "../router.js?v=2247";
+import { parseHashParams } from "../url-state.js?v=2247";
+import { escapeHtml as esc } from "../utils.js?v=2247";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2247";
 import {
   getContextById,
   getContexts,
@@ -28,15 +28,15 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=2245";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2245";
-import { mount, snapshotEditable } from "../playbook-view.js?v=2245";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2245";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2245";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2245";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2245";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2245";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=2245";
+} from "../contexts-store.js?v=2247";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2247";
+import { mount, snapshotEditable } from "../playbook-view.js?v=2247";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2247";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2247";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2247";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2247";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2247";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=2247";
 import {
   canView,
   canEdit,
@@ -48,11 +48,12 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=2245";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2245";
-import { showToast } from "../components/toast.js?v=2245";
-import { learnNetworkVoice } from "../voice-parts.js?v=2245";
-import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2245";
+} from "../playbook-access.js?v=2247";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2247";
+import { showToast } from "../components/toast.js?v=2247";
+import { learnNetworkVoice } from "../voice-parts.js?v=2247";
+import { openVoiceProposal, openVoiceInterview } from "../components/voice-proposal-modal.js?v=2247";
+import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2247";
 
 const AUTOFILL_MS = 1500;
 
@@ -271,11 +272,11 @@ export function renderPlaybook(params, target) {
     });
   }
 
-  // Learn from… on a network's tab (flag voicePerNetwork): writes THAT network's
-  // voice, learned — never the Brand voice.
-  function networkVoicePatch(net, source) {
-    const ctx = getContextById(id);
-    return { voiceByNetwork: { ...(ctx.voiceByNetwork || {}), [net]: learnNetworkVoice(ctx, net, source) } };
+  // Learn from… on a network's tab (flag voicePerNetwork): THAT network's
+  // voice, learned — shown before it's used (voice-proposal-modal), never the
+  // default voice. The tab repaints once it's used.
+  function proposeVoice(net, opts) {
+    openVoiceProposal({ ctxId: id, net, onUse: () => toast(`${networkLabel(net)} voice in use.`), ...opts });
   }
   function learnNetworkVoiceFromPosts(net) {
     openAnalyzeProfilesModal({
@@ -286,19 +287,24 @@ export function renderPlaybook(params, target) {
           from: accounts.map((a) => a.handle).join(", "),
           postCount: accounts.reduce((n, a) => n + (a.postCount || 0), 0),
         };
-        runAutofill(STAGES.social, () => networkVoicePatch(net, source), `${networkLabel(net)} voice learned.`);
+        proposeVoice(net, {
+          voice: learnNetworkVoice(getContextById(id), net, source),
+          phases: [
+            `Reading ${source.postCount} posts of ${source.from}…`,
+            `Finding what works on ${networkLabel(net)}…`,
+            `Writing your ${networkLabel(net)} voice…`,
+          ],
+        });
       },
     });
   }
   function learnNetworkVoiceFromDocument(net) {
     openFillDocumentModal({
-      onConfirm: ({ file, url }) =>
-        runAutofill(
-          STAGES.documents,
-          () => networkVoicePatch(net, { from: file?.name || docNameFromUrl(url) }),
-          `${networkLabel(net)} voice learned.`,
-        ),
+      onConfirm: ({ file, url }) => proposeVoice(net, { choice: "document", from: file?.name || docNameFromUrl(url) }),
     });
+  }
+  function learnNetworkVoiceFromAnswers(net) {
+    openVoiceInterview({ net, onDone: (answers) => proposeVoice(net, { choice: "interview", from: answers }) });
   }
 
   function confirmDelete() {
@@ -439,12 +445,13 @@ export function renderPlaybook(params, target) {
       return true;
     }
 
-    // Voice profile "Learn from…" dropdown — both sources are voice-scoped.
+    // Voice profile "Learn from…" dropdown — every source is voice-scoped.
     const learn = event.target.closest("[data-recap-learn]");
     if (learn) {
       learn.closest("details")?.removeAttribute("open");
       const net = learn.dataset.recapLearnNet;
-      if (learn.dataset.recapLearn === "posts") net ? learnNetworkVoiceFromPosts(net) : onAnalyzeVoice();
+      if (learn.dataset.recapLearn === "interview") learnNetworkVoiceFromAnswers(net);
+      else if (learn.dataset.recapLearn === "posts") net ? learnNetworkVoiceFromPosts(net) : onAnalyzeVoice();
       else if (learn.dataset.recapLearn === "documents")
         net ? learnNetworkVoiceFromDocument(net) : learnVoiceFromDocument();
       return true;

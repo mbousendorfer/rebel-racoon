@@ -22,19 +22,19 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts, DEMO_PLAYBOOK } from "./mocks.js?v=2245";
-import { isDemo } from "./demo-mode.js?v=2245";
-import { isNewUser } from "./user-mode.js?v=2245";
-import { CURRENT_USER } from "./org.js?v=2245";
-import { isFlagOn } from "./feature-flags.js?v=2245";
-import { createNotifier } from "./store-utils.js?v=2245";
+import { contexts as seed, sharedContexts, DEMO_PLAYBOOK } from "./mocks.js?v=2247";
+import { isDemo } from "./demo-mode.js?v=2247";
+import { isNewUser } from "./user-mode.js?v=2247";
+import { CURRENT_USER } from "./org.js?v=2247";
+import { isFlagOn } from "./feature-flags.js?v=2247";
+import { createNotifier } from "./store-utils.js?v=2247";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=2245";
-import { cloneItems, learnNetworkVoice, cloneNetworkVoice } from "./voice-parts.js?v=2245";
+} from "./languages.js?v=2247";
+import { cloneItems, learnNetworkVoice, cloneNetworkVoice } from "./voice-parts.js?v=2247";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -297,7 +297,7 @@ function normalizeImageryDefaults(ctx) {
 // de stockage").
 // The voice of each network (flag voicePerNetwork, voice-parts.js). A seed names
 // only where a network's voice was learned — `{ learnedFrom, postCount }` — and
-// the voice itself is derived here, so the mocks don't repeat the Brand voice
+// the voice itself is derived here, so the mocks don't repeat the default voice
 // once per network.
 function normalizeVoiceByNetwork(ctx) {
   const out = {};
@@ -555,6 +555,9 @@ export function updateContext(id, patch) {
   if (patch.voiceSummary !== undefined) c.voiceSummary = patch.voiceSummary;
   for (const f of ["voiceAlways", "voiceNever", "voiceByPost", "voiceSometimes"])
     if (patch[f] !== undefined) c[f] = cloneItems(patch[f]);
+  // When the default voice last changed (playbook-view commitEdit): the drafts
+  // written before it say so.
+  if (patch.voiceChangedAt !== undefined) c.voiceChangedAt = patch.voiceChangedAt;
   if (patch.voiceByNetwork !== undefined)
     c.voiceByNetwork = normalizeVoiceByNetwork({ voiceByNetwork: patch.voiceByNetwork });
   if (patch.voiceMode !== undefined) c.voiceMode = patch.voiceMode;

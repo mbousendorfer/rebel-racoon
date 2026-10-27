@@ -9,9 +9,9 @@
 //     (the Image Generator's "Use in draft" on a run of several slides)
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2245";
-import { isNewUser } from "./user-mode.js?v=2245";
-import { createSessionNotifier } from "./store-utils.js?v=2245";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2247";
+import { isNewUser } from "./user-mode.js?v=2247";
+import { createSessionNotifier } from "./store-utils.js?v=2247";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).
@@ -57,6 +57,9 @@ export function addPostDraft(
     network: network === "x" ? "twitter" : network,
     status: "ready",
     timeLabel: "just now",
+    // When its text was written: a voice that changed after it says so on
+    // the draft (post-card's voice status). A rewrite stamps it again.
+    writtenAt: Date.now(),
     // The language this draft was generated in — defaults to the Playbook's
     // primary language when the draft flow doesn't ask. Null for legacy drafts.
     language: language || null,
@@ -174,6 +177,7 @@ export function updatePostContent(sessionId, postId, partial) {
   const post = posts.find((p) => p.id === postId);
   if (!post) return;
   if (partial.text !== undefined) post.text = partial.text;
+  if (partial.writtenAt !== undefined) post.writtenAt = partial.writtenAt;
   if (partial.hashtags !== undefined) post.hashtags = partial.hashtags;
   if (partial.cta !== undefined) post.cta = partial.cta;
   if (partial.firstComment !== undefined) post.firstComment = partial.firstComment;

@@ -18,8 +18,8 @@
 // the stream is handled by re-looking up the target selector each tick
 // — when it disappears the stream stops and the content commits at once.
 
-import { getPosts, updatePostContent } from "./posts-store.js?v=2245";
-import { escapeText } from "./utils.js?v=2245";
+import { getPosts, updatePostContent } from "./posts-store.js?v=2247";
+import { escapeText } from "./utils.js?v=2247";
 
 const inFlight = new Map(); // postId → AbortController
 
@@ -76,6 +76,8 @@ export function startRewrite(sessionId, postId, intent = "fresh") {
         text: final.text,
         hashtags: final.hashtags,
         cta: final.cta,
+        // Rewritten now, in the network's voice as it is now.
+        writtenAt: Date.now(),
         isRegenerating: false,
         regenerateStage: null,
       });
@@ -117,8 +119,8 @@ function fakeRewrite(post, intent = "fresh") {
     return { ...base, text: [pick(FORMAL_HOOKS), ...paras] };
   }
 
-  // The network's own voice, just given (« Optimize it », network-voice-flow
-  // rewriteDraftsInVoice). ponytail: a rule of thumb per network; in the
+  // The network's voice, changed since the draft was written (« Rewrite it »
+  // on its card). ponytail: a rule of thumb per network; in the
   // product the draft is rewritten from the voice itself.
   if (intent === "voice") {
     const joined = paras.join(" ").trim();

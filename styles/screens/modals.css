@@ -47,6 +47,7 @@ body.has-modal {
 .analyze-profiles-modal,
 .connect-account-modal,
 .network-voice-modal,
+.voice-proposal-modal,
 .voice-intro-modal,
 .skip-connect,
 .fill-document-modal,
@@ -543,6 +544,7 @@ body.has-modal {
 .analyze-profiles-modal.open,
 .connect-account-modal.open,
 .network-voice-modal.open,
+.voice-proposal-modal.open,
 .voice-intro-modal.open,
 .skip-connect.open,
 .fill-document-modal.open,
@@ -1835,54 +1837,48 @@ body.has-modal {
   color: var(--ref-color-grey-80);
 }
 
-/* The voice intro's comparison (voice-intro-modal.js voiceComparisonHtml), in
-   the chat and the creation review: the dialog's stage — Archie's pixel field
-   — with its post cards, the Brand voice's over the networks' own. */
-.voice-compare {
-  position: relative;
-  padding: var(--ref-spacing-md);
-  border-radius: 16px;
-  overflow: hidden;
-  isolation: isolate;
-}
-.voice-compare__inner {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
-}
-.voice-compare__brand {
-  width: min(100%, 440px);
-}
-.voice-compare__nets {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  align-items: start;
-  gap: var(--ref-spacing-xs);
-  width: 100%;
-}
+/* The voice intro's post (voice-intro-modal.js postCardHtml): its words fade
+   in one by one — the post being rewritten. */
 .voice-compare__w {
   animation: posts-card-word-fade-in 240ms ease-out both;
   animation-delay: calc(300ms + var(--w) * 28ms);
 }
-/* The networks rewrite the Brand's post, one after the other. */
-.voice-compare__brand .voice-compare__w {
-  animation: none;
+
+/* A network's voice, given without a chat (voice-proposal-modal.js): the
+   questions as fields, then what Archie proposes. */
+.voice-proposal-modal {
+  width: min(calc(100% - 32px), 560px);
 }
-.voice-compare__net .voice-compare__w {
-  animation-delay: calc(500ms + var(--col) * 500ms + var(--w) * 24ms);
+.voice-proposal-modal .ap-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+  max-height: 70vh;
+  overflow-y: auto;
 }
-.voice-compare__net .voice-intro__trait {
-  animation-delay: calc(900ms + var(--col) * 500ms + var(--k) * 90ms);
+.voice-proposal-modal__lead {
+  margin: 0;
+  color: var(--ref-color-grey-80);
 }
-/* In the chat the thread repaints on every turn: nothing replays there. */
-.voice-compare--compact .voice-compare__w,
-.voice-compare--compact .voice-intro__trait,
-.voice-compare--compact .voice-intro__post,
-.voice-compare--compact .voice-intro__status {
-  animation: none;
+/* Learning: the orange sheen of Archie at work (as the intro's rows). */
+.voice-proposal-modal__phase {
+  margin: var(--ref-spacing-lg) 0;
+  text-align: center;
+  font-weight: var(--ref-font-weight-bold);
+  color: transparent;
+  background-image: linear-gradient(
+    100deg,
+    var(--ref-color-grey-100) 42%,
+    var(--ref-color-orange-100) 50%,
+    var(--ref-color-grey-100) 58%
+  );
+  background-size: 300% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: e-sheen 1.6s linear infinite;
+}
+.voice-proposal-modal .voice-learned {
+  margin: 0;
 }
 
 /* What a learned voice changes (voice-intro-modal.js learnedVoiceHtml) — in the
@@ -2381,27 +2377,4 @@ body.has-modal {
   .voice-intro__lede {
     padding: var(--ref-spacing-md);
   }
-}
-
-/* A smaller post card — the comparison's. */
-.voice-intro__post--compact {
-  padding: var(--ref-spacing-sm);
-  border-radius: var(--app-radius-card);
-}
-.voice-intro__post--compact .voice-intro__avatar {
-  width: 28px;
-  height: 28px;
-}
-.voice-intro__post--compact .voice-intro__post-net {
-  font-size: var(--sys-icon-css-sm);
-}
-.voice-intro__post--compact .voice-intro__post-text {
-  min-height: 0;
-  margin-top: var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-}
-.voice-intro__post--compact .voice-intro__traits {
-  margin-top: var(--ref-spacing-xs);
-  padding-top: var(--ref-spacing-xs);
 }

@@ -19,19 +19,19 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2245";
-import { isPortraitFormat } from "../clip-formats.js?v=2245";
-import { presetById } from "../clip-captions.js?v=2245";
-import { renderFeedbackControl } from "./feedback-control.js?v=2245";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2247";
+import { isPortraitFormat } from "../clip-formats.js?v=2247";
+import { presetById } from "../clip-captions.js?v=2247";
+import { renderFeedbackControl } from "./feedback-control.js?v=2247";
 import {
   networkMeta,
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
-} from "../social-profiles.js?v=2245";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2245";
-import { REVEAL_MS } from "../archie-pixels.js?v=2245";
+} from "../social-profiles.js?v=2247";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2247";
+import { REVEAL_MS } from "../archie-pixels.js?v=2247";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -134,23 +134,33 @@ function renderEmptyMedia(post, opts) {
   </div>`;
 }
 
-// Which voice wrote this draft (flag voicePerNetwork): `opts.voice` is
-// voice-parts' networkVoice() for the draft's network, resolved by the host
-// (the card never reads a Playbook). The voice's name opens it in the Playbook.
-// Written in the Brand voice (as it is, or before the network had one): said
-// on the draft itself — its status card, glued on top — with the way to
-// optimize it. Allowed, never silent. A voice of its own says nothing.
-const isUnoptimized = (opts) => ["plain", "borrowed"].includes(opts.voice?.state) && !!opts.playbookId;
-
-function renderVoiceStatus(net, opts) {
-  if (!isUnoptimized(opts)) return "";
-  return `<div class="ap-status-card orange posts__card-voice-status" role="status">
+// The voice behind this draft (flag voicePerNetwork): `opts.voice` is
+// voice-parts' networkVoice() for the draft's network, `opts.voiceStale` whether
+// that voice changed after the draft was written — both resolved by the host
+// (the card never reads a Playbook). Said on the draft itself, its status card
+// glued on top: written in the default voice → « Give X its own voice »;
+// written before its voice changed → « Rewrite it ». A voice of its own,
+// unchanged since, says nothing.
+function renderVoiceStatus(net, opts, post) {
+  if (!opts.playbookId) return "";
+  const label = escapeText(networkLabel(net));
+  if (opts.voice?.state === "default")
+    return `<div class="ap-status-card orange posts__card-voice-status" role="status">
     <div class="upper">
       <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-      <div class="flow"><span>Written in the Brand voice, not optimized for ${escapeText(networkLabel(net))}.</span></div>
-      <button type="button" class="ap-link small standalone" data-post-voice="${escapeAttr(opts.playbookId)}" data-post-voice-net="${escapeAttr(net)}">Optimize it</button>
+      <div class="flow"><span>Written in the default voice — ${label} has no voice of its own.</span></div>
+      <button type="button" class="ap-link small standalone" data-post-voice="${escapeAttr(opts.playbookId)}" data-post-voice-net="${escapeAttr(net)}">Give ${label} its own voice</button>
     </div>
   </div>`;
+  if (opts.voiceStale && post.status !== "scheduled")
+    return `<div class="ap-status-card blue posts__card-voice-status" role="status">
+    <div class="upper">
+      <i class="ap-icon-info_fill" aria-hidden="true"></i>
+      <div class="flow"><span>The ${label} voice changed after this draft was written.</span></div>
+      <button type="button" class="ap-link small standalone" data-post-voice-rewrite="${escapeAttr(post.id)}">Rewrite it</button>
+    </div>
+  </div>`;
+  return "";
 }
 
 export function renderPostCard(post, opts = {}) {
@@ -262,7 +272,13 @@ export function renderPostCard(post, opts = {}) {
   // LinkedIn reaction). Suppressed while the body is mid-flux.
   const feedbackStrip =
     !editing && !regenerating
-      ? renderFeedbackControl(`draft:${post.id}`, { kind: "draft", label: "How's this draft?" })
+      ? renderFeedbackControl(`draft:${post.id}`, {
+          kind: "draft",
+          label: "How's this draft?",
+          // Feedback on how it's written can update its network's voice.
+          voice:
+            opts.playbookId && opts.voice && opts.voice.state !== "brand" ? { playbookId: opts.playbookId, net } : null,
+        })
       : "";
 
   // Below-card foot row: the feedback strip on the left, the "Generation
@@ -374,7 +390,7 @@ export function renderPostCard(post, opts = {}) {
     >
       ${raw(checkbox)}
       <div class="posts__card-wrap">
-        ${raw(renderPostIssues(post, opts))} ${raw(renderVoiceStatus(net, opts))}
+        ${raw(renderPostIssues(post, opts))} ${raw(renderVoiceStatus(net, opts, post))}
         <article class="ap-card posts__card posts__card--${net} ${editing ? "is-editing" : ""}">
           ${raw(
             renderNetworkLayout(net, {

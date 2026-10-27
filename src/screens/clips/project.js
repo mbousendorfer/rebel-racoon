@@ -7,36 +7,36 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2245";
-import { isFlagOn } from "../../feature-flags.js?v=2245";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2245";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2245";
-import { showToast } from "../../components/toast.js?v=2245";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2245";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2245";
-import { rewriteDraftsInVoice } from "../../network-voice-flow.js?v=2245";
-import { networkVoice } from "../../voice-parts.js?v=2245";
-import { renderPostCard } from "../../components/post-card.js?v=2245";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2245";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2245";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2245";
+import { navigate } from "../../router.js?v=2247";
+import { isFlagOn } from "../../feature-flags.js?v=2247";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2247";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2247";
+import { showToast } from "../../components/toast.js?v=2247";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2247";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2247";
+import { startRewrite } from "../../draft-rewrite.js?v=2247";
+import { networkVoice, voiceChangedAt } from "../../voice-parts.js?v=2247";
+import { renderPostCard } from "../../components/post-card.js?v=2247";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2247";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2247";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2247";
 import {
   getConnectedProfiles,
   renderProfileTag,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-} from "../../social-profiles.js?v=2245";
-import { getContextById } from "../../contexts-store.js?v=2245";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2245";
-import { captionStateFor } from "../../clip-captions.js?v=2245";
+} from "../../social-profiles.js?v=2247";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2247";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2247";
+import { captionStateFor } from "../../clip-captions.js?v=2247";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2245";
-import { escapeHtml } from "../../utils.js?v=2245";
+} from "../../posts-store.js?v=2247";
+import { escapeHtml } from "../../utils.js?v=2247";
 import {
   getVideo,
   draftKey,
@@ -47,7 +47,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2245";
+} from "../../videos-store.js?v=2247";
 import {
   fmtMs,
   formatSelect,
@@ -66,7 +66,7 @@ import {
   SUBTITLE_IDS,
   bestFor,
   CTA_OPTIONS,
-} from "./shared.js?v=2245";
+} from "./shared.js?v=2247";
 
 let target = null;
 let videoId = null;
@@ -130,6 +130,8 @@ export function renderClipsProject(params, el) {
   disposers.push(
     subscribeVideos(onStore),
     subscribePosts(draftKey(video.id), () => tab() === "drafts" && paint()),
+    // A voice changed: the drafts' voice status repaints (Rewrite it).
+    subscribeContexts(() => tab() === "drafts" && paint()),
     bindSelectDismiss(el),
     bindSelectDismiss(topbar),
   );
@@ -663,6 +665,7 @@ function renderDraft(p, pb) {
       // Which voice wrote it (flag voicePerNetwork), and the way to its Playbook.
       playbookId: pb?.id || null,
       voice: pb ? networkVoice(pb, p.network) : null,
+      voiceStale: !!pb && voiceChangedAt(pb, p.network) > (p.writtenAt || 0),
     })}
   </div>`;
 }
@@ -1101,15 +1104,15 @@ function onClick(e) {
       getPosts(key).filter((p) => p.status !== "scheduled"),
     );
   }
-  // « Optimize it » on a draft in the Brand voice: the Voice dialog, then the
-  // video's drafts for that network rewritten in the new voice.
+  // The draft's voice: « Give X its own voice » asks in the Voice dialog;
+  // « Rewrite it » rewrites it in its network's voice as it is now.
   const voice = t.closest("[data-post-voice]");
-  if (voice) {
-    const net = voice.dataset.postVoiceNet;
-    return requireNetworkVoicesInDialog(voice.dataset.postVoice, [net], () => rewriteDraftsInVoice(key, net), {
-      optimize: true,
+  if (voice)
+    return requireNetworkVoicesInDialog(voice.dataset.postVoice, [voice.dataset.postVoiceNet], () => {}, {
+      giving: true,
     });
-  }
+  const rewrite = t.closest("[data-post-voice-rewrite]");
+  if (rewrite) return startRewrite(key, rewrite.dataset.postVoiceRewrite, "voice");
   const del = t.closest("[data-post-delete]");
   if (del) {
     const id = del.dataset.postDelete;

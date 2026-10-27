@@ -20,9 +20,13 @@
 // list scroll position survives — same rationale as the clip/idea thumbs it
 // replaces.
 
-import { escapeAttr, escapeText } from "../utils.js?v=2245";
-import { showToast } from "./toast.js?v=2245";
-import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2245";
+import { escapeAttr, escapeText } from "../utils.js?v=2247";
+import { showToast } from "./toast.js?v=2247";
+import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2247";
+import { getContextById } from "../contexts-store.js?v=2247";
+import { networkLabel } from "../social-profiles.js?v=2247";
+import { feedbackNetworkVoice } from "../voice-parts.js?v=2247";
+import { openVoiceProposal } from "./voice-proposal-modal.js?v=2247";
 
 // "What was off?" reasons per element kind. value = stable key, label = UI.
 const REASONS = {
@@ -83,7 +87,9 @@ export function renderFeedbackThumbs(targetId, { kind } = {}) {
 // The collapsible "what was off?" panel. Hidden unless the host opens it on a
 // thumbs-down. Pre-checks any reasons / comment already on record so the
 // panel restores its answered state if it's re-opened.
-export function renderFeedbackPanel(targetId, { kind } = {}) {
+// `voice` ({ playbookId, net }, a draft under flag voicePerNetwork): feedback
+// about how it's written can update its network's voice (offerVoiceUpdate).
+export function renderFeedbackPanel(targetId, { kind, voice = null } = {}) {
   const reasons = REASONS[kind] || REASONS.draft;
   const rec = getFeedback(targetId);
   const open = rec?.verdict === "down" && (rec.reasons?.length || rec.comment);
@@ -111,21 +117,25 @@ export function renderFeedbackPanel(targetId, { kind } = {}) {
         placeholder="Anything else? (optional)"
       >${escapeText(rec?.comment || "")}</textarea>
       <div class="fb__panel-actions">
-        <button type="button" class="ap-button primary blue fb__send" data-fb-send="${tid}">Send feedback</button>
+        <button type="button" class="ap-button primary blue fb__send" data-fb-send="${tid}"${
+          voice
+            ? ` data-fb-voice-pb="${escapeAttr(voice.playbookId)}" data-fb-voice-net="${escapeAttr(voice.net)}"`
+            : ""
+        }>Send feedback</button>
       </div>
     </div>`;
 }
 
 // Strip variant — label + thumbs + panel in one self-contained block. Used by
 // the drafts card footer and the image-generation modal result state.
-export function renderFeedbackControl(targetId, { kind, label = "How's this?" } = {}) {
+export function renderFeedbackControl(targetId, { kind, label = "How's this?", voice = null } = {}) {
   return `
     <div class="fb fb--strip" data-fb-target="${escapeAttr(targetId)}">
       <div class="fb__row">
         <span class="fb__label">${escapeText(label)}</span>
         ${renderFeedbackThumbs(targetId, { kind })}
       </div>
-      ${renderFeedbackPanel(targetId, { kind })}
+      ${renderFeedbackPanel(targetId, { kind, voice })}
     </div>`;
 }
 
@@ -172,12 +182,37 @@ export function onFeedbackClick(event) {
       const comment = panel.querySelector("[data-fb-comment]")?.value || "";
       recordDetail(targetId, { reasons, comment });
       panel.hidden = true;
+      if (
+        send.dataset.fbVoicePb &&
+        offerVoiceUpdate(send.dataset.fbVoicePb, send.dataset.fbVoiceNet, { reasons, comment })
+      )
+        return true;
     }
     showToast("Thanks — this helps me improve.", { duration: 2600 });
     return true;
   }
 
   return false;
+}
+
+// Feedback about how a draft is written (a comment, or Wrong tone / Too
+// generic / Formatting): the change it would make to the network's voice,
+// shown before it's used — the same proposal as everywhere. Returns whether
+// it offered one.
+function offerVoiceUpdate(playbookId, net, feedback) {
+  const proposal = feedbackNetworkVoice(getContextById(playbookId), net, feedback);
+  if (!proposal) return false;
+  const label = networkLabel(net);
+  openVoiceProposal({
+    ctxId: playbookId,
+    net,
+    voice: proposal.voice,
+    only: proposal.added,
+    title: `Thanks — should I update the ${label} voice?`,
+    useLabel: "Use this change",
+    onUse: () => showToast(`${label} voice updated. The drafts written before it say so.`, { duration: 3200 }),
+  });
+  return true;
 }
 
 // ── In-place DOM helpers ────────────────────────────────────────────────

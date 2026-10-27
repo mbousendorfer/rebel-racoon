@@ -1,34 +1,37 @@
 // The voice step before a draft, as a dialog — for a surface with no chat to
-// ask in (the Clips space). Same question and same answers as the chat's step
-// (network-voice-flow.js), one group per network without a voice, the best
-// answer checked; Cancel writes nothing. A document asks for it in its own
-// dialog (backing out of it brings this one back); « Edit it myself » leaves
-// for the Playbook, and the drafts aren't written.
+// ask in (the Clips space). The same choices as everywhere (network-voice-flow
+// voiceChoices), one group per network, the best answer checked; Cancel writes
+// nothing. Then, network by network: a document asks for it in its own dialog,
+// the questions in theirs, and what Archie learned is shown before it's used
+// (voice-proposal-modal); backing out of any of them brings this one back.
+// « Edit it myself » or « Edit in the Playbook » leave for the Playbook, and
+// the drafts aren't written.
 //
 // Public API:
-//   requireNetworkVoicesInDialog(contextId, networks, onReady, { optimize })
+//   requireNetworkVoicesInDialog(contextId, networks, onReady, { giving })
 //   onReady() runs IMMEDIATELY when every network already has a voice — always
 //   the case with the flag off — so callers wrap unconditionally.
-//   `optimize` (« Optimize it » on a draft): asked for those networks even on
-//   the Brand voice as it is, without that answer; onReady rewrites the drafts.
+//   `giving` (« Give X its own voice » on a draft): asked even for a network on
+//   the default voice, without that answer.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2245";
-import { getContextById } from "../contexts-store.js?v=2245";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2245";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2247";
+import { getContextById } from "../contexts-store.js?v=2247";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2247";
 import {
   missingNetworkVoices,
   voiceChoices,
-  applyNetworkVoice,
+  useDefaultVoice,
   editNetworkVoiceInPlaybook,
   documentName,
-} from "../network-voice-flow.js?v=2245";
-import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2245";
-import { escapeHtml } from "../utils.js?v=2245";
+} from "../network-voice-flow.js?v=2247";
+import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2247";
+import { openVoiceProposal, openVoiceInterview } from "./voice-proposal-modal.js?v=2247";
+import { escapeHtml } from "../utils.js?v=2247";
 
 const MODAL_ID = "network-voice";
 
 let backdrop, modal, titleEl, bodyEl, confirmBtn;
-let pending = null; // { contextId, networks, onReady }
+let pending = null; // { contextId, networks, allNetworks, onReady, giving }
 
 const HTML = `
 <div class="app-modal-backdrop" id="networkVoiceBackdrop" hidden></div>
@@ -42,7 +45,7 @@ const HTML = `
   <div class="ap-dialog-footer">
     <div class="ap-dialog-footer-right">
       <button type="button" class="ap-button ghost grey" data-nv-close>Cancel</button>
-      <button type="button" class="ap-button primary orange" data-nv-confirm>Write the drafts</button>
+      <button type="button" class="ap-button primary orange" data-nv-confirm>Continue</button>
     </div>
   </div>
 </aside>`;
@@ -64,8 +67,8 @@ function injectOnce() {
   bindOverlayDismissal({ modal, backdrop, close });
 }
 
-const groupHtml = (net, optimize) => {
-  const items = voiceChoices(net).items.filter((i) => !optimize || i.value !== "plain");
+const groupHtml = (net, giving) => {
+  const { items } = voiceChoices(net, { needed: !giving });
   return `<fieldset class="network-voice-modal__group">
     <legend class="network-voice-modal__legend"><i class="${networkIcon(net)}" aria-hidden="true"></i>How should I write on ${escapeHtml(networkLabel(net))}?</legend>
     ${items
@@ -79,24 +82,23 @@ const groupHtml = (net, optimize) => {
   </fieldset>`;
 };
 
-export function requireNetworkVoicesInDialog(contextId, networks, onReady, { optimize = false } = {}) {
-  const missing = optimize ? networks : missingNetworkVoices(getContextById(contextId), networks);
+export function requireNetworkVoicesInDialog(contextId, networks, onReady, { giving = false } = {}) {
+  const missing = giving ? networks : missingNetworkVoices(getContextById(contextId), networks);
   if (!missing.length) return onReady();
   injectOnce();
   requestOpen(MODAL_ID, close);
-  pending = { contextId, networks: missing, allNetworks: networks, onReady, optimize };
+  pending = { contextId, networks: missing, allNetworks: networks, onReady, giving };
   const one = networkLabel(missing[0]);
-  titleEl.textContent = optimize
+  titleEl.textContent = giving
     ? `Give ${one} a voice of its own`
     : missing.length === 1
       ? `${one} needs a voice first`
       : `${missing.length} networks need a voice first`;
   bodyEl.innerHTML = `<p class="network-voice-modal__lead">${
-    optimize
-      ? `These drafts are written in the Brand voice. Give ${escapeHtml(one)} a voice of its own and I'll rewrite them in it.`
+    giving
+      ? `These drafts are written in the default voice. Once ${escapeHtml(one)} has its own, each one says so and you can rewrite it.`
       : "I write every draft in its network's voice. Choose one before I write."
-  }</p>${missing.map((n) => groupHtml(n, optimize)).join("")}`;
-  confirmBtn.textContent = optimize ? "Rewrite the drafts" : "Write the drafts";
+  }</p>${missing.map((n) => groupHtml(n, giving)).join("")}`;
   backdrop.hidden = false;
   backdrop.classList.add("open");
   modal.classList.add("open");
@@ -110,27 +112,38 @@ function confirm() {
   if (!p) return;
   const picks = p.networks.map((net) => [
     net,
-    modal.querySelector(`input[name="nv-${net}"]:checked`)?.value || "plain",
+    modal.querySelector(`input[name="nv-${net}"]:checked`)?.value || "default",
   ]);
   close();
-  picks.forEach(([net, choice]) => ["learn", "plain"].includes(choice) && applyNetworkVoice(p.contextId, net, choice));
   const edit = picks.find(([, choice]) => choice === "edit");
   if (edit) return editNetworkVoiceInPlaybook(p.contextId, edit[0]);
-  learnFromDocuments(
+  picks.filter(([, choice]) => choice === "default").forEach(([net]) => useDefaultVoice(p.contextId, net));
+  giveVoices(
     p,
-    picks.filter(([, choice]) => choice === "document").map(([net]) => net),
+    picks.filter(([, choice]) => choice !== "default"),
   );
 }
 
-// One document per network that asked for one, then the drafts.
-function learnFromDocuments(p, [net, ...rest]) {
-  if (!net) return p.onReady();
+// Network by network: the source (a document, the questions), then what
+// Archie learned, used — then the drafts. Backing out brings the step back.
+function giveVoices(p, [pick, ...rest]) {
+  if (!pick) return p.onReady();
+  const [net, choice] = pick;
+  const back = () => requireNetworkVoicesInDialog(p.contextId, p.allNetworks, p.onReady, { giving: p.giving });
+  const propose = (from = null) =>
+    openVoiceProposal({
+      ctxId: p.contextId,
+      net,
+      choice,
+      from,
+      onUse: () => giveVoices(p, rest),
+      onCancel: back,
+    });
+  if (choice === "learn") return propose();
+  if (choice === "interview") return openVoiceInterview({ net, onDone: propose, onCancel: back });
   openFillDocumentModal({
-    onConfirm: ({ file, url }) => {
-      applyNetworkVoice(p.contextId, net, "document", file?.name || documentName(url));
-      learnFromDocuments(p, rest);
-    },
-    onDismiss: () => requireNetworkVoicesInDialog(p.contextId, p.allNetworks, p.onReady, { optimize: p.optimize }),
+    onConfirm: ({ file, url }) => propose(file?.name || documentName(url)),
+    onDismiss: back,
   });
 }
 

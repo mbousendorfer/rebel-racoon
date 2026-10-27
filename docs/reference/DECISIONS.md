@@ -308,3 +308,26 @@ Flag `clipsSpace`, 2026-10-26, asked as "rethink it whole, not the screens under
 ⚠️ `.ap-segmented-control` was ported here for `/topics`' two-view switch and was **deleted** from there — it was the wrong component (the product uses TABS for that shape, and only one list was ever on screen). Then the `.ap-tabs` that replaced it went too. The `kind` axis (To review / For later) it carried now lives as the **Topics multi-select** inside the Filters panel — empty by default so both lanes show in one list, ticking a lane to narrow. `git log -S renderTabs` has the tabbed version, `git log -S ap-segmented-control` the one before it, `git log -S renderKindRadio` the one-lane radio between them. Don't re-port a page-level lane switch without a genuine 2–4 co-visible-views case — the select-in-panel is the answer here. The port itself is **back** in `ds-patches.css` (2026-09-29) for a different job, the Image Generator's Variations picker (1 · 2 · 3 · 4): a short set of values, all visible, one picked. That is its use; switching pages or lanes is still tabs.
 
 Every token substitution is commented with the value it stands in for, because the `--sys-color-*-interactive-*` family, `--sys-height-control` and `--sys-radius-inner` are **not published yet** (absent from ui-theme 22.0.17). Re-point them the day they land. ⚠️ The `--selected` double dash is the component's own — the DS wrote it that way against its own flat-modifier convention, and a port that "fixed" it would stop matching what it ports.
+
+## Une voix par réseau : une seule règle partout
+
+Behind `voicePerNetwork`. Revu avec l'utilisateur le 2026-10-27 (« tout a l'air très compliqué ») après une journée de demandes empilées ; ce qui suit est ce qui a été tranché, et ce qui a été retiré en route — ne pas le reproposer.
+
+**Tranché :**
+
+- **La default voice, pas la « Brand voice ».** C'est la voix d'origine du Playbook, la première, celle de tous les réseaux ; « Brand voice » ne disait rien. Renommée partout dans l'UI.
+- **Un seul état « default »** pour un réseau sans voix à lui. `borrowed` (jamais réglé) et `plain` (« Use the Brand voice as it is » choisi) étaient deux états pour la même chose vue de l'utilisateur ; seul reste `chosen`, pour ne pas reposer la question.
+- **Les mêmes choix partout** — posts · document · questions · edit (+ default voice quand un draft attend). Avant : quatre jeux différents selon le chat, Clips, la fiche et l'intro.
+- **Apprendre propose, l'utilisateur dispose.** Ce qu'Archie apprend est montré puis **utilisé** (seul moment où c'est enregistré) ou **édité** dans le Playbook. Avant : la voix était écrite dès l'apprentissage, et « valider » ne voulait rien dire.
+- **Après « Edit in the Playbook », le flux ne reprend pas tout seul** : on redemande à Archie.
+- **Une voix qui change ne réécrit pas les drafts** — ils le disent (status card « The X voice changed… » + Rewrite it). Pas de réécriture automatique, même depuis « Give X its own voice ».
+- **« Optimize it » renommé « Give X its own voice »** : optimiser n'est jamais un bouton (une voix est apprise ou éditée), le mot contredisait la règle.
+- **Le feedback d'un draft peut mettre à jour la voix** — seulement s'il parle d'écriture, et comme une proposition.
+- **L'onboarding : le dialog seul** (+ l'infobox de la fiche), pour les utilisateurs existants ; le dialog en trois temps est gardé tel quel.
+
+**Retiré (ne pas reproposer) :**
+
+- Un bouton « Optimize for X » / « Optimize the Brand voice », « Re-optimize » et l'état **stale** d'une voix de réseau quand la default voice change.
+- La ligne « Written in the LinkedIn voice » sous un draft (un draft dans la voix de son réseau ne dit rien).
+- La **comparaison** « le même post dans chaque voix » dans le chat et dans la review de création, et le post avant / après sous une voix apprise.
+- L'intro dans la review de création : un nouvel utilisateur n'a pas connu l'app avant.

@@ -1,5 +1,5 @@
 // What Archie learns for one network (flag voicePerNetwork) — voice-parts.js
-// `learnNetworkVoice` lays these over the Brand voice. In the product they come
+// `learnNetworkVoice` lays these over the default voice. In the product they come
 // from the account's own posts or the document it read; here, one set per
 // network, for any brand.
 //
@@ -56,7 +56,7 @@ export const NETWORK_VOICE_ADAPTATIONS = {
   },
 };
 
-// One idea, written once in the Brand voice and then the way each network reads
+// One idea, written once in the default voice and then the way each network reads
 // it — the voice intro's « same post, its own voice » (components/voice-intro-modal.js).
 // Each version follows the network's rules above. `{brand}` is the Brand's name.
 export const NETWORK_VOICE_SAMPLE = {
