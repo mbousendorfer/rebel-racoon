@@ -639,7 +639,7 @@
   border: 0;
   border-radius: var(--ref-border-radius-md);
   background: transparent;
-  color: var(--ref-color-grey-20);
+  color: var(--ref-color-grey-80);
   font-family: inherit;
   font-size: var(--ref-font-size-xs);
   line-height: var(--ref-font-line-height-xs);
@@ -657,14 +657,18 @@
   line-height: 1;
 }
 
+/* The rail reads like the app's left nav, as the Clips editor's does
+   (.clips-ed__tool): hover blue-10, the current item blue-20 with its icon and
+   label in blue-150, label bold — never an edge bar. */
 .vc-rail__item:hover {
-  background: var(--ref-color-grey-05);
+  background: var(--ref-color-electric-blue-10);
+  color: var(--ref-color-grey-100);
 }
 
-/* Active = tonal accent fill behind the whole item; icon + label go accent. */
 .vc-rail__item.is-on {
-  background: var(--ref-color-electric-blue-10);
-  color: var(--ref-color-electric-blue-60);
+  background: var(--ref-color-electric-blue-20);
+  color: var(--ref-color-electric-blue-150);
+  font-weight: var(--sys-text-style-caption-bold-weight);
 }
 
 /* Details panel */
