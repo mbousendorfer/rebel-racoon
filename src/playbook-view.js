@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2237";
-import { conceptHint } from "./concepts.js?v=2237";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2238";
+import { conceptHint } from "./concepts.js?v=2238";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2237";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2237";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2237";
-import { isFlagOn } from "./feature-flags.js?v=2237";
-import { clipLookOf } from "./videos-store.js?v=2237";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2237";
-import { parseHashParams } from "./url-state.js?v=2237";
+} from "./playbook-brand-kit.js?v=2238";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2238";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2238";
+import { isFlagOn } from "./feature-flags.js?v=2238";
+import { clipLookOf } from "./videos-store.js?v=2238";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2238";
+import { parseHashParams } from "./url-state.js?v=2238";
 import {
   isListPart,
   voiceParts,
@@ -49,12 +49,12 @@ import {
   brandVoiceAsIs,
   markAdapted,
   withNetworkVoices,
-} from "./voice-parts.js?v=2237";
-import { showToast } from "./components/toast.js?v=2237";
-import { introSeen, voiceComparisonHtml } from "./components/voice-intro-modal.js?v=2237";
-import { consumeHandoff } from "./handoff.js?v=2237";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2237";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2237";
+} from "./voice-parts.js?v=2238";
+import { showToast } from "./components/toast.js?v=2238";
+import { introSeen } from "./components/voice-intro-modal.js?v=2238";
+import { consumeHandoff } from "./handoff.js?v=2238";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2238";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2238";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2028,19 +2028,11 @@ function voiceNetTag(net) {
   return `<span class="ap-tag grey mini pb2-voice-tag"><i class="${networkIcon(net)}" aria-hidden="true"></i><span>For ${esc(networkLabel(net))}</span></span>`;
 }
 
-// The voice intro's doors on this tab (voice-intro-modal.js): in the creation
-// review, the same post in each network's voice — the voices were just
-// learned; on a Playbook, until the intro was seen, an infobox that opens it.
+// The voice intro's door on this tab (voice-intro-modal.js): on a Playbook,
+// until the intro was seen, an infobox that opens it. Never in the creation
+// review — the intro is for people who knew the app before network voices.
 function voiceIntroHtml(data) {
-  if (!voiceNets(data).length) return "";
-  if (!isLibrary())
-    return voiceNet
-      ? ""
-      : `<div class="pb2-voice-intro">
-          <p class="pb2-voice-intro__lead">Each network gets its own voice: the same idea, written the way each one reads it. Open a network's tab to see how I'll write there.</p>
-          ${voiceComparisonHtml(data)}
-        </div>`;
-  if (introSeen()) return "";
+  if (!isLibrary() || introSeen() || !voiceNets(data).length) return "";
   return `<div class="ap-infobox info has-title pb2-voice-notice" role="status">
     <i class="ap-icon-info_fill" aria-hidden="true"></i>
     <div class="ap-infobox-content">

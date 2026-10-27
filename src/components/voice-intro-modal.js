@@ -16,17 +16,17 @@
 //   voiceComparisonHtml(ctx, { compact })
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2237";
-import { getContextById } from "../contexts-store.js?v=2237";
-import { playbookForNewWork } from "../active-playbook.js?v=2237";
-import { isNewUser } from "../user-mode.js?v=2237";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2237";
-import { networkVoiceOn, networkVoice, playbookNetworks, canLearnFrom } from "../voice-parts.js?v=2237";
-import { applyNetworkVoice } from "../network-voice-flow.js?v=2237";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2237";
-import "../archie-pixels.js?v=2237";
-import { navigate } from "../router.js?v=2237";
-import { escapeHtml } from "../utils.js?v=2237";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2238";
+import { getContextById } from "../contexts-store.js?v=2238";
+import { playbookForNewWork } from "../active-playbook.js?v=2238";
+import { isNewUser } from "../user-mode.js?v=2238";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2238";
+import { networkVoiceOn, networkVoice, playbookNetworks, canLearnFrom } from "../voice-parts.js?v=2238";
+import { applyNetworkVoice } from "../network-voice-flow.js?v=2238";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2238";
+import "../archie-pixels.js?v=2238";
+import { navigate } from "../router.js?v=2238";
+import { escapeHtml } from "../utils.js?v=2238";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
