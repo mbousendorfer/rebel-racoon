@@ -19,19 +19,19 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2229";
-import { isPortraitFormat } from "../clip-formats.js?v=2229";
-import { presetById } from "../clip-captions.js?v=2229";
-import { renderFeedbackControl } from "./feedback-control.js?v=2229";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2230";
+import { isPortraitFormat } from "../clip-formats.js?v=2230";
+import { presetById } from "../clip-captions.js?v=2230";
+import { renderFeedbackControl } from "./feedback-control.js?v=2230";
 import {
   networkMeta,
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
-} from "../social-profiles.js?v=2229";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2229";
-import { REVEAL_MS } from "../archie-pixels.js?v=2229";
+} from "../social-profiles.js?v=2230";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2230";
+import { REVEAL_MS } from "../archie-pixels.js?v=2230";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -139,7 +139,7 @@ function renderEmptyMedia(post, opts) {
 // (the card never reads a Playbook). The voice's name opens it in the Playbook.
 // Written in the Brand voice (as it is, or before the network had one): said
 // on the draft itself — its status card, glued on top — with the way to
-// optimize it. Allowed, never silent. Its own voice: one quiet line below.
+// optimize it. Allowed, never silent. A voice of its own says nothing.
 const isUnoptimized = (opts) => ["plain", "borrowed"].includes(opts.voice?.state) && !!opts.playbookId;
 
 function renderVoiceStatus(net, opts) {
@@ -151,15 +151,6 @@ function renderVoiceStatus(net, opts) {
       <button type="button" class="ap-link small standalone" data-post-voice="${escapeAttr(opts.playbookId)}" data-post-voice-net="${escapeAttr(net)}">Optimize it</button>
     </div>
   </div>`;
-}
-
-function renderVoiceLine(net, opts) {
-  const state = opts.voice?.state;
-  if (!state || state === "brand" || !opts.playbookId || isUnoptimized(opts)) return "";
-  const pb = escapeAttr(opts.playbookId);
-  return `<p class="posts__card-voice">Written in the
-    <button type="button" class="ap-link small" data-post-voice="${pb}" data-post-voice-net="${escapeAttr(net)}">${escapeText(`${networkLabel(net)} voice`)}</button>
-  </p>`;
 }
 
 export function renderPostCard(post, opts = {}) {
@@ -397,7 +388,7 @@ export function renderPostCard(post, opts = {}) {
           )}
           ${raw(renderFirstComment(post, { hidden: editing || regenerating }))}
         </article>
-        ${raw(belowCard)} ${raw(renderVoiceLine(net, opts))}
+        ${raw(belowCard)}
       </div>
 
       <!-- The rail is prod's (studio-mfe post-card-actions), in its order:

@@ -18,14 +18,14 @@
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2229";
-import { postAssistantMessage, postUserTurn, startPending, finishPending } from "./assistant.js?v=2229";
-import { getContextById, updateContext } from "./contexts-store.js?v=2229";
-import { getSessionById } from "./sessions-store.js?v=2229";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2229";
-import { setHandoff } from "./handoff.js?v=2229";
-import { navigate } from "./router.js?v=2229";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2229";
+import * as inlineQuestion from "./inline-question.js?v=2230";
+import { postAssistantMessage, postUserTurn, startPending, finishPending } from "./assistant.js?v=2230";
+import { getContextById, updateContext } from "./contexts-store.js?v=2230";
+import { getSessionById } from "./sessions-store.js?v=2230";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2230";
+import { setHandoff } from "./handoff.js?v=2230";
+import { navigate } from "./router.js?v=2230";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2230";
 import {
   networkVoiceOn,
   networkVoice,
@@ -33,7 +33,7 @@ import {
   learnNetworkVoice,
   brandVoiceAsIs,
   playbookNetworks,
-} from "./voice-parts.js?v=2229";
+} from "./voice-parts.js?v=2230";
 
 const LEARN_MS = 1800;
 

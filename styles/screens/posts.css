@@ -841,13 +841,6 @@
   position: relative;
 }
 
-/* Which voice wrote the draft (flag voicePerNetwork) — a quiet line under the
-   card; the voice's name is the link into the Playbook. */
-.posts__card-voice {
-  margin: 0;
-  font-size: var(--ref-font-size-xs);
-  color: var(--ref-color-grey-80);
-}
 /* Strip is the sole in-flow child → spans the card. Its asymmetric top padding
    would offset its row from the pinned toggle, so drop it here (the card-wrap
    gap already spaces the row from the card above). */
