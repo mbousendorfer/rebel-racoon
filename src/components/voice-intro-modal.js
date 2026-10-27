@@ -18,11 +18,11 @@
 //   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2258";
-import { getContextById } from "../contexts-store.js?v=2258";
-import { playbookForNewWork } from "../active-playbook.js?v=2258";
-import { isNewUser } from "../user-mode.js?v=2258";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2258";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2260";
+import { getContextById } from "../contexts-store.js?v=2260";
+import { playbookForNewWork } from "../active-playbook.js?v=2260";
+import { isNewUser } from "../user-mode.js?v=2260";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2260";
 import {
   networkVoiceOn,
   networkVoice,
@@ -31,18 +31,18 @@ import {
   voiceParts,
   cloneItems,
   baseValue,
-} from "../voice-parts.js?v=2258";
+} from "../voice-parts.js?v=2260";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2258";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2258";
-import "../archie-pixels.js?v=2258";
-import { navigate } from "../router.js?v=2258";
-import { escapeHtml } from "../utils.js?v=2258";
+} from "../network-voice-flow.js?v=2260";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2260";
+import "../archie-pixels.js?v=2260";
+import { navigate } from "../router.js?v=2260";
+import { escapeHtml } from "../utils.js?v=2260";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -207,13 +207,13 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
 // for X » on one): a sibling of the voice edit — on butter, Archie says what's
 // missing and what rules for the network cover; on white, the ways to add
 // them as tiles — the best one first, full width, recommended; the others
-// in a row below — then the way out. Once answered,
-// only the butter part stays (the answer is the user's turn below it).
+// in a row below — then the way out. Once answered, it folds to its title
+// line (the answer is the user's turn below it).
 export function voiceAskHtml(ctx, net, { id, choices = [], giving = false, resolved = false }) {
   const label = escapeHtml(networkLabel(net));
   const traits = NETWORK_VOICE_TRAITS[net] || [];
   const covers = traits.length
-    ? ` Rules for ${label} cover things like ${traits.map((t) => `<strong>${escapeHtml(t)}</strong>`).join(" · ")}.`
+    ? `<p class="voice-ask__covers">Rules for ${label} cover things like ${traits.map((t) => `<strong>${escapeHtml(t)}</strong>`).join(" · ")}.</p>`
     : "";
   const tiles = choices.filter((c) => c.tile);
   const hasDefault = choices.some((c) => c.value === "default");
@@ -226,11 +226,15 @@ export function voiceAskHtml(ctx, net, { id, choices = [], giving = false, resol
             <span class="voice-edit__net" aria-hidden="true"><i class="${networkIcon(net)}"></i></span>
             <span class="voice-edit__title"><span class="voice-edit__name">No rules for ${label} yet</span></span>
           </header>
-          <p class="voice-edit__line">${
-            giving
-              ? `These drafts follow your default voice.`
-              : `I'd write for ${label} with your default voice — what works elsewhere may not work there.`
-          }${covers}</p>
+          ${
+            resolved
+              ? ""
+              : `<p class="voice-edit__line">${
+                  giving
+                    ? `These drafts follow your default voice.`
+                    : `I'd write for ${label} with your default voice — what works elsewhere may not work there.`
+                }</p>${covers}`
+          }
         </div>
         ${
           resolved

@@ -1888,7 +1888,11 @@ body.has-modal {
 .voice-edit {
   width: 100%;
   max-width: 560px;
-  margin: var(--ref-spacing-xs) 0;
+  margin: var(--ref-spacing-xxs) 0;
+}
+/* Alone in its turn: level with Archie's avatar. */
+.voice-edit:first-child {
+  margin-top: 0;
 }
 .voice-edit__card {
   overflow: hidden;
@@ -1899,14 +1903,14 @@ body.has-modal {
 .voice-edit__say {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
   background: var(--app-butter);
 }
 .voice-edit__head {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
   min-width: 0;
 }
 .voice-edit__net {
@@ -1947,7 +1951,7 @@ body.has-modal {
 }
 .voice-edit__line {
   margin: 0;
-  padding-left: calc(24px + var(--ref-spacing-xs));
+  padding-left: calc(24px + var(--ref-spacing-xxs));
   color: var(--ref-color-grey-100);
   text-wrap: pretty;
 }
@@ -1956,14 +1960,14 @@ body.has-modal {
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
   margin: 0;
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md) 0;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) 0;
   list-style: none;
 }
 /* An added rule: + · its part · the rule, the parts in one column. */
 .voice-edit__change {
   display: grid;
   grid-template-columns: 24px 4.5rem minmax(0, 1fr);
-  column-gap: var(--ref-spacing-xs);
+  column-gap: var(--ref-spacing-xxs);
   align-items: baseline;
 }
 /* The + sits on the rule's FIRST line, whatever its length. */
@@ -1994,8 +1998,8 @@ body.has-modal {
 }
 .voice-edit__rest {
   margin: 0;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-md) var(--ref-spacing-sm)
-    calc(var(--ref-spacing-md) + 24px + var(--ref-spacing-xs));
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm) var(--ref-spacing-xs)
+    calc(var(--ref-spacing-sm) + 24px + var(--ref-spacing-xxs));
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
@@ -2003,25 +2007,36 @@ body.has-modal {
 /* The Voice step in the thread (voice-intro-modal.js voiceAskHtml) — the voice
    edit's sibling: on butter what's missing, on white the ways to add rules as
    tiles (card hover = blue border), then the way out. */
-.voice-ask .voice-edit__line strong {
+/* What rules for the network cover — secondary to Archie's sentence. */
+.voice-ask__covers {
+  margin: 0;
+  padding-left: calc(24px + var(--ref-spacing-xxs));
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+.voice-ask__covers strong {
   font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
 }
 .voice-ask__body {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md) var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
 }
 .voice-ask__lead {
   margin: 0;
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-80);
 }
 /* The best way first, on its own row; the others share the row below. */
 .voice-ask__options {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
 }
 .voice-ask__option.is-best {
   grid-column: 1 / -1;
@@ -2034,7 +2049,7 @@ body.has-modal {
 .voice-ask__option:not(.is-best) {
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
 }
 .voice-ask__option:not(.is-best) .voice-ask__hint {
   white-space: normal;
@@ -2042,8 +2057,8 @@ body.has-modal {
 .voice-ask__option {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-sm);
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
   background: var(--app-surface);
@@ -2063,8 +2078,8 @@ body.has-modal {
   display: grid;
   place-items: center;
   flex: none;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--app-radius-lg);
   background: var(--app-butter);
   font-size: var(--sys-icon-css-sm);
@@ -2090,7 +2105,7 @@ body.has-modal {
 .voice-ask__foot {
   display: flex;
   justify-content: flex-end;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xxxs);
 }
 
 /* The chat's answer: edit first, or use it — the primary last. */
