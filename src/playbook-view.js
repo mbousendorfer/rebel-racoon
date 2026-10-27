@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2227";
-import { conceptHint } from "./concepts.js?v=2227";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2229";
+import { conceptHint } from "./concepts.js?v=2229";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2227";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2227";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2227";
-import { isFlagOn } from "./feature-flags.js?v=2227";
-import { clipLookOf } from "./videos-store.js?v=2227";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2227";
-import { parseHashParams } from "./url-state.js?v=2227";
+} from "./playbook-brand-kit.js?v=2229";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2229";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2229";
+import { isFlagOn } from "./feature-flags.js?v=2229";
+import { clipLookOf } from "./videos-store.js?v=2229";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2229";
+import { parseHashParams } from "./url-state.js?v=2229";
 import {
   isListPart,
   voiceParts,
@@ -46,22 +46,14 @@ import {
   networkVoiceOn,
   networkVoice,
   playbookNetworks,
-  optimizeForNetwork,
-  copyBrandVoice,
+  brandVoiceAsIs,
   markAdapted,
-  canLearnFrom,
-  learnNetworkVoice,
   withNetworkVoices,
-} from "./voice-parts.js?v=2227";
-import { showToast } from "./components/toast.js?v=2227";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2227";
-import {
-  NETWORK_ICON_BY_PLATFORM,
-  NETWORK_LABEL,
-  networkLabel,
-  networkIcon,
-  profileForNetwork,
-} from "./social-profiles.js?v=2227";
+} from "./voice-parts.js?v=2229";
+import { showToast } from "./components/toast.js?v=2229";
+import { consumeHandoff } from "./handoff.js?v=2229";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2229";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2229";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -238,6 +230,16 @@ export function mount(target, config) {
   } else {
     phase = "ready";
     paint();
+    // « Edit it myself » from a chat's or the Clips space's Voice step: the
+    // network's tab opens in edit (network-voice-flow.js sets the key).
+    const edit = isLibrary() ? consumeHandoff("editNetworkVoice") : null;
+    const d = cfg.getData();
+    if (
+      edit?.playbookId === d?.id &&
+      edit.net === voiceNet &&
+      ["borrowed", "plain"].includes(networkVoice(d, voiceNet).state)
+    )
+      editNetworkVoiceFromBrand();
   }
 
   const onClickH = (e) => onClick(e);
@@ -1081,7 +1083,10 @@ function renderVoiceModeToggle(mode) {
 
 // "Learn from…" — a single DS dropdown that merges the old "Learn from my
 // posts" (social profiles) and document analysis, both scoped to Voice profile.
-function learnMenu() {
+// `net` (flag voicePerNetwork): on a network's tab it learns THAT network's
+// voice — the only way, with Edit, that a network's voice gets optimized.
+function learnMenu(net = null) {
+  const netAttr = net ? ` data-recap-learn-net="${esc(net)}"` : "";
   return cfg.onAnalyzeVoice
     ? `<details class="recap__panel-menu" data-recap-learn-menu>
           <summary class="ap-button ghost grey recap__panel-action recap__panel-menu-toggle">
@@ -1090,11 +1095,11 @@ function learnMenu() {
             <i class="ap-icon-chevron-down recap__menu-caret" aria-hidden="true"></i>
           </summary>
           <div class="ap-action-dropdown recap__panel-menu-pop" role="menu" aria-label="Learn voice from">
-            <button type="button" class="ap-action-dropdown-item" data-recap-learn="posts" role="menuitem">
+            <button type="button" class="ap-action-dropdown-item" data-recap-learn="posts"${netAttr} role="menuitem">
               <i class="ap-icon-double-chat-bubbles"></i>
               <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">My posts</span></div></div>
             </button>
-            <button type="button" class="ap-action-dropdown-item" data-recap-learn="documents" role="menuitem">
+            <button type="button" class="ap-action-dropdown-item" data-recap-learn="documents"${netAttr} role="menuitem">
               <i class="ap-icon-file--text"></i>
               <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">Documents…</span></div></div>
             </button>
@@ -2523,10 +2528,10 @@ function renderVoiceRead2(data, learnMenu) {
 function networkVoiceLead(net, voice) {
   const label = networkLabel(net);
   if (voice?.optimizedBy === "learned")
-    return `How I write on ${label}, learned from ${voice.postCount} posts of ${voice.learnedFrom}. What's only ${label}'s is tagged.`;
-  return voice?.optimizedBy === "you"
-    ? `How I write on ${label}, as you set it. What's only ${label}'s is tagged.`
-    : `How I write on ${label}: the Brand voice, optimized for it. What's only ${label}'s is tagged.`;
+    return voice.postCount
+      ? `How I write on ${label}, learned from ${voice.postCount} posts of ${voice.learnedFrom}. What's only ${label}'s is tagged.`
+      : `How I write on ${label}, learned from ${voice.learnedFrom}. What's only ${label}'s is tagged.`;
+  return `How I write on ${label}, as you set it. What's only ${label}'s is tagged.`;
 }
 
 // A warning infobox on a network's voice tab: its title, its message, an
@@ -2543,26 +2548,19 @@ const voiceNotice = (title, message, action = "") =>
     </div>
   </div>`;
 
-// A network's voice, read. Its own: the five parts, its rules tagged — and, when
-// the Brand voice changed after it was made, a warning that offers Re-optimize
-// (never a silent rewrite). Not made yet: the Brand voice it borrows, greyed,
-// under the two ways to give the network its own.
+// A network's voice, read — under the Brand voice tab's own head: Learn from…
+// (posts, documents) and Edit, the two ways a network's voice gets optimized;
+// there is no button that optimizes it. Its own: the five parts, its rules
+// tagged. None yet, or the Brand voice as it is: that voice on grey, warned.
 function renderNetworkVoiceRead(data) {
   const net = voiceNet;
   const label = networkLabel(net);
   const { state, voice } = networkVoice(data, net);
   const tabs = renderVoiceTabs(data);
-  // No voice yet, or the Brand voice as it is: shown on grey, warned, with the
-  // ways to give it its own — learned from the account's posts first.
   if (state === "borrowed" || state === "plain") {
-    const account = profileForNetwork(net);
-    const learn = canLearnFrom(account);
+    // Edit starts from the Brand voice as it is (data-pb2-voice-own).
     const actions = canEditView()
-      ? `<button type="button" class="ap-button stroked grey" data-pb2-voice-own>Edit it myself</button>
-         ${learn ? `<button type="button" class="ap-button stroked grey" data-pb2-voice-optimize>Optimize the Brand voice</button>` : ""}
-         <button type="button" class="ap-button primary orange" ${learn ? "data-pb2-voice-learn" : "data-pb2-voice-optimize"}>${
-           learn ? `Learn from ${esc(account.handle)}'s posts` : `Optimize for ${esc(label)}`
-         }</button>`
+      ? `${learnMenu(net)}<button type="button" class="ap-button stroked blue" data-pb2-voice-own><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></button>`
       : "";
     const notice =
       state === "plain"
@@ -2576,22 +2574,10 @@ function renderNetworkVoiceRead(data) {
           );
     return `${tabs}${pb2TabHead("voice", actions, {
       noEdit: true,
-      lead: learn
-        ? `I can learn ${label}'s voice from the ${account.postCount} posts of ${account.handle}, optimize the Brand voice for it, or you can make it its own.`
-        : `I can optimize the Brand voice for ${label}, or you can make it its own.`,
+      lead: `To optimize the ${label} voice, let me learn it from your posts or a document, or edit it yourself.`,
     })}${notice}<div class="pb2-grid pb2-grid--borrowed">${pb2VoiceParts(data).join("")}</div>`;
   }
-  const stale =
-    state === "stale"
-      ? voiceNotice(
-          `Your Brand voice changed since this ${label} voice was made`,
-          "It still follows the old one. I can optimize it again from the Brand voice as it is now.",
-          canEditView()
-            ? `<button type="button" class="ap-link" data-pb2-voice-optimize data-pb2-voice-confirm>Re-optimize</button>`
-            : "",
-        )
-      : "";
-  return `${tabs}${pb2TabHead("voice", "", { lead: networkVoiceLead(net, voice) })}${stale}<div class="pb2-grid">${pb2VoiceParts(
+  return `${tabs}${pb2TabHead("voice", canEditView() ? learnMenu(net) : "", { lead: networkVoiceLead(net, voice) })}<div class="pb2-grid">${pb2VoiceParts(
     voice,
     { brand: data, net },
   ).join("")}</div>`;
@@ -3060,7 +3046,13 @@ function commitEdit(data) {
   voiceParts().forEach(({ field }) => {
     if (isListPart(field) && Array.isArray(voice[field])) voice[field] = cloneItems(voice[field]);
   });
-  if (voice !== data) markAdapted(data, voice);
+  // A network's voice edited: optimized if something changed, else it stays
+  // the Brand voice as it is (and says so).
+  if (voice !== data) {
+    const changed = markAdapted(data, voice);
+    if (voice.optimizedBy !== "learned") voice.optimizedBy = changed ? "you" : "brand";
+    if (!changed) showToast(`Nothing changed for ${networkLabel(voiceNet)} — it still uses the Brand voice as it is.`);
+  }
   // Drop roster entries left completely blank (an "Add competitor" row the
   // user opened and abandoned) and social rows with no URL. `suggested` is
   // kept: an unaccepted proposal stays pending across a Save rather than
@@ -3141,6 +3133,17 @@ function leaveEdit(go) {
   });
 }
 
+// Edit a network's voice that isn't its own yet: from the Brand voice as it is.
+// Cancel goes back to what it was, and leaving untouched still asks.
+function editNetworkVoiceFromBrand() {
+  const d = cfg.getData();
+  const before = snapshotEditable(d);
+  d.voiceByNetwork = { ...(d.voiceByNetwork || {}), [voiceNet]: brandVoiceAsIs(d) };
+  openEdit(d, "voice");
+  snapshot = before;
+  editBaseline = JSON.stringify(before);
+}
+
 function onClick(event) {
   // Playbook 2.0 tabs — never locked; leaving a section with changes asks.
   const tab = event.target.closest("[data-pb2-tab]");
@@ -3148,9 +3151,8 @@ function onClick(event) {
     if (tab.dataset.pb2Tab !== activeTab) switchTab(tab.dataset.pb2Tab);
     return;
   }
-  // Voice per network — the Voice profile's own tabs, then the two ways to give
-  // a network its own voice (Archie optimizes, or the user copies the Brand
-  // voice to edit it) and Re-optimize, which asks: it replaces the network's.
+  // Voice per network — the Voice profile's own tabs; Edit on a network without
+  // a voice of its own starts from the Brand voice as it is.
   const voiceTab = event.target.closest("[data-pb2-voice-net]");
   if (voiceTab) {
     const net = voiceTab.dataset.pb2VoiceNet || null;
@@ -3161,37 +3163,6 @@ function onClick(event) {
       });
     return;
   }
-  const optimize = event.target.closest("[data-pb2-voice-optimize]");
-  if (optimize && voiceNet) {
-    const net = voiceNet;
-    const label = networkLabel(net);
-    const run = () => {
-      const d = cfg.getData();
-      d.voiceByNetwork = { ...(d.voiceByNetwork || {}), [net]: optimizeForNetwork(d, net) };
-      cfg.commit?.();
-      repaint();
-      showToast(`I optimized the ${label} voice from your Brand voice.`);
-    };
-    if (optimize.hasAttribute("data-pb2-voice-confirm"))
-      openConfirmModal({
-        title: `Re-optimize the ${label} voice?`,
-        body: `I'll rebuild it from your Brand voice as it is now. Any change you made to the ${label} voice will be replaced.`,
-        confirmLabel: "Re-optimize",
-        cancelLabel: "Keep it",
-        onConfirm: run,
-      });
-    else run();
-    return;
-  }
-  if (event.target.closest("[data-pb2-voice-learn]") && voiceNet) {
-    const account = profileForNetwork(voiceNet);
-    const d = cfg.getData();
-    d.voiceByNetwork = { ...(d.voiceByNetwork || {}), [voiceNet]: learnNetworkVoice(d, voiceNet, account) };
-    cfg.commit?.();
-    repaint();
-    showToast(`I learned the ${networkLabel(voiceNet)} voice from ${account.postCount} posts of ${account.handle}.`);
-    return;
-  }
   const clipPreset = event.target.closest("[data-pb2-cliplook-preset]");
   if (clipPreset) return setClipLook({ subtitlePreset: clipPreset.dataset.pb2CliplookPreset });
   const clipCorner = event.target.closest("[data-pb2-cliplook-corner]");
@@ -3199,16 +3170,7 @@ function onClick(event) {
   const clipToggle = event.target.closest("[data-pb2-cliplook-toggle]");
   if (clipToggle && clipToggle.matches("input"))
     return setClipLook({ [clipToggle.dataset.pb2CliplookToggle]: clipToggle.checked });
-  if (event.target.closest("[data-pb2-voice-own]") && voiceNet) {
-    const d = cfg.getData();
-    const before = snapshotEditable(d);
-    d.voiceByNetwork = { ...(d.voiceByNetwork || {}), [voiceNet]: copyBrandVoice(d) };
-    openEdit(d, "voice");
-    // Cancel goes back to borrowing, and leaving untouched still asks.
-    snapshot = before;
-    editBaseline = JSON.stringify(before);
-    return;
-  }
+  if (event.target.closest("[data-pb2-voice-own]") && voiceNet) return editNetworkVoiceFromBrand();
   if (!canEditView() && event.target.closest(WRITE_HOOKS)) return;
 
   // Section-nav — scroll the panel into view (buttons, not anchors, so the

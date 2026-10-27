@@ -4,7 +4,8 @@
 //
 // Public API:
 //   init()                              — inject markup + bind once on app boot
-//   open({ onConfirm })                 — onConfirm({ file, url })
+//   open({ onConfirm, onDismiss? })     — onConfirm({ file, url }); onDismiss()
+//                                         when it closes without one
 //
 // Behaviour:
 //   - Drop a file or click to browse; or paste a document URL.
@@ -12,9 +13,9 @@
 //     it fires onConfirm({ file, url }) then closes. A warning notes the
 //     overwrite. Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2227";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2227";
-import { detectUrlService } from "../url-services.js?v=2227";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2229";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2229";
+import { detectUrlService } from "../url-services.js?v=2229";
 
 const MODAL_ID = "fill-document";
 const ACCEPT = ".pdf,.doc,.docx,.txt,.md,.rtf,.pptx,.csv";
@@ -22,6 +23,7 @@ const ACCEPT = ".pdf,.doc,.docx,.txt,.md,.rtf,.pptx,.csv";
 let backdrop, modal, dropEl, fileInput, fileChip, fileNameEl, urlInput, urlGroup, confirmBtn, cancelBtn, closeBtn;
 let initialized = false;
 let pendingOnConfirm = null;
+let pendingOnDismiss = null;
 let selectedFile = null;
 // Element focused before the dialog opened — focus returns here on close so
 // keyboard users land back where they were (escape-routes / focus-management).
@@ -177,6 +179,7 @@ function submit() {
   const fn = pendingOnConfirm;
   const payload = { file: selectedFile, url };
   pendingOnConfirm = null;
+  pendingOnDismiss = null;
   close();
   if (typeof fn === "function") fn(payload);
 }
@@ -185,11 +188,12 @@ export function init() {
   injectOnce();
 }
 
-export function open({ onConfirm = null } = {}) {
+export function open({ onConfirm = null, onDismiss = null } = {}) {
   injectOnce();
   requestOpen(MODAL_ID, close);
 
   pendingOnConfirm = onConfirm;
+  pendingOnDismiss = onDismiss;
   setFile(null);
   urlInput.value = "";
   syncConfirm();
@@ -218,4 +222,7 @@ function close() {
   // Return focus to the trigger.
   if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
   lastFocused = null;
+  const dismissed = pendingOnDismiss;
+  pendingOnDismiss = null;
+  if (typeof dismissed === "function") dismissed();
 }

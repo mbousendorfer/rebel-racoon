@@ -1,7 +1,7 @@
-// What Archie changes when it optimizes the Brand voice for one network
-// (flag voicePerNetwork) — voice-parts.js `optimizeForNetwork` lays these over
-// the Brand voice. In the product they come from the account's own posts and
-// the network's own recommendations; here, one set per network, for any brand.
+// What Archie learns for one network (flag voicePerNetwork) — voice-parts.js
+// `learnNetworkVoice` lays these over the Brand voice. In the product they come
+// from the account's own posts or the document it read; here, one set per
+// network, for any brand.
 //
 //   summary  a sentence added to "How the Brand sounds"
 //   add      rules added to a part, in the part's own shape ({ text } or, for

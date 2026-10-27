@@ -262,9 +262,13 @@ export const contexts = [
       },
     ],
     connectedSocials: ["linkedin", "instagram", "x"],
-    // flag voicePerNetwork — LinkedIn optimized; Instagram optimized before the
-    // Brand voice last changed; X still borrows the Brand voice.
-    voiceByNetwork: { linkedin: true, instagram: "stale" },
+    // flag voicePerNetwork — LinkedIn and Instagram have their voice, learned;
+    // X has none yet.
+    voiceByNetwork: {
+      linkedin: { learnedFrom: "Northwind Studio Co.", postCount: 312 },
+      // @northwind.studio has no posts: its voice was learned from a document.
+      instagram: { learnedFrom: "Instagram tone guide.pdf" },
+    },
     brandPersonality:
       "Confident without bragging, helpful without performing. Speaks the way operators talk to each other — direct, specific, occasionally dry. Never hypey.",
     brandTypography: { headingFont: "Inter", bodyFont: "Inter" },

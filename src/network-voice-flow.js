@@ -1,34 +1,39 @@
 // The voice step before a draft (flag voicePerNetwork). A draft is written in
 // its network's voice, so a network with no voice yet gets one FIRST — in the
 // slot of the flow that asked, like requireConnectedProfiles, and the flow
-// resumes once every network has one. It blocks: there is no "write anyway",
-// but one of the three answers is the Brand voice as it is — a voice defined,
-// not optimized, allowed and warned (here, on the draft, on the Playbook).
+// resumes once every network has one. It blocks: there is no "write anyway".
+// Optimizing a voice is never a click: it is learned (the account's posts, a
+// document) or edited by the user — « Edit it myself » leaves the flow for the
+// Playbook. The last answer is the Brand voice as it is: allowed, and warned
+// (here, on the draft, on the Playbook).
 //
 // Public API:
 //   requireNetworkVoices(sessionId, networks, onReady, contextId?)
 //   contextId: the Playbook the drafts are written for, when it isn't the chat's
 // Shared with the dialog that asks the same thing where there is no chat (the
 // Clips space, components/network-voice-modal.js):
-//   missingNetworkVoices(ctx, networks) · voiceChoices(net) · applyNetworkVoice(ctxId, net, choice)
+//   missingNetworkVoices(ctx, networks) · voiceChoices(net) ·
+//   applyNetworkVoice(ctxId, net, choice, docName?) · editNetworkVoiceInPlaybook(ctxId, net)
 //
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2227";
-import { postAssistantMessage, postUserTurn, startPending, finishPending } from "./assistant.js?v=2227";
-import { getContextById, updateContext } from "./contexts-store.js?v=2227";
-import { getSessionById } from "./sessions-store.js?v=2227";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2227";
+import * as inlineQuestion from "./inline-question.js?v=2229";
+import { postAssistantMessage, postUserTurn, startPending, finishPending } from "./assistant.js?v=2229";
+import { getContextById, updateContext } from "./contexts-store.js?v=2229";
+import { getSessionById } from "./sessions-store.js?v=2229";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2229";
+import { setHandoff } from "./handoff.js?v=2229";
+import { navigate } from "./router.js?v=2229";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2229";
 import {
   networkVoiceOn,
   networkVoice,
   canLearnFrom,
   learnNetworkVoice,
-  optimizeForNetwork,
-  copyBrandVoice,
+  brandVoiceAsIs,
   playbookNetworks,
-} from "./voice-parts.js?v=2227";
+} from "./voice-parts.js?v=2229";
 
 const LEARN_MS = 1800;
 
@@ -47,8 +52,8 @@ export function requireNetworkVoices(sessionId, networks, onReady, contextId = n
   askVoice(sessionId, ctx.id, missing, onReady);
 }
 
-// The three ways to give a network its voice, the first one the best — learned
-// from the account's posts when it has enough.
+// The ways to give a network its voice, the best first: learned from the
+// account's posts when it has enough, from a document, by hand, or none.
 export function voiceChoices(net) {
   const label = networkLabel(net);
   const account = profileForNetwork(net);
@@ -60,12 +65,17 @@ export function voiceChoices(net) {
       caption: `I read its ${account.postCount} posts and keep what already works on ${label}.`,
     },
     {
-      value: "optimize",
-      label: `Optimize the Brand voice for ${label}`,
+      value: "document",
+      label: "Learn it from a document",
       caption:
         account && !learn
-          ? `${account.handle} doesn't have enough posts to learn from, so I start from the Brand voice.`
-          : `I start from the Brand voice and add what works on ${label}.`,
+          ? `${account.handle} doesn't have enough posts to learn from — a style guide or a brief works too.`
+          : `A style guide or a brief that says how you write on ${label}.`,
+    },
+    {
+      value: "edit",
+      label: "Edit it myself",
+      caption: `I open the ${label} voice in the Playbook, starting from the Brand voice. Ask me again once it's saved.`,
     },
     {
       value: "plain",
@@ -76,10 +86,17 @@ export function voiceChoices(net) {
   return { account, items };
 }
 
-function askVoice(sessionId, ctxId, [net, ...rest], onReady) {
+// `announce` is false when the question is PUT BACK (the document dialog was
+// dismissed): the thread already says why it's asked.
+function askVoice(sessionId, ctxId, nets, onReady, { announce = true } = {}) {
+  const [net, ...rest] = nets;
   const label = networkLabel(net);
   const { account, items } = voiceChoices(net);
-  postAssistantMessage(sessionId, `${label} doesn't have a voice yet, and I write every draft in its network's voice.`);
+  if (announce)
+    postAssistantMessage(
+      sessionId,
+      `${label} doesn't have a voice yet, and I write every draft in its network's voice.`,
+    );
   inlineQuestion.ask(sessionId, {
     title: `How should I write on ${label}?`,
     stepLabel: "Voice",
@@ -88,37 +105,68 @@ function askVoice(sessionId, ctxId, [net, ...rest], onReady) {
     onPick: (choice) => {
       inlineQuestion.exit(sessionId);
       postUserTurn(sessionId, items.find((i) => i.value === choice)?.label || "");
-      const done = () => {
-        setVoice(sessionId, ctxId, net, choice, account);
+      const next = (docName) => {
+        setVoice(sessionId, ctxId, net, choice, docName);
         if (rest.length) askVoice(sessionId, ctxId, rest, onReady);
         else onReady();
       };
-      if (choice === "plain") return done();
-      const pendingId = startPending(
-        sessionId,
-        choice === "learn" ? `Reading ${account.handle}'s posts…` : `Optimizing the ${label} voice…`,
-        ["analyze_tone"],
-      );
-      setTimeout(() => {
-        finishPending(sessionId, pendingId);
-        done();
-      }, LEARN_MS);
+      if (choice === "plain") return next();
+      if (choice === "edit") {
+        postAssistantMessage(
+          sessionId,
+          `I've opened the ${label} voice in the Playbook. Change at least one thing, save it, then ask me again.`,
+        );
+        return editNetworkVoiceInPlaybook(ctxId, net);
+      }
+      // Backing out of the document dialog puts the question back.
+      const learning = (docName) => {
+        const pendingId = startPending(
+          sessionId,
+          docName ? `Reading ${docName}…` : `Reading ${account.handle}'s posts…`,
+          ["analyze_tone"],
+        );
+        setTimeout(() => {
+          finishPending(sessionId, pendingId);
+          next(docName);
+        }, LEARN_MS);
+      };
+      if (choice === "learn") return learning();
+      openFillDocumentModal({
+        onConfirm: ({ file, url }) => learning(file?.name || documentName(url)),
+        onDismiss: () => askVoice(sessionId, ctxId, nets, onReady, { announce: false }),
+      });
     },
     onSkip: () => postAssistantMessage(sessionId, `OK, I won't write anything for now.`),
   });
 }
 
-// Writes the chosen voice on the Playbook.
-export function applyNetworkVoice(ctxId, net, choice) {
+export function documentName(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "") || "your document";
+  } catch {
+    return "your document";
+  }
+}
+
+// « Edit it myself »: the network's tab, opened in edit (playbook-view consumes
+// the key). The flow that asked stops here.
+export function editNetworkVoiceInPlaybook(ctxId, net) {
+  setHandoff("editNetworkVoice", { playbookId: ctxId, net });
+  navigate(`/playbook/${ctxId}?tab=voice&voice=${net}`);
+}
+
+// Writes the chosen voice on the Playbook: learned (from the account's posts,
+// or from `docName`), or the Brand voice as it is.
+export function applyNetworkVoice(ctxId, net, choice, docName = null) {
   const ctx = getContextById(ctxId);
   if (!ctx) return;
   const account = profileForNetwork(net);
   const voice =
     choice === "learn"
-      ? learnNetworkVoice(ctx, net, account)
-      : choice === "optimize"
-        ? optimizeForNetwork(ctx, net)
-        : { ...copyBrandVoice(ctx), optimizedBy: "brand" };
+      ? learnNetworkVoice(ctx, net, { from: account.handle, postCount: account.postCount })
+      : choice === "document"
+        ? learnNetworkVoice(ctx, net, { from: docName })
+        : brandVoiceAsIs(ctx);
   updateContext(ctxId, {
     voiceByNetwork: { ...(ctx.voiceByNetwork || {}), [net]: voice },
     // A network written for is one the Playbook publishes on.
@@ -126,15 +174,15 @@ export function applyNetworkVoice(ctxId, net, choice) {
   });
 }
 
-function setVoice(sessionId, ctxId, net, choice, account) {
+function setVoice(sessionId, ctxId, net, choice, docName) {
   const label = networkLabel(net);
-  applyNetworkVoice(ctxId, net, choice);
+  applyNetworkVoice(ctxId, net, choice, docName);
   postAssistantMessage(
     sessionId,
     choice === "learn"
-      ? `I learned your ${label} voice from ${account.postCount} posts. It's in the Playbook if you want to change it.`
-      : choice === "optimize"
-        ? `Your ${label} voice is ready: the Brand voice, optimized for ${label}. It's in the Playbook if you want to change it.`
+      ? `I learned your ${label} voice from ${profileForNetwork(net)?.postCount} posts. It's in the Playbook if you want to change it.`
+      : choice === "document"
+        ? `I learned your ${label} voice from ${docName}. It's in the Playbook if you want to change it.`
         : `I'll write for ${label} in the Brand voice as it is. It isn't optimized for ${label}, so the drafts may miss what works there. You can optimize it from the Playbook at any time.`,
   );
 }

@@ -22,19 +22,19 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts, DEMO_PLAYBOOK } from "./mocks.js?v=2227";
-import { isDemo } from "./demo-mode.js?v=2227";
-import { isNewUser } from "./user-mode.js?v=2227";
-import { CURRENT_USER } from "./org.js?v=2227";
-import { isFlagOn } from "./feature-flags.js?v=2227";
-import { createNotifier } from "./store-utils.js?v=2227";
+import { contexts as seed, sharedContexts, DEMO_PLAYBOOK } from "./mocks.js?v=2229";
+import { isDemo } from "./demo-mode.js?v=2229";
+import { isNewUser } from "./user-mode.js?v=2229";
+import { CURRENT_USER } from "./org.js?v=2229";
+import { isFlagOn } from "./feature-flags.js?v=2229";
+import { createNotifier } from "./store-utils.js?v=2229";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=2227";
-import { cloneItems, optimizeForNetwork, cloneNetworkVoice } from "./voice-parts.js?v=2227";
+} from "./languages.js?v=2229";
+import { cloneItems, learnNetworkVoice, cloneNetworkVoice } from "./voice-parts.js?v=2229";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -296,14 +296,14 @@ function normalizeImageryDefaults(ctx) {
 // section OF it — it's read in the Share modal (see CONCEPTS.md §1, "exceptions
 // de stockage").
 // The voice of each network (flag voicePerNetwork, voice-parts.js). A seed names
-// a network with `true` — optimized by Archie at creation — or `"stale"` —
-// optimized, then the Brand voice changed: the voice itself is derived here, so
-// the mocks don't repeat the Brand voice once per network.
+// only where a network's voice was learned — `{ learnedFrom, postCount }` — and
+// the voice itself is derived here, so the mocks don't repeat the Brand voice
+// once per network.
 function normalizeVoiceByNetwork(ctx) {
   const out = {};
   Object.entries(ctx?.voiceByNetwork || {}).forEach(([net, v]) => {
-    if (v === true || v === "stale")
-      out[net] = { ...optimizeForNetwork(ctx, net), ...(v === "stale" && { baseStamp: "" }) };
+    if (v?.learnedFrom && !("voiceSummary" in v))
+      out[net] = learnNetworkVoice(ctx, net, { from: v.learnedFrom, postCount: v.postCount });
     else if (v && typeof v === "object") out[net] = cloneNetworkVoice(v);
   });
   return out;

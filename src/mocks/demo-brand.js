@@ -248,7 +248,9 @@ export const DEMO_PLAYBOOK = {
   cta: "Come by for a cup — or order the beans online.",
   connectedSocials: DEMO_ACCOUNTS.map((a) => a.id),
   // flag voicePerNetwork — every account's network, optimized at creation.
-  voiceByNetwork: Object.fromEntries(DEMO_ACCOUNTS.map((a) => [a.platform, true])),
+  voiceByNetwork: Object.fromEntries(
+    DEMO_ACCOUNTS.map((a) => [a.platform, { learnedFrom: a.handle, postCount: a.postCount || 24 }]),
+  ),
 };
 
 // ── What the new chat's ways in find, in the demo ─────────────────────────

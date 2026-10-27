@@ -1,18 +1,27 @@
 // The voice step before a draft, as a dialog — for a surface with no chat to
-// ask in (the Clips space). Same question and same three answers as the chat's
-// step (network-voice-flow.js), one group per network without a voice, the
-// best answer checked; Cancel writes nothing.
+// ask in (the Clips space). Same question and same answers as the chat's step
+// (network-voice-flow.js), one group per network without a voice, the best
+// answer checked; Cancel writes nothing. A document asks for it in its own
+// dialog (backing out of it brings this one back); « Edit it myself » leaves
+// for the Playbook, and the drafts aren't written.
 //
 // Public API:
 //   requireNetworkVoicesInDialog(contextId, networks, onReady)
 //   onReady() runs IMMEDIATELY when every network already has a voice — always
 //   the case with the flag off — so callers wrap unconditionally.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2227";
-import { getContextById } from "../contexts-store.js?v=2227";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2227";
-import { missingNetworkVoices, voiceChoices, applyNetworkVoice } from "../network-voice-flow.js?v=2227";
-import { escapeHtml } from "../utils.js?v=2227";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2229";
+import { getContextById } from "../contexts-store.js?v=2229";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2229";
+import {
+  missingNetworkVoices,
+  voiceChoices,
+  applyNetworkVoice,
+  editNetworkVoiceInPlaybook,
+  documentName,
+} from "../network-voice-flow.js?v=2229";
+import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2229";
+import { escapeHtml } from "../utils.js?v=2229";
 
 const MODAL_ID = "network-voice";
 
@@ -73,7 +82,7 @@ export function requireNetworkVoicesInDialog(contextId, networks, onReady) {
   if (!missing.length) return onReady();
   injectOnce();
   requestOpen(MODAL_ID, close);
-  pending = { contextId, networks: missing, onReady };
+  pending = { contextId, networks: missing, allNetworks: networks, onReady };
   titleEl.textContent =
     missing.length === 1
       ? `${networkLabel(missing[0])} needs a voice first`
@@ -92,11 +101,30 @@ export function requireNetworkVoicesInDialog(contextId, networks, onReady) {
 function confirm() {
   const p = pending;
   if (!p) return;
-  p.networks.forEach((net) =>
-    applyNetworkVoice(p.contextId, net, modal.querySelector(`input[name="nv-${net}"]:checked`)?.value || "plain"),
-  );
+  const picks = p.networks.map((net) => [
+    net,
+    modal.querySelector(`input[name="nv-${net}"]:checked`)?.value || "plain",
+  ]);
   close();
-  p.onReady();
+  picks.forEach(([net, choice]) => ["learn", "plain"].includes(choice) && applyNetworkVoice(p.contextId, net, choice));
+  const edit = picks.find(([, choice]) => choice === "edit");
+  if (edit) return editNetworkVoiceInPlaybook(p.contextId, edit[0]);
+  learnFromDocuments(
+    p,
+    picks.filter(([, choice]) => choice === "document").map(([net]) => net),
+  );
+}
+
+// One document per network that asked for one, then the drafts.
+function learnFromDocuments(p, [net, ...rest]) {
+  if (!net) return p.onReady();
+  openFillDocumentModal({
+    onConfirm: ({ file, url }) => {
+      applyNetworkVoice(p.contextId, net, "document", file?.name || documentName(url));
+      learnFromDocuments(p, rest);
+    },
+    onDismiss: () => requireNetworkVoicesInDialog(p.contextId, p.allNetworks, p.onReady),
+  });
 }
 
 function close() {

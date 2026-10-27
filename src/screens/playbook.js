@@ -17,10 +17,10 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=2227";
-import { parseHashParams } from "../url-state.js?v=2227";
-import { escapeHtml as esc } from "../utils.js?v=2227";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2227";
+import { navigate, getPath } from "../router.js?v=2229";
+import { parseHashParams } from "../url-state.js?v=2229";
+import { escapeHtml as esc } from "../utils.js?v=2229";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2229";
 import {
   getContextById,
   getContexts,
@@ -28,15 +28,15 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=2227";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2227";
-import { mount, snapshotEditable } from "../playbook-view.js?v=2227";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2227";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2227";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2227";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2227";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2227";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=2227";
+} from "../contexts-store.js?v=2229";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2229";
+import { mount, snapshotEditable } from "../playbook-view.js?v=2229";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2229";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2229";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2229";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2229";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2229";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=2229";
 import {
   canView,
   canEdit,
@@ -48,9 +48,11 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=2227";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2227";
-import { showToast } from "../components/toast.js?v=2227";
+} from "../playbook-access.js?v=2229";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2229";
+import { showToast } from "../components/toast.js?v=2229";
+import { learnNetworkVoice } from "../voice-parts.js?v=2229";
+import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2229";
 
 const AUTOFILL_MS = 1500;
 
@@ -269,6 +271,36 @@ export function renderPlaybook(params, target) {
     });
   }
 
+  // Learn from… on a network's tab (flag voicePerNetwork): writes THAT network's
+  // voice, learned — never the Brand voice.
+  function networkVoicePatch(net, source) {
+    const ctx = getContextById(id);
+    return { voiceByNetwork: { ...(ctx.voiceByNetwork || {}), [net]: learnNetworkVoice(ctx, net, source) } };
+  }
+  function learnNetworkVoiceFromPosts(net) {
+    openAnalyzeProfilesModal({
+      network: net,
+      onConfirm: (ids) => {
+        const accounts = getConnectedProfiles().filter((p) => ids.includes(p.id));
+        const source = {
+          from: accounts.map((a) => a.handle).join(", "),
+          postCount: accounts.reduce((n, a) => n + (a.postCount || 0), 0),
+        };
+        runAutofill(STAGES.social, () => networkVoicePatch(net, source), `${networkLabel(net)} voice learned.`);
+      },
+    });
+  }
+  function learnNetworkVoiceFromDocument(net) {
+    openFillDocumentModal({
+      onConfirm: ({ file, url }) =>
+        runAutofill(
+          STAGES.documents,
+          () => networkVoicePatch(net, { from: file?.name || docNameFromUrl(url) }),
+          `${networkLabel(net)} voice learned.`,
+        ),
+    });
+  }
+
   function confirmDelete() {
     const ctx = getContextById(id);
     // Guard: every chat needs a Playbook, so never delete the last one.
@@ -411,8 +443,10 @@ export function renderPlaybook(params, target) {
     const learn = event.target.closest("[data-recap-learn]");
     if (learn) {
       learn.closest("details")?.removeAttribute("open");
-      if (learn.dataset.recapLearn === "posts") onAnalyzeVoice();
-      else if (learn.dataset.recapLearn === "documents") learnVoiceFromDocument();
+      const net = learn.dataset.recapLearnNet;
+      if (learn.dataset.recapLearn === "posts") net ? learnNetworkVoiceFromPosts(net) : onAnalyzeVoice();
+      else if (learn.dataset.recapLearn === "documents")
+        net ? learnNetworkVoiceFromDocument(net) : learnVoiceFromDocument();
       return true;
     }
 

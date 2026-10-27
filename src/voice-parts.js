@@ -10,10 +10,10 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2227";
-import { isFlagOn } from "./feature-flags.js?v=2227";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2227";
-import { networkMeta, normalizeNetwork, getConnectedProfileById, profileForNetwork } from "./social-profiles.js?v=2227";
+import { escapeHtml } from "./utils.js?v=2229";
+import { isFlagOn } from "./feature-flags.js?v=2229";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2229";
+import { networkMeta, normalizeNetwork, getConnectedProfileById, profileForNetwork } from "./social-profiles.js?v=2229";
 
 const VOICE_PARTS = [
   { field: "voiceSummary", title: "How the Brand sounds", kind: "text" },
@@ -75,12 +75,14 @@ export function baseValue(ctx, field) {
 // The flat parts above are the Brand voice. `ctx.voiceByNetwork[network]` is a
 // whole voice for one network the Playbook publishes on — the same five parts,
 // plus:
-//   optimizedBy  "learned" (learnNetworkVoice — from the account's own posts,
-//                + learnedFrom / postCount) | "archie" (optimizeForNetwork) |
-//                "you" (copied to edit by hand) | "brand" (the Brand voice as it
-//                is: a voice is DEFINED, but not optimized — allowed, warned)
-//   baseStamp    voiceStamp() of the Brand voice it was made from — the Brand
-//                voice changing never rewrites it; the network says so instead
+//   optimizedBy  "learned" (learnNetworkVoice — Archie learned it from the
+//                account's posts or from a document: learnedFrom, + postCount
+//                for posts) | "you" (edited by hand, at least one change) |
+//                "brand" (the Brand voice as it is: a voice is DEFINED, not
+//                optimized — allowed, warned)
+// Optimizing is never a click: a network's voice is optimized only once it was
+// learned (posts, documents) or edited. The Brand voice changing never touches
+// a network's own voice.
 // A rule Archie (or the user) made for this network carries `adapted: true` and
 // reads « For LinkedIn »; a rule without it comes from the Brand voice.
 
@@ -97,48 +99,31 @@ export function playbookNetworks(ctx) {
 
 const LIST_PARTS = VOICE_PARTS.filter((p) => p.kind !== "text").map((p) => p.field);
 
-// The Brand voice, as a short fingerprint — compared, never shown.
-export function voiceStamp(ctx) {
-  const s = JSON.stringify([baseValue(ctx, "voiceSummary"), ...LIST_PARTS.map((f) => cloneItems(ctx?.[f]))]);
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
-  return String(h);
-}
+// Below this many posts an account has nothing to learn from.
+const LEARN_MIN_POSTS = 10;
 
-// The Brand voice, optimized for one network: its parts, plus what the network
-// asks for (mocks/voice-networks.js), each added rule marked `adapted`.
-export function optimizeForNetwork(ctx, network) {
+export const canLearnFrom = (account) => (account?.postCount || 0) >= LEARN_MIN_POSTS;
+
+// The network's voice, learned — from an account's posts ({ from: handle,
+// postCount }) or a document ({ from: its name }). ponytail: the mock lays the
+// network's adaptations (mocks/voice-networks.js) over the Brand voice, each
+// added rule marked `adapted`; in the product they're read from the source.
+export function learnNetworkVoice(ctx, network, { from, postCount = 0 }) {
   const a = NETWORK_VOICE_ADAPTATIONS[network] || {};
   const voice = { voiceSummary: [baseValue(ctx, "voiceSummary"), a.summary].filter(Boolean).join(" ") };
   LIST_PARTS.forEach((f) => {
     voice[f] = [...cloneItems(ctx?.[f]), ...(a.add?.[f] || []).map((r) => ({ ...r, adapted: true }))];
   });
-  return { ...voice, optimizedBy: "archie", baseStamp: voiceStamp(ctx) };
+  return { ...voice, optimizedBy: "learned", learnedFrom: from, postCount };
 }
 
-// Below this many posts an account has nothing to learn from — its network's
-// voice is optimized from the Brand voice instead.
-const LEARN_MIN_POSTS = 10;
-
-export const canLearnFrom = (account) => (account?.postCount || 0) >= LEARN_MIN_POSTS;
-
-// The network's voice, learned from the account's own posts. ponytail: the
-// mock reuses the network's adaptations; in the product they're read from the
-// posts.
-export function learnNetworkVoice(ctx, network, account) {
-  return {
-    ...optimizeForNetwork(ctx, network),
-    optimizedBy: "learned",
-    learnedFrom: account.handle,
-    postCount: account.postCount,
-  };
-}
-
-// The best voice Archie can give a network on its own: learned from the
-// account's posts when it has enough, else the Brand voice optimized for it.
-export function bestNetworkVoice(ctx, network) {
+// What Archie gives a network on its own (creation): its voice learned from the
+// account's posts when it has enough, else the Brand voice as it is — warned.
+function bestNetworkVoice(ctx, network) {
   const account = profileForNetwork(network);
-  return canLearnFrom(account) ? learnNetworkVoice(ctx, network, account) : optimizeForNetwork(ctx, network);
+  return canLearnFrom(account)
+    ? learnNetworkVoice(ctx, network, { from: account.handle, postCount: account.postCount })
+    : brandVoiceAsIs(ctx);
 }
 
 // Every network of the Playbook with a voice — the best one where it has none
@@ -150,22 +135,22 @@ export function withNetworkVoices(ctx) {
   };
 }
 
-// The Brand voice copied as-is, for the user to make it the network's own.
-export function copyBrandVoice(ctx) {
+// The Brand voice copied as it is: a defined voice, not optimized. Edit starts
+// from it; saving with a change makes it the user's ("you").
+export function brandVoiceAsIs(ctx) {
   const voice = { voiceSummary: baseValue(ctx, "voiceSummary") };
   LIST_PARTS.forEach((f) => (voice[f] = cloneItems(ctx?.[f])));
-  return { ...voice, optimizedBy: "you", baseStamp: voiceStamp(ctx) };
+  return { ...voice, optimizedBy: "brand" };
 }
 
-const OPTIMIZED_BY = ["learned", "archie", "you", "brand"];
+const OPTIMIZED_BY = ["learned", "you", "brand"];
 
 export function cloneNetworkVoice(v) {
   const out = {
     voiceSummary: String(v?.voiceSummary || ""),
-    optimizedBy: OPTIMIZED_BY.includes(v?.optimizedBy) ? v.optimizedBy : "archie",
+    optimizedBy: OPTIMIZED_BY.includes(v?.optimizedBy) ? v.optimizedBy : "brand",
   };
   LIST_PARTS.forEach((f) => (out[f] = cloneItems(v?.[f])));
-  out.baseStamp = String(v?.baseStamp || "");
   if (v?.learnedFrom) Object.assign(out, { learnedFrom: String(v.learnedFrom), postCount: Number(v.postCount) || 0 });
   return out;
 }
@@ -174,24 +159,28 @@ export function cloneNetworkVoice(v) {
 //   "brand"     the flag is off, or no network named
 //   "borrowed"  the network has no voice yet — nothing is written for it
 //               before it gets one (network-voice-flow.js)
-//   "plain"     the Brand voice as it is, chosen for it — written, but warned
-//   "stale"     its own voice, made from a Brand voice that has changed since
-//   "own"       its own voice
+//   "plain"     the Brand voice as it is — written, but warned
+//   "own"       its own voice: learned, or edited
 export function networkVoice(ctx, network) {
   const own = networkVoiceOn() && network ? ctx?.voiceByNetwork?.[network] : null;
   if (!networkVoiceOn() || !network) return { state: "brand", voice: ctx };
   if (!own) return { state: "borrowed", voice: ctx };
   if (own.optimizedBy === "brand") return { state: "plain", voice: ctx };
-  return { state: own.baseStamp === voiceStamp(ctx) ? "own" : "stale", voice: own };
+  return { state: "own", voice: own };
 }
 
 // After an edit of a network's voice: a rule that isn't, word for word, one of
-// the Brand voice's (in the same part) is the network's own.
+// the Brand voice's (in the same part) is the network's own. Returns whether the
+// voice now differs from the Brand voice at all — an edit that changed nothing
+// leaves it the Brand voice as it is.
 export function markAdapted(ctx, voice) {
+  const key = (r) => `${r.when || ""}\u0000${r.text}`;
+  let changed = baseValue(voice, "voiceSummary") !== baseValue(ctx, "voiceSummary");
   LIST_PARTS.forEach((f) => {
-    const base = new Set(cloneItems(ctx?.[f]).map((r) => `${r.when || ""}\u0000${r.text}`));
-    voice[f] = cloneItems(voice[f]).map((r) =>
-      r.adapted || !base.has(`${r.when || ""}\u0000${r.text}`) ? { ...r, adapted: true } : r,
-    );
+    const brand = cloneItems(ctx?.[f]);
+    const base = new Set(brand.map(key));
+    voice[f] = cloneItems(voice[f]).map((r) => (r.adapted || !base.has(key(r)) ? { ...r, adapted: true } : r));
+    if (voice[f].length !== brand.length || voice[f].some((r) => r.adapted)) changed = true;
   });
+  return changed;
 }

@@ -4,7 +4,9 @@
 //
 // Public API:
 //   init()                       — inject markup + bind once on app boot
-//   open({ onConfirm })          — onConfirm(selectedProfileIds: string[])
+//   open({ onConfirm, network? }) — onConfirm(selectedProfileIds: string[]);
+//                                  `network`: only its accounts, to learn that
+//                                  network's voice (flag voicePerNetwork)
 //
 // Behaviour:
 //   - Lists getConnectedProfiles() as a checkable list; profiles with no
@@ -13,20 +15,22 @@
 //     it fires onConfirm(ids) then closes. A warning notes the overwrite.
 //   - Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2227";
-import { escapeHtml as esc } from "../utils.js?v=2227";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2229";
+import { escapeHtml as esc } from "../utils.js?v=2229";
 import {
   getConnectedProfiles,
   NETWORK_ICON_BY_PLATFORM,
+  NETWORK_LABEL,
   BRAND_INITIALS,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=2227";
+} from "../social-profiles.js?v=2229";
 
 const MODAL_ID = "analyze-profiles";
 
 let backdrop, modal, listEl, confirmBtn, cancelBtn, closeBtn, searchGroup, searchInput, noMatchEl;
 let initialized = false;
 let pendingOnConfirm = null;
+let onlyNetwork = null;
 let leadEl, warnEl;
 
 const HTML = `
@@ -81,7 +85,7 @@ const HTML = `
 </aside>`;
 
 function profilesShown() {
-  return getConnectedProfiles();
+  return getConnectedProfiles().filter((p) => !onlyNetwork || p.platform === onlyNetwork);
 }
 
 function renderList() {
@@ -187,13 +191,17 @@ export function init() {
   injectOnce();
 }
 
-export function open({ onConfirm = null } = {}) {
+export function open({ onConfirm = null, network = null } = {}) {
   injectOnce();
   requestOpen(MODAL_ID, close);
 
   pendingOnConfirm = onConfirm;
-  leadEl.textContent = "Pick the accounts to learn from — I read their recent posts and rewrite your Voice profile.";
-  warnEl.textContent = "This replaces your Voice profile.";
+  onlyNetwork = network;
+  const label = network ? NETWORK_LABEL[network] || network : "";
+  leadEl.textContent = network
+    ? `Pick the ${label} accounts to learn from — I read their recent posts and write your ${label} voice.`
+    : "Pick the accounts to learn from — I read their recent posts and rewrite your Voice profile.";
+  warnEl.textContent = network ? `This replaces your ${label} voice.` : "This replaces your Voice profile.";
   renderList();
   syncConfirm();
   // Reset + reveal the search box only when the list is long enough to warrant it.
