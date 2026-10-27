@@ -33,7 +33,7 @@
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2267";
+import * as inlineQuestion from "./inline-question.js?v=2268";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -42,14 +42,15 @@ import {
   finishPending,
   postVoiceTurn,
   resolveTurn,
-} from "./assistant.js?v=2267";
-import { getContextById, updateContext } from "./contexts-store.js?v=2267";
-import { getSessionById } from "./sessions-store.js?v=2267";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2267";
-import { setHandoff } from "./handoff.js?v=2267";
-import { navigate } from "./router.js?v=2267";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2267";
-import { getPosts } from "./posts-store.js?v=2267";
+  getThread,
+} from "./assistant.js?v=2268";
+import { getContextById, updateContext } from "./contexts-store.js?v=2268";
+import { getSessionById } from "./sessions-store.js?v=2268";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2268";
+import { setHandoff } from "./handoff.js?v=2268";
+import { navigate } from "./router.js?v=2268";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2268";
+import { getPosts } from "./posts-store.js?v=2268";
 import {
   networkVoiceOn,
   networkVoice,
@@ -58,7 +59,7 @@ import {
   interviewNetworkVoice,
   brandVoiceAsIs,
   playbookNetworks,
-} from "./voice-parts.js?v=2267";
+} from "./voice-parts.js?v=2268";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;
@@ -252,8 +253,22 @@ function askInterview(sessionId, net, onDone, answers = {}, k = 0) {
 // The proposals waiting for an answer: turn id → { ctxId, net, voice, go }.
 const awaiting = new Map();
 
+// A proposal with no flow waiting on it (none was waiting, or it's gone): the
+// turn carries everything to act on — its buttons never go dead.
+function orphanProposal(sessionId, turnId) {
+  const m = getThread(sessionId).find((t) => t.id === turnId && t.variant === "voice-learned" && !t.resolved);
+  if (!m?.voice) return null;
+  const label = networkLabel(m.network);
+  return {
+    ctxId: m.contextId,
+    net: m.network,
+    voice: m.voice,
+    go: () => postAssistantMessage(sessionId, `Added. I'll write for ${label} with these rules from now on.`),
+  };
+}
+
 export function answerLearnedVoice(sessionId, turnId, action) {
-  const wait = awaiting.get(turnId);
+  const wait = awaiting.get(turnId) || orphanProposal(sessionId, turnId);
   if (!wait) return;
   awaiting.delete(turnId);
   resolveTurn(sessionId, turnId);

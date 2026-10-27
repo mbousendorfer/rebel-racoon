@@ -1,26 +1,26 @@
-import { html, raw, escapeAttr } from "../utils.js?v=2267";
-import { conceptText } from "../concepts.js?v=2267";
-import { renderTopbar } from "../components/topbar.js?v=2267";
+import { html, raw, escapeAttr } from "../utils.js?v=2268";
+import { conceptText } from "../concepts.js?v=2268";
+import { renderTopbar } from "../components/topbar.js?v=2268";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=2267";
-import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=2267";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2267";
-import { closePanel as closeRightPanel } from "../components/right-panel.js?v=2267";
-import { navigate, getPath } from "../router.js?v=2267";
-import { isFlagOn } from "../feature-flags.js?v=2267";
-import { setHandoff } from "../handoff.js?v=2267";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2267";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2267";
-import { visibleContexts, usableContexts } from "../playbook-access.js?v=2267";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2267";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2267";
-import { installMoreMenu } from "../components/more-menu.js?v=2267";
-import { showToast } from "../components/toast.js?v=2267";
-import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=2267";
+} from "../contexts-store.js?v=2268";
+import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=2268";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2268";
+import { closePanel as closeRightPanel } from "../components/right-panel.js?v=2268";
+import { navigate, getPath } from "../router.js?v=2268";
+import { isFlagOn } from "../feature-flags.js?v=2268";
+import { setHandoff } from "../handoff.js?v=2268";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2268";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2268";
+import { visibleContexts, usableContexts } from "../playbook-access.js?v=2268";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2268";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2268";
+import { installMoreMenu } from "../components/more-menu.js?v=2268";
+import { showToast } from "../components/toast.js?v=2268";
+import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=2268";
 import {
   chatPlaybook,
   renderChatsTab,
@@ -28,7 +28,7 @@ import {
   renderContextsEmpty,
   renderGhostCard,
   renderPlaybooksTable,
-} from "./home/lists.js?v=2267";
+} from "./home/lists.js?v=2268";
 
 // The account HOME — and the Playbooks catalogue it merged with.
 //
