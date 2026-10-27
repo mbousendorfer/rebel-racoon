@@ -2018,12 +2018,51 @@ body.has-modal {
   flex-direction: column;
   align-items: flex-start;
   gap: var(--ref-spacing-xxs);
-  margin-top: var(--ref-spacing-xxs);
+  margin-top: var(--ref-spacing-xxxs);
 }
+/* The Voice profile's rule boxes, tightened for a card in the thread: a
+   slimmer box, the « For X » tag on the rule's line (after it), the examples
+   below — so a full interview fits one screen. The tab keeps its own size. */
 .voice-edit__body .voice-rules {
   align-self: stretch;
+  gap: var(--ref-spacing-xxxs);
+}
+.voice-edit .voice-rule {
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+}
+.voice-edit .voice-rule__body {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  width: 100%;
+}
+.voice-edit .voice-rule__when,
+.voice-edit .voice-rule__text {
+  flex: 1;
+  min-width: 0;
+}
+.voice-edit .voice-rule__when {
+  flex-basis: 100%;
+}
+.voice-edit .voice-rule .pb2-voice-tag {
+  order: 2;
+  flex: none;
+}
+.voice-edit .voice-rule__examples {
+  order: 3;
+  flex-basis: 100%;
+}
+/* The summary: its sentence, then the tag on the same line. */
+.voice-edit__body:has(> .voice-edit__lead) {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
 }
 .voice-edit__lead {
+  flex: 1;
+  min-width: 0;
   margin: 0;
   color: var(--ref-color-grey-100);
 }
