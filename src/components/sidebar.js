@@ -1,29 +1,29 @@
-import { html, raw } from "../utils.js?v=2225";
-import { navigate, getPath } from "../router.js?v=2225";
-import { open as openBugReportModal } from "./bug-report-modal.js?v=2225";
-import { open as openFeedbackModal } from "./feedback-modal.js?v=2225";
-import { open as openSearchModal } from "./search-modal.js?v=2225";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2225";
-import { renderAdminMenu, applyUserMode, applyOrgRole, toggleFlag } from "../admin-menu.js?v=2225";
-import { subscribe as subscribeSessions } from "../sessions-store.js?v=2225";
-import { isFlagOn } from "../feature-flags.js?v=2225";
-import { subscribe as subscribeContexts } from "../contexts-store.js?v=2225";
+import { html, raw } from "../utils.js?v=2226";
+import { navigate, getPath } from "../router.js?v=2226";
+import { open as openBugReportModal } from "./bug-report-modal.js?v=2226";
+import { open as openFeedbackModal } from "./feedback-modal.js?v=2226";
+import { open as openSearchModal } from "./search-modal.js?v=2226";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2226";
+import { renderAdminMenu, applyUserMode, applyOrgRole, toggleFlag, toggleNetwork } from "../admin-menu.js?v=2226";
+import { subscribe as subscribeSessions } from "../sessions-store.js?v=2226";
+import { isFlagOn } from "../feature-flags.js?v=2226";
+import { subscribe as subscribeContexts } from "../contexts-store.js?v=2226";
 import {
   getActivePlaybook,
   isWorkspaceMode,
   playbookForNewWork,
   catalogueRoute,
   subscribe as subscribeScope,
-} from "../active-playbook.js?v=2225";
-import { setHandoff } from "../handoff.js?v=2225";
+} from "../active-playbook.js?v=2226";
+import { setHandoff } from "../handoff.js?v=2226";
 // A Playbook nobody shared with me must not surface here either — the store
 // still holds it (see playbook-access.js), the sidebar just doesn't name it.
-import { visibleContexts } from "../playbook-access.js?v=2225";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2225";
-import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=2225";
-import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=2225";
-import { getVideos } from "../videos-store.js?v=2225";
-import { closePanel as closeRightPanel } from "./right-panel.js?v=2225";
+import { visibleContexts } from "../playbook-access.js?v=2226";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2226";
+import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=2226";
+import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=2226";
+import { getVideos } from "../videos-store.js?v=2226";
+import { closePanel as closeRightPanel } from "./right-panel.js?v=2226";
 import {
   deleteSidebarSession,
   matchSessionId,
@@ -31,9 +31,9 @@ import {
   renderRecentLists,
   startRenameSidebar,
   togglePinSidebar,
-} from "./sidebar/recent-chats.js?v=2225";
-import { renderPlaybookSwitcher, switchPlaybook } from "./sidebar/playbook-switcher.js?v=2225";
-import { renderDemoCard, confirmExitDemo } from "../demo-flow.js?v=2225";
+} from "./sidebar/recent-chats.js?v=2226";
+import { renderPlaybookSwitcher, switchPlaybook } from "./sidebar/playbook-switcher.js?v=2226";
+import { renderDemoCard, confirmExitDemo } from "../demo-flow.js?v=2226";
 
 // Global app sidebar — Brand / + New conversation / Recent chats / User footer.
 // Rendered once at boot into #sidebar; re-rendered on every route change so the
@@ -338,6 +338,11 @@ export function initSidebar() {
     if (flagRow) {
       event.preventDefault();
       toggleFlag(flagRow.dataset.adminFlag);
+    }
+    const networkRow = event.target.closest("[data-admin-network]");
+    if (networkRow) {
+      event.preventDefault();
+      toggleNetwork(networkRow.dataset.adminNetwork);
     }
   });
 

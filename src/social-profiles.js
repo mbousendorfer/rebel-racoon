@@ -7,9 +7,10 @@
 // as the muted caption, and a DS avatar carrying the brand photo plus a
 // corner network badge.
 
-import { socialAccounts, demoManyProfiles, DEMO_ACCOUNTS } from "./mocks.js?v=2225";
-import { escapeHtml } from "./utils.js?v=2225";
-import { createNotifier } from "./store-utils.js?v=2225";
+import { socialAccounts, demoManyProfiles, DEMO_ACCOUNTS } from "./mocks.js?v=2226";
+import { escapeHtml } from "./utils.js?v=2226";
+import { createNotifier } from "./store-utils.js?v=2226";
+import { isNewUser } from "./user-mode.js?v=2226";
 
 // THE network table — every surface that names, badges, counts or colours a
 // network reads it, so a network is spelled one way everywhere. It replaced
@@ -176,15 +177,33 @@ export function renderProfileEchoCard(account, { network } = {}) {
 //
 // The mocks describe accounts; this Set describes the ones connected in this
 // browser session, so connecting one in a chat shows up everywhere afterwards.
-// Starts EMPTY: nothing is connected until the user connects it. Kept in
-// sessionStorage so a reload — the one that ends onboarding included — doesn't
-// disconnect them; switching user mode clears it with the rest of the session.
+// Starts with the brand's account on every network the Admin popover leaves
+// ticked (« Connected networks », all six by default, localStorage) — or EMPTY
+// for a first-time user, who connects them in the run. Kept in sessionStorage
+// so a reload — the one that ends onboarding included — doesn't disconnect
+// them; switching user mode clears it with the rest of the session.
 // ---------------------------------------------------------------------------
 const notifier = createNotifier("social-profiles");
 export const subscribe = notifier.subscribe;
 
 let connectedIds = null;
 const STORAGE_KEY = "archie-connected-profiles";
+const NETWORKS_KEY = "archie-connected-networks";
+
+// The networks the prototype starts connected on (Admin popover) — all of them
+// until one is unticked.
+function startNetworks() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(NETWORKS_KEY) || "null");
+    if (Array.isArray(saved)) return saved;
+  } catch {
+    /* ignore */
+  }
+  return Object.keys(NETWORKS);
+}
+
+// The brand's own account(s) on one network.
+const brandAccountsOn = (network) => socialAccounts.filter((p) => p.platform === network && p.handle);
 
 // Every account the user could connect, mock-connected or not — the brand's
 // own accounts, one per network. demoManyProfiles stays out: those ~36 exist to
@@ -196,14 +215,46 @@ const ALL_ACCOUNTS = [...socialAccounts, ...demoManyProfiles, ...DEMO_ACCOUNTS];
 
 function ensureSeeded() {
   if (connectedIds) return connectedIds;
-  let saved = [];
+  let saved = null;
   try {
-    saved = JSON.parse(window.sessionStorage.getItem(STORAGE_KEY) || "[]");
+    saved = JSON.parse(window.sessionStorage.getItem(STORAGE_KEY) || "null");
   } catch {
     /* ignore */
   }
-  connectedIds = new Set(Array.isArray(saved) ? saved : []);
+  if (!Array.isArray(saved))
+    saved = isNewUser() ? [] : startNetworks().flatMap((n) => brandAccountsOn(n).map((p) => p.id));
+  connectedIds = new Set(saved);
   return connectedIds;
+}
+
+function persist() {
+  try {
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify([...connectedIds]));
+  } catch {
+    /* ignore */
+  }
+}
+
+// Admin popover: is the brand connected on this network right now?
+export function isNetworkConnected(network) {
+  const ids = ensureSeeded();
+  return brandAccountsOn(network).some((p) => ids.has(p.id));
+}
+
+// Admin popover: connect or disconnect the brand on a network, now and for
+// every session that starts after (the caller reloads).
+export function setNetworkConnected(network, on) {
+  const ids = ensureSeeded();
+  brandAccountsOn(network).forEach((p) => (on ? ids.add(p.id) : ids.delete(p.id)));
+  persist();
+  const nets = new Set(startNetworks());
+  if (on) nets.add(network);
+  else nets.delete(network);
+  try {
+    window.localStorage.setItem(NETWORKS_KEY, JSON.stringify(Object.keys(NETWORKS).filter((n) => nets.has(n))));
+  } catch {
+    /* ignore */
+  }
 }
 
 // All currently-connected social accounts (mock). The base connected accounts
@@ -266,11 +317,7 @@ export function connectAccounts(accountIds) {
     added.push(account);
   }
   if (!added.length) return added;
-  try {
-    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
-  } catch {
-    /* ignore */
-  }
+  persist();
   notifier.notify(getConnectedProfiles());
   return added;
 }

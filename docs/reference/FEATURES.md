@@ -1277,6 +1277,7 @@ Détail dimensions/coexistence avec la status-card : [`SHELL-LAYOUT.md`](SHELL-L
 
 ### Admin menu
 
+- **Connected networks** (2026-10-27, à la demande : « tous les networks connectés dans le proto, cochables / décochables ») : un toggle par réseau de `NETWORKS` (glyphe + nom), sous User mode. Par défaut les six sont cochés et une session returning démarre connectée au compte de la marque sur chacun (TikTok et YouTube ont désormais leur compte mock) ; décocher déconnecte tout de suite et pour les sessions suivantes, puis recharge. Un first-time user démarre toujours sans compte. `setNetworkConnected`, `archie-connected-networks`.
 - **User mode** (radio) : **Returning user** (_« Populated mocks (default) »_) / **Welcome - First Time XP** (_« Visual picker + conversational chat »_).
 - **Feature flags** : une toggle par flag, rangées en sections par sujet (`FLAG_GROUPS` dans `ff-catalog.js` : New surfaces · Playbook · Voice · Chat & drafts · Onboarding — chaque flag nomme la sienne dans `group`). Survoler une ligne ouvre un tooltip d'une phrase (`tip`) qui dit ce que fait le flag ; `hides` reste la version longue (2026-10-20).
 - **Docs** : lien externe **« Overlay index »** → `/handoff/overlays.html` (la galerie « Chat thread components » a été retirée le 2026-10-20 ; le handoff des styles de conversation vit hors du repo).

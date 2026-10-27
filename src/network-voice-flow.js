@@ -15,11 +15,11 @@
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2225";
-import { postAssistantMessage, postUserTurn, startPending, finishPending } from "./assistant.js?v=2225";
-import { getContextById, updateContext } from "./contexts-store.js?v=2225";
-import { getSessionById } from "./sessions-store.js?v=2225";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2225";
+import * as inlineQuestion from "./inline-question.js?v=2226";
+import { postAssistantMessage, postUserTurn, startPending, finishPending } from "./assistant.js?v=2226";
+import { getContextById, updateContext } from "./contexts-store.js?v=2226";
+import { getSessionById } from "./sessions-store.js?v=2226";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2226";
 import {
   networkVoiceOn,
   networkVoice,
@@ -28,7 +28,7 @@ import {
   optimizeForNetwork,
   copyBrandVoice,
   playbookNetworks,
-} from "./voice-parts.js?v=2225";
+} from "./voice-parts.js?v=2226";
 
 const LEARN_MS = 1800;
 

@@ -6,11 +6,12 @@
 // the side-effecting actions wired by the sidebar's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2225";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2225";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2225";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2225";
-import { getRole, setRole, ORG } from "./org.js?v=2225";
+import { html, raw, escapeHtml } from "./utils.js?v=2226";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2226";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2226";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2226";
+import { getRole, setRole, ORG } from "./org.js?v=2226";
+import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2226";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
@@ -50,6 +51,13 @@ export function applyUserMode(target) {
 export function applyOrgRole(target) {
   if (target === getRole()) return;
   setRole(target);
+  window.location.reload();
+}
+
+// Connect or disconnect the brand on a network, then reload — every surface
+// reads the connected accounts at render time.
+export function toggleNetwork(network) {
+  setNetworkConnected(network, !isNetworkConnected(network));
   window.location.reload();
 }
 
@@ -111,6 +119,20 @@ export function renderAdminMenu() {
     `,
   ).join("");
 
+  // The networks the brand is connected on — all six unless one is unticked.
+  const networkRows = Object.entries(NETWORKS)
+    .map(
+      ([id, n]) => `
+      <label class="admin-menu__row admin-menu__flag" data-admin-network="${escapeHtml(id)}">
+        <span class="admin-menu__network"><i class="${escapeHtml(n.icon)}" aria-hidden="true"></i><span class="admin-menu__opt-label">${escapeHtml(n.label)}</span></span>
+        <span class="ap-toggle-container admin-menu__toggle" aria-hidden="true">
+          <input type="checkbox" ${isNetworkConnected(id) ? "checked" : ""} tabindex="-1" />
+          <i></i>
+        </span>
+      </label>`,
+    )
+    .join("");
+
   return html`
     <div class="admin-menu">
       <div class="admin-menu__section">
@@ -125,6 +147,10 @@ export function renderAdminMenu() {
             </div>`
           : "",
       )}
+      <div class="admin-menu__section">
+        <span class="admin-menu__section-title">Connected networks</span>
+        <div class="admin-menu__flags">${raw(networkRows)}</div>
+      </div>
       ${raw(flagSections)}
       <div class="admin-menu__section">
         <span class="admin-menu__section-title">Docs</span>

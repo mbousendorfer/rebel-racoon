@@ -710,6 +710,14 @@
 .admin-menu__toggle {
   flex-shrink: 0;
 }
+/* A connected-network row: the network's glyph before its name. */
+.admin-menu__network {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+}
 
 /* Docs link row. */
 .admin-menu__doc {
