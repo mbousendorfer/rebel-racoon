@@ -9,21 +9,21 @@
 // active Playbook. (A three-subject "Test run" column was removed at the user's
 // request, 2026-10-06: "ça n'a pas de sens".)
 
-import { html, toString } from "../lib/html.js?v=2295";
-import { delegate } from "../lib/delegate.js?v=2295";
-import { getPath } from "../../../router.js?v=2295";
-import { setTopbarActions } from "../../../components/topbar.js?v=2295";
-import { renderFrame } from "./frame.js?v=2295";
-import { renderEmpty } from "../ui/empty.js?v=2295";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=2295";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2295";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=2295";
-import { toast } from "../ui/toast.js?v=2295";
-import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2295";
-import { copyService } from "../services/index.js?v=2295";
-import { lookFromColors } from "../render/visual.js?v=2295";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2295";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2295";
+import { html, toString } from "../lib/html.js?v=2297";
+import { delegate } from "../lib/delegate.js?v=2297";
+import { getPath } from "../../../router.js?v=2297";
+import { setTopbarActions } from "../../../components/topbar.js?v=2297";
+import { renderFrame } from "./frame.js?v=2297";
+import { renderEmpty } from "../ui/empty.js?v=2297";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=2297";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2297";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=2297";
+import { toast } from "../ui/toast.js?v=2297";
+import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2297";
+import { copyService } from "../services/index.js?v=2297";
+import { lookFromColors } from "../render/visual.js?v=2297";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2297";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2297";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -61,6 +61,9 @@ export function mount(target, params, ctx, { embed = null } = {}) {
   const state = {
     draft: draftFrom(editing, brand?.id),
     errors: [],
+    // Set by the first Save: from then on each field says what it is missing,
+    // under itself, and clears as soon as it is filled.
+    showErrors: false,
     uploading: 0,
     promptBusy: false, // "Generate the prompt" is reading the images
   };
@@ -112,10 +115,17 @@ export function mount(target, params, ctx, { embed = null } = {}) {
     const d = state.draft;
     const images = d.sources.map((s, i) => [s, i]).filter(([s]) => s.type === "image");
     const page = (body) => (embed ? body : renderFrame({ body }));
-    // On the page, each group is a card; in the studio's column the groups are
-    // already the surface, so the groups are plain stacks — and the images come
-    // first, since they are what makes the style.
-    const card = embed ? "imst-creator__group" : "ap-card imst-creator__card";
+    // One surface for one form: on the page the groups share a single card,
+    // split by hairlines; in the studio's column the column is the surface.
+    // The images come first in the studio, since they are what makes the style.
+    const card = "imst-creator__group";
+    const nameMissing = state.showErrors && !d.label.trim();
+    const imagesMissing = state.showErrors && !images.length;
+    // What the fields say themselves stays out of the banner.
+    const otherErrors = state.errors.filter(
+      (e) => !(nameMissing && e.startsWith("Give the style")) && !(imagesMissing && e.startsWith("Add at least one")),
+    );
+    const fieldError = (id, text) => html`<p class="ap-form-message error" id="${id}" role="alert">${text}</p>`;
     const identity = html` <section class="${card}">
       ${field({
         label: "Name",
@@ -125,8 +135,10 @@ export function mount(target, params, ctx, { embed = null } = {}) {
           id: "imst-st-name",
           value: d.label,
           placeholder: "e.g. Morning light",
+          attrs: nameMissing ? 'class="invalid" aria-invalid="true" aria-describedby="imst-st-name-msg"' : "",
         }),
       })}
+      ${nameMissing ? fieldError("imst-st-name-msg", "Give the style a name.") : ""}
     </section>`;
     const refs = html` <section class="${card}" aria-labelledby="imst-src-images">
         <div class="ap-form-field">
@@ -137,13 +149,16 @@ export function mount(target, params, ctx, { embed = null } = {}) {
             title: state.uploading ? "Adding…" : "Drop images here or",
             sub:
               images.length >= CUSTOM_STYLE_LIMITS.images
-                ? `${CUSTOM_STYLE_LIMITS.images} images added, the most a style takes — remove one to add another`
-                : `2 to ${CUSTOM_STYLE_LIMITS.images} images that share the look you want · ${images.length} added`,
+                ? `${CUSTOM_STYLE_LIMITS.images} images added, the most a style takes. Remove one to add another`
+                : `Up to ${CUSTOM_STYLE_LIMITS.images} images that share the look you want · ${images.length} added`,
             compact: true,
             filled: true,
             // Full, the zone stays and says so: disabled, never hidden.
             disabled: images.length >= CUSTOM_STYLE_LIMITS.images,
           })}
+          ${imagesMissing
+            ? fieldError("imst-st-images-msg", "Add at least one image. I read the style's look from them.")
+            : ""}
         </div>
         ${images.length
           ? html`<ul class="imst-sources">
@@ -187,18 +202,18 @@ ${d.stylePrompt}</textarea
           ? ""
           : html`<header class="imst-creator__head">
               <h1 class="ap-h2">${editing ? `Edit ${editing.label}` : "New style"}</h1>
-              <p class="ap-body">
-                Part of ${brand.playbookName}'s brand. It comes first whenever an image is made for this Playbook.
-              </p>
+              <p class="ap-body">A look I learn from your images, then draw ${brand.playbookName}'s new images in.</p>
             </header>`}
         <div class="imst-creator${embed ? " imst-creator--embed" : ""}">
-          <div class="imst-creator__form">${embed ? html`${refs}${identity}` : html`${identity}${refs}`}</div>
+          <div class="imst-creator__form${embed ? "" : " ap-card imst-creator__card"}">
+            ${embed ? html`${refs}${identity}` : html`${identity}${refs}`}
+          </div>
         </div>
-        ${state.errors.length
+        ${otherErrors.length
           ? html`<div class="ap-infobox error" role="alert">
               <i class="ap-icon-warning_fill" aria-hidden="true"></i>
               <div class="ap-infobox-content">
-                <div class="ap-infobox-texts"><div class="ap-infobox-message">${state.errors.join(" ")}</div></div>
+                <div class="ap-infobox-texts"><div class="ap-infobox-message">${otherErrors.join(" ")}</div></div>
               </div>
             </div>`
           : ""}
@@ -231,9 +246,12 @@ ${d.stylePrompt}</textarea
 
   function save() {
     state.errors = validateStyleDraft(state.draft);
+    state.showErrors = true;
     if (state.errors.length) {
       paint();
-      target.querySelector(".ap-infobox.error")?.scrollIntoView({ block: "nearest" });
+      const first = target.querySelector('[aria-invalid="true"], .ap-form-message.error, .ap-infobox.error');
+      first?.scrollIntoView({ block: "center", behavior: "smooth" });
+      if (first?.matches("input")) first.focus();
       return;
     }
     const saved = saveStyle(state.draft);
@@ -267,7 +285,7 @@ ${d.stylePrompt}</textarea
       const images = files.filter((f) => f.type.startsWith("image/"));
       if (files.length > images.length) toast("Only images can be used as references.", { variant: "error" });
       if (images.length > room)
-        toast(`Only ${room} more reference image${room === 1 ? "" : "s"} fit — the rest were left out.`, {
+        toast(`Only ${room} more reference image${room === 1 ? "" : "s"} fit. I left the rest out.`, {
           variant: "error",
         });
       state.uploading += 1;
@@ -285,6 +303,8 @@ ${d.stylePrompt}</textarea
     }),
     delegate(target, "input", "[data-imst-field]", (_e, el) => {
       state.draft[el.dataset.imstField] = el.value;
+      // A field flagged as missing clears the moment it is filled.
+      if (el.getAttribute("aria-invalid") === "true" && el.value.trim()) paint();
     }),
     delegate(target, "click", "[data-imst-action]", (_e, el) => {
       const action = el.dataset.imstAction;

@@ -1,7 +1,7 @@
 // Image Generator — a dropzone that really accepts a drop (DS port .ap-dropzone,
 // from ds-patches). Markup + binding; the module's own copy of the pattern.
 
-import { html } from "../lib/html.js?v=2295";
+import { html } from "../lib/html.js?v=2297";
 
 export function dropzone({
   id,
@@ -21,7 +21,7 @@ export function dropzone({
       role="button"
       tabindex="${disabled ? "-1" : "0"}"
       aria-disabled="${disabled}"
-      aria-label="${title} — browse files"
+      aria-label="${title}: browse files"
     >
       <span class="ap-dropzone__icon"><i class="${icon}" aria-hidden="true"></i></span>
       <span class="ap-dropzone__text">

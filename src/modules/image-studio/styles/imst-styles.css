@@ -123,9 +123,18 @@ button.imst-style-card {
 }
 
 .imst-creator__card {
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-md);
+  gap: 0;
+  padding: 0;
   border-color: var(--ref-color-grey-20);
+}
+
+/* One card, its groups split by the page's hairline. */
+.imst-creator__card > .imst-creator__group {
+  padding: var(--ref-spacing-md);
+}
+
+.imst-creator__card > .imst-creator__group + .imst-creator__group {
+  border-top: 1px solid var(--ref-color-grey-20);
 }
 
 .imst-creator__card h2 {
