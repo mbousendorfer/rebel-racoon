@@ -8,21 +8,25 @@
 //     Performance / Other)
 //   - "What were you trying to do?" free-text
 //   - "What went wrong?" required textarea
-//   - Screenshot — auto-captured via html2canvas, or drag/drop upload
+//   - Screenshot: an optional upload. The auto-capture (html2canvas) was
+//     removed on 2026-10-28: it never parsed the DS's color() CSS, and the
+//     maintained fork drew icons as solid squares, so it promised a
+//     screenshot it couldn't take.
 //   - Context footer showing the current route + time
 //
 // On submit we simulate a ~1.4s round-trip and flash a success state; the
 // modal then closes itself. Nothing is actually posted.
 
-import { escapeHtml, formatTimeOfDay } from "../utils.js?v=2319";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2319";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2319";
+import { escapeHtml, formatTimeOfDay } from "../utils.js?v=2321";
+import { getSessionById } from "../sessions-store.js?v=2321";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2321";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2321";
 
 const MODAL_ID = "bugReport";
 
 let backdrop, modal, submitBtn, problemInput, actionInput, problemError;
 let categoriesEl, previewEl, dropzoneFallback, dropzone, fileInput;
-let previewImg, fileNameEl, autoBadge, capturingBadge, captureFailedBadge, contextBar;
+let previewImg, fileNameEl, contextBar;
 let selectedCategory = null;
 let screenshotDataUrl = null;
 let initialized = false;
@@ -51,7 +55,7 @@ const HTML = `
 >
   <div class="ap-dialog-header">
     <span class="ap-dialog-title" id="bugReportTitle">Report a bug</span>
-    <span class="ap-dialog-subtitle" id="bugReportDescription">Share what happened. I'll attach a screenshot and the page you're on.</span>
+    <span class="ap-dialog-subtitle" id="bugReportDescription">Tell me what happened. I'll send the page you're on with it.</span>
   </div>
   <button class="ap-dialog-close" type="button" id="closeBugReportBtn" aria-label="Close">
     <i class="ap-icon-close"></i>
@@ -82,10 +86,7 @@ const HTML = `
 
       <div class="bug-field">
         <div class="bug-field__label-row">
-          <label>Screenshot</label>
-          <span class="ap-status green" id="bugAutoBadge" hidden>Auto-captured</span>
-          <span class="ap-status grey" id="bugCapturingBadge" hidden>Capturing…</span>
-          <span class="ap-status grey" id="bugCaptureFailedBadge" hidden>Capture unavailable — upload one manually</span>
+          <label>Screenshot <span class="bug-field__optional">(optional)</span></label>
         </div>
         <div class="bug-report-dropzone has-file" id="bugScreenshotPreview" hidden>
           <div class="bug-report-preview">
@@ -98,7 +99,7 @@ const HTML = `
           ${dropzoneHTML({
             id: "bugDropzone",
             lead: "Drop an image here, or",
-            sub: "PNG, JPG, GIF — max 10 MB",
+            sub: "PNG, JPG or GIF, up to 10 MB",
             accept: "image/png,image/jpeg,image/gif",
             inputId: "bugFileInput",
             compact: true,
@@ -122,7 +123,7 @@ const HTML = `
       </svg>
     </div>
     <h3>Bug reported</h3>
-    <p>Thanks for helping me improve. Every report gets read.</p>
+    <p>Thanks. I read every report, and this one tells me what to fix.</p>
   </div>
 </aside>`;
 
@@ -134,15 +135,12 @@ function focusSafe(el) {
   }
 }
 
-function setScreenshot(dataUrl) {
+function setScreenshot(dataUrl, name) {
   screenshotDataUrl = dataUrl;
   previewImg.src = dataUrl;
-  fileNameEl.textContent = "Page screenshot";
+  fileNameEl.textContent = name;
   previewEl.hidden = false;
   dropzoneFallback.hidden = true;
-  capturingBadge.hidden = true;
-  captureFailedBadge.hidden = true;
-  autoBadge.hidden = false;
 }
 
 function clearScreenshot() {
@@ -151,9 +149,6 @@ function clearScreenshot() {
   fileNameEl.textContent = "";
   previewEl.hidden = true;
   dropzoneFallback.hidden = false;
-  autoBadge.hidden = true;
-  capturingBadge.hidden = true;
-  captureFailedBadge.hidden = true;
   fileInput.value = "";
 }
 
@@ -176,51 +171,6 @@ function setProblemInvalid(invalid) {
   if (problemError) problemError.hidden = !invalid;
 }
 
-// html2canvas is loaded on first capture, not at page load. If it fails
-// (offline, CSP, etc) we silently drop the screenshot and let the user upload
-// one manually.
-async function loadHtml2Canvas() {
-  if (window.html2canvas) return window.html2canvas;
-  // 3-second budget — past that the capture is dead weight and the
-  // "Capturing…" badge needs to flip to "Capture unavailable" so the
-  // user can upload manually instead of waiting on a stuck CDN.
-  return new Promise((resolve, reject) => {
-    const s = document.createElement("script");
-    s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-    const timer = setTimeout(() => {
-      reject(new Error("html2canvas timeout"));
-    }, 3000);
-    s.onload = () => {
-      clearTimeout(timer);
-      resolve(window.html2canvas);
-    };
-    s.onerror = () => {
-      clearTimeout(timer);
-      reject(new Error("html2canvas unavailable"));
-    };
-    document.head.appendChild(s);
-  });
-}
-
-async function capturePageScreenshot() {
-  try {
-    const h2c = await loadHtml2Canvas();
-    const canvas = await h2c(document.documentElement, {
-      scale: 0.55,
-      useCORS: true,
-      logging: false,
-      ignoreElements: (el) =>
-        el.id === "bugReportModal" ||
-        el.id === "bugReportBackdrop" ||
-        el.id === "feedbackModal" ||
-        el.id === "feedbackBackdrop",
-    });
-    return canvas.toDataURL("image/jpeg", 0.8);
-  } catch {
-    return null;
-  }
-}
-
 // Archie uses a hash router — the route is the context. We summarise it as
 // three pills so the user can see what's going to be attached to the bug.
 function currentContext() {
@@ -231,7 +181,9 @@ function currentContext() {
   if (path.startsWith("/session/")) area = "Chat";
 
   const tab = params.get("tab") || params.get("view");
-  const focus = tab ? `${tab}` : path === "/" || path === "" ? "Home" : path.split("/").pop();
+  // A chat is named by its title, never by its id (2026-10-28).
+  const chat = area === "Chat" ? getSessionById(path.split("/")[2])?.name : null;
+  const focus = tab ? `${tab}` : chat || (path === "/" || path === "" ? "Home" : path.split("/").pop());
 
   const now = new Date();
   const time = `${now.toLocaleDateString("en-US", { month: "short", day: "numeric" })} · ${formatTimeOfDay(now)}`;
@@ -258,17 +210,6 @@ export function open() {
   document.body.classList.add("has-modal");
   populateContext();
   window.setTimeout(() => focusSafe(problemInput), 50);
-  // Kick off auto-screenshot — shows the "Capturing…" badge until resolved.
-  capturingBadge.hidden = false;
-  captureFailedBadge.hidden = true;
-  capturePageScreenshot().then((dataUrl) => {
-    if (dataUrl) {
-      setScreenshot(dataUrl);
-    } else {
-      capturingBadge.hidden = true;
-      captureFailedBadge.hidden = false;
-    }
-  });
 }
 
 function close() {
@@ -299,9 +240,6 @@ export function init() {
   fileInput = document.getElementById("bugFileInput");
   previewImg = document.getElementById("bugPreviewImg");
   fileNameEl = document.getElementById("bugFileName");
-  autoBadge = document.getElementById("bugAutoBadge");
-  capturingBadge = document.getElementById("bugCapturingBadge");
-  captureFailedBadge = document.getElementById("bugCaptureFailedBadge");
   contextBar = document.getElementById("bugContextBar");
 
   // Close / dismiss
@@ -336,7 +274,7 @@ export function init() {
       const file = files[0];
       if (!file || !file.type.startsWith("image/")) return;
       const reader = new FileReader();
-      reader.onload = (ev) => setScreenshot(ev.target.result);
+      reader.onload = (ev) => setScreenshot(ev.target.result, file.name);
       reader.readAsDataURL(file);
     },
   });

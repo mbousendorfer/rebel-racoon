@@ -621,6 +621,10 @@ body.has-modal {
   margin-left: 2px;
 }
 
+.bug-field__optional {
+  font-weight: var(--ref-font-weight-regular);
+}
+
 /* ── Bug report: category chips ──────────────────────────── */
 
 .bug-categories {

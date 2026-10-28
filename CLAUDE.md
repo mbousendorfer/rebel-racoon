@@ -149,7 +149,7 @@ Never hand-edit a `?v=`. `scripts/cache-version.mjs` owns the number (it also co
 
 ⚠️ **A cached entry point pins the whole old import graph.** After a JS change, verify a _visible_ effect (a removed node, a changed class) in the browser: a CSS-only confirmation proves nothing about the JS.
 
-The **Design System is loaded from jsDelivr at `@latest`** (`index.html`: `@agorapulse/ui-theme` tokens + CSS-UI + Averta, `@agorapulse/ui-symbol` icons) and nothing of it is vendored — the published package is the only source, as the `design-guidelines` skill prescribes. Everything else is local: no other CDN / `esm.sh` import in app code (the bug-report modal lazy-loads html2canvas from cdnjs, the one exception). `package.json` holds tooling only (prettier/husky/lint-staged). The pre-commit hook runs `check-template-comments.py`, `cache-version.mjs check`, and `prettier --write` on staged files.
+The **Design System is loaded from jsDelivr at `@latest`** (`index.html`: `@agorapulse/ui-theme` tokens + CSS-UI + Averta, `@agorapulse/ui-symbol` icons) and nothing of it is vendored — the published package is the only source, as the `design-guidelines` skill prescribes. Everything else is local: no other CDN / `esm.sh` import in app code (the bug-report modal's html2canvas capture, the one exception, was removed on 2026-10-28). `package.json` holds tooling only (prettier/husky/lint-staged). The pre-commit hook runs `check-template-comments.py`, `cache-version.mjs check`, and `prettier --write` on staged files.
 
 ## Design System — READ FIRST before UI/CSS work
 
