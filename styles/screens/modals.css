@@ -2476,16 +2476,6 @@ body.has-modal {
   border-top: 0;
   padding-top: 0;
 }
-.voice-intro__slot {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 20px;
-}
-.voice-intro__done {
-  color: var(--ref-color-green-100);
-  animation: app-success-pop 360ms var(--app-ease-bounce) both;
-}
 .voice-intro__text {
   display: flex;
   flex: 1;
@@ -2503,7 +2493,28 @@ body.has-modal {
   color: var(--ref-color-grey-80);
 }
 /* Reading the account's posts: the orange sheen of Archie at work (chat.css). */
-.voice-intro__net.is-learning .voice-intro__state {
+/* Where the Playbook stands: a checkbox per network to personalize — the
+   default network's slot stays empty, so the rows keep one edge. */
+.voice-intro__slot {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+}
+/* Personalize: a way to adapt the default voice, the best one recommended
+   (a .voice-intro__voice row); keeping it is a quiet link under the list. */
+.voice-intro__best {
+  flex: none;
+  margin-left: auto;
+}
+.voice-intro__keep {
+  align-self: flex-start;
+  margin-top: var(--ref-spacing-sm);
+}
+/* Learning, on the stage: the orange sheen of Archie at work. */
+.voice-intro__phase {
+  margin: 0;
+  font-weight: var(--ref-font-weight-bold);
   color: transparent;
   background-image: linear-gradient(
     100deg,
@@ -2514,7 +2525,22 @@ body.has-modal {
   background-size: 300% 100%;
   -webkit-background-clip: text;
   background-clip: text;
-  animation: e-sheen 2s linear infinite;
+  animation: e-sheen 1.6s linear infinite;
+}
+/* The five questions, on the stage — one per Voice profile section. */
+.voice-intro__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  padding: var(--ref-spacing-sm);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface);
+}
+.voice-intro__form-part {
+  display: block;
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
 }
 
 /* Step 2, the stage: the Playbook card of the first-time run, its Voice
@@ -2589,9 +2615,6 @@ body.has-modal {
 }
 .voice-intro__field .voice-intro__trait {
   animation-delay: calc(var(--k) * 0.06s);
-}
-.voice-intro__field.is-landing .voice-intro__trait {
-  animation-delay: calc(0.1s + var(--k) * 0.09s);
 }
 .voice-intro__plain {
   font-size: var(--sys-text-style-caption-bold-size);

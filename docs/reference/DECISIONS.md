@@ -316,6 +316,7 @@ Behind `voicePerNetwork`. Revu avec l'utilisateur le 2026-10-27 (« tout a l'air
 **Tranché :**
 
 - **La default voice, pas la « Brand voice ».** C'est la voix d'origine du Playbook, la première, celle de tous les réseaux ; « Brand voice » ne disait rien. Renommée partout dans l'UI.
+- **La default voice est celle du premier réseau** (2026-10-28) — le réseau d'où le Playbook a été créé, pas un élément à part : son onglet est « LinkedIn · Default », on la nomme par son réseau (« your LinkedIn voice »), et l'onboarding aide à adapter les **autres** réseaux, un à la fois. ⚠️ Retiré : l'onglet « Default voice » séparé, et la case « Learn N voices » qui apprenait tout d'un coup.
 - **Un seul état « default »** pour un réseau sans voix à lui. `borrowed` (jamais réglé) et `plain` (« Use the Brand voice as it is » choisi) étaient deux états pour la même chose vue de l'utilisateur ; seul reste `chosen`, pour ne pas reposer la question.
 - **Les mêmes choix partout** — posts · document · questions · edit (+ default voice quand un draft attend). Avant : quatre jeux différents selon le chat, Clips, la fiche et l'intro.
 - **Apprendre propose, l'utilisateur dispose.** Ce qu'Archie apprend est montré puis **ajouté au Voice profile** (seul moment où c'est enregistré) ou **édité** dans le Playbook. Avant : la voix était écrite dès l'apprentissage, et « valider » ne voulait rien dire.

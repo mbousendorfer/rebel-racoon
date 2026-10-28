@@ -19,13 +19,13 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2323";
-import { isPortraitFormat } from "../clip-formats.js?v=2323";
-import { presetById } from "../clip-captions.js?v=2323";
-import { renderFeedbackControl } from "./feedback-control.js?v=2323";
-import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2323";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2323";
-import { REVEAL_MS } from "../archie-pixels.js?v=2323";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2324";
+import { isPortraitFormat } from "../clip-formats.js?v=2324";
+import { presetById } from "../clip-captions.js?v=2324";
+import { renderFeedbackControl } from "./feedback-control.js?v=2324";
+import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2324";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2324";
+import { REVEAL_MS } from "../archie-pixels.js?v=2324";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -142,7 +142,7 @@ function renderVoiceStatus(net, opts, post) {
     return `<div class="ap-status-card orange posts__card-voice-status" role="status">
     <div class="upper">
       <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-      <div class="flow"><span>Written in your default voice. No rules for ${label} yet.</span></div>
+      <div class="flow"><span>Written in your ${escapeText(opts.voice.from || "default voice")}. No rules for ${label} yet.</span></div>
       <button type="button" class="ap-link small standalone" data-post-voice="${escapeAttr(opts.playbookId)}" data-post-voice-net="${escapeAttr(net)}">Add rules for ${label}</button>
     </div>
   </div>`;
