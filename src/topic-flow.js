@@ -46,14 +46,14 @@
 // each keeps per-session state in a module-local Map, and a second copy at a
 // different URL would keep its own.
 
-import { navigate } from "./router.js?v=2297";
-import { setHandoff } from "./handoff.js?v=2297";
-import { addReadySource } from "./sources-stream.js?v=2297";
-import { postAssistantMessage, postTopicsWidget } from "./assistant.js?v=2297";
-import { getTopicById, topicTitle, markUsed, getPickableTopics } from "./topics-store.js?v=2297";
-import { getFeedById, getFeedForPlaybook } from "./topic-feeds-store.js?v=2297";
-import { findTopicSource } from "./topics-catalog.js?v=2297";
-import { getContextById } from "./contexts-store.js?v=2297";
+import { navigate } from "./router.js?v=2299";
+import { setHandoff } from "./handoff.js?v=2299";
+import { addReadySource } from "./sources-stream.js?v=2299";
+import { postAssistantMessage, postTopicsWidget } from "./assistant.js?v=2299";
+import { getTopicById, topicTitle, markUsed, getPickableTopics } from "./topics-store.js?v=2299";
+import { getFeedById, getFeedForPlaybook } from "./topic-feeds-store.js?v=2299";
+import { findTopicSource } from "./topics-catalog.js?v=2299";
+import { getContextById } from "./contexts-store.js?v=2299";
 
 export const TOPIC_CHAT_HANDOFF = "pendingTopicChat";
 
@@ -140,7 +140,7 @@ export function startTopicPickerInline(sessionId, session) {
   }
   postAssistantMessage(
     sessionId,
-    `Here are the freshest draft-ready Topics from ${pb.name} — pick one and I'll bring it in as a source.`,
+    `Here are the freshest draft-ready Topics from ${pb.name}. Pick one and I'll bring it in as a source.`,
   );
   postTopicsWidget(sessionId, { feedId: feed.id, topicIds: topics.map((t) => t.id) });
 }

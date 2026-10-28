@@ -32,17 +32,17 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=2297";
-import { conceptText } from "../concepts.js?v=2297";
-import { navigate, getPath } from "../router.js?v=2297";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2297";
-import { renderTopbar } from "../components/topbar.js?v=2297";
-import { showToast } from "../components/toast.js?v=2297";
-import { renderEmptyState } from "../components/empty-state.js?v=2297";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2297";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2297";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2297";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2297";
+import { html, raw, escapeAttr } from "../utils.js?v=2299";
+import { conceptText } from "../concepts.js?v=2299";
+import { navigate, getPath } from "../router.js?v=2299";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2299";
+import { renderTopbar } from "../components/topbar.js?v=2299";
+import { showToast } from "../components/toast.js?v=2299";
+import { renderEmptyState } from "../components/empty-state.js?v=2299";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2299";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2299";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2299";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2299";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -53,7 +53,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=2297";
+} from "../topics-store.js?v=2299";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -62,13 +62,13 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=2297";
-import { renderTopicCard } from "../components/topic-card.js?v=2297";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=2297";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2297";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=2297";
-import { useTopicInChat } from "../topic-flow.js?v=2297";
-import { canEdit } from "../playbook-access.js?v=2297";
+} from "../topics-catalog.js?v=2299";
+import { renderTopicCard } from "../components/topic-card.js?v=2299";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=2299";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2299";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=2299";
+import { useTopicInChat } from "../topic-flow.js?v=2299";
+import { canEdit } from "../playbook-access.js?v=2299";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -1152,7 +1152,7 @@ function bind(target) {
       openIgnoreReason(id, (reason) => {
         ignoreTopic(id, reason);
         const t = getTopicById(id);
-        showToast(`Ignored — I'll keep "${topicTitle(t)}" off this list`, {
+        showToast(`Ignored. I'll keep "${topicTitle(t)}" off this list`, {
           action: { label: "Undo", onClick: () => unignoreTopic(id) },
         });
       });
