@@ -1811,7 +1811,7 @@ body.clips-editing .app-content {
   border: 1px solid var(--ref-color-electric-blue-100);
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-white);
-  color: var(--ref-color-electric-blue-60);
+  color: var(--ref-color-grey-100);
   font: inherit;
   font-size: var(--sys-text-style-caption-size);
   font-variant-numeric: tabular-nums;
@@ -2019,7 +2019,7 @@ body.clips-editing .app-content {
 
 /* Same states as a text part (.clips-tl__text): one border, blue. */
 .clips-tl__seg:hover {
-  border-color: var(--ref-color-electric-blue-60);
+  border-color: var(--ref-color-electric-blue-100);
 }
 
 .clips-tl__seg.is-edited {
@@ -2107,7 +2107,7 @@ body.clips-editing .app-content {
 }
 
 .clips-tl__text:hover {
-  border-color: var(--ref-color-electric-blue-60);
+  border-color: var(--ref-color-electric-blue-100);
 }
 
 .clips-tl__text.is-current {
@@ -2280,7 +2280,7 @@ body.clips-editing .app-content {
 }
 
 .clips-layout:has(input:checked) .clips-layout__glyph {
-  border-color: var(--ref-color-electric-blue-60);
+  border-color: var(--ref-color-electric-blue-100);
 }
 
 /* A person: a head and shoulders, in the subtle text tone (blue when picked). */
@@ -2319,7 +2319,7 @@ body.clips-editing .app-content {
 
 .clips-layout:has(input:checked) .clips-layout__person::before,
 .clips-layout:has(input:checked) .clips-layout__person::after {
-  background: var(--ref-color-electric-blue-60);
+  background: var(--ref-color-electric-blue-100);
 }
 
 .clips-layout__glyph--auto {
@@ -2329,7 +2329,7 @@ body.clips-editing .app-content {
 }
 
 .clips-layout:has(input:checked) .clips-layout__glyph--auto {
-  color: var(--ref-color-electric-blue-60);
+  color: var(--ref-color-electric-blue-100);
 }
 
 /* Fit: the whole 16:9 frame, small, on a blurred fill. */
@@ -2346,7 +2346,7 @@ body.clips-editing .app-content {
 }
 
 .clips-layout:has(input:checked) .clips-layout__inset {
-  border-color: var(--ref-color-electric-blue-60);
+  border-color: var(--ref-color-electric-blue-100);
 }
 
 .clips-layout__name {

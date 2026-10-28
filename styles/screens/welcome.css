@@ -67,19 +67,6 @@
   font-size: var(--sys-icon-css-md);
 }
 
-.welcome-screen__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
-  border-radius: var(--app-radius-pill);
-  background: var(--app-surface-subtle);
-  color: var(--ref-color-grey-80);
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-}
-
 .welcome-screen__body {
   flex: 1 1 auto;
   display: flex;

@@ -15,6 +15,10 @@
 .session__assistant {
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
+  /* The one column is the chat's width, never its widest child's: with the
+     implicit `auto` column the composer's toolbar (min-content ~590px) pushed
+     the column past a narrow chat and slid under the open side panel. */
+  grid-template-columns: minmax(0, 1fr);
   background: var(--app-bg);
   border-right: 1px solid var(--app-border);
   overflow: hidden;
@@ -1769,10 +1773,21 @@ archie-pixels.empty-chat__pixels {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xs);
-  flex-wrap: nowrap;
-  /* min-width lets the row truly stay on one line — the Playbook
-     select claims max-content otherwise, which forces a wrap when
-     the composer column is narrow. */
+  /* One row wherever it fits. In a narrow chat (side panel open on a small
+     screen) the Playbook group drops to a second row WITH Send, never alone:
+     its width is capped at the row minus Send, and only its value truncates. */
+  flex-wrap: wrap;
+  row-gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.session__composer-toolbar > .concept-group {
+  min-width: 0;
+  max-width: calc(100% - var(--sys-button-height) - var(--ref-spacing-xs));
+}
+
+.session__composer-toolbar .composer-playbook,
+.session__composer-toolbar .composer-playbook__trigger {
   min-width: 0;
 }
 

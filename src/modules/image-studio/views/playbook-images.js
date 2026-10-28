@@ -15,14 +15,14 @@
 // Styles and reference images save as they change, like the styles always did:
 // no Edit. The Generate block's look and formats wait for its Save changes.
 
-import { html, raw, toString } from "../lib/html.js?v=2276";
-import { navigate } from "../../../router.js?v=2276";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=2276";
-import { toast } from "../ui/toast.js?v=2276";
-import { renderEmpty } from "../ui/empty.js?v=2276";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=2276";
-import { shapesFor } from "../config/formats.js?v=2276";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=2276";
+import { html, raw, toString } from "../lib/html.js?v=2277";
+import { navigate } from "../../../router.js?v=2277";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=2277";
+import { toast } from "../ui/toast.js?v=2277";
+import { renderEmpty } from "../ui/empty.js?v=2277";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=2277";
+import { shapesFor } from "../config/formats.js?v=2277";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=2277";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -31,8 +31,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=2276";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=2276";
+} from "../state/playbook-brand.js?v=2277";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=2277";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -58,8 +58,10 @@ const section = ({ aside, body }) =>
 const emptyBlock = ({ icon, title, body, action }) =>
   html`<div class="imst-images-empty">${renderEmpty({ icon, title, body, action })}</div>`;
 
-const usedTag = html`<span class="ap-tag grey mini imst-images__used"
-  ><span>Default for Generate an image</span></span
+// « Default », as the Branding tab tags its logo: the long phrase was cut by
+// the tag on a style card or an image tile; it stays in the tooltip.
+const usedTag = html`<span class="ap-tag grey mini imst-images__used" title="Default for Generate an image"
+  ><span>Default</span></span
 >`;
 
 // ── 1. Image styles ─────────────────────────────────────────────────────────
