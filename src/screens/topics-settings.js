@@ -29,22 +29,22 @@
 // now does — and a row cannot without turning the list into a form. No save bar:
 // every control commits immediately through updateFeed.
 
-import { html, raw } from "../utils.js?v=2283";
-import { navigate } from "../router.js?v=2283";
-import { parseHashParams } from "../url-state.js?v=2283";
-import { renderTopbar } from "../components/topbar.js?v=2283";
-import { renderEmptyState } from "../components/empty-state.js?v=2283";
-import { getContextById, getDefaultContext } from "../contexts-store.js?v=2283";
+import { html, raw } from "../utils.js?v=1";
+import { navigate } from "../router.js?v=1";
+import { parseHashParams } from "../url-state.js?v=1";
+import { renderTopbar } from "../components/topbar.js?v=1";
+import { renderEmptyState } from "../components/empty-state.js?v=1";
+import { getContextById, getDefaultContext } from "../contexts-store.js?v=1";
 import {
   getActivePlaybook,
   isWorkspaceMode,
   catalogueRoute,
   subscribe as subscribeScope,
-} from "../active-playbook.js?v=2283";
-import { editableContexts, visibleContexts, canEdit } from "../playbook-access.js?v=2283";
-import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2283";
-import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=2283";
-import { open as openFeedback } from "../components/feedback-modal.js?v=2283";
+} from "../active-playbook.js?v=1";
+import { editableContexts, visibleContexts, canEdit } from "../playbook-access.js?v=1";
+import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1";
+import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=1";
+import { open as openFeedback } from "../components/feedback-modal.js?v=1";
 
 // Above this many Playbooks the picker earns a search field. Below it, a search
 // box over four rows is just noise.
@@ -168,7 +168,7 @@ function renderPage() {
 
   const count =
     onCount === 0
-      ? "Nothing on yet — turn one on and I'll start listening."
+      ? "Nothing on yet. Turn one on and I'll start listening."
       : `${onCount} of ${TOPIC_SOURCES.length} on`;
 
   return html`
@@ -349,7 +349,17 @@ function renderSourceCard(ctx, feed, source, on) {
   // a second value-carrying source would not need this renderer touched again.
   const sites = source.showsWebsites && feed ? renderSiteList(feed) : "";
 
-  const foot = anchor || sites ? html`<footer class="topics-src__foot">${raw(anchor)}${raw(sites)}</footer>` : "";
+  // The one thing a reader can do about a source that is not live yet: say how
+  // they would use it. In the foot, so the header keeps its name on one line.
+  const need = live
+    ? ""
+    : html`<button type="button" class="ap-link standalone small topics-src__need" data-topics-need="${source.id}">
+        Need this source?
+      </button>`;
+  const foot =
+    anchor || sites || need
+      ? html`<footer class="topics-src__foot">${raw(anchor)}${raw(sites)}${raw(need)}</footer>`
+      : "";
 
   return html`<article class="ap-card topics-src${raw(on ? "" : " is-off")}">
     <header class="topics-src__head">
@@ -357,19 +367,7 @@ function renderSourceCard(ctx, feed, source, on) {
         <i class="${source.icon}"></i>
       </span>
       <h3 class="ap-card-title topics-src__name">${source.name}</h3>
-      ${raw(
-        live
-          ? ""
-          : html`<span class="topics-src__soon-group">
-              <span class="ap-tag grey mini topics-src__soon">Not available yet</span>
-              <!-- The one thing a reader can do about a source that is not live yet:
-                   say how they would use it. Without this the card is a dead end
-                   wearing a tag. -->
-              <button type="button" class="ap-link standalone small topics-src__need" data-topics-need="${source.id}">
-                Need this source?
-              </button>
-            </span>`,
-      )}
+      ${raw(live ? "" : html`<span class="ap-tag grey mini topics-src__soon">Not available yet</span>`)}
       <label class="ap-toggle-container topics-src__switch">
         <input
           type="checkbox"

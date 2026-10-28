@@ -4,22 +4,22 @@
 // session.js, unchanged; the mention picker stays there, since bindSession
 // writes its highlight state.
 
-import { isFlagOn } from "../../feature-flags.js?v=2283";
-import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2283";
-import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2283";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2283";
-import { getSources, getIdeas } from "../../library.js?v=2283";
-import * as clipStudio from "../../clip-studio.js?v=2283";
-import { getThread } from "../../assistant.js?v=2283";
-import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2283";
-import { revokedContextFor } from "../../playbook-access.js?v=2283";
-import { getSessionById } from "../../sessions-store.js?v=2283";
-import { catalogueRoute } from "../../active-playbook.js?v=2283";
-import { getActiveConnector } from "../../composer-connector.js?v=2283";
-import { isDemo } from "../../demo-mode.js?v=2283";
-import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=2283";
-import { renderTopicPickerRow } from "./empty-hero.js?v=2283";
-import { renderChatGallery } from "./chat-gallery.js?v=2283";
+import { isFlagOn } from "../../feature-flags.js?v=1";
+import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=1";
+import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1";
+import { renderConnectorLogo } from "../../connectors-view.js?v=1";
+import { getSources, getIdeas } from "../../library.js?v=1";
+import * as clipStudio from "../../clip-studio.js?v=1";
+import { getThread } from "../../assistant.js?v=1";
+import { getActivePlan, getPlans } from "../../post-plan-store.js?v=1";
+import { revokedContextFor } from "../../playbook-access.js?v=1";
+import { getSessionById } from "../../sessions-store.js?v=1";
+import { catalogueRoute } from "../../active-playbook.js?v=1";
+import { getActiveConnector } from "../../composer-connector.js?v=1";
+import { isDemo } from "../../demo-mode.js?v=1";
+import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=1";
+import { renderTopicPickerRow } from "./empty-hero.js?v=1";
+import { renderChatGallery } from "./chat-gallery.js?v=1";
 
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the
@@ -192,7 +192,7 @@ export function renderComposerStatus(sessionId) {
           <i class="ap-icon-lock-on" aria-hidden="true"></i>
           <div class="flow">
             <span
-              >I can't write anything new here — this chat runs on <strong>${revoked.name}</strong>, and
+              >I can't write anything new here: this chat runs on <strong>${revoked.name}</strong>, and
               ${revoked.ownerName} stopped sharing it. The drafts already in this chat are still yours to save or
               schedule.</span
             >
@@ -331,10 +331,10 @@ export function renderComposer(attachedContext, session, selectable) {
   // No Playbook, no generation. The composer is the main affordance, so it says
   // so plainly rather than swallowing the keystroke.
   const revoked = revokedContextFor(session);
-  // A new chat (flag newChatHero) invites a first move instead of a follow-up.
+  // A new chat invites a first move: there is nothing to follow up on yet.
   const placeholder = revoked
-    ? "This Playbook isn't shared with you anymore — start a chat with another one"
-    : selectable && isFlagOn("newChatHero")
+    ? "This Playbook isn't shared with you anymore. Start a chat with another one"
+    : selectable
       ? "Paste a link, drop a file, or tell me what to post…"
       : COMPOSER_DEFAULT_PLACEHOLDER;
   return `
@@ -428,7 +428,11 @@ export function renderComposer(attachedContext, session, selectable) {
                 ${renderConnectorsSubmenu()}
               </div>
             </div>
-            <button
+            ${
+              // An empty chat has nothing to reference: no greyed button there.
+              selectable && !hasMentionable
+                ? ""
+                : `<button
               type="button"
               class="ap-button stroked grey composer-mention-trigger"
               aria-label="Reference a source or idea"
@@ -440,7 +444,8 @@ export function renderComposer(attachedContext, session, selectable) {
             >
               <i class="ap-icon-at"></i>
               <span>Reference</span>
-            </button>
+            </button>`
+            }
             ${renderPlaybookControl(attachedContext, selectable)}
             <button
               type="button"

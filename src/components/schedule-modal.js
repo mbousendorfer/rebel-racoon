@@ -1,17 +1,17 @@
-import { html, raw, escapeText, escapeAttr, formatTimeOfDay, formatClock } from "../utils.js?v=2283";
-import { showToast } from "./toast.js?v=2283";
-import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=2283";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2283";
+import { html, raw, escapeText, escapeAttr, formatTimeOfDay, formatClock } from "../utils.js?v=1";
+import { showToast } from "./toast.js?v=1";
+import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
   normalizeNetwork,
-} from "../social-profiles.js?v=2283";
-import { getContextById } from "../contexts-store.js?v=2283";
-import { canEdit } from "../playbook-access.js?v=2283";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=2283";
+} from "../social-profiles.js?v=1";
+import { getContextById } from "../contexts-store.js?v=1";
+import { canEdit } from "../playbook-access.js?v=1";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=1";
 import {
   CADENCES,
   startOfDay,
@@ -21,7 +21,7 @@ import {
   planSlots,
   queueEntries,
   firstLine as extractFirstLine,
-} from "../schedule-engine.js?v=2283";
+} from "../schedule-engine.js?v=1";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -535,11 +535,13 @@ function rhythmSentence() {
       )}`
     : "";
   // Whose rhythm this is, when it's the Playbook's saved one.
-  const lead = usingSavedPreset() ? `${b(`${state.playbook.name}'s rhythm`)} — ` : "";
+  const lead = usingSavedPreset() ? `${b(`${state.playbook.name}'s rhythm`)}: ` : "";
   if (state.posts.length === 1) {
     const name = networkName(networkOf(state.posts[0]));
     const when = s.timeOfDay ? `in the ${b(tod.label.toLowerCase())}` : `at ${b(`${name}'s best time`)}`;
-    return `${lead}${lead ? "from" : "From"} ${b(formatDay(s.startFrom))}, ${when}${skip}.`;
+    // "Not before": the slot itself can land later (taken days, the
+    // network's best weekdays), and "From Thu" over a Tuesday slot read as a bug.
+    return `${lead}${lead ? "not before" : "Not before"} ${b(formatDay(s.startFrom))}, ${when}${skip}.`;
   }
   const cadence = CADENCES.find((c) => c.id === s.cadence) || CADENCES[0];
   return `${lead}${b(cadence.label)} from ${b(formatDay(s.startFrom))}, ${at}${skip}.`;
@@ -928,13 +930,13 @@ function renderWhen(slot) {
             type="button"
             class="schedule-modal__when-time"
             data-schedule-when="${id}"
-            aria-label="Change the publish time — ${escapeAttr(formatDay(slot.when))}, ${formatTime(slot.when)}"
+            aria-label="Change the publish time: ${escapeAttr(formatDay(slot.when))}, ${formatTime(slot.when)}"
           >${formatTime(slot.when)}</button>
           <button
             type="button"
             class="ap-icon-button schedule-modal__when-edit"
             data-schedule-when="${id}"
-            aria-label="Change the publish time — ${escapeAttr(formatDay(slot.when))}, ${formatTime(slot.when)}"
+            aria-label="Change the publish time: ${escapeAttr(formatDay(slot.when))}, ${formatTime(slot.when)}"
             data-tooltip="Change date or time"
             tabindex="-1"
           >

@@ -15,32 +15,32 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=2283";
-import { delegate } from "../lib/delegate.js?v=2283";
-import { hashString } from "../lib/prng.js?v=2283";
-import { renderEmpty } from "../ui/empty.js?v=2283";
-import { preserveFocus } from "../ui/fields.js?v=2283";
-import { toast } from "../ui/toast.js?v=2283";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=2283";
-import { styleThumb } from "../ui/style-thumb.js?v=2283";
-import { openDialog } from "../ui/dialog.js?v=2283";
-import { menu } from "../ui/menu.js?v=2283";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=2283";
-import { QUICK_PRESETS, STYLE_PRESETS } from "../config/style-presets.js?v=2283";
-import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=2283";
-import { networkById } from "../config/networks.js?v=2283";
-import { copyService, imageGenerationService } from "../services/index.js?v=2283";
-import { unbranded, getPlaybookReferences } from "../state/playbook-brand.js?v=2283";
-import { resolveLayers } from "../render/layout.js?v=2283";
-import { svgToDataUrl } from "../render/visual.js?v=2283";
-import { REVEAL_MS } from "../../../archie-pixels.js?v=2283";
-import { splitVisual } from "../render/split.js?v=2283";
-import { bakeDoc } from "../render/edit-export.js?v=2283";
-import { subjectKindFor } from "../render/subjects.js?v=2283";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=2283";
-import { createEditor } from "./edit/editor.js?v=2283";
-import { mount as mountStyleCreator } from "./style-creator.js?v=2283";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=2283";
+import { html, raw, toString } from "../lib/html.js?v=1";
+import { delegate } from "../lib/delegate.js?v=1";
+import { hashString } from "../lib/prng.js?v=1";
+import { renderEmpty } from "../ui/empty.js?v=1";
+import { preserveFocus } from "../ui/fields.js?v=1";
+import { toast } from "../ui/toast.js?v=1";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1";
+import { styleThumb } from "../ui/style-thumb.js?v=1";
+import { openDialog } from "../ui/dialog.js?v=1";
+import { menu } from "../ui/menu.js?v=1";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1";
+import { QUICK_PRESETS, STYLE_PRESETS } from "../config/style-presets.js?v=1";
+import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1";
+import { networkById } from "../config/networks.js?v=1";
+import { copyService, imageGenerationService } from "../services/index.js?v=1";
+import { unbranded, getPlaybookReferences } from "../state/playbook-brand.js?v=1";
+import { resolveLayers } from "../render/layout.js?v=1";
+import { svgToDataUrl } from "../render/visual.js?v=1";
+import { REVEAL_MS } from "../../../archie-pixels.js?v=1";
+import { splitVisual } from "../render/split.js?v=1";
+import { bakeDoc } from "../render/edit-export.js?v=1";
+import { subjectKindFor } from "../render/subjects.js?v=1";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1";
+import { createEditor } from "./edit/editor.js?v=1";
+import { mount as mountStyleCreator } from "./style-creator.js?v=1";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -51,15 +51,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=2283";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=2283";
+} from "../state/store.js?v=1";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=2283";
+} from "../state/creation-actions.js?v=1";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 const MAX_SLIDES = 10;
@@ -607,7 +607,6 @@ export function mountStudio(
       aria-label="${s.label}"
     >
       ${styleThumb(s, lookOf(brand, state.brief), { className: "imst-tile__img", seed: hashString(s.id) })}
-      ${s.kind === "custom" ? html`<span class="ap-tag grey mini imst-mine"><span>My style</span></span>` : ""}
       <span class="imst-tile__name">${s.label}</span>
       ${s.id === state.brief.styleId
         ? html`<span class="imst-tile__check" aria-hidden="true"><i class="ap-icon-check"></i></span>`
@@ -634,7 +633,7 @@ export function mountStudio(
           ${style
             ? html`<span class="ap-body-bold">${style.label}</span>${style.kind === "custom"
                   ? " · My style"
-                  : ""}${style.description ? ` — ${style.description}` : ""}`
+                  : ""}${style.description ? `: ${style.description}` : ""}`
             : ""}
         </p>
       </section>`;
@@ -955,14 +954,14 @@ ${b.prompt}</textarea
           tabindex="0"
           role="img"
           aria-label="What writing the text into the image changes"
-          data-tooltip="Written in: painted into the picture in the style's lettering — it can't be edited later. Left off: a layer you can change anytime."
+          data-tooltip="Written in: painted into the picture in the style's lettering, so you can't edit it later. Left off: a layer you can change anytime."
         ></i>
       </div>
       <span class="ap-caption imst-ctl__note"
         >${!canEmbed
           ? `${style.label} can't write text, so it stays an editable layer you can move and restyle.`
           : b.textMode === "embedded"
-            ? "Part of the picture — it won't be editable afterwards."
+            ? "Part of the picture. You can't edit it afterwards."
             : "Otherwise it stays an editable layer you can move and restyle."}</span
       >
       ${state.warning
@@ -1093,8 +1092,10 @@ ${b.prompt}</textarea
               ? `From your words alone, in ${brand.name}'s colors.`
               : `A preview of ${style.oneOff ? "your image's style" : style.label} in ${brand.name}'s colors.`}</span
           >
-          ${state.source === "scratch" ? "Describe what you want and generate" : "Generate: I'll draw from the draft"} —
-          you'll get
+          ${state.source === "scratch"
+            ? "Describe what you want and generate."
+            : "Generate and I'll draw from the draft."}
+          You'll get
           ${(b.slides || 1) > 1
             ? b.count === 1
               ? `one carousel of ${b.slides} slides`
@@ -1487,7 +1488,7 @@ ${b.prompt}</textarea
             </div>`
           : ""}
         <p class="ap-body imst-canvas-area__caption">
-          Pick a style or describe a new one — a new image replaces the draft's ${draftSlides ? "carousel" : "image"}
+          Pick a style or describe a new one. A new image replaces the draft's ${draftSlides ? "carousel" : "image"}
           only when you choose.
         </p>
         <div class="imst-current__actions">

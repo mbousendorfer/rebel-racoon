@@ -16,10 +16,10 @@
 // caret, drop the slider under the pointer, or replay a popover's entrance.
 // Everything else goes change → repaint.
 
-import { html, raw } from "../../lib/html.js?v=2283";
-import { delegate, wait } from "../../lib/delegate.js?v=2283";
-import { IMAGE_PRESETS, REDRAW_MS, outlineMetrics, shadowMetrics } from "../../config/edit.js?v=2283";
-import { bakeDoc } from "../../render/edit-export.js?v=2283";
+import { html, raw } from "../../lib/html.js?v=1";
+import { delegate, wait } from "../../lib/delegate.js?v=1";
+import { IMAGE_PRESETS, REDRAW_MS, outlineMetrics, shadowMetrics } from "../../config/edit.js?v=1";
+import { bakeDoc } from "../../render/edit-export.js?v=1";
 import {
   cropDoc,
   docSignature,
@@ -32,9 +32,9 @@ import {
   removeLayer,
   textLayer,
   undo,
-} from "../../state/edit-doc.js?v=2283";
-import { editFrame, textStyle } from "./canvas.js?v=2283";
-import { composer, layersPanel, redrawTarget, toolPalette, viewToggle } from "./panels.js?v=2283";
+} from "../../state/edit-doc.js?v=1";
+import { editFrame, textStyle } from "./canvas.js?v=1";
+import { composer, layersPanel, redrawTarget, toolPalette, viewToggle } from "./panels.js?v=1";
 
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 const DEFAULT_CROP = { xF: 0.15, yF: 0.15, wF: 0.7, hF: 0.7 };
@@ -340,7 +340,7 @@ export function createEditor({
     finishEditing();
     const target = redrawTarget(entry.doc, ui.selectedId);
     if (!target.kinds.length) {
-      toast("I can only redraw the layers I generated — this image came with the draft.");
+      toast("I can only redraw the layers I generated. This image came with the draft.");
       return;
     }
     const prompt = ui.prompt.trim();

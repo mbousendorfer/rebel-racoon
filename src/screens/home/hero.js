@@ -2,15 +2,15 @@
 // the Playbook picker and the workflow starters. Reads the page state home.js
 // owns. Moved out of home.js, unchanged.
 
-import { usableContexts } from "../../playbook-access.js?v=2283";
-import { getActivePlaybookId } from "../../active-playbook.js?v=2283";
-import { isFlagOn } from "../../feature-flags.js?v=2283";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2283";
-import { escapeAttr, escapeText } from "../../utils.js?v=2283";
-import { conceptHint } from "../../concepts.js?v=2283";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2283";
-import { renderStarterCards } from "../../components/starter-card.js?v=2283";
-import { pageState } from "../home.js?v=2283";
+import { usableContexts } from "../../playbook-access.js?v=1";
+import { getActivePlaybookId } from "../../active-playbook.js?v=1";
+import { isFlagOn } from "../../feature-flags.js?v=1";
+import { getConnectedConnectors } from "../../connectors-store.js?v=1";
+import { escapeAttr, escapeText } from "../../utils.js?v=1";
+import { conceptHint } from "../../concepts.js?v=1";
+import { renderConnectorLogo } from "../../connectors-view.js?v=1";
+import { renderStarterCards } from "../../components/starter-card.js?v=1";
+import { pageState } from "../home.js?v=1";
 
 // ── The hero — the reason this page exists ────────────────────────────────
 //
@@ -51,7 +51,7 @@ export function renderHomeHero() {
             class="ap-button primary orange home-hero__send"
             data-home-send
             aria-label="Send"
-            title="Send — opens a new chat (Enter)"
+            title="Send in a new chat (Enter)"
             disabled
           >
             <i class="ap-icon-arrow-up"></i>
@@ -184,7 +184,7 @@ export function renderHeroPicker(picked, options) {
   return `
     <span class="concept-group">
     <details class="ap-select home-hero__pb" data-home-pb>
-      <summary class="ap-select-trigger" title="Playbook: ${escapeAttr(picked?.name || "")} — the Brand I'll write for">
+      <summary class="ap-select-trigger" title="Playbook: ${escapeAttr(picked?.name || "")}, the Brand I'll write for">
         <span class="app-sidebar__row-color-dot app-sidebar__row-color-dot--${escapeAttr(picked?.color || "grey")}" aria-hidden="true"></span>
         <span class="ap-select-inline-label">Playbook</span>
         <span class="ap-select-value">${escapeText(picked?.name || "Select a Playbook")}</span>

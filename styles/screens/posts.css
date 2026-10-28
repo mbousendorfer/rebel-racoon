@@ -951,41 +951,11 @@
   line-height: var(--sys-text-style-caption-line-height);
 }
 
-/* Per-network character count (DS CharacterCounts, node 3185:48434).
-   Right-aligned chip under the body: network logo + remaining chars,
-   flipping to a red pill when the draft runs over the network limit. */
-.posts__card-count-row {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: calc(-1 * var(--ref-spacing-xxs));
-}
-
-.posts__charcount {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  padding: 0 var(--ref-spacing-xxxs);
-  border-radius: var(--ref-border-radius-sm);
-  font-size: var(--ref-font-size-xs);
-  line-height: var(--ref-font-line-height-xs);
-  color: var(--ref-color-grey-80);
-}
-
-.posts__charcount i {
-  font-size: var(--sys-icon-css-xs);
-  line-height: 1;
-}
-
-.posts__charcount.is-over {
-  background: var(--ref-color-red-10);
-  color: var(--ref-color-red-100);
-}
-
 /* ── The draft as a picture: the Image Generator's "In feed" view ─────────
    The same card the Drafts board draws, handed to the studio by
    right-panel.js with the studio's image in it. The app's tooling around the
    post (select, action stack, feedback strip, generation context, image
-   controls, character count) is stripped: the preview shows the post
+   controls) is stripped: the preview shows the post
    the network will show, not the app around it. */
 .posts__feed-preview .posts__row {
   display: block;
@@ -1002,7 +972,6 @@
 .posts__feed-preview .posts__gencontext-check,
 .posts__feed-preview .posts__card-image-controls,
 .posts__feed-preview .posts__card-media-empty,
-.posts__feed-preview .posts__charcount,
 .posts__feed-preview .ap-infobox {
   display: none;
 }

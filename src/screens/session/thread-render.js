@@ -13,26 +13,26 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2283";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2283";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2283";
-import { getTopPost } from "../../top-posts-store.js?v=2283";
-import { getTopicById } from "../../topics-store.js?v=2283";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2283";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2283";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2283";
-import { getIdeas } from "../../library.js?v=2283";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2283";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2283";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2283";
-import { getPlans } from "../../post-plan-store.js?v=2283";
-import { isFlagOn } from "../../feature-flags.js?v=2283";
-import { CURRENT_USER } from "../../org.js?v=2283";
-import { getSessionById } from "../../sessions-store.js?v=2283";
-import { getContextById } from "../../contexts-store.js?v=2283";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2283";
-import { getFocusKey } from "../../components/right-panel.js?v=2283";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2283";
+} from "./thread-turns.js?v=1";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1";
+import { getTopPost } from "../../top-posts-store.js?v=1";
+import { getTopicById } from "../../topics-store.js?v=1";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=1";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=1";
+import { getIdeas } from "../../library.js?v=1";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=1";
+import { getPlans } from "../../post-plan-store.js?v=1";
+import { isFlagOn } from "../../feature-flags.js?v=1";
+import { CURRENT_USER } from "../../org.js?v=1";
+import { getSessionById } from "../../sessions-store.js?v=1";
+import { getContextById } from "../../contexts-store.js?v=1";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=1";
+import { getFocusKey } from "../../components/right-panel.js?v=1";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=1";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -442,11 +442,11 @@ function renderImageLookSetTurn(message) {
   return renderMessageBubble({
     role: "assistant",
     text: isSet
-      ? `Done — ${brand}'s images start from <strong>${label}</strong> now. Change it any time in ${playbook}.
+      ? `Done. ${brand}'s images start from <strong>${label}</strong> now. Change it any time in ${playbook}.
         <button type="button" class="ap-link" data-image-look-undo="${escapeHtml(message.contextId)}">Undo</button>`
       : ctx?.defaultLook?.kind
-        ? `${brand}'s images start from another look now — it changed in ${playbook}.`
-        : `${brand}'s images no longer start from ${label} — I'll ask the next time you generate one.`,
+        ? `${brand}'s images start from another look now. It changed in ${playbook}.`
+        : `${brand}'s images no longer start from ${label}. I'll ask the next time you generate one.`,
   });
 }
 
@@ -459,7 +459,7 @@ function renderVoiceLearnedTurn(message) {
   const id = escapeHtml(message.id);
   const ask = message.resolved
     ? `<a class="ap-link" href="#/playbook/${escapeHtml(message.contextId)}?tab=voice&amp;voice=${escapeHtml(message.network)}">See ${label} in your Voice profile</a>`
-    : `Add them and I'll write with them — or edit them first.
+    : `Add them and I'll write with them, or edit them first.
       <div class="voice-learned__actions">
         <button type="button" class="ap-button stroked grey" data-voice-learned="${id}" data-voice-action="edit">Edit in the Playbook</button>
         <button type="button" class="ap-button primary blue" data-voice-learned="${id}" data-voice-action="use">Add to Voice profile</button>
@@ -532,7 +532,7 @@ function renderConnectPromptTurn(message) {
           <span class="connect-card__title">${name}</span>
           <span class="connect-card__sub">Connect to import this ${escapeHtml(
             message.noun,
-          )} — I'll retry automatically.</span>
+          )}. I'll retry on my own.</span>
         </div>
         <span class="ap-status grey no-dot connect-card__state">Not connected</span>
       </div>
@@ -712,7 +712,7 @@ function renderClipExtractionTurn(message, sessionId) {
           busyLabel: stage,
           // OFF (Monday): the stage carries no ellipsis, the title adds it.
           title: convNew ? stage : `${stage}…`,
-          sub: "Turning your video into post-ready clips — this takes a moment. You can keep chatting.",
+          sub: "Turning your video into clips. You can keep chatting meanwhile.",
         })}
       </div>
     `;
@@ -888,7 +888,7 @@ function renderSchedulePlanTurn(message, sessionId) {
           </span>
           ${
             editable
-              ? `<button type="button" class="schedule-plan__when schedule-plan__when--edit" data-schedule-plan-edit="${message.id}" aria-label="Change the date — ${day(r.when)}, ${time(r.when)}" data-tooltip="Change date or time">
+              ? `<button type="button" class="schedule-plan__when schedule-plan__when--edit" data-schedule-plan-edit="${message.id}" aria-label="Change the date: ${day(r.when)}, ${time(r.when)}" data-tooltip="Change date or time">
                   <span class="schedule-plan__day">${day(r.when)}</span>
                   <span class="schedule-plan__time">${time(r.when)}</span>
                   <i class="ap-icon-pen schedule-plan__edit" aria-hidden="true"></i>

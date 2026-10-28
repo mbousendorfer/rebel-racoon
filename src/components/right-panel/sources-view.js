@@ -3,15 +3,15 @@
 // the panel shell (open / close / resize / URL state / delegated listeners)
 // stays there.
 
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2283";
-import { isFlagOn } from "../../feature-flags.js?v=2283";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2283";
-import { escapeAttr, escapeText } from "../../utils.js?v=2283";
-import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2283";
-import { conceptText } from "../../concepts.js?v=2283";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2283";
-import { renderTopPostEcho } from "../top-post-card.js?v=2283";
-import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2283";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1";
+import { isFlagOn } from "../../feature-flags.js?v=1";
+import { getConnectedConnectors } from "../../connectors-store.js?v=1";
+import { escapeAttr, escapeText } from "../../utils.js?v=1";
+import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=1";
+import { conceptText } from "../../concepts.js?v=1";
+import { renderConnectorLogo } from "../../connectors-view.js?v=1";
+import { renderTopPostEcho } from "../top-post-card.js?v=1";
+import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=1";
 
 // Sources mode view — list of source rows for the active session + a
 // trailing "+ Attach" button. Each row carries kind icon, filename,
@@ -53,7 +53,7 @@ export function renderSourcesView() {
         <div class="app-right-panel__empty rpanel-sources__empty">
           <div class="app-right-panel__empty-icon"><i class="ap-icon-file ap-icon-xl"></i></div>
           <div class="app-right-panel__empty-title">No sources yet</div>
-          <div class="app-right-panel__empty-sub">Attach a file or pick from a connector to start.</div>
+          <div class="app-right-panel__empty-sub">Attach a file, a link, or some text to start.</div>
           <div class="app-right-panel__empty-action">
             ${renderAttachMenu("primary orange", "Attach a source")}
           </div>
@@ -85,7 +85,7 @@ function renderLiveConnectors() {
         <div class="rpanel-sources__card-head">
           <span class="rpanel-live-connector__logo" aria-hidden="true">${renderConnectorLogo(c, 24)}</span>
           <div class="rpanel-sources__row-name" title="${escapeAttr(c.name)}">${escapeText(c.name)}</div>
-          <span class="ap-tag blue rpanel-live-connector__badge" title="Searched live — always up to date, nothing imported">Live</span>
+          <span class="ap-tag blue rpanel-live-connector__badge" title="I search it live, so nothing is imported">Live</span>
           <button
             type="button"
             class="ap-button ghost blue rpanel-sources__row-mention"

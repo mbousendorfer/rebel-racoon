@@ -14,17 +14,17 @@ import {
   allSeedSessions as seedRecentSessions,
   DEMO_IDEA_TEMPLATES,
   DEMO_VIDEO_IDEAS,
-} from "./mocks.js?v=2283";
-import { isDemo } from "./demo-mode.js?v=2283";
-import { isNewUser } from "./user-mode.js?v=2283";
+} from "./mocks.js?v=1";
+import { isDemo } from "./demo-mode.js?v=1";
+import { isNewUser } from "./user-mode.js?v=1";
 
 // Demo session ids — the recentSessions seed (s-acme-launch / s-riverside /
 // etc.). Only these sessions get the seeded ideas mock; brand-new
 // conversations (created at runtime via "+ New conversation") start empty
 // to match the user's mental model. Anything else looked-up — same path.
 const DEMO_SESSION_IDS = new Set(seedRecentSessions.map((s) => s.id));
-import { postExtractionResult, startPending, finishPending } from "./assistant.js?v=2283";
-import { setIdeasReader } from "./assistant.js?v=2283";
+import { postExtractionResult, startPending, finishPending } from "./assistant.js?v=1";
+import { setIdeasReader } from "./assistant.js?v=1";
 
 // Hand the assistant a way to read a session's ideas. The dependency only runs
 // this way — library imports assistant, never the reverse — so the mock replies
@@ -35,7 +35,7 @@ import {
   subscribeSources,
   pushScriptedSource,
   completeScriptedSource,
-} from "./sources-stream.js?v=2283";
+} from "./sources-stream.js?v=1";
 
 // --- Module state -------------------------------------------------------
 
@@ -135,8 +135,8 @@ export function appendExtractedIdeas(sessionId, sources, onDone) {
       const template = templates[(idx + created.length) % templates.length];
       created.push({
         id: newId("idea"),
-        title: template.title.replace("{filename}", source.filename),
-        body: template.body.replace("{filename}", source.filename),
+        title: template.title,
+        body: template.body,
         rationale: template.rationale,
         relevance: template.relevance,
         relevanceColor: template.relevanceColor,
@@ -281,13 +281,13 @@ function notify(sessionId) {
 // --- Extra-extraction templates (bulk "extract more ideas") ------------
 //
 // One of these is picked per selected source by appendExtractedIdeas. The
-// {filename} placeholder is replaced with the source's filename so each
-// idea looks freshly mined. Order doesn't matter — they're rotated.
+// source tag on the card names the source, so a title never repeats it.
+// Order doesn't matter: they're rotated.
 
 const EXTRA_IDEA_TEMPLATES = [
   {
-    title: "The unspoken constraint hiding in {filename}",
-    body: "A pattern Archie noticed on a second pass — what the doc keeps circling without naming directly.",
+    title: "The constraint nobody names",
+    body: "The limit this source keeps working around without ever stating it.",
     rationale:
       "Re-reads tend to surface the structural constraint authors avoid stating. High-leverage angle for thoughtful audiences.",
     relevance: "High relevance",
@@ -296,8 +296,8 @@ const EXTRA_IDEA_TEMPLATES = [
     channels: ["linkedin"],
   },
   {
-    title: "What surprised me about {filename}",
-    body: "A first-person reaction post — the line in the source that didn't match the rest of its tone.",
+    title: "The line that doesn't fit",
+    body: "A first-person reaction to the one sentence that breaks the source's tone.",
     rationale: "Personal-reaction posts perform well when grounded in a specific moment. Reusable template.",
     relevance: "Medium relevance",
     relevanceColor: "tagOrange",
@@ -305,17 +305,17 @@ const EXTRA_IDEA_TEMPLATES = [
     channels: ["linkedin", "x"],
   },
   {
-    title: "A case-study angle from {filename}",
-    body: "Reframes the source as one company's data point in a larger pattern.",
-    rationale: "Case-study framing draws comments from operators who've lived a similar setup — strong reach signal.",
+    title: "One company's data point",
+    body: "Treats the source as one company's result inside a larger pattern.",
+    rationale: "Case-study framing draws comments from operators who've lived a similar setup. Strong reach signal.",
     relevance: "Medium relevance",
     relevanceColor: "tagOrange",
     confidence: 68,
     channels: ["linkedin"],
   },
   {
-    title: "The contrarian read of {filename}",
-    body: "A take that pushes back on the source's headline argument while staying grounded in its own evidence.",
+    title: "The case against the headline",
+    body: "Pushes back on the source's main argument with its own evidence.",
     rationale: "Contrarian-but-fair posts attract debate without alienating the original author's audience.",
     relevance: "High relevance",
     relevanceColor: "orange",

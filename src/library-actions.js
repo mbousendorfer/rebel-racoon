@@ -30,11 +30,11 @@
 // underlying state stays in one place. The user-facing toast is fired here
 // (a single shared place for the wording).
 
-import { appendExtractedIdeas, removeIdeasForSources, removeIdeas, getIdeas } from "./library.js?v=2283";
-import { removeSources as streamRemoveSources, getSources as streamGetSources } from "./sources-stream.js?v=2283";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2283";
-import { showToast } from "./components/toast.js?v=2283";
-import { addMention } from "./composer-mentions.js?v=2283";
+import { appendExtractedIdeas, removeIdeasForSources, removeIdeas, getIdeas } from "./library.js?v=1";
+import { removeSources as streamRemoveSources, getSources as streamGetSources } from "./sources-stream.js?v=1";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1";
+import { showToast } from "./components/toast.js?v=1";
+import { addMention } from "./composer-mentions.js?v=1";
 
 // ── Bulk-bar HTML renderers ──────────────────────────────────────────────
 
@@ -169,7 +169,7 @@ export function wireLibraryActions(root, options) {
         const sources = getSources();
         const targets = sources.filter((s) => ids.includes(s.id) && s.status !== "Processing");
         if (targets.length === 0) {
-          showToast("Nothing to extract — selected sources are still processing.");
+          showToast("Nothing to extract yet. The selected sources are still processing.");
           return;
         }
         appendExtractedIdeas(sessionId, targets);

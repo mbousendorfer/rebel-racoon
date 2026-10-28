@@ -14,10 +14,10 @@
 // always the case with the flag off, so this module is a no-op there. That
 // single short-circuit is why callers can wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2283";
-import { postAssistantMessage, postUserProfilesTurn } from "./assistant.js?v=2283";
-import { getConnectedProfiles, getConnectableNetworks } from "./social-profiles.js?v=2283";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2283";
+import * as inlineQuestion from "./inline-question.js?v=1";
+import { postAssistantMessage, postUserProfilesTurn } from "./assistant.js?v=1";
+import { getConnectedProfiles, getConnectableNetworks } from "./social-profiles.js?v=1";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1";
 
 // The connect step's cards — one per NETWORK, laid out like Agorapulse's own
 // "Add new social profiles" grid: the network's full-colour glyph, its name,
@@ -61,11 +61,11 @@ export function requireConnectedProfiles(sessionId, { stepLabel = "Account", onR
 
   postAssistantMessage(
     sessionId,
-    "I need a social account before I can write a draft — it sets the format and the length. Connect one and I'll pick up where we left off.",
+    "I need a social account before I can write a draft: it sets the format and the length. Connect one and I'll pick up where we left off.",
   );
   inlineQuestion.ask(sessionId, {
     title: "Connect an account to continue",
-    subtitle: "Nothing publishes yet — this only lets me write and schedule for it.",
+    subtitle: "Nothing publishes yet. This only lets me write and schedule for it.",
     stepLabel,
     variant: "cards",
     cardCols: 4,

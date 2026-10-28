@@ -13,19 +13,19 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2283";
-import { startDemo } from "../demo-flow.js?v=2283";
-import { isFlagOn } from "../feature-flags.js?v=2283";
-import { html, raw, escapeHtml } from "../utils.js?v=2283";
+import "../archie-pixels.js?v=1";
+import { startDemo } from "../demo-flow.js?v=1";
+import { isFlagOn } from "../feature-flags.js?v=1";
+import { html, raw, escapeHtml } from "../utils.js?v=1";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORKS,
   getConnectedProfiles,
   getConnectableNetworks,
-} from "../social-profiles.js?v=2283";
-import { navigate } from "../router.js?v=2283";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2283";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2283";
+} from "../social-profiles.js?v=1";
+import { navigate } from "../router.js?v=1";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=1";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=1";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -81,7 +81,7 @@ const ROWS = [
     step: "url",
     label: "Voice",
     value: `<span class="welcome-flow__stack">${chips(["Warm", "Witty", "Never salesy"], "welcome-intro__trait")}${line(
-      "Talks like a friend who knows their stuff — short sentences, one idea per post.",
+      "Talks like a friend who knows their stuff: short sentences, one idea per post.",
     )}</span>`,
   },
   {

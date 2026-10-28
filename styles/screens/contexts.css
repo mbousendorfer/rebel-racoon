@@ -405,8 +405,10 @@
 
 .contexts-card__counters {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--ref-spacing-sm);
+  gap: var(--ref-spacing-xxxs) var(--ref-spacing-sm);
+  min-width: 0;
 }
 
 .contexts-card__counter {

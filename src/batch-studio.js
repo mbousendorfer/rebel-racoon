@@ -15,6 +15,8 @@
 // in-memory `pendingBatch` slot — the SPA never reloads between the two
 // navigations, so a module-level variable is the safe bridge.
 
+import { pastedTextName } from "./sources-stream.js?v=1";
+
 const states = new Map(); // sessionId → state
 const subscribers = new Map(); // sessionId → Set<fn>
 
@@ -140,11 +142,7 @@ export function addTextSource(sessionId, text) {
   if (!s) return;
   const trimmed = (text || "").trim();
   if (!trimmed) return;
-  // Same clean-label logic as sources-stream.startTextImport: a short title-like
-  // first line, else the generic "Pasted text" (never a giant blob or a URL).
-  const firstLine = (trimmed.split("\n").find((l) => l.trim().length) || "").trim();
-  const looksLikeUrl = /^https?:\/\//i.test(firstLine);
-  const name = firstLine && !looksLikeUrl && firstLine.length <= 52 ? firstLine : "Pasted text";
+  const name = pastedTextName(trimmed);
   const src = {
     uid: nextUid(),
     name,

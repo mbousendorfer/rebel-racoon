@@ -456,3 +456,20 @@
     flex-basis: 100%;
   }
 }
+
+/* Connected: a static card holding its own actions, right-grouped. */
+.connectors-card--connected {
+  cursor: default;
+}
+
+/* Not clickable as a whole: no blue hover border, its buttons are the targets. */
+.connectors-card--connected:hover {
+  border-color: var(--ref-color-grey-20);
+}
+
+.connectors-card__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  flex-shrink: 0;
+}

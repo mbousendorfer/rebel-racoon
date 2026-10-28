@@ -8,11 +8,11 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2283";
-import { navigate } from "../router.js?v=2283";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2283";
-import { enterArchie } from "./welcome-alt-recap.js?v=2283";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2283";
+import { html, raw } from "../utils.js?v=1";
+import { navigate } from "../router.js?v=1";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=1";
+import { enterArchie } from "./welcome-alt-recap.js?v=1";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=1";
 
 const STAGE_MS = 1300; // each stage holds at least this long, so the work reads as work
 const started = new Map(); // sid → when this screen first showed it (a re-render doesn't restart it)
@@ -69,8 +69,8 @@ export function renderWelcomeAltReady(_params, target) {
         </h1>
         <p class="welcome-intro__sub">
           ${manual
-            ? "Tell me how your brand sounds and who it speaks to — every draft I write starts there."
-            : "Every draft I write starts from it. Draft your first post now — or go through it first, part by part."}
+            ? "Tell me how your brand sounds and who it speaks to. Every draft I write starts there."
+            : "Every draft I write starts from it. Draft your first post now, or go through it first, part by part."}
         </p>
         <ul class="welcome-flow__options">
           ${raw(

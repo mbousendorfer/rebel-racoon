@@ -25,13 +25,13 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2283";
-import { navigate } from "../router.js?v=2283";
-import { getDraft, patchDraft } from "../context-builder.js?v=2283";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2283";
-import { parseHashParams } from "../url-state.js?v=2283";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2283";
-import { enterArchie } from "./welcome-alt-recap.js?v=2283";
+import { html, raw } from "../utils.js?v=1";
+import { navigate } from "../router.js?v=1";
+import { getDraft, patchDraft } from "../context-builder.js?v=1";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1";
+import { parseHashParams } from "../url-state.js?v=1";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=1";
+import { enterArchie } from "./welcome-alt-recap.js?v=1";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -47,7 +47,7 @@ export function renderReview(target, sid, config) {
   // (2026-10-20: "Confirm Brief" read as admin).
   const looksGood = (id) => {
     const next = RECAP_SECTIONS[RECAP_SECTIONS.findIndex((t) => t.id === id) + 1];
-    return next ? `Looks good — on to ${next.title}` : "Looks good — finish";
+    return next ? `Looks good, on to ${next.title}` : "Looks good, finish";
   };
 
   let index = 0; // the card in focus, within the current part
@@ -63,7 +63,7 @@ export function renderReview(target, sid, config) {
     return html`
       <h1 class="welcome-flow__title" id="welcomeFlowTitle">Review your Playbook</h1>
       <p class="welcome-intro__sub">
-        I've filled in every card. Scroll through and fix anything that's off — changes save as you type.
+        I've filled in every card. Scroll through and fix anything that's off. Changes save as you type.
       </p>
       <ul class="welcome-flow__options">
         ${RECAP_SECTIONS.map((t) => {
@@ -365,7 +365,7 @@ export function renderReview(target, sid, config) {
     <div class="welcome-review__intro-card is-done">
       <span class="welcome-review__intro-tile is-all"><i class="ap-icon-check" aria-hidden="true"></i></span>
       <span class="welcome-review__intro-title">Your Playbook is all set.</span>
-      <span class="welcome-review__intro-lead">Every part is confirmed — I'll write every draft from it.</span>
+      <span class="welcome-review__intro-lead">Every part is confirmed. I'll write every draft from it.</span>
       <span class="welcome-review__intro-actions">
         <button type="button" class="ap-button stroked grey" data-review-again="${RECAP_SECTIONS[0].id}">
           Review it again

@@ -20,15 +20,15 @@
 //     connectAccounts(ids) then fires onConfirm with the accounts that flipped.
 //   - Cancel / Esc / backdrop / close-X dismiss without connecting anything.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2283";
-import { escapeHtml as esc } from "../utils.js?v=2283";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1";
+import { escapeHtml as esc } from "../utils.js?v=1";
 import {
   getConnectableAccounts,
   connectAccounts,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=2283";
+} from "../social-profiles.js?v=1";
 
 const MODAL_ID = "connect-account";
 
@@ -55,15 +55,14 @@ const HTML = `
   </button>
   <div class="ap-dialog-content">
     <p class="connect-account-modal__lead">
-      Drafts are written for the network they publish on — that's what sets the format and the
-      length.
+      I write each draft for the network it publishes on, which sets its format and length.
     </p>
     <div class="connect-account-modal__list" id="connectAccountList" role="group" aria-label="Accounts to connect"></div>
     <div class="ap-infobox info connect-account-modal__note">
       <i class="ap-icon-info_fill" aria-hidden="true"></i>
       <div class="ap-infobox-content">
         <div class="ap-infobox-texts">
-          <span class="ap-infobox-message">Nothing publishes without your say-so — connecting only lets drafts be written and scheduled.</span>
+          <span class="ap-infobox-message">Nothing publishes without your say-so. Connecting only lets me write and schedule drafts.</span>
         </div>
       </div>
     </div>

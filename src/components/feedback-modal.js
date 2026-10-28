@@ -3,7 +3,7 @@
 // toggle its visibility. No persistence — submitting shows a success flash
 // and resets on close.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2283";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1";
 
 const MODAL_ID = "feedback";
 
@@ -33,7 +33,7 @@ const HTML = `
   </button>
   <div class="ap-dialog-content">
     <p class="feedback-modal__intro">
-      Every piece of feedback gets read. For urgent support,
+      I read every message. For urgent help,
       <a href="mailto:support@agorapulse.com">contact the team directly</a> instead.
     </p>
 
@@ -43,9 +43,9 @@ const HTML = `
         <option value="content-studio">General</option>
         <option value="ideas">Ideas</option>
         <option value="posts">Drafts</option>
-        <option value="brief">Playbook — Brief</option>
-        <option value="voice">Playbook — Voice profile</option>
-        <option value="brand">Playbook — Branding</option>
+        <option value="brief">Playbook: Brief</option>
+        <option value="voice">Playbook: Voice profile</option>
+        <option value="brand">Playbook: Branding</option>
         <option value="other">Other</option>
       </select>
     </div>
@@ -69,7 +69,7 @@ const HTML = `
       </svg>
     </div>
     <h3>Feedback sent</h3>
-    <p>I read every message — it shapes what I get better at.</p>
+    <p>Thanks. It goes straight into what I work on next.</p>
   </div>
 </aside>`;
 

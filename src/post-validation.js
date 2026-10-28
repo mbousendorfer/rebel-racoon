@@ -10,7 +10,7 @@
 // errors   block Schedule and Assign (the Drafts panel's « Needs fixes »).
 // warnings publish, but not the way the draft looks (X shows 4 images at most).
 
-import { networkMeta } from "./social-profiles.js?v=2283";
+import { networkMeta } from "./social-profiles.js?v=1";
 
 // Characters a post consumes against its network limit — body paragraphs,
 // hashtags and the CTA, joined the way they'd publish (blank line between
@@ -70,7 +70,7 @@ export function validatePost(post) {
   if (meta.maxImages && (post.carousel?.length || 0) > meta.maxImages)
     warnings.push({
       field: "media",
-      message: `${meta.label} shows ${meta.maxImages} images at most — the other ${post.carousel.length - meta.maxImages} won't publish.`,
+      message: `${meta.label} shows ${meta.maxImages} images at most. The other ${post.carousel.length - meta.maxImages} won't publish.`,
     });
 
   return { errors, warnings };

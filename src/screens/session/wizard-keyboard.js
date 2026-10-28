@@ -11,10 +11,10 @@
 //   rebindWizardKeyboard(aside, sessionId) — call after every aside
 //     swap. No-op if no wizard is active.
 
-import * as sidebarWizard from "../../sidebar-wizard.js?v=2283";
-import * as inlineQuestion from "../../inline-question.js?v=2283";
-import * as topPostsFlow from "../../top-posts-flow.js?v=2283";
-import { bindWizardKeyboard, unbindWizardKeyboard } from "../_analyse-common.js?v=2283";
+import * as sidebarWizard from "../../sidebar-wizard.js?v=1";
+import * as inlineQuestion from "../../inline-question.js?v=1";
+import * as topPostsFlow from "../../top-posts-flow.js?v=1";
+import { bindWizardKeyboard, unbindWizardKeyboard } from "../_analyse-common.js?v=1";
 
 export function rebindWizardKeyboard(aside, sessionId) {
   if (!aside) return;
@@ -96,7 +96,8 @@ export function rebindWizardKeyboard(aside, sessionId) {
     // it on render so the user can type immediately without clicking.
     const customInput = aside.querySelector("[data-inline-question-custom]");
     const firstItem = aside.querySelector("[data-inline-question]");
-    if (customInput && !firstItem) {
+    // Same when the free-text row leads (customFirst): it is the main way in.
+    if (customInput && (!firstItem || customInput.closest("[data-custom-first]"))) {
       Promise.resolve().then(() => customInput.focus());
     }
     return;

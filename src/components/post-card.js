@@ -19,19 +19,13 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2283";
-import { isPortraitFormat } from "../clip-formats.js?v=2283";
-import { presetById } from "../clip-captions.js?v=2283";
-import { renderFeedbackControl } from "./feedback-control.js?v=2283";
-import {
-  networkMeta,
-  networkLabel,
-  normalizeNetwork,
-  profileForNetwork,
-  renderProfileTag,
-} from "../social-profiles.js?v=2283";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2283";
-import { REVEAL_MS } from "../archie-pixels.js?v=2283";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1";
+import { isPortraitFormat } from "../clip-formats.js?v=1";
+import { presetById } from "../clip-captions.js?v=1";
+import { renderFeedbackControl } from "./feedback-control.js?v=1";
+import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=1";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=1";
+import { REVEAL_MS } from "../archie-pixels.js?v=1";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -148,7 +142,7 @@ function renderVoiceStatus(net, opts, post) {
     return `<div class="ap-status-card orange posts__card-voice-status" role="status">
     <div class="upper">
       <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-      <div class="flow"><span>Written in your ${escapeText(opts.voice.from || "default voice")} — no rules for ${label} yet.</span></div>
+      <div class="flow"><span>Written in your ${escapeText(opts.voice.from || "default voice")}. No rules for ${label} yet.</span></div>
       <button type="button" class="ap-link small standalone" data-post-voice="${escapeAttr(opts.playbookId)}" data-post-voice-net="${escapeAttr(net)}">Add rules for ${label}</button>
     </div>
   </div>`;
@@ -251,13 +245,6 @@ export function renderPostCard(post, opts = {}) {
         : ""
     }`;
   }
-
-  // Per-network character count (alpha feedback #3 — Mari wanted an
-  // at-a-glance count). Mirrors the DS "CharacterCounts" component: a
-  // small chip with the network's full-colour logo + the remaining
-  // characters, turning red when the draft runs over the network limit.
-  // Hidden while editing / regenerating since the count is mid-flux.
-  const charCount = !editing && !regenerating ? renderCharCount(post) : "";
 
   const editActions = editing
     ? `<div class="posts__card-edit-actions">
@@ -395,7 +382,7 @@ export function renderPostCard(post, opts = {}) {
           ${raw(
             renderNetworkLayout(net, {
               header: renderNetworkHeader(post, net, handle),
-              body: `${editorBody} ${charCount} ${editActions}`,
+              body: `${editorBody} ${editActions}`,
               media: `${mediaBlock}${net === "youtube" ? renderShortsNotice(post) : ""}`,
               engagement,
               title: net === "youtube" ? `<h3 class="posts__card-yt-title">${escapeText(youtubeTitle(post))}</h3>` : "",
@@ -457,7 +444,7 @@ export function renderPostCard(post, opts = {}) {
               type="button"
               class="ap-icon-button stroked"
               aria-label="Save as draft"
-              title="Save as draft in Agorapulse — moves it out of this chat"
+              title="Save as draft in Agorapulse. It leaves this chat."
               data-post-save-draft="${post.id}"
               ${regenerating ? "disabled" : ""}
             >
@@ -517,13 +504,6 @@ function renderGenerationContextBody(post) {
   return `${headline}${source}`;
 }
 
-// Per-network character budgets + the full-colour DS logo used by the count
-// chip come from the shared NETWORKS table (`twitter` is the posts-store alias
-// for `x`). A network without a `limit` renders no chip. The count itself is
-// post-validation.js's `usedCharacters` — the same number the error is built on.
-
-// CharacterCounts chip (DS component 3185:48434). Shows the remaining
-// characters for the draft's network; goes red + negative when over.
 // The first comment, previewed where it will appear: under the post, below the
 // engagement bar. Removable here; written from the chat ("add a first comment").
 function renderFirstComment(post, { hidden = false } = {}) {
@@ -540,31 +520,13 @@ function renderFirstComment(post, { hidden = false } = {}) {
   </div>`;
 }
 
-function renderCharCount(post) {
-  const meta = networkMeta(post.network);
-  if (!meta) return "";
-  const remaining = meta.limit - usedCharacters(post);
-  const over = remaining < 0;
-  const title = over
-    ? `${Math.abs(remaining)} characters over the ${meta.label} limit`
-    : `${remaining} characters left for ${meta.label}`;
-  return `
-    <div class="posts__card-count-row">
-      <span class="posts__charcount ${over ? "is-over" : ""}" title="${title}">
-        <i class="${meta.icon}" aria-hidden="true"></i>
-        <span class="posts__charcount-num">${remaining}</span>
-      </span>
-    </div>
-  `;
-}
-
 // What stops this draft from publishing, above the card — DERIVED by
 // validatePost on every render, never read from the post. Led by the account it
 // would publish to (renderProfileTag), since the rule is that network's. A
 // draft fixed a moment ago (`opts.justFixed`, held by the drafts panel) says so
 // in green before it settles back among the ready ones.
 function renderPostIssues(post, opts = {}) {
-  if (opts.justFixed) return infobox("success", "ap-icon-rounded-check_fill", "Fixed — ready to publish.", "status");
+  if (opts.justFixed) return infobox("success", "ap-icon-rounded-check_fill", "Fixed. Ready to publish.", "status");
   const { errors, warnings } = validatePost(post);
   const list = (items) =>
     items.length === 1

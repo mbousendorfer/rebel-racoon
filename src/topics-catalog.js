@@ -45,7 +45,7 @@ export const TOPIC_SOURCES = Object.freeze([
     howItWorks:
       "Every post your listed competitors publish is read and ranked by how far " +
       "it beat that account's own median engagement, keeping the ones that " +
-      "actually outperformed. You get the format, the hook and the angle — plus " +
+      "actually outperformed. You get the format, the hook and the angle, plus " +
       "where your own strengths let you answer it differently.",
   },
   {
@@ -86,9 +86,8 @@ export const TOPIC_SOURCES = Object.freeze([
     // touched again.
     showsWebsites: true,
     howItWorks:
-      "Your website is scanned regularly for content worth leveraging — new blog " +
-      "posts, product launches, customer success stories — and what turns up " +
-      "becomes Topics you can draft from.",
+      "Your website is scanned regularly for new blog posts, product launches " +
+      "and customer stories, and what turns up becomes Topics you can draft from.",
   },
   {
     id: "brand-feedback",
@@ -99,7 +98,7 @@ export const TOPIC_SOURCES = Object.freeze([
     playbookAnchor: null,
     defaultEnabled: false,
     howItWorks:
-      "What people say to and about you — comments, DMs, reviews — is read for " +
+      "What people say to and about you in comments, DMs and reviews is read for " +
       "the pain points and requests that keep coming back. A theme is only raised " +
       "once ten or more people have voiced it, and it is tied to a real complaint " +
       "so you can answer something specific.",
@@ -127,8 +126,8 @@ export const TOPIC_SOURCES = Object.freeze([
     defaultEnabled: false,
     howItWorks:
       "Conversations gaining momentum in your industry are followed, surfacing " +
-      "the ones that genuinely grew over the last 30 days — not the ones that " +
-      "were always loud.",
+      "the ones that grew over the last 30 days rather than the ones that were " +
+      "always loud.",
   },
   {
     id: "global-trends",
@@ -158,8 +157,8 @@ export const TOPIC_SOURCES = Object.freeze([
       { id: "gdrive", name: "Google Drive" },
     ]),
     howItWorks:
-      "The docs and threads your team already writes — roadmaps, support notes, " +
-      "launch briefs — are read for the things worth saying publicly that nobody " +
+      "The docs and threads your team already writes (roadmaps, support notes, " +
+      "launch briefs) are read for the things worth saying publicly that nobody " +
       "got around to posting.",
   },
 ]);
@@ -345,7 +344,7 @@ export const TOPIC_STATES = Object.freeze([
     // "To review". Landing on a list that mixes draftable Topics with ones the
     // scan says are not draftable yet would bury the reason to be here.
     defaultOn: false,
-    hint: "Worth keeping — not enough around it to draft from yet.",
+    hint: "Worth keeping, but not enough around it to draft from yet.",
   },
   {
     id: "ignored",

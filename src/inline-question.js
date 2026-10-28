@@ -64,6 +64,8 @@
 //                               (stepper mode); onPick gets { picks:[{value,count}], total }
 //   customPlaceholder string  — when set, render a free-text option row
 //   customValue       string  — initial value for the free-text input (pre-fill)
+//   customFirst       bool    — the free-text row leads (shortcut 1) and takes focus
+//   customIcon        string  — DS icon class of the free-text row (default "ap-icon-pen")
 //   customFile        bool    — when true, render a dropzone row instead of a text input
 //   customFileAccept  string  — accept attribute for the dropzone <input type=file>
 //   customFileLabel   string  — primary label on the dropzone row
@@ -77,8 +79,8 @@
 //   skipDisabled      bool    — Skip shown disabled (its label says when it unlocks); Esc → Back
 //   onBack()          fn      — called when ← Back is clicked; if omitted, no back btn
 
-import { chatTurn } from "./screens/_analyse-common.js?v=2283";
-import { createSessionNotifier } from "./store-utils.js?v=2283";
+import { chatTurn } from "./screens/_analyse-common.js?v=1";
+import { createSessionNotifier } from "./store-utils.js?v=1";
 
 const states = new Map(); // sessionId → opts
 const sessionNotifier = createSessionNotifier("inline-question");
@@ -302,6 +304,8 @@ export function renderChrome(sessionId) {
     skipDisabled: s.skipDisabled === true,
     showBack: !!s.onBack,
     customPlaceholder: s.customPlaceholder || null,
+    customFirst: !!s.customFirst,
+    customIcon: s.customIcon || "ap-icon-pen",
     customValue: s.customValue || "",
     customFile: s.customFile === true,
     customFileAccept: s.customFileAccept || "",

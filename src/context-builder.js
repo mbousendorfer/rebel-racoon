@@ -13,36 +13,32 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=2283";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2283";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2283";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2283";
-import { showToast } from "./components/toast.js?v=2283";
-import { recordReasons } from "./feedback-store.js?v=2283";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2283";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2283";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2283";
+import * as inlineQuestion from "./inline-question.js?v=1";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1";
+import { showToast } from "./components/toast.js?v=1";
+import { recordReasons } from "./feedback-store.js?v=1";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1";
 import {
   analyzeWebsite,
   analyzeBrandFiles,
   analyzeInterview,
   nextInterviewQuestion,
   INTERVIEW_OPENING,
-} from "./context-mock-analysis.js?v=2283";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2283";
-import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=2283";
-import { markIntroSeen } from "./components/voice-intro-modal.js?v=2283";
-import { connectors as connectorMocks } from "./mocks.js?v=2283";
-import {
-  getConnectedProfiles,
-  buildConnectedProfileItems,
-  PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=2283";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2283";
-import { isFlagOn } from "./feature-flags.js?v=2283";
-import { startDemo } from "./demo-flow.js?v=2283";
-import { navigate } from "./router.js?v=2283";
-import { setHandoff } from "./handoff.js?v=2283";
+} from "./context-mock-analysis.js?v=1";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1";
+import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=1";
+import { markIntroSeen } from "./components/voice-intro-modal.js?v=1";
+import { connectors as connectorMocks } from "./mocks.js?v=1";
+import { getConnectedProfiles, buildConnectedProfileItems, PROFILE_SEARCH_THRESHOLD } from "./social-profiles.js?v=1";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1";
+import { isFlagOn } from "./feature-flags.js?v=1";
+import { startDemo } from "./demo-flow.js?v=1";
+import { navigate } from "./router.js?v=1";
+import { setHandoff } from "./handoff.js?v=1";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -458,7 +454,7 @@ function askAltAfterUrl(sessionId) {
 const ALT_START_ITEMS = [
   {
     value: "files",
-    label: "Start from files instead",
+    label: "Start from files",
     caption: "Your logo, past visuals, or photos",
     icon: "ap-icon-upload",
   },
@@ -484,7 +480,7 @@ const ALT_NO_WEBSITE_ITEM = {
 const ALT_DEMO_ITEM = {
   value: "demo",
   label: "Try it with a demo brand",
-  caption: "Bramble & Bean, a coffee roaster I made up — nothing gets posted",
+  caption: "Bramble & Bean, a coffee roaster I made up. Nothing gets posted",
   icon: "ap-icon-play",
 };
 
@@ -623,8 +619,8 @@ function startAltManually(sessionId) {
 
 function askAltUrl(sessionId, prefilledUrl = "") {
   const intro = prefilledUrl
-    ? "Here's the site I found — confirm it below to begin."
-    : "Drop your website URL below to begin. No website? I'll ask you a few questions instead.";
+    ? "Here's the site I found. Confirm it below to begin."
+    : "No website? Pick another way in below.";
   postAssistantMessage(sessionId, intro);
   inlineQuestion.ask(sessionId, {
     title: "How do you want to start?",
@@ -636,8 +632,10 @@ function askAltUrl(sessionId, prefilledUrl = "") {
       else if (value === "files") startAltFromFiles(sessionId);
       else startAltManually(sessionId);
     },
-    customPlaceholder: "https://your-brand.com",
+    customPlaceholder: "Your website, like your-brand.com",
     customValue: prefilledUrl,
+    customFirst: true,
+    customIcon: "ap-icon-link",
     onCustom: (value) => {
       if (!drafts.get(sessionId)) return;
       postUserTurn(sessionId, (value || "").trim());
@@ -659,7 +657,7 @@ function askAltUrl(sessionId, prefilledUrl = "") {
 function askAltLanguage(sessionId) {
   postAssistantMessage(
     sessionId,
-    "Which language should this Playbook write in? It's the language I'll draft your posts in — you can add more later in the Playbook.",
+    "Which language should this Playbook write in? It's the language I'll draft your posts in. You can add more later in the Playbook.",
   );
   const d = drafts.get(sessionId);
   const current =
@@ -735,7 +733,7 @@ function askAltProfile(sessionId, { announce = true } = {}) {
     }
     inlineQuestion.ask(sessionId, {
       title: "Connect an account (optional)",
-      subtitle: "Nothing publishes yet — this only lets me write and schedule for it.",
+      subtitle: "Nothing publishes yet. This only lets me write and schedule for it.",
       stepLabel: altStepLabel("profile"),
       // The same grid as the in-chat step, and as the product's own "Add new
       // social profiles" screen: pick a network, its dialog hands back the
@@ -771,7 +769,7 @@ function askAltProfile(sessionId, { announce = true } = {}) {
             if (reasons.length || comment) {
               recordReasons(SKIP_CONNECT_TARGET, { reasons, comment }, { kind: "skip", step: "connect-profiles" });
             }
-            showToast("Noted — I'll ask again when I write your first draft.");
+            showToast("Noted. I'll ask again when I write your first draft.");
             inlineQuestion.exit(sessionId);
             notify(sessionId);
             askAltDocuments(sessionId);
@@ -790,7 +788,7 @@ function askAltProfile(sessionId, { announce = true } = {}) {
   const items = buildConnectedProfileItems();
 
   if (announce) {
-    postAssistantMessage(sessionId, "Pick the profile to use for this Playbook. I'll tune tone and format for it.");
+    postAssistantMessage(sessionId, "Pick the account that will publish. I'll tune tone and format for it.");
   }
   inlineQuestion.ask(sessionId, {
     title: "Which account will publish? (optional)",
@@ -822,7 +820,7 @@ function askAltProfile(sessionId, { announce = true } = {}) {
 function askAltDocuments(sessionId) {
   postAssistantMessage(
     sessionId,
-    "Connect the documents that describe your Brand — a brand book, guidelines, a strategy doc. Optional.",
+    "Connect the documents that describe your Brand: a brand book, guidelines, a strategy doc. Optional.",
   );
   // Onboarding keeps the choice tight — the four sources most people connect
   // first. The full catalogue lives on /connectors; the subtitle points there.
@@ -877,7 +875,7 @@ function askAltReferenceImages(sessionId) {
   );
   inlineQuestion.ask(sessionId, {
     title: "Add reference images (optional)",
-    subtitle: "Logos, product shots, a brand board — I use them in the image generator.",
+    subtitle: "Logos, product shots, a brand board. I use them in the image generator.",
     stepLabel: altStepLabel("images"),
     items: [
       {

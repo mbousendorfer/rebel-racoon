@@ -11,8 +11,8 @@
 // Interactive hooks are data-* attributes bound identically on each surface:
 //   data-connector-open|connect|disconnect|try, data-connectors-category|search
 
-import { escapeHtml } from "./utils.js?v=2283";
-import { getConnectors } from "./connectors-store.js?v=2283";
+import { escapeHtml } from "./utils.js?v=1";
+import { getConnectors } from "./connectors-store.js?v=1";
 
 // Category display order — anything unlisted falls to the end alphabetically.
 const CATEGORY_ORDER = ["Docs & wikis", "Storage", "Meetings & calls", "Dev & project", "Messaging", "CRM & support"];
@@ -87,6 +87,27 @@ function renderConnectorCard(c) {
   `;
 }
 
+// A connected connector: who it is connected as, when it last synced, and the
+// thing to do with it now. A div, since it holds two buttons.
+function renderConnectedCard(c) {
+  const meta = [c.account, c.lastSync ? `synced ${c.lastSync}` : ""].filter(Boolean).join(" · ");
+  return `
+    <div class="ap-card connectors-card connectors-card--connected">
+      ${renderConnectorLogo(c, 36)}
+      <div class="connectors-card__body">
+        <div class="connectors-card__name">${escapeHtml(c.name)}</div>
+        <div class="connectors-card__desc">${escapeHtml(meta || "Connected")}</div>
+      </div>
+      <div class="connectors-card__actions">
+        <button type="button" class="ap-button ghost grey" data-connector-open="${escapeHtml(c.id)}">Details</button>
+        <button type="button" class="ap-button primary orange" data-connector-try="${escapeHtml(c.id)}">
+          <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Ask in a chat</span>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
 // Featured connectors float to the top of their category group.
 function byFeaturedThenName(a, b) {
   const fa = a.featured ? 0 : 1;
@@ -107,16 +128,27 @@ export function renderGalleryBody(view, { showHero = true } = {}) {
   const cnt = counts(all);
 
   const filtered = all.filter((x) => matchesQuery(x, q) && (view.category === "all" || x.category === view.category));
+  // What you already connected leads, as its own section with its one useful
+  // action (ask it in a chat); the gallery below lists what you can add, so a
+  // connector is still never listed twice (2026-10-28).
+  const connected = filtered.filter((x) => x.status === "connected");
+  const toAdd = filtered.filter((x) => x.status !== "connected");
 
   const catChips = [
     renderCategoryChip("all", "All", view.category === "all"),
     ...cats.map((cat) => renderCategoryChip(cat, cat, view.category === cat)),
   ].join("");
 
-  const groups = sortedCategories(new Set(filtered.map((x) => x.category || "Other")));
+  const groups = sortedCategories(new Set(toAdd.map((x) => x.category || "Other")));
+  const connectedSection = connected.length
+    ? `<section class="connectors-group connectors-group--connected">
+        <h2 class="connectors-group__title">Connected</h2>
+        <div class="connectors-grid">${connected.map(renderConnectedCard).join("")}</div>
+      </section>`
+    : "";
   const list = groups
     .map((cat) => {
-      const cards = filtered
+      const cards = toAdd
         .filter((x) => (x.category || "Other") === cat)
         .sort(byFeaturedThenName)
         .map(renderConnectorCard)
@@ -143,7 +175,7 @@ export function renderGalleryBody(view, { showHero = true } = {}) {
     ? `<header class="connectors-view__hero">
          <div class="connectors-view__hero-text">
            <h1>Connectors</h1>
-           <p class="ap-subtitle">Connect your tools and I'll search them live while we work — no need to import anything.</p>
+           <p class="ap-subtitle">Connect your tools and I'll search them live while we work. Nothing gets imported.</p>
          </div>
          <span class="ap-status grey no-dot connectors-view__count">${cnt.connected} of ${cnt.total} connected</span>
        </header>`
@@ -164,6 +196,7 @@ export function renderGalleryBody(view, { showHero = true } = {}) {
       </div>
       <div class="connectors-view__categories" role="group" aria-label="Filter by category">${catChips}</div>
     </div>
+    ${connectedSection}
     ${list}
     ${empty}
   `;

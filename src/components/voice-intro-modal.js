@@ -20,11 +20,11 @@
 //   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2283";
-import { getContextById } from "../contexts-store.js?v=2283";
-import { playbookForNewWork } from "../active-playbook.js?v=2283";
-import { isNewUser } from "../user-mode.js?v=2283";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2283";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1";
+import { getContextById } from "../contexts-store.js?v=1";
+import { playbookForNewWork } from "../active-playbook.js?v=1";
+import { isNewUser } from "../user-mode.js?v=1";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=1";
 import {
   networkVoiceOn,
   networkVoice,
@@ -36,7 +36,7 @@ import {
   voiceNetTagHtml,
   defaultNetwork,
   defaultVoiceName,
-} from "../voice-parts.js?v=2283";
+} from "../voice-parts.js?v=1";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -46,11 +46,11 @@ import {
   INTERVIEW,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2283";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2283";
-import "../archie-pixels.js?v=2283";
-import { navigate } from "../router.js?v=2283";
-import { escapeHtml } from "../utils.js?v=2283";
+} from "../network-voice-flow.js?v=1";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=1";
+import "../archie-pixels.js?v=1";
+import { navigate } from "../router.js?v=1";
+import { escapeHtml } from "../utils.js?v=1";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -433,7 +433,7 @@ function renderSame(ctx) {
   modal.classList.remove("is-stand");
   stageEl.classList.remove("is-result");
   titleEl.textContent = "Each network, its own voice";
-  subEl.textContent = `Your ${defaultVoiceName(ctx)} is where every network starts. Then each one reads the same idea its own way — I learn what works there, and you review it before it's saved.`;
+  subEl.textContent = `Your ${defaultVoiceName(ctx)} is where every network starts. Then each one reads the same idea its own way: I learn what works there, and you review it before it's saved.`;
   actionsEl.innerHTML = button("close", "ghost grey", "Not now") + button("next", "primary blue", "Next");
   showVoice(baseKey(ctx));
 }

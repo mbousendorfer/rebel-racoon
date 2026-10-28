@@ -2,15 +2,15 @@
 // videos, and the one way in, adding a video. The flow starts with the video;
 // the posts come last (screens/clips/project.js).
 
-import { navigate } from "../../router.js?v=2283";
-import { isFlagOn } from "../../feature-flags.js?v=2283";
-import { renderTopbar } from "../../components/topbar.js?v=2283";
-import { showToast } from "../../components/toast.js?v=2283";
-import { renderEmptyState } from "../../components/empty-state.js?v=2283";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2283";
-import { isDemo } from "../../demo-mode.js?v=2283";
-import { getPosts } from "../../posts-store.js?v=2283";
-import { escapeHtml } from "../../utils.js?v=2283";
+import { navigate } from "../../router.js?v=1";
+import { isFlagOn } from "../../feature-flags.js?v=1";
+import { renderTopbar } from "../../components/topbar.js?v=1";
+import { showToast } from "../../components/toast.js?v=1";
+import { renderEmptyState } from "../../components/empty-state.js?v=1";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=1";
+import { isDemo } from "../../demo-mode.js?v=1";
+import { getPosts } from "../../posts-store.js?v=1";
+import { escapeHtml } from "../../utils.js?v=1";
 import {
   getVideos,
   addVideo,
@@ -18,9 +18,9 @@ import {
   lengthProblem,
   standInForUrl,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2283";
-import { fmtMs, previewMarkup, mountPreviews } from "./shared.js?v=2283";
-import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2283";
+} from "../../videos-store.js?v=1";
+import { fmtMs, previewMarkup, mountPreviews } from "./shared.js?v=1";
+import { buildWorkflowFlow } from "../session/workflow-flow.js?v=1";
 
 let target = null;
 let disposeShowcase = null;
@@ -89,18 +89,26 @@ function paint() {
   const videos = getVideos(pb?.id);
   signature = sig(videos);
   const off = isDemo() ? "disabled" : "";
-  const showcase = videos.find((v) => v.status === "ready" && v.clips.length >= 3) || null;
+  // Once videos exist the space is a library: the add bar shrinks to one line
+  // and the videos come up; the explainer (showcase + steps) is for the first
+  // visit only (2026-10-28).
+  const returning = videos.length > 0;
+  const showcase = returning ? null : videos.find((v) => v.status === "ready" && v.clips.length >= 3) || null;
   target.innerHTML = `
     <div class="clips-view">
       <div class="clips-view__page clips-library-page">
-        <section class="clips-hero" data-clips-drop aria-labelledby="clips-hero-title">
+        <section class="clips-hero${returning ? " clips-hero--compact" : ""}" data-clips-drop aria-labelledby="clips-hero-title">
           <div class="clips-hero__copy">
-            <h1 class="clips-hero__title" id="clips-hero-title">Turn a long video into clips</h1>
-            <p class="clips-hero__sub">
+            <h1 class="clips-hero__title" id="clips-hero-title">${returning ? "Add a video" : "Turn a long video into clips"}</h1>
+            ${
+              returning
+                ? ""
+                : `<p class="clips-hero__sub">
               I find the best moments, frame the speakers and add subtitles. You refine, then I write the posts${
                 pb ? ` in ${escapeHtml(pb.name)}'s voice` : ""
               }.
-            </p>
+            </p>`
+            }
             <form class="clips-hero__form" data-clips-url-form>
               <div class="ap-input-group clips-hero__url">
                 <i class="ap-icon-link" aria-hidden="true"></i>
@@ -121,7 +129,7 @@ function paint() {
           ${showcase ? renderShowcase(showcase) : ""}
           <div class="clips-hero__drop" aria-hidden="true"><i class="ap-icon-upload"></i><span>Drop your video to start</span></div>
         </section>
-        ${buildWorkflowFlow(STEPS)}
+        ${returning ? "" : buildWorkflowFlow(STEPS)}
         ${videos.length ? renderGrid(videos) : renderEmpty()}
       </div>
     </div>`;
@@ -294,7 +302,7 @@ function onDrop(e) {
   e.preventDefault();
   zone.classList.remove("is-dragover");
   const file = [...(e.dataTransfer?.files || [])].find((f) => f.type.startsWith("video/"));
-  if (!file) return showToast("Drop a video file — MP4, MOV or WebM.", { variant: "error" });
+  if (!file) return showToast("Drop a video file: MP4, MOV or WebM.", { variant: "error" });
   addFile(file);
 }
 

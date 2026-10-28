@@ -8,7 +8,7 @@
 // Suggested values become menthol chips (AI-suggested). Other static
 // option lists come from the brief panel renderer.
 
-import { objectivesInText } from "./objective-measures.js?v=2283";
+import { objectivesInText } from "./objective-measures.js?v=1";
 
 const AGORAPULSE = {
   name: "Agorapulse",
@@ -251,7 +251,10 @@ const AGORAPULSE = {
 const GENERIC = {
   name: "Untitled brand",
   businessSummary:
-    "This brand sells a product or service that solves a specific problem for a clearly defined audience. The website highlights the value proposition, key features, and credibility markers (case studies, testimonials, results). Edit this summary to match your business — I'll use it to ground every post.",
+    // Honest when the read is thin: a paragraph that fits any brand broke the
+    // trust of the first Playbook a tester built from their own site. It says
+    // what is missing and asks for the one sentence that fixes it (2026-10-28).
+    "I couldn't read enough on this site to say what the business does. Click Edit and add one sentence: what you sell, and to whom. I'll ground every post on it.",
   suggestions: {
     audience: [
       "Operations and marketing leads at growing B2B teams",

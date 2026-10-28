@@ -7,12 +7,12 @@
 // a definition can never say two different things on two screens.
 // docs/copy/copy-principles.md § Concepts.
 
-import { escapeAttr } from "./utils.js?v=2283";
+import { escapeAttr } from "./utils.js?v=1";
 
 export const CONCEPTS = {
   playbook: {
     name: "Playbook",
-    text: "A Playbook is everything I know about one Brand — its business, audience, voice, and look. Each chat uses one, so every draft sounds like that Brand.",
+    text: "A Playbook is everything I know about one Brand: its business, audience, voice, and look. Each chat uses one, so every draft sounds like that Brand.",
   },
   chat: {
     name: "chat",
@@ -20,7 +20,7 @@ export const CONCEPTS = {
   },
   topicFeed: {
     name: "Topic Feed",
-    text: "The Topic Feed is where I bring what I spot in your listening — your competitors' and influencers' posts. Read a Topic, then use it in a chat or ignore it.",
+    text: "The Topic Feed is where I bring what I spot in your competitors' and influencers' posts. Read a Topic, then use it in a chat or ignore it.",
   },
   topic: {
     name: "Topic",
@@ -44,11 +44,11 @@ export const CONCEPTS = {
   },
   connector: {
     name: "Connector",
-    text: "A Connector links a tool like Notion or Google Drive. I search it live during a chat — nothing is imported.",
+    text: "A Connector links a tool like Notion or Google Drive. I search it live during a chat, so nothing is imported.",
   },
   objective: {
     name: "objective",
-    text: "An objective is a goal I track for you — a metric and a target. I tell you whether the posts I draft are moving it.",
+    text: "An objective is a goal I track for you: a metric and a target. I tell you whether the posts I draft are moving it.",
   },
 };
 
