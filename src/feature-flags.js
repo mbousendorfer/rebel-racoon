@@ -1,4 +1,4 @@
-import { FLAGS } from "./ff-catalog.js?v=2309";
+import { FLAGS } from "./ff-catalog.js?v=2312";
 
 const KEY = "archie-feature-flags";
 

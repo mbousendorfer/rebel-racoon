@@ -1923,6 +1923,8 @@ Deux verbes par objectif, auto-width : la porte chat (`secondary orange` dans le
 
 ## 20. Clips — la vidéo d'abord, les posts à la fin (flag `clipsSpace`, défaut OFF)
 
+- **La bibliothèque d'abord** (2026-10-28) : dès qu'une vidéo existe, le hero devient une barre _Add a video_ d'une ligne (lien + Get clips, Upload, la règle de durée) et _Your videos_ remonte juste dessous ; la vitrine (une vidéo et trois de ses clips) et les trois étapes ne servent qu'au premier passage, quand la bibliothèque est vide.
+
 **Pourquoi.** Le travail sur les clips était éclaté sur quatre surfaces — le Clip Studio (une session `clip-studio-*` qui rendait la main au chat), l'onglet Clips du panneau, la modale Video Clips (trim + sous-titres), les questions de draft dans le fil — et le **crop editor** de la prod (`content/studio/playgrounds/crop-editor`) n'existait nulle part. Quelqu'un qui vient pour faire des clips a maintenant un espace centré là-dessus et rien d'autre : on part de la vidéo, on fait tout le traitement, et les posts viennent à la fin. UI classique façon Opus Clip / Vizard — pas de conversation dans l'espace.
 
 **L'objet : la Video** ([`videos-store.js`](../../src/videos-store.js)), rangée dans la bibliothèque du Playbook (`playbookForNewWork()`), **hors de tout chat** — la 4ᵉ exception de [CONCEPTS](CONCEPTS.md) §3. Elle possède ses clips ; les drafts faits depuis eux vivent dans `posts-store` sous `video-<id>`.

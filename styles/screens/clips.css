@@ -2611,3 +2611,36 @@ body.clips-editing .app-content {
 .clips-tl__snap {
   margin-left: auto;
 }
+
+/* Returning: the hero becomes the library's add bar, one line under its title. */
+.clips-hero--compact {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg);
+  border-radius: var(--app-radius-md);
+}
+
+.clips-hero--compact .clips-hero__copy {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-sm) var(--ref-spacing-md);
+}
+
+.clips-hero--compact .clips-hero__title {
+  flex-basis: 100%;
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+}
+
+.clips-hero--compact .clips-hero__form {
+  flex: 2 1 420px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.clips-hero--compact .clips-hero__url {
+  flex: 1 1 auto;
+  min-width: 0;
+}
