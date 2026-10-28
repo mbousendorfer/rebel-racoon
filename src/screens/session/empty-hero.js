@@ -1,17 +1,18 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2314";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2314";
-import { getContextById } from "../../contexts-store.js?v=2314";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2314";
-import { renderTopicCard } from "../../components/topic-card.js?v=2314";
-import { findTopicSource } from "../../topics-catalog.js?v=2314";
-import { html, raw } from "../../utils.js?v=2314";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2314";
-import { renderStarterCards } from "../../components/starter-card.js?v=2314";
-import { isFlagOn } from "../../feature-flags.js?v=2314";
-import "../../archie-pixels.js?v=2314";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2316";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2316";
+import { getContextById } from "../../contexts-store.js?v=2316";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2316";
+import { renderTopicCard } from "../../components/topic-card.js?v=2316";
+import { findTopicSource } from "../../topics-catalog.js?v=2316";
+import { html, raw } from "../../utils.js?v=2316";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2316";
+import { renderStarterCards } from "../../components/starter-card.js?v=2316";
+import { isFlagOn } from "../../feature-flags.js?v=2316";
+import { isDemo } from "../../demo-mode.js?v=2316";
+import "../../archie-pixels.js?v=2316";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -162,9 +163,7 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
             alt=""
           />
         </span>
-        <div class="empty-chat__sub">
-          Drop a source and I'll turn it into drafts ready to schedule, all in this chat.
-        </div>
+        <div class="empty-chat__sub">${heroSub()}</div>
         <div class="empty-chat__lead">
           <!-- The FUX's pixel field without its box: pale, masked into the
                ground, a wide halo on both sides of the composer. -->
@@ -186,7 +185,7 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
         <img class="empty-chat__logo-mono" src="assets/logos/archie-mono.svg" alt="" />
         <img class="empty-chat__logo-word empty-chat__logo-word--b" src="assets/logos/archie-alt-wordmark.svg" alt="" />
       </span>
-      <div class="empty-chat__sub">Drop a source and I'll turn it into drafts ready to schedule, all in this chat.</div>
+      <div class="empty-chat__sub">${heroSub()}</div>
       ${raw(composerMarkup)}
       <!-- Starters first, proposals second. The other way round was tried on the
            argument that "what should I post today?" is the question someone
@@ -199,4 +198,12 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
       ${raw(renderFreshTopics(session))}
     </div>
   `;
+}
+
+// In the demo the promise is said with the brand and a first move: a made-up
+// roaster, the workflow that shows the most in one click, nothing posted.
+function heroSub() {
+  return isDemo()
+    ? "A demo with Bramble & Bean, a coffee roaster I made up. Try Batch from a source: I'll draft from its files in seconds. Nothing gets posted."
+    : "Drop a source and I'll turn it into drafts ready to schedule, all in this chat.";
 }
