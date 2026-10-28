@@ -98,7 +98,7 @@ export const FLAGS = Object.freeze([
     group: "New surfaces",
     tip: "The side panel's tabs (Overview · Sources › Ideas › Drafts) sit in the topbar; every result in the thread is a card that opens the panel on it.",
     label: "Content panel",
-    default: false,
+    default: true, // R4 (2026-10-28): the pipeline panel is how a chat reads
     hides:
       "When ON, the topbar's Sources / Ideas / Drafts pills become the side " +
       "panel's own tabs — Overview · Sources › Ideas, Clips › Drafts with " +

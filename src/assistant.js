@@ -6,13 +6,13 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2303";
-import { findConnector } from "./connectors-store.js?v=2303";
-import { createSessionNotifier } from "./store-utils.js?v=2303";
-import { addPostDraft } from "./posts-store.js?v=2303";
-import { showToast } from "./components/toast.js?v=2303";
-import { isFlagOn } from "./feature-flags.js?v=2303";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2303";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2306";
+import { findConnector } from "./connectors-store.js?v=2306";
+import { createSessionNotifier } from "./store-utils.js?v=2306";
+import { addPostDraft } from "./posts-store.js?v=2306";
+import { showToast } from "./components/toast.js?v=2306";
+import { isFlagOn } from "./feature-flags.js?v=2306";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2306";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -1081,6 +1081,8 @@ function mockAiReply({ prompt, sessionId }) {
     const batch = (isLaunch ? launchBatch(leadIdea) : defaultBatch(leadIdea)).map((d) =>
       addPostDraft(sessionId, { network: d.network, text: d.text }),
     );
+    // The lead idea is now drafted (live library object, read by the panels).
+    leadIdea.used = (leadIdea.used || 0) + 1;
     // One draft per line — a batch reads as a list, not a sentence.
     const named = batch.map((d) => `\n- [[post:${d.id}]]`).join("");
     return {

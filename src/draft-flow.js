@@ -21,12 +21,12 @@ import {
   postDraftResult,
   reportDraftFailure,
   GENERATION_TOOLS,
-} from "./assistant.js?v=2303";
-import { getIdeas } from "./library.js?v=2303";
-import { anglesByIdea } from "./mocks.js?v=2303";
-import { addPostDraft } from "./posts-store.js?v=2303";
-import { networkMeta } from "./social-profiles.js?v=2303";
-import { requireNetworkVoices } from "./network-voice-flow.js?v=2303";
+} from "./assistant.js?v=2306";
+import { getIdeas } from "./library.js?v=2306";
+import { anglesByIdea } from "./mocks.js?v=2306";
+import { addPostDraft } from "./posts-store.js?v=2306";
+import { networkMeta } from "./social-profiles.js?v=2306";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2306";
 
 // The set-up pass before a draft (reading the brief and the voice) — logged as
 // its own tools, so the generation that follows isn't counted twice.
@@ -195,6 +195,8 @@ function writeDraft(sessionId, idea, selectedChannels, count, angle, language) {
       // Mock draft body reflects the chosen angle when present so the
       // generated preview feels shaped by the reframing the user picked.
       const draftBody = angle ? angle.description : idea.body;
+      // The idea is now drafted: the Ideas progress and its Drafted tag read it.
+      idea.used = (idea.used || 0) + 1;
       const drafts = Array.from({ length: total }, (_, i) => {
         const d = addPostDraft(sessionId, {
           network: selectedChannels[i % selectedChannels.length],
@@ -233,6 +235,7 @@ function writeDraftBatch(sessionId, idea, channels, anglePicks, language) {
     () => {
       const drafts = [];
       let ch = 0;
+      idea.used = (idea.used || 0) + 1;
       for (const { angle, count } of anglePicks) {
         const draftBody = angle ? angle.description : idea.body;
         for (let i = 0; i < count; i += 1) {

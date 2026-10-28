@@ -1808,3 +1808,10 @@ span.chat-bubble-choice-chip {
   line-height: var(--sys-text-style-body-line-height);
   color: var(--ref-color-grey-100);
 }
+
+/* Under a result card (contentPanel), the step needs no hairline: the card
+   already closes the result above it. */
+.chat-turn--extraction > .extraction-turn__next {
+  border-top: 0;
+  padding-top: 0;
+}
