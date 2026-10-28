@@ -184,7 +184,7 @@ The product's own words (Playbook, chat, Topic Feed, Topic, Source, Idea, Clip, 
 
 **Examples**:
 
-- ✅ `No drafts yet` / `Ask me for a batch — drafts will land here ready to review and schedule.` / `[Open chat]`
+- ✅ `No drafts yet` / `Pick an idea and choose Draft post. Your drafts land here, ready to review and schedule.`
 - ✅ `No ideas yet` / `Attach a source — I'll extract hooks, stats, quotes, and stories you can use to draft posts.` / `[Attach a source]`
 - ❌ `No content yet.` (no actionable next step)
 - ❌ `Oops, nothing here!` (banned tone + exclamation)

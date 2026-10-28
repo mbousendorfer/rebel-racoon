@@ -2,12 +2,12 @@
 // the per-card feedback and "why this idea" state. Moved out of right-panel.js,
 // unchanged; the filter state it reads is owned (and written) by the shell.
 
-import { html, raw } from "../../utils.js?v=2281";
-import { conceptText } from "../../concepts.js?v=2281";
-import { isFlagOn } from "../../feature-flags.js?v=2281";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2281";
-import { renderClipCard } from "../clip-card.js?v=2281";
-import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2281";
+import { html, raw } from "../../utils.js?v=2282";
+import { conceptText } from "../../concepts.js?v=2282";
+import { isFlagOn } from "../../feature-flags.js?v=2282";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2282";
+import { renderClipCard } from "../clip-card.js?v=2282";
+import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2282";
 import {
   closeInline,
   activeSessionId,
@@ -15,7 +15,7 @@ import {
   ideasFilter,
   outputsView,
   sessionIdeas,
-} from "../right-panel.js?v=2281";
+} from "../right-panel.js?v=2282";
 
 // Idea kind taxonomy — handoff Ideas filter rail (§ 2.6). Order is the order
 // shown in the chip row. Each kind's tag colour is IDEA_KIND_TAG
@@ -103,8 +103,9 @@ export function renderIdeasView() {
       <div class="rpanel-ideas__head">
         <div class="rpanel-ideas__filters" role="group" aria-label="Filter ideas by kind">
           ${raw(
-            // Under contentPanel a kind with no idea isn't offered as a filter.
-            IDEA_KINDS.filter((k) => !isFlagOn("contentPanel") || k.id === "all" || kindCounts[k.id] > 0)
+            // A kind with no idea isn't offered as a filter: it would only
+            // lead to an empty list. The active one stays, so it can be undone.
+            IDEA_KINDS.filter((k) => k.id === "all" || k.id === ideasFilter || kindCounts[k.id] > 0)
               .map(
                 (k) => `
                 <button
@@ -157,7 +158,7 @@ function renderClipsList(entries) {
         <div class="app-right-panel__empty-icon"><i class="ap-icon-file--video ap-icon-xl"></i></div>
         <div class="app-right-panel__empty-title">No clips yet</div>
         <div class="app-right-panel__empty-sub">
-          Drop a video into the chat and pick <strong>Cut into clips</strong> — I'll cut short moments you can post.
+          Drop a video into the chat and pick <strong>Cut it into clips</strong>. I'll cut short moments you can post.
         </div>
       </div>
     `;
@@ -219,7 +220,7 @@ function renderClipsList(entries) {
         </label>
         <div class="rpanel-drafts__group-identity">
           <i class="ap-icon-file--video rpanel-drafts__group-icon" aria-hidden="true"></i>
-          <span class="rpanel-drafts__group-label">Clips</span>
+          <span class="rpanel-drafts__group-label">Select all</span>
           <span class="rpanel-drafts__group-count">${countLabel}</span>
         </div>
         ${actions}
@@ -245,7 +246,7 @@ function renderIdeasList() {
         <div class="app-right-panel__empty-icon"><i class="ap-icon-archie-official ap-icon-xl"></i></div>
         <div class="app-right-panel__empty-title">No ideas yet</div>
         <div class="app-right-panel__empty-sub">
-          Attach a source — I'll pull hooks, stats, quotes, stories, and insights you can draft from.
+          Attach a source and I'll pull hooks, stats, quotes, stories, and insights you can draft from.
         </div>
       </div>
     `;

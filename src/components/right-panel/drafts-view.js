@@ -4,7 +4,7 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta } from "../../social-profiles.js?v=2281";
+import { networkMeta } from "../../social-profiles.js?v=2282";
 import {
   getPosts,
   removePost,
@@ -12,24 +12,24 @@ import {
   updatePostContent,
   attachImageToDraft,
   attachCarouselToDraft,
-} from "../../posts-store.js?v=2281";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2281";
-import { getSessionById } from "../../sessions-store.js?v=2281";
-import { renderPostCard } from "../post-card.js?v=2281";
-import { isPostValid } from "../../post-validation.js?v=2281";
-import { networkVoice, voiceChangedAt } from "../../voice-parts.js?v=2281";
-import { html, raw } from "../../utils.js?v=2281";
-import { isFlagOn } from "../../feature-flags.js?v=2281";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2281";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2281";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2281";
-import { open as openAssignModal } from "../assign-modal.js?v=2281";
-import { showToast } from "../toast.js?v=2281";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2281";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2281";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2281";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2281";
-import { blockInDemo } from "../../demo-flow.js?v=2281";
+} from "../../posts-store.js?v=2282";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2282";
+import { getSessionById } from "../../sessions-store.js?v=2282";
+import { renderPostCard } from "../post-card.js?v=2282";
+import { isPostValid } from "../../post-validation.js?v=2282";
+import { networkVoice, voiceChangedAt } from "../../voice-parts.js?v=2282";
+import { html, raw } from "../../utils.js?v=2282";
+import { isFlagOn } from "../../feature-flags.js?v=2282";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2282";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2282";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2282";
+import { open as openAssignModal } from "../assign-modal.js?v=2282";
+import { showToast } from "../toast.js?v=2282";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2282";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2282";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2282";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2282";
+import { blockInDemo } from "../../demo-flow.js?v=2282";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -345,7 +345,7 @@ function renderDraftsEmpty() {
       <div class="app-right-panel__empty-icon"><i class="ap-icon-pen ap-icon-xl"></i></div>
       <div class="app-right-panel__empty-title">No drafts yet</div>
       <div class="app-right-panel__empty-sub">
-        Ask me for a batch — drafts will land here ready to review and schedule.
+        Pick an idea and choose Draft post. Your drafts land here, ready to review and schedule.
       </div>
     </div>
   `;
@@ -551,7 +551,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2281"), import("../../folders-store.js?v=2281")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2282"), import("../../folders-store.js?v=2282")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -625,7 +625,7 @@ export function onPostMention(postId) {
   const network = NETWORK_PILL_LABEL[(post.network || "").toLowerCase()] || "Draft";
   const firstLine = (Array.isArray(post.text) ? post.text[0] : post.text) || "";
   const snippet = firstLine.trim().slice(0, 40);
-  const label = snippet ? `${network} — ${snippet}${firstLine.trim().length > 40 ? "…" : ""}` : `${network} draft`;
+  const label = snippet ? `${network} · ${snippet}${firstLine.trim().length > 40 ? "…" : ""}` : `${network} draft`;
   addComposerMention(sid, label);
 }
 
