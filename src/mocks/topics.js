@@ -35,9 +35,9 @@
 export const topicFeeds = [
   {
     id: "feed-acme",
-    name: "Acme competitors · weekly",
+    name: "Acme competitors & influencers · weekly",
     playbookId: "ctx-acme",
-    sources: ["competitor-posts"],
+    sources: ["competitor-posts", "influencer-posts"],
     websites: ["https://acme.example.com"],
     cadence: "weekly",
   },
@@ -215,7 +215,7 @@ export const topics = [
   {
     id: "topic-acme-3",
     feedId: "feed-acme",
-    sourceId: "competitor-posts",
+    sourceId: "influencer-posts",
     ageLabel: "1d ago",
     kind: "ready",
     headline: "The homepage teardowns keep failing on the same three things",
@@ -261,7 +261,7 @@ export const topics = [
       {
         status: "new",
         when: "6 days ago",
-        note: "Surfaced from the weekly competitor scan (3 matching posts).",
+        note: "Surfaced from the weekly influencer scan (3 matching posts).",
       },
       {
         status: "updated",
@@ -325,7 +325,7 @@ export const topics = [
   {
     id: "topic-acme-5",
     feedId: "feed-acme",
-    sourceId: "competitor-posts",
+    sourceId: "influencer-posts",
     ageLabel: "3d ago",
     kind: "ready",
     headline: "Launch copy swapped time saved for time to value this quarter",
@@ -370,14 +370,14 @@ export const topics = [
       {
         status: "new",
         when: "3d ago",
-        note: "Surfaced from the weekly competitor scan (14 matching posts).",
+        note: "Surfaced from the weekly influencer scan (14 matching posts).",
       },
     ],
   },
   {
     id: "topic-acme-6",
     feedId: "feed-acme",
-    sourceId: "competitor-posts",
+    sourceId: "influencer-posts",
     ageLabel: "4d ago",
     kind: "ready",
     headline: "Elena Verna's growth posts have stopped mentioning funnels",
@@ -422,7 +422,7 @@ export const topics = [
       {
         status: "new",
         when: "4d ago",
-        note: "Surfaced from the weekly competitor scan (8 matching posts).",
+        note: "Surfaced from the weekly influencer scan (8 matching posts).",
       },
     ],
   },
@@ -481,7 +481,7 @@ export const topics = [
   {
     id: "topic-acme-8",
     feedId: "feed-acme",
-    sourceId: "competitor-posts",
+    sourceId: "influencer-posts",
     ageLabel: "7d ago",
     kind: "later",
     headline: "Every launch this week led with a number and two named the task",
@@ -526,7 +526,7 @@ export const topics = [
       {
         status: "new",
         when: "7d ago",
-        note: "Surfaced from the weekly competitor scan (9 matching posts).",
+        note: "Surfaced from the weekly influencer scan (9 matching posts).",
       },
     ],
   },
@@ -585,7 +585,7 @@ export const topics = [
   {
     id: "topic-acme-10",
     feedId: "feed-acme",
-    sourceId: "competitor-posts",
+    sourceId: "influencer-posts",
     ageLabel: "11d ago",
     kind: "later",
     headline: "The same pricing-page question keeps coming back in Lenny's threads",
@@ -630,7 +630,7 @@ export const topics = [
       {
         status: "new",
         when: "11d ago",
-        note: "Surfaced from the weekly competitor scan (3 matching threads).",
+        note: "Surfaced from the weekly influencer scan (3 matching threads).",
       },
     ],
   },
@@ -690,7 +690,7 @@ export const topics = [
   {
     id: "topic-acme-12",
     feedId: "feed-acme",
-    sourceId: "competitor-posts",
+    sourceId: "influencer-posts",
     ageLabel: "16d ago",
     kind: "later",
     headline: "Launch weeks are getting shorter and considerably louder",
@@ -736,7 +736,7 @@ export const topics = [
       {
         status: "new",
         when: "16d ago",
-        note: "Surfaced from the weekly competitor scan (12 matching posts).",
+        note: "Surfaced from the weekly influencer scan (12 matching posts).",
       },
     ],
   },
@@ -796,7 +796,7 @@ export const topics = [
   {
     id: "topic-acme-14",
     feedId: "feed-acme",
-    sourceId: "competitor-posts",
+    sourceId: "influencer-posts",
     ageLabel: "22d ago",
     kind: "ready",
     headline: "Dave Gerhardt's message-testing thread has become a template",
@@ -841,7 +841,7 @@ export const topics = [
       {
         status: "new",
         when: "22d ago",
-        note: "Surfaced from the weekly competitor scan (4 matching posts).",
+        note: "Surfaced from the weekly influencer scan (4 matching posts).",
       },
     ],
   },
@@ -900,7 +900,7 @@ export const topics = [
   {
     id: "topic-acme-16",
     feedId: "feed-acme",
-    sourceId: "competitor-posts",
+    sourceId: "influencer-posts",
     ageLabel: "29d ago",
     kind: "later",
     headline: "The category language from Q1 has already been abandoned",
@@ -945,7 +945,7 @@ export const topics = [
       {
         status: "new",
         when: "29d ago",
-        note: "Surfaced from the weekly competitor scan (16 matching posts).",
+        note: "Surfaced from the weekly influencer scan (16 matching posts).",
       },
     ],
   },
@@ -1004,7 +1004,7 @@ export const topics = [
   {
     id: "topic-acme-18",
     feedId: "feed-acme",
-    sourceId: "competitor-posts",
+    sourceId: "influencer-posts",
     ageLabel: "7w ago",
     kind: "later",
     headline: "Operator-first is now everywhere and has stopped meaning anything",
@@ -1049,7 +1049,7 @@ export const topics = [
       {
         status: "new",
         when: "7w ago",
-        note: "Surfaced from the weekly competitor scan (11 matching accounts).",
+        note: "Surfaced from the weekly influencer scan (11 matching accounts).",
       },
     ],
   },
@@ -1109,7 +1109,7 @@ export const topics = [
   {
     id: "topic-acme-20",
     feedId: "feed-acme",
-    sourceId: "competitor-posts",
+    sourceId: "influencer-posts",
     ageLabel: "3mo ago",
     kind: "later",
     headline: "Bundled AI stopped being a differentiator in about six weeks",
@@ -1155,7 +1155,7 @@ export const topics = [
       {
         status: "new",
         when: "3mo ago",
-        note: "Surfaced from the weekly competitor scan (17 matching launches).",
+        note: "Surfaced from the weekly influencer scan (17 matching launches).",
       },
     ],
   },
