@@ -33,7 +33,7 @@
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2273";
+import * as inlineQuestion from "./inline-question.js?v=2276";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -43,14 +43,14 @@ import {
   postVoiceTurn,
   resolveTurn,
   getThread,
-} from "./assistant.js?v=2273";
-import { getContextById, updateContext } from "./contexts-store.js?v=2273";
-import { getSessionById } from "./sessions-store.js?v=2273";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2273";
-import { setHandoff } from "./handoff.js?v=2273";
-import { navigate } from "./router.js?v=2273";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2273";
-import { getPosts } from "./posts-store.js?v=2273";
+} from "./assistant.js?v=2276";
+import { getContextById, updateContext } from "./contexts-store.js?v=2276";
+import { getSessionById } from "./sessions-store.js?v=2276";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2276";
+import { setHandoff } from "./handoff.js?v=2276";
+import { navigate } from "./router.js?v=2276";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2276";
+import { getPosts } from "./posts-store.js?v=2276";
 import {
   networkVoiceOn,
   networkVoice,
@@ -60,7 +60,9 @@ import {
   brandVoiceAsIs,
   playbookNetworks,
   voiceParts,
-} from "./voice-parts.js?v=2273";
+  defaultNetwork,
+  defaultVoiceName,
+} from "./voice-parts.js?v=2276";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;
@@ -96,8 +98,9 @@ export function requireNetworkVoices(sessionId, networks, onReady, contextId = n
 // The ways to give a network its own voice, the best first — the same
 // everywhere. `needed`: a draft is waiting, so the default voice is an answer
 // too. `chat`: the questions are asked in the thread, else in a dialog.
-export function voiceChoices(net, { needed = false, chat = false } = {}) {
+export function voiceChoices(net, { needed = false, chat = false, ctx = null } = {}) {
   const label = networkLabel(net);
+  const base = defaultVoiceName(ctx);
   const account = profileForNetwork(net);
   const learn = canLearnFrom(account);
   const items = [
@@ -134,11 +137,11 @@ export function voiceChoices(net, { needed = false, chat = false } = {}) {
       tile: "Write them myself",
       hint: "In your Voice profile",
       label: "Write the rules myself",
-      caption: `I open ${label} in your Voice profile, starting from your default voice.`,
+      caption: `I open ${label} in your Voice profile, starting from your ${base}.`,
     },
     needed && {
       value: "default",
-      label: "Use my default voice",
+      label: `Use my ${base}`,
       caption: `Nothing specific to ${label} — length, format, hashtags — so drafts may miss what works there.`,
     },
   ].filter(Boolean);
@@ -171,6 +174,11 @@ export function proposeNetworkVoice(ctx, net, choice, from = null) {
 export function saveNetworkVoice(ctxId, net, voice) {
   const ctx = getContextById(ctxId);
   if (!ctx) return;
+  // The default network's voice IS the Playbook's own parts.
+  if (net === defaultNetwork(ctx)) {
+    const parts = Object.fromEntries(voiceParts().map(({ field }) => [field, voice[field]]));
+    return updateContext(ctxId, { ...parts, voiceChangedAt: Date.now() });
+  }
   updateContext(ctxId, {
     voiceByNetwork: { ...(ctx.voiceByNetwork || {}), [net]: { ...voice, changedAt: Date.now() } },
     ...(!playbookNetworks(ctx).includes(net) && { connectedSocials: [...(ctx.connectedSocials || []), net] }),
@@ -300,7 +308,7 @@ export function answerVoiceAsk(sessionId, turnId, choice) {
 function askVoice(sessionId, ctxId, nets, onReady, { giving = false } = {}) {
   const [net, ...rest] = nets;
   const label = networkLabel(net);
-  const { items } = voiceChoices(net, { needed: !giving, chat: true });
+  const { items } = voiceChoices(net, { needed: !giving, chat: true, ctx: getContextById(ctxId) });
   const turnId = postVoiceTurn(sessionId, "voice-ask", { contextId: ctxId, network: net, choices: items, giving });
   const go = () => (rest.length ? askVoice(sessionId, ctxId, rest, onReady) : onReady());
   // The block keeps its tiles until a choice goes through (a dismissed
@@ -314,7 +322,7 @@ function askVoice(sessionId, ctxId, nets, onReady, { giving = false } = {}) {
     useDefaultVoice(ctxId, net);
     postAssistantMessage(
       sessionId,
-      `I'll write for ${label} with your default voice. You can add rules for ${label} in your Voice profile anytime.`,
+      `I'll write for ${label} in your ${defaultVoiceName(getContextById(ctxId))}. You can add rules for ${label} in your Voice profile anytime.`,
     );
     go();
   };
@@ -352,7 +360,7 @@ function askVoice(sessionId, ctxId, nets, onReady, { giving = false } = {}) {
     if (choice === "edit") {
       postAssistantMessage(
         sessionId,
-        `I've opened ${label} in your Voice profile, starting from your default voice. Add your rules, save, then ask me again.`,
+        `I've opened ${label} in your Voice profile, starting from your ${defaultVoiceName(getContextById(ctxId))}. Add your rules, save, then ask me again.`,
       );
       return editNetworkVoiceInPlaybook(ctxId, net);
     }
@@ -363,7 +371,11 @@ function askVoice(sessionId, ctxId, nets, onReady, { giving = false } = {}) {
     askInterview(sessionId, net, (answers) => {
       if (Object.keys(answers).length) return learning(choice, answers);
       // Nothing said: the default voice — or, from « Add rules for X », as it was.
-      if (giving) return postAssistantMessage(sessionId, `OK — ${label} stays on your default voice for now.`);
+      if (giving)
+        return postAssistantMessage(
+          sessionId,
+          `OK — ${label} stays on your ${defaultVoiceName(getContextById(ctxId))} for now.`,
+        );
       keepDefault();
     });
   });
