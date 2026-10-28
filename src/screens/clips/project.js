@@ -7,36 +7,36 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2336";
-import { isFlagOn } from "../../feature-flags.js?v=2336";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2336";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2336";
-import { showToast } from "../../components/toast.js?v=2336";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2336";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2336";
-import { startRewrite } from "../../draft-rewrite.js?v=2336";
-import { networkVoice, voiceChangedAt } from "../../voice-parts.js?v=2336";
-import { renderPostCard } from "../../components/post-card.js?v=2336";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2336";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2336";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2336";
+import { navigate } from "../../router.js?v=2340";
+import { isFlagOn } from "../../feature-flags.js?v=2340";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2340";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2340";
+import { showToast } from "../../components/toast.js?v=2340";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2340";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2340";
+import { startRewrite } from "../../draft-rewrite.js?v=2340";
+import { networkVoice, voiceChangedAt } from "../../voice-parts.js?v=2340";
+import { renderPostCard } from "../../components/post-card.js?v=2340";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2340";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2340";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2340";
 import {
   getConnectedProfiles,
   renderProfileTag,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-} from "../../social-profiles.js?v=2336";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2336";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2336";
-import { captionStateFor } from "../../clip-captions.js?v=2336";
+} from "../../social-profiles.js?v=2340";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2340";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2340";
+import { captionStateFor } from "../../clip-captions.js?v=2340";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2336";
-import { escapeHtml } from "../../utils.js?v=2336";
+} from "../../posts-store.js?v=2340";
+import { escapeHtml } from "../../utils.js?v=2340";
 import {
   getVideo,
   draftKey,
@@ -47,7 +47,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2336";
+} from "../../videos-store.js?v=2340";
 import {
   fmtMs,
   formatSelect,
@@ -67,7 +67,7 @@ import {
   bestFor,
   CTA_OPTIONS,
   EDITOR_TOOLS,
-} from "./shared.js?v=2336";
+} from "./shared.js?v=2340";
 
 let target = null;
 let videoId = null;
@@ -294,6 +294,7 @@ function stepButton(id, n, label, meta, current) {
 function renderAnalyzing(v) {
   const at = Math.max(0, ANALYSIS_STAGES.indexOf(v.stage));
   const pct = Math.round(v.progress * 100);
+  const n = v.durationMs > 600000 ? 10 : 3;
   const steps = ANALYSIS_STAGES.map(
     (
       s,
@@ -312,8 +313,8 @@ function renderAnalyzing(v) {
           <div class="clips-analyzing__text">
             <h2 class="clips-analyzing__title">Finding the best moments</h2>
             <p class="clips-analyzing__sub">
-              ${fmtMs(v.durationMs)} of video — I'll cut ${v.durationMs > 600000 ? "10 clips" : "3 clips"}. You can leave this
-              page: the analysis keeps going and the video waits for you in Clips.
+              ${fmtMs(v.durationMs)} of video, so I'll cut ${n} clips. You can leave this page: the analysis keeps going
+              and the video waits for you in Clips.
             </p>
             <span class="clips-progress">
               <span class="clips-progress__track"><span class="clips-progress__fill" style="width:${pct}%"></span></span>
@@ -321,6 +322,16 @@ function renderAnalyzing(v) {
             </span>
             <ol class="clips-analyzing__steps">${steps}</ol>
           </div>
+        </section>
+        <section class="clips-coming" aria-label="What you'll get">
+          <div class="clips-coming__head">
+            <h3 class="clips-coming__title">Your ${n} clips land here</h3>
+            <p class="clips-coming__sub">Each one vertical, framed on the speakers and subtitled. Then you pick the ones to post, polish them, and I write the posts.</p>
+          </div>
+          <ol class="clips-coming__slots" style="--n:${n}" aria-hidden="true">${Array.from(
+            { length: n },
+            (_, i) => `<li class="clips-coming__slot" style="--i:${i}"><span>${i + 1}</span></li>`,
+          ).join("")}</ol>
         </section>
       </div>
     </div>`;
@@ -634,8 +645,10 @@ function renderDrafts(v, posts) {
       }<span>${label}</span></li>`;
     };
     return `<div class="clips-drafts__writing" role="status">
+      <h2 class="clips-drafts__writing-title">Turning ${w.clips} clip${w.clips === 1 ? "" : "s"} into ${w.posts} post${w.posts === 1 ? "" : "s"}</h2>
+      <p class="clips-drafts__writing-sub">They land on this page as drafts, ready to schedule. Nothing gets published.</p>
       <ol class="clips-drafts__stages">
-        ${stage("render", `Rendering ${w.clips} clip${w.clips === 1 ? "" : "s"} — ${escapeHtml(w.look)}`)}
+        ${stage("render", `Rendering ${w.clips} clip${w.clips === 1 ? "" : "s"}: ${escapeHtml(w.look)}`)}
         ${stage("write", `Writing ${w.posts} post${w.posts === 1 ? "" : "s"} from the clips`)}
       </ol>
     </div>`;
@@ -645,9 +658,16 @@ function renderDrafts(v, posts) {
   const toSchedule = posts.filter((p) => p.status !== "scheduled");
   return `
     <div class="clips-toolbar">
-      <p class="clips-toolbar__count">${posts.length} draft${posts.length === 1 ? "" : "s"}${
-        posts.length - toSchedule.length ? ` · ${posts.length - toSchedule.length} scheduled` : ""
-      }</p>
+      <div class="clips-toolbar__head">
+        <h2 class="clips-toolbar__title">${
+          toSchedule.length
+            ? `${toSchedule.length} draft${toSchedule.length === 1 ? "" : "s"} ready to schedule`
+            : `All ${posts.length} draft${posts.length === 1 ? " is" : "s are"} scheduled`
+        }</h2>
+        <p class="clips-toolbar__count">One post per clip and account${
+          posts.length - toSchedule.length ? `, ${posts.length - toSchedule.length} already scheduled` : ""
+        }. Change a video with Edit clip, then schedule them from here.</p>
+      </div>
       <div class="clips-toolbar__actions">
         <button type="button" class="ap-button stroked grey" data-clips-more-drafts>
           <i class="ap-icon-plus" aria-hidden="true"></i><span>Write more drafts</span>

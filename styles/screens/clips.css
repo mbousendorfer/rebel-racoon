@@ -1110,9 +1110,30 @@
   padding: var(--ref-spacing-sm) 0;
 }
 
-.clips-toolbar__count {
+.clips-toolbar__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+.clips-toolbar__title,
+.clips-drafts__writing-title {
+  margin: 0;
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-toolbar__count,
+.clips-drafts__writing-sub {
   margin: 0;
   color: var(--ref-color-grey-80);
+}
+
+.clips-drafts__writing-sub {
+  margin-bottom: var(--ref-spacing-sm);
 }
 
 .clips-toolbar__actions {
@@ -2863,4 +2884,94 @@ body.clips-editing .app-content {
 /* The editor's one-time intro sits above the tool's title. */
 .clips-ed__intro {
   margin-bottom: var(--ref-spacing-md);
+}
+
+/* While I analyze: where the clips will land, one slot each at their format,
+   breathing in turn. Says what comes out before it does. */
+.clips-coming {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+  padding-top: var(--ref-spacing-lg);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.clips-coming__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.clips-coming__title {
+  margin: 0;
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-coming__sub {
+  margin: 0;
+  max-width: 64ch;
+  color: var(--ref-color-grey-80);
+}
+
+.clips-coming__slots {
+  display: grid;
+  /* One row, whatever the count: the slots shrink rather than orphan two. */
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  max-width: calc(var(--n) * 112px + (var(--n) - 1) * var(--ref-spacing-sm));
+  gap: var(--ref-spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clips-coming__slot {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  border-radius: var(--app-radius-md);
+  background: var(--ref-color-grey-10);
+  overflow: hidden;
+  animation: clips-rise var(--ref-animation-long) var(--app-ease-out) both;
+  animation-delay: calc(var(--i) * 60ms);
+}
+
+.clips-coming__slot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, var(--ref-color-grey-05) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: clips-shimmer 1.8s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 120ms);
+}
+
+.clips-coming__slot span {
+  position: absolute;
+  left: var(--ref-spacing-xs);
+  top: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-bold-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-80);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes clips-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clips-coming__slot,
+  .clips-coming__slot::after {
+    animation: none;
+  }
+}
+
+/* The Drafts panel's selection slot has nothing to hold here: without it the
+   cards line up with the heading above them. */
+.clips-drafts .posts__row-check:empty {
+  display: none;
 }
