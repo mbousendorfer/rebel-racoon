@@ -14,10 +14,13 @@
 //     made: after `phases` if given, else at once (a draft's feedback).
 //     `only`: the rules the proposal adds (shown alone).
 //     onUse runs after the voice is saved.
+//     `ctx` in place of `ctxId`: a Playbook not saved yet (the creation
+//     review) — nothing is saved here, onUse(voice) adds it to the draft, and
+//     there is no Playbook to edit it in.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2344";
-import { getContextById } from "../contexts-store.js?v=2344";
-import { networkLabel } from "../social-profiles.js?v=2344";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2345";
+import { getContextById } from "../contexts-store.js?v=2345";
+import { networkLabel } from "../social-profiles.js?v=2345";
 import {
   INTERVIEW,
   learnPhases,
@@ -25,9 +28,9 @@ import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
-} from "../network-voice-flow.js?v=2344";
-import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2344";
-import { escapeHtml } from "../utils.js?v=2344";
+} from "../network-voice-flow.js?v=2345";
+import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2345";
+import { escapeHtml } from "../utils.js?v=2345";
 
 const MODAL_ID = "voice-proposal";
 
@@ -137,7 +140,7 @@ export function openVoiceProposal(opts) {
   );
   timers.push(
     setTimeout(
-      () => showProposal(voice || proposeNetworkVoice(getContextById(ctxId), net, choice, from)),
+      () => showProposal(voice || proposeNetworkVoice(opts.ctx || getContextById(ctxId), net, choice, from)),
       LEARN_PHASE_MS * phases.length,
     ),
   );
@@ -146,9 +149,9 @@ export function openVoiceProposal(opts) {
 function showProposal(voice) {
   const c = current;
   c.voice = voice;
-  bodyEl.innerHTML = learnedVoiceHtml(getContextById(c.ctxId), c.net, voice, { only: c.only || null });
+  bodyEl.innerHTML = learnedVoiceHtml(c.ctx || getContextById(c.ctxId), c.net, voice, { only: c.only || null });
   footEl.innerHTML =
-    button("edit", "stroked grey", "Edit in the Playbook") +
+    (c.ctx ? "" : button("edit", "stroked grey", "Edit in the Playbook")) +
     button("use", "primary blue", c.useLabel || "Add to Voice profile");
   footEl.querySelector(".primary").focus({ preventScroll: true });
 }
@@ -157,7 +160,7 @@ function use() {
   const c = current;
   if (!c?.voice) return;
   hide();
-  saveNetworkVoice(c.ctxId, c.net, c.voice);
+  if (!c.ctx) saveNetworkVoice(c.ctxId, c.net, c.voice);
   c.onUse?.(c.voice);
 }
 

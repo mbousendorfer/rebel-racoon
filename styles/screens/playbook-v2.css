@@ -1053,6 +1053,19 @@
   background: var(--ref-color-white);
 }
 
+/* A network's card in the creation review (playbook-view networkVoiceCards):
+   the chat's voice edit / Voice step, filling the block instead of a bubble. */
+.pb2-voice-net .voice-edit {
+  width: auto;
+  margin: 0;
+}
+
+.pb2-voice-net__foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--ref-spacing-xs);
+}
+
 /* How your clips look (flag clipsSpace) — four settings, saved as they change. */
 .pb2-cliplook {
   display: flex;

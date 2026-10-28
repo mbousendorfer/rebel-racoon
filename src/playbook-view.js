@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2344";
-import { conceptHint } from "./concepts.js?v=2344";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2345";
+import { conceptHint } from "./concepts.js?v=2345";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2344";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2344";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2344";
-import { isFlagOn } from "./feature-flags.js?v=2344";
-import { clipLookOf } from "./videos-store.js?v=2344";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2344";
-import { parseHashParams } from "./url-state.js?v=2344";
+} from "./playbook-brand-kit.js?v=2345";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2345";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2345";
+import { isFlagOn } from "./feature-flags.js?v=2345";
+import { clipLookOf } from "./videos-store.js?v=2345";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2345";
+import { parseHashParams } from "./url-state.js?v=2345";
 import {
   isListPart,
   voiceParts,
@@ -52,12 +52,14 @@ import {
   markAdapted,
   withNetworkVoices,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2344";
-import { showToast } from "./components/toast.js?v=2344";
-import { introSeen } from "./components/voice-intro-modal.js?v=2344";
-import { consumeHandoff } from "./handoff.js?v=2344";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2344";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2344";
+} from "./voice-parts.js?v=2345";
+import { showToast } from "./components/toast.js?v=2345";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2345";
+import { voiceChoices } from "./network-voice-flow.js?v=2345";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2345";
+import { consumeHandoff } from "./handoff.js?v=2345";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2345";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2345";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1980,7 +1982,11 @@ const TABS = [
 // names it, so the panel head carries the sentence instead of repeating the title.
 const SECTION_LEADS = {
   goals: "What the business is, who the posts are for, and what they should make happen.",
-  voice: "How the Brand sounds, in five parts. I follow them in every draft.",
+  // Flag voicePerNetwork: the model in one line — the creation review's cover
+  // is the only place a new user meets it (the intro is for returning users).
+  voice: networkVoiceOn()
+    ? "One default voice for every network, plus rules for each one. I follow them in every draft."
+    : "How the Brand sounds, in five parts. I follow them in every draft.",
   brand: "How the Brand looks: its logos, colors, type, and the rules its images follow.",
   images: "How I make this Brand's images: the styles I draw them in, and what Generate an image does on a draft.",
   competitors: "Who the Brand is measured against, so I can position it.",
@@ -2075,7 +2081,8 @@ function voiceIntroHtml(data) {
 
 function renderVoiceTabs(data) {
   const nets = voiceNets(data);
-  if (!nets.length) return "";
+  // Creation shows each network as a card under the default voice instead.
+  if (!nets.length || !isLibrary()) return "";
   const tab = (net, label, icon, mark = "") => {
     const on = (net || null) === voiceNet;
     // Which networks have rules of their own, readable without opening each:
@@ -2342,7 +2349,10 @@ function renderVoiceEdit2(data) {
     );
     return `${renderVoiceTabs(data)}${grid}`;
   }
-  return `${renderVoiceTabs(data)}${pb2EditGrid("voice", pb2VoiceParts(data, { edit: true, lead: mode }))}`;
+  return `${renderVoiceTabs(data)}${pb2EditGrid("voice", [
+    ...pb2VoiceParts(data, { edit: true, lead: mode }),
+    ...networkVoiceCards(data),
+  ])}`;
 }
 
 function renderBrandEdit2(data) {
@@ -2572,7 +2582,63 @@ function renderVoiceRead2(data, learnMenu) {
     return `${pb2TabHead("voice", learnMenu)}<div class="pb2-grid">${own}</div>`;
   }
   if (voiceNet) return renderNetworkVoiceRead(data);
-  return `${renderVoiceTabs(data)}${pb2TabHead("voice", learnMenu)}${voiceIntroHtml(data)}<div class="pb2-grid">${pb2VoiceParts(data).join("")}</div>`;
+  return `${renderVoiceTabs(data)}${pb2TabHead("voice", learnMenu)}${voiceIntroHtml(data)}<div class="pb2-grid">${[
+    ...pb2VoiceParts(data),
+    ...networkVoiceCards(data),
+  ].join("")}</div>`;
+}
+
+// The creation review (flag voicePerNetwork): a card per network the Playbook
+// publishes on, after the default voice — where a new user gives each network
+// its rules. Rules learned from its posts: shown, with the way back to the
+// default voice. None yet: the Voice step's choices (the chat's, as tiles);
+// left unanswered, its first draft asks. The document and « Write them
+// myself » stay on the saved Playbook's tab.
+function networkVoiceCards(data) {
+  if (isLibrary()) return [];
+  const first = voiceParts().length;
+  return voiceNets(data).map((net, i) => {
+    const label = networkLabel(net);
+    const { state, chosen, voice } = networkVoice(data, net);
+    const body =
+      state === "own"
+        ? `${learnedVoiceHtml(data, net, voice, { pending: false })}
+           <div class="pb2-voice-net__foot"><button type="button" class="ap-button ghost grey" data-pb2-voice-reset="${esc(net)}">Use my default voice instead</button></div>`
+        : voiceAskHtml(data, net, {
+            id: net,
+            choices: voiceChoices(net, { needed: !chosen }).items.filter(
+              (c) => c.value !== "document" && c.value !== "edit",
+            ),
+            line: chosen
+              ? `Your ${label} posts follow your default voice.`
+              : `Your ${label} posts follow your default voice until you add some. I'll ask before your first ${label} post.`,
+            later: null,
+          });
+    return pb2Block(`Rules for ${label}`, body, {
+      wide: true,
+      hint: `What your ${label} posts do on top of your default voice.`,
+      index: first + i,
+      icon: networkIcon(net),
+      className: "pb2-voice-net",
+    });
+  });
+}
+
+// A choice on a network's card in the creation review: what Archie proposes
+// lands in the draft on « Add to Voice profile »; saved with the Playbook.
+function giveNetworkVoice(net, choice) {
+  const d = cfg.getData();
+  const set = (voice) => {
+    d.voiceByNetwork = { ...(d.voiceByNetwork || {}), [net]: voice };
+    repaint();
+  };
+  if (choice === "default") return set(brandVoiceAsIs(d));
+  if (choice === "interview")
+    return openVoiceInterview({
+      net,
+      onDone: (answers) => openVoiceProposal({ ctx: d, net, choice, from: answers, onUse: set }),
+    });
+  openVoiceProposal({ ctx: d, net, choice, onUse: set });
 }
 
 function networkVoiceLead(net, voice, data) {
@@ -2797,7 +2863,7 @@ function renderActivePanel(data) {
     // Creation's review: each network connected so far gets its voice — learned
     // from its posts, else optimized — shown here before it's saved.
     if (!isLibrary() && networkVoiceOn()) data.voiceByNetwork = withNetworkVoices(data);
-    if (voiceNet && !voiceNets(data).includes(voiceNet)) setVoiceNet(null);
+    if (voiceNet && (!isLibrary() || !voiceNets(data).includes(voiceNet))) setVoiceNet(null);
     return scope === "voice" ? renderVoiceEdit2(data) : renderVoiceRead2(data, learnMenu());
   }
   if (activeTab === "brand") return scope === "brand" ? renderBrandEdit2(data) : renderBrandRead2(data);
@@ -3223,6 +3289,10 @@ function onClick(event) {
   const clipToggle = event.target.closest("[data-pb2-cliplook-toggle]");
   if (clipToggle && clipToggle.matches("input"))
     return setClipLook({ [clipToggle.dataset.pb2CliplookToggle]: clipToggle.checked });
+  const giveVoice = !isLibrary() && event.target.closest("[data-voice-choice]");
+  if (giveVoice) return giveNetworkVoice(giveVoice.dataset.voiceAsk, giveVoice.dataset.voiceChoice);
+  const resetVoice = event.target.closest("[data-pb2-voice-reset]");
+  if (resetVoice) return giveNetworkVoice(resetVoice.dataset.pb2VoiceReset, "default");
   if (event.target.closest("[data-pb2-voice-own]") && voiceNet)
     return editNetworkVoiceFrom(brandVoiceAsIs(cfg.getData()));
   if (!canEditView() && event.target.closest(WRITE_HOOKS)) return;

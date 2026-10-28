@@ -20,11 +20,11 @@
 //   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2344";
-import { getContextById } from "../contexts-store.js?v=2344";
-import { playbookForNewWork } from "../active-playbook.js?v=2344";
-import { isNewUser } from "../user-mode.js?v=2344";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2344";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2345";
+import { getContextById } from "../contexts-store.js?v=2345";
+import { playbookForNewWork } from "../active-playbook.js?v=2345";
+import { isNewUser } from "../user-mode.js?v=2345";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2345";
 import {
   networkVoiceOn,
   networkVoice,
@@ -34,7 +34,7 @@ import {
   baseValue,
   voiceItemsHtml,
   voiceNetTagHtml,
-} from "../voice-parts.js?v=2344";
+} from "../voice-parts.js?v=2345";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -44,11 +44,11 @@ import {
   INTERVIEW,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2344";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2344";
-import "../archie-pixels.js?v=2344";
-import { navigate } from "../router.js?v=2344";
-import { escapeHtml } from "../utils.js?v=2344";
+} from "../network-voice-flow.js?v=2345";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2345";
+import "../archie-pixels.js?v=2345";
+import { navigate } from "../router.js?v=2345";
+import { escapeHtml } from "../utils.js?v=2345";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -231,7 +231,13 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
 // them as tiles — the best one first, full width, recommended; the others
 // in a row below — then the way out. Once answered, it folds to its title
 // line (the answer is the user's turn below it).
-export function voiceAskHtml(ctx, net, { id, choices = [], giving = false, resolved = false }) {
+// `line` replaces Archie's sentence; `later` names the way out (null: none —
+// the creation review, where leaving it is the answer).
+export function voiceAskHtml(
+  ctx,
+  net,
+  { id, choices = [], giving = false, resolved = false, line = null, later = "Not now" },
+) {
   const label = escapeHtml(networkLabel(net));
   const traits = NETWORK_VOICE_TRAITS[net] || [];
   // What a rule for the network looks like — examples, each one its own chip.
@@ -256,9 +262,11 @@ export function voiceAskHtml(ctx, net, { id, choices = [], giving = false, resol
             resolved
               ? ""
               : `<p class="voice-edit__line">${
-                  giving
-                    ? `These drafts are written in your default voice.`
-                    : `I'd write for ${label} in your default voice — what works there may not work on ${label}.`
+                  line
+                    ? escapeHtml(line)
+                    : giving
+                      ? `These drafts are written in your default voice.`
+                      : `I'd write for ${label} in your default voice — what works there may not work on ${label}.`
                 }</p>`
           }
         </div>
@@ -282,7 +290,7 @@ export function voiceAskHtml(ctx, net, { id, choices = [], giving = false, resol
             .join("")}</div>
           <div class="voice-ask__foot">
             ${hasDefault ? `<button type="button" class="ap-button ghost grey" ${pick("default")}>Use my default voice</button>` : ""}
-            <button type="button" class="ap-button ghost grey" ${pick("cancel")}>Not now</button>
+            ${later ? `<button type="button" class="ap-button ghost grey" ${pick("cancel")}>${escapeHtml(later)}</button>` : ""}
           </div>
         </div>`
         }

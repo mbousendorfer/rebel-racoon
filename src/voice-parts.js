@@ -10,9 +10,9 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2344";
-import { isFlagOn } from "./feature-flags.js?v=2344";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2344";
+import { escapeHtml } from "./utils.js?v=2345";
+import { isFlagOn } from "./feature-flags.js?v=2345";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2345";
 import {
   networkMeta,
   networkLabel,
@@ -20,7 +20,7 @@ import {
   normalizeNetwork,
   getConnectedProfileById,
   profileForNetwork,
-} from "./social-profiles.js?v=2344";
+} from "./social-profiles.js?v=2345";
 
 // `hint`: what the part holds, said under its title — on the Playbook's tab
 // and in a voice proposal (one source for both).
@@ -171,19 +171,24 @@ export function interviewNetworkVoice(ctx, network, answers) {
 }
 
 // What Archie gives a network on its own (creation): its voice learned from the
-// account's posts when it has enough, else the default voice as it is — warned.
+// account's posts when it has enough. Else nothing: the network writes in the
+// default voice, never chosen, so its first draft asks (network-voice-flow.js).
 function bestNetworkVoice(ctx, network) {
   const account = profileForNetwork(network);
   return canLearnFrom(account)
     ? learnNetworkVoice(ctx, network, { from: account.handle, postCount: account.postCount })
-    : brandVoiceAsIs(ctx);
+    : null;
 }
 
-// Every network of the Playbook with a voice — the best one where it has none
-// yet, its own kept. Creation and its review read it this way.
+// Every network of the Playbook that can have a voice — learned where it has
+// none yet, its own kept. Creation and its review read it this way.
 export function withNetworkVoices(ctx) {
   return {
-    ...Object.fromEntries(playbookNetworks(ctx).map((n) => [n, bestNetworkVoice(ctx, n)])),
+    ...Object.fromEntries(
+      playbookNetworks(ctx)
+        .map((n) => [n, bestNetworkVoice(ctx, n)])
+        .filter(([, v]) => v),
+    ),
     ...(ctx?.voiceByNetwork || {}),
   };
 }
