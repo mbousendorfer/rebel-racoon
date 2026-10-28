@@ -9,21 +9,21 @@
 // active Playbook. (A three-subject "Test run" column was removed at the user's
 // request, 2026-10-06: "ça n'a pas de sens".)
 
-import { html, toString } from "../lib/html.js?v=2285";
-import { delegate } from "../lib/delegate.js?v=2285";
-import { getPath } from "../../../router.js?v=2285";
-import { setTopbarActions } from "../../../components/topbar.js?v=2285";
-import { renderFrame } from "./frame.js?v=2285";
-import { renderEmpty } from "../ui/empty.js?v=2285";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=2285";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2285";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=2285";
-import { toast } from "../ui/toast.js?v=2285";
-import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2285";
-import { copyService } from "../services/index.js?v=2285";
-import { lookFromColors } from "../render/visual.js?v=2285";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2285";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2285";
+import { html, toString } from "../lib/html.js?v=2286";
+import { delegate } from "../lib/delegate.js?v=2286";
+import { getPath } from "../../../router.js?v=2286";
+import { setTopbarActions } from "../../../components/topbar.js?v=2286";
+import { renderFrame } from "./frame.js?v=2286";
+import { renderEmpty } from "../ui/empty.js?v=2286";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=2286";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2286";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=2286";
+import { toast } from "../ui/toast.js?v=2286";
+import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2286";
+import { copyService } from "../services/index.js?v=2286";
+import { lookFromColors } from "../render/visual.js?v=2286";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2286";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2286";
 
 function draftFrom(style, brandId) {
   if (style) {

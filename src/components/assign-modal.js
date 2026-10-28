@@ -20,10 +20,10 @@
 // picker is the share dialog's (.ap-select trigger + DS Selection Dropdown,
 // disabled rows that say why with an `ap-tag grey mini` + tooltip).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2285";
-import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER, getReviewer, hasProfileAccess } from "../org.js?v=2285";
-import { profileForNetwork } from "../social-profiles.js?v=2285";
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=2285";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2286";
+import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER, getReviewer, hasProfileAccess } from "../org.js?v=2286";
+import { profileForNetwork } from "../social-profiles.js?v=2286";
+import { html, raw, escapeText, escapeAttr } from "../utils.js?v=2286";
 
 const MODAL_ID = "assignReview";
 
