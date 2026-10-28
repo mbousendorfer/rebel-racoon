@@ -20,10 +20,10 @@
 //             preset), transcript, segments (null = auto framing), texts[],
 //             brand (null = the Playbook's clip look) }
 
-import { seedVideos } from "./mocks.js?v=2326";
-import { isNewUser } from "./user-mode.js?v=2326";
-import { createNotifier } from "./store-utils.js?v=2326";
-import { getDefaultContext, getContextById } from "./contexts-store.js?v=2326";
+import { seedVideos } from "./mocks.js?v=2331";
+import { isNewUser } from "./user-mode.js?v=2331";
+import { createNotifier } from "./store-utils.js?v=2331";
+import { getDefaultContext, getContextById } from "./contexts-store.js?v=2331";
 
 const MIN_VIDEO_MS = 30 * 1000;
 const MAX_VIDEO_MS = 2 * 60 * 60 * 1000;
@@ -40,20 +40,26 @@ const newId = (p) => `${p}-${Date.now().toString(36)}-${++counter}`;
 function seeded() {
   if (videos) return videos;
   const ctx = getDefaultContext();
-  videos = isNewUser()
-    ? []
-    : seedVideos.map((v) => ({
-        ...v,
-        contextId: ctx?.id || null,
-        origin: "seed",
-        status: "ready",
-        progress: 1,
-        stage: null,
-        settings: { cta: "none", ...v.settings },
-        clips: v.clips.map((c, i) => freshClip({ ...c, id: `${v.id}-c${i + 1}` })),
-      }));
+  videos = isNewUser() ? [] : seedVideos.map((v) => hydrate(v, ctx?.id || null));
   return videos;
 }
+
+function hydrate(v, contextId) {
+  return {
+    ...v,
+    contextId,
+    origin: "seed",
+    status: "ready",
+    progress: 1,
+    stage: null,
+    settings: { cta: "none", ...v.settings },
+    clips: v.clips.map((c, i) => freshClip({ ...c, id: `${v.id}-c${i + 1}` })),
+  };
+}
+
+// The first visit's showcase: the seeded podcast, outside the store, so a new
+// user sees what the space makes before owning a video.
+export const exampleVideo = () => hydrate({ ...seedVideos[0], id: "example" }, null);
 
 function freshClip(c) {
   return {

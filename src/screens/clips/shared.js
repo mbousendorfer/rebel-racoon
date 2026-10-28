@@ -2,10 +2,10 @@
 // editor share: time formatting, the video-wide options (format, subtitles),
 // and the live reframed previews.
 
-import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2326";
-import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2326";
-import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2326";
-import { escapeHtml } from "../../utils.js?v=2326";
+import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2331";
+import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2331";
+import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2331";
+import { escapeHtml } from "../../utils.js?v=2331";
 
 // m:ss for a duration or a playhead, from ms.
 export function fmtMs(ms) {
@@ -29,6 +29,16 @@ export const formatLabel = (id) => `${FORMATS[id]?.label || "Vertical"} ${id}`;
 export const bestFor = (id) => (FORMATS[id] ? ratioNetworksMeta(FORMATS[id]) : "");
 
 export const SUBTITLE_IDS = PROD_PRESET_IDS;
+
+// The editor's rail: one tool each, in its order. The project page lists them
+// too, so a clip says what can be changed on it before the editor opens.
+export const EDITOR_TOOLS = [
+  { id: "reframe", label: "Reframe", icon: "ap-icon-cropper", hint: "Who's in the frame, part by part" },
+  { id: "transcript", label: "Transcript", icon: "ap-icon-file--text", hint: "Fix a word, hide fillers and pauses" },
+  { id: "subtitles", label: "Subtitles", icon: "ap-icon-closed-captions", hint: "Their style, font and effects" },
+  { id: "text", label: "Text", icon: "ap-icon-alt-text", hint: "Titles and text on the video" },
+  { id: "brand", label: "Brand", icon: "ap-icon-target", hint: "Your logo, an intro and an outro" },
+];
 export const presetLabel = (id) => (id === "none" ? "No subtitles" : presetById(id)?.label || id);
 
 export function clipRatioId(video, clip) {
@@ -199,7 +209,10 @@ function mountPreview(el, video, clip) {
     cancelAnimationFrame(raf);
     raf = requestAnimationFrame(loop);
   };
+  // data-autoplay: the clip plays on its own and keeps playing (the library's showcase).
+  const auto = el.hasAttribute("data-autoplay") && !matchMedia("(prefers-reduced-motion: reduce)").matches;
   const leave = () => {
+    if (auto) return;
     v.pause();
     cancelAnimationFrame(raf);
     v.currentTime = startS;
@@ -208,6 +221,7 @@ function mountPreview(el, video, clip) {
   v.addEventListener("seeked", paint);
   el.addEventListener("pointerenter", enter);
   el.addEventListener("pointerleave", leave);
+  if (auto) enter();
   return () => {
     cancelAnimationFrame(raf);
     el.removeEventListener("pointerenter", enter);

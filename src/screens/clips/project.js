@@ -7,36 +7,36 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2326";
-import { isFlagOn } from "../../feature-flags.js?v=2326";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2326";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2326";
-import { showToast } from "../../components/toast.js?v=2326";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2326";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2326";
-import { startRewrite } from "../../draft-rewrite.js?v=2326";
-import { networkVoice, voiceChangedAt } from "../../voice-parts.js?v=2326";
-import { renderPostCard } from "../../components/post-card.js?v=2326";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2326";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2326";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2326";
+import { navigate } from "../../router.js?v=2331";
+import { isFlagOn } from "../../feature-flags.js?v=2331";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2331";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2331";
+import { showToast } from "../../components/toast.js?v=2331";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2331";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2331";
+import { startRewrite } from "../../draft-rewrite.js?v=2331";
+import { networkVoice, voiceChangedAt } from "../../voice-parts.js?v=2331";
+import { renderPostCard } from "../../components/post-card.js?v=2331";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2331";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2331";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2331";
 import {
   getConnectedProfiles,
   renderProfileTag,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-} from "../../social-profiles.js?v=2326";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2326";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2326";
-import { captionStateFor } from "../../clip-captions.js?v=2326";
+} from "../../social-profiles.js?v=2331";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2331";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2331";
+import { captionStateFor } from "../../clip-captions.js?v=2331";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2326";
-import { escapeHtml } from "../../utils.js?v=2326";
+} from "../../posts-store.js?v=2331";
+import { escapeHtml } from "../../utils.js?v=2331";
 import {
   getVideo,
   draftKey,
@@ -47,7 +47,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2326";
+} from "../../videos-store.js?v=2331";
 import {
   fmtMs,
   formatSelect,
@@ -66,7 +66,8 @@ import {
   SUBTITLE_IDS,
   bestFor,
   CTA_OPTIONS,
-} from "./shared.js?v=2326";
+  EDITOR_TOOLS,
+} from "./shared.js?v=2331";
 
 let target = null;
 let videoId = null;
@@ -406,14 +407,8 @@ function paintFocus(v) {
   const info = target.querySelector("[data-clips-focus-info]");
   if (info)
     info.innerHTML = `
-      <h2 class="clips-inspector__title">${escapeHtml(c.title)}</h2>
-      <p class="clips-inspector__of">Clip ${i + 1} of ${v.clips.length} · ${escapeHtml(formatLabel(ratio))} · ${fmtMs(c.endMs - c.startMs)}</p>
-      <div class="clips-place" aria-label="${fmtMs(c.startMs)} to ${fmtMs(c.endMs)} in the video">
-        <div class="clips-place__track"><span class="clips-place__clip" style="left:${(c.startMs / v.durationMs) * 100}%;width:max(3px, ${((c.endMs - c.startMs) / v.durationMs) * 100}%)"></span></div>
-        <span class="clips-place__label">${fmtMs(c.startMs)} → ${fmtMs(c.endMs)} in the ${fmtMs(v.durationMs)} video</span>
-      </div>
-      <div class="clips-inspector__actions">
-        <a class="ap-button stroked blue" href="#/clips/${v.id}/edit/${c.id}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit clip</span></a>
+      <div class="clips-inspector__actions clips-inspector__head">
+        <h2 class="clips-inspector__title">${escapeHtml(c.title)}</h2>
         <details class="clips-more">
           <summary class="ap-icon-button transparent" aria-label="More actions for this clip" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
           <div class="ap-action-dropdown clips-more__menu" role="menu">
@@ -426,7 +421,29 @@ function paintFocus(v) {
           </div>
         </details>
       </div>
-      ${c.why ? `<div class="clips-inspector__why"><span class="clips-inspector__label">Why this clip</span><p>${escapeHtml(c.why)}</p></div>` : ""}
+      <p class="clips-inspector__of">Clip ${i + 1} of ${v.clips.length} · ${escapeHtml(formatLabel(ratio))} · ${fmtMs(c.endMs - c.startMs)}</p>
+      <div class="clips-place" aria-label="${fmtMs(c.startMs)} to ${fmtMs(c.endMs)} in the video">
+        <div class="clips-place__track"><span class="clips-place__clip" style="left:${(c.startMs / v.durationMs) * 100}%;width:max(3px, ${((c.endMs - c.startMs) / v.durationMs) * 100}%)"></span></div>
+        <span class="clips-place__label">${fmtMs(c.startMs)} → ${fmtMs(c.endMs)} in the ${fmtMs(v.durationMs)} video</span>
+      </div>
+      ${
+        c.why
+          ? `<div class="clips-inspector__why">
+              <i class="ap-icon-archie-official" aria-hidden="true"></i>
+              <div><span class="clips-inspector__label">Why I picked it</span><p>${escapeHtml(c.why)}</p></div>
+            </div>`
+          : ""
+      }
+      <nav class="clips-tools" aria-label="Change this clip in the editor">
+        <span class="clips-inspector__label">Change it in the editor</span>
+        ${EDITOR_TOOLS.map(
+          (t) => `<a class="clips-tools__row" href="#/clips/${v.id}/edit/${c.id}?tool=${t.id}">
+            <i class="${t.icon}" aria-hidden="true"></i>
+            <span class="clips-tools__text"><span class="clips-tools__name">${t.label}</span><span class="clips-tools__hint">${t.hint}</span></span>
+            <i class="ap-icon-chevron-right clips-tools__go" aria-hidden="true"></i>
+          </a>`,
+        ).join("")}
+      </nav>
       <div class="clips-inspector__controls">
         <span class="clips-inspector__label">How it looks</span>
         ${dsSelect({
