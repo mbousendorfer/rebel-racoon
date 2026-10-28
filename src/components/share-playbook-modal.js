@@ -19,8 +19,8 @@
 //     • onDone() — fired after a committed change (scope or ownership), so the
 //       caller can repaint or bail out if it just handed away its own access.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2316";
-import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=2316";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2318";
+import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=2318";
 import {
   canTransfer,
   isMine,
@@ -29,10 +29,10 @@ import {
   recipientsOf,
   tiedProfile,
   profileBlockFor,
-} from "../playbook-access.js?v=2316";
-import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=2316";
-import { showToast } from "./toast.js?v=2316";
-import { html, raw, escapeHtml } from "../utils.js?v=2316";
+} from "../playbook-access.js?v=2318";
+import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=2318";
+import { showToast } from "./toast.js?v=2318";
+import { html, raw, escapeHtml } from "../utils.js?v=2318";
 
 const MODAL_ID = "sharePlaybook";
 
@@ -239,6 +239,19 @@ function peopleRows(ctx) {
       </span>
       <span class="share-playbook-modal__role">Owner</span>
     </li>`,
+    // Shared with the org: the org is in the list too, so "everyone" above
+    // and the faces below no longer read as two different answers (2026-10-28).
+    ...(orgAccess
+      ? [
+          html`<li class="share-playbook-modal__person">
+            <span class="ap-avatar size-24" aria-hidden="true"><i class="ap-icon-multiple-users"></i></span>
+            <span class="share-playbook-modal__row-main">
+              <span class="share-playbook-modal__row-name">Everyone at ${ORG.name}</span>
+            </span>
+            <span class="share-playbook-modal__role">Can use</span>
+          </li>`,
+        ]
+      : []),
     ...named.map(
       (m) =>
         html`<li class="share-playbook-modal__person">
@@ -307,7 +320,7 @@ function renderGeneral(ctx) {
       value: "invited",
       icon: "ap-icon-lock-on",
       label: "Specific people",
-      hint: `Only the people listed above can open it — nobody else at ${escapeHtml(ORG.name)}.`,
+      hint: `Only the people listed above can open it, nobody else at ${escapeHtml(ORG.name)}.`,
     },
     {
       value: "organization",
@@ -358,9 +371,9 @@ function renderGeneral(ctx) {
 function orgReachLine(ctx) {
   const profile = tiedProfile(ctx);
   if (!profile) {
-    return `All ${ORG.memberCount} today, and whoever joins next — the list <strong>follows</strong> the org.`;
+    return `All ${ORG.memberCount} today, and whoever joins next: the list <strong>follows</strong> the org.`;
   }
-  return `Everyone who can reach ${escapeHtml(profile.handle || profile.name || "this account")}, joiners included — the list <strong>follows</strong> the org.`;
+  return `Everyone who can reach ${escapeHtml(profile.handle || profile.name || "this account")}, joiners included: the list <strong>follows</strong> the org.`;
 }
 
 // Who it reaches TODAY: the stored list minus anyone the profile gate already
@@ -413,8 +426,8 @@ function renderConsequence(ctx) {
   // Going org-wide takes nothing away from anyone.
   if (after === null) return "";
   const KEPT =
-    "Chats they started on this Playbook keep the drafts already written — those can still be saved and " +
-    "scheduled — but nothing new will generate. Playbooks they duplicated from it are their own and stay untouched.";
+    "Chats they started on this Playbook keep the drafts already written, which can still be saved and " +
+    "scheduled, but nothing new will generate. Playbooks they duplicated from it are their own and stay untouched.";
   let lead = "";
   let detail = KEPT;
   if (before === null) {
