@@ -6,13 +6,13 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2301";
-import { findConnector } from "./connectors-store.js?v=2301";
-import { createSessionNotifier } from "./store-utils.js?v=2301";
-import { addPostDraft } from "./posts-store.js?v=2301";
-import { showToast } from "./components/toast.js?v=2301";
-import { isFlagOn } from "./feature-flags.js?v=2301";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2301";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2302";
+import { findConnector } from "./connectors-store.js?v=2302";
+import { createSessionNotifier } from "./store-utils.js?v=2302";
+import { addPostDraft } from "./posts-store.js?v=2302";
+import { showToast } from "./components/toast.js?v=2302";
+import { isFlagOn } from "./feature-flags.js?v=2302";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2302";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -388,13 +388,8 @@ export function postExtractionResult(sessionId, { filename, ideas }) {
     createdAt: Date.now(),
   });
   notify(sessionId);
-  // Completion ping — consistent across every idea-extraction path (bulk /
-  // per-row / video analyze / save-the-angle), mirroring how drafts announce
-  // "N drafts ready". No action button: the extracted ideas already render
-  // inline in the thread as an idea card.
-  // Under contentPanel the thread's ideas card is the announcement.
-  const n = ideas.length;
-  if (!isFlagOn("contentPanel")) showToast(`${n} idea${n === 1 ? "" : "s"} ready`);
+  // No completion toast: the extraction turn in the thread is the announcement,
+  // with its next step (R2, 2026-10-28).
 }
 
 // Push a "pending" marker to indicate the session is busy (e.g. while a source

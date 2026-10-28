@@ -13,26 +13,26 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2301";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2301";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2301";
-import { getTopPost } from "../../top-posts-store.js?v=2301";
-import { getTopicById } from "../../topics-store.js?v=2301";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2301";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2301";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2301";
-import { getIdeas } from "../../library.js?v=2301";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2301";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2301";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2301";
-import { getPlans } from "../../post-plan-store.js?v=2301";
-import { isFlagOn } from "../../feature-flags.js?v=2301";
-import { CURRENT_USER } from "../../org.js?v=2301";
-import { getSessionById } from "../../sessions-store.js?v=2301";
-import { getContextById } from "../../contexts-store.js?v=2301";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2301";
-import { getFocusKey } from "../../components/right-panel.js?v=2301";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2301";
+} from "./thread-turns.js?v=2302";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2302";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2302";
+import { getTopPost } from "../../top-posts-store.js?v=2302";
+import { getTopicById } from "../../topics-store.js?v=2302";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2302";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2302";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2302";
+import { getIdeas } from "../../library.js?v=2302";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2302";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2302";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2302";
+import { getPlans } from "../../post-plan-store.js?v=2302";
+import { isFlagOn } from "../../feature-flags.js?v=2302";
+import { CURRENT_USER } from "../../org.js?v=2302";
+import { getSessionById } from "../../sessions-store.js?v=2302";
+import { getContextById } from "../../contexts-store.js?v=2302";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2302";
+import { getFocusKey } from "../../components/right-panel.js?v=2302";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2302";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -619,6 +619,21 @@ function renderExtractionTurn(message, sessionId) {
       });
     })
     .join("");
+  // The step after ideas is drafts: one named action under them, until a
+  // draft has been written further down the thread (R2, 2026-10-28).
+  const thread = sessionId ? getThread(sessionId) : [];
+  const drafted = thread
+    .slice(thread.findIndex((m) => m.id === message.id) + 1)
+    .some((m) => m.batch?.length || m.variant === "draft");
+  const next =
+    message.status !== "loading" && count && !drafted
+      ? `<div class="extraction-turn__next">
+          <span class="extraction-turn__next-text">Draft from ${count === 1 ? "this idea" : "the strongest of these"} in one go, or pick one above.</span>
+          <button type="button" class="ap-button primary orange" data-extraction-draft="${message.id}">
+            <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Draft posts</span>
+          </button>
+        </div>`
+      : "";
   return `
     <div class="chat-turn chat-turn--ai chat-turn--extraction">
       ${renderNotice({
@@ -633,6 +648,7 @@ function renderExtractionTurn(message, sessionId) {
               <span>${message.filename}</span>
             </div>
             ${cards}
+            ${next}
           </div>
         `,
       })}
