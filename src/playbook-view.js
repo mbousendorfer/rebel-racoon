@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2345";
-import { conceptHint } from "./concepts.js?v=2345";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2347";
+import { conceptHint } from "./concepts.js?v=2347";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2345";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2345";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2345";
-import { isFlagOn } from "./feature-flags.js?v=2345";
-import { clipLookOf } from "./videos-store.js?v=2345";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2345";
-import { parseHashParams } from "./url-state.js?v=2345";
+} from "./playbook-brand-kit.js?v=2347";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2347";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2347";
+import { isFlagOn } from "./feature-flags.js?v=2347";
+import { clipLookOf } from "./videos-store.js?v=2347";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2347";
+import { parseHashParams } from "./url-state.js?v=2347";
 import {
   isListPart,
   voiceParts,
@@ -52,14 +52,14 @@ import {
   markAdapted,
   withNetworkVoices,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2345";
-import { showToast } from "./components/toast.js?v=2345";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2345";
-import { voiceChoices } from "./network-voice-flow.js?v=2345";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2345";
-import { consumeHandoff } from "./handoff.js?v=2345";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2345";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2345";
+} from "./voice-parts.js?v=2347";
+import { showToast } from "./components/toast.js?v=2347";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2347";
+import { voiceChoices } from "./network-voice-flow.js?v=2347";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2347";
+import { consumeHandoff } from "./handoff.js?v=2347";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2347";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2347";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1985,7 +1985,7 @@ const SECTION_LEADS = {
   // Flag voicePerNetwork: the model in one line — the creation review's cover
   // is the only place a new user meets it (the intro is for returning users).
   voice: networkVoiceOn()
-    ? "One default voice for every network, plus rules for each one. I follow them in every draft."
+    ? "One default voice for every network, and rules for the networks that need their own. I follow them in every draft."
     : "How the Brand sounds, in five parts. I follow them in every draft.",
   brand: "How the Brand looks: its logos, colors, type, and the rules its images follow.",
   images: "How I make this Brand's images: the styles I draw them in, and what Generate an image does on a draft.",
@@ -2595,33 +2595,79 @@ function renderVoiceRead2(data, learnMenu) {
 // left unanswered, its first draft asks. The document and « Write them
 // myself » stay on the saved Playbook's tab.
 function networkVoiceCards(data) {
-  if (isLibrary()) return [];
+  const nets = isLibrary() ? [] : voiceNets(data);
+  if (!nets.length) return [];
   const first = voiceParts().length;
-  return voiceNets(data).map((net, i) => {
-    const label = networkLabel(net);
-    const { state, chosen, voice } = networkVoice(data, net);
-    const body =
-      state === "own"
-        ? `${learnedVoiceHtml(data, net, voice, { pending: false })}
-           <div class="pb2-voice-net__foot"><button type="button" class="ap-button ghost grey" data-pb2-voice-reset="${esc(net)}">Use my default voice instead</button></div>`
-        : voiceAskHtml(data, net, {
-            id: net,
-            choices: voiceChoices(net, { needed: !chosen }).items.filter(
-              (c) => c.value !== "document" && c.value !== "edit",
-            ),
-            line: chosen
-              ? `Your ${label} posts follow your default voice.`
-              : `Your ${label} posts follow your default voice until you add some. I'll ask before your first ${label} post.`,
-            later: null,
-          });
-    return pb2Block(`Rules for ${label}`, body, {
+  // First, whether to give the networks rules at all (2026-10-28, asked: « il
+  // faut pouvoir choisir de spécifier (ou non) des voices pour chaque
+  // network »). The same voice everywhere: no card, every network keeps the
+  // default voice and is never asked. The draft's `voiceSplit`, never saved.
+  const each = data.voiceSplit !== "same";
+  const names = nets.map(networkLabel).join(" and ");
+  const option = (value, title, info) => `
+    <label class="ap-radio-card card pb2-voice-split__option" data-pb2-voice-split="${value}">
+      <input type="radio" name="pb2-voice-split" value="${value}" ${each === (value === "each") ? "checked" : ""} />
+      <div>
+        <span class="ap-radio-card-header"><span class="ap-radio-card-title">${esc(title)}</span></span>
+        <span>${esc(info)}</span>
+      </div>
+    </label>`;
+  const split = pb2Block(
+    "Your networks",
+    `<div class="pb2-voice-split" role="radiogroup" aria-label="Rules per network">
+      ${option("same", "The same voice everywhere", `I write for ${names} in your default voice. You can add rules for a network later, in your Playbook.`)}
+      ${option("each", "Rules for each network", `I add what works on ${names} on top of your default voice.`)}
+    </div>`,
+    {
       wide: true,
-      hint: `What your ${label} posts do on top of your default voice.`,
-      index: first + i,
-      icon: networkIcon(net),
-      className: "pb2-voice-net",
-    });
-  });
+      hint: "Each network can follow your default voice as it is, or have rules of its own.",
+      index: first,
+    },
+  );
+  if (!each) return [split];
+  return [
+    split,
+    ...nets.map((net, i) => {
+      const label = networkLabel(net);
+      const { state, chosen, voice } = networkVoice(data, net);
+      const body =
+        state === "own"
+          ? `${learnedVoiceHtml(data, net, voice, { pending: false })}
+           <div class="pb2-voice-net__foot"><button type="button" class="ap-button ghost grey" data-pb2-voice-reset="${esc(net)}">Use my default voice instead</button></div>`
+          : voiceAskHtml(data, net, {
+              id: net,
+              choices: voiceChoices(net, { needed: !chosen }).items.filter(
+                (c) => c.value !== "document" && c.value !== "edit",
+              ),
+              line: chosen
+                ? `Your ${label} posts follow your default voice.`
+                : `Your ${label} posts follow your default voice until you add some. I'll ask before your first ${label} post.`,
+              later: null,
+            });
+      return pb2Block(`Rules for ${label}`, body, {
+        wide: true,
+        hint: `What your ${label} posts do on top of your default voice.`,
+        index: first + 1 + i,
+        icon: networkIcon(net),
+        className: "pb2-voice-net",
+      });
+    }),
+  ];
+}
+
+// The same voice everywhere: every network keeps the default voice, chosen.
+// Back to rules for each: what was kept that way goes, so a network learns
+// from its posts again or is asked.
+function setVoiceSplit(value) {
+  const d = cfg.getData();
+  if ((d.voiceSplit || "each") === value) return;
+  d.voiceSplit = value;
+  const nets = voiceNets(d);
+  d.voiceByNetwork =
+    value === "same"
+      ? Object.fromEntries(nets.map((n) => [n, brandVoiceAsIs(d)]))
+      : Object.fromEntries(Object.entries(d.voiceByNetwork || {}).filter(([, v]) => v.optimizedBy !== "brand"));
+  repaint();
 }
 
 // A choice on a network's card in the creation review: what Archie proposes
@@ -3291,6 +3337,8 @@ function onClick(event) {
     return setClipLook({ [clipToggle.dataset.pb2CliplookToggle]: clipToggle.checked });
   const giveVoice = !isLibrary() && event.target.closest("[data-voice-choice]");
   if (giveVoice) return giveNetworkVoice(giveVoice.dataset.voiceAsk, giveVoice.dataset.voiceChoice);
+  const voiceSplit = !isLibrary() && event.target.closest("[data-pb2-voice-split]");
+  if (voiceSplit) return setVoiceSplit(voiceSplit.dataset.pb2VoiceSplit);
   const resetVoice = event.target.closest("[data-pb2-voice-reset]");
   if (resetVoice) return giveNetworkVoice(resetVoice.dataset.pb2VoiceReset, "default");
   if (event.target.closest("[data-pb2-voice-own]") && voiceNet)

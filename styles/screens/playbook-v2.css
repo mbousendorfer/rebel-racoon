@@ -1060,6 +1060,14 @@
   margin: 0;
 }
 
+/* Before the cards: the same voice everywhere, or rules for each network —
+   two DS radio cards side by side, stacked when the block is narrow. */
+.pb2-voice-split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--ref-spacing-xs);
+}
+
 .pb2-voice-net__foot {
   display: flex;
   justify-content: flex-end;

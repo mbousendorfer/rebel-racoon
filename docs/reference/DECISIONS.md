@@ -327,7 +327,7 @@ Behind `voicePerNetwork`. Revu avec l'utilisateur le 2026-10-27 (« tout a l'air
 - **L'étape Voice du chat est un bloc dans la conversation**, pas le Quickpicker : elle explique ce qui manque et guide avec des tuiles (la recommandée en tête). Exception assumée à la règle « question in-chat = Quickpicker » — c'est une décision à expliquer, pas une question à choix.
 - **Le feedback d'un draft peut mettre à jour la voix** — seulement s'il parle d'écriture, et comme une proposition.
 - **L'onboarding : le dialog seul** (+ l'infobox de la fiche), pour les utilisateurs existants ; le dialog en trois temps est gardé tel quel.
-- **Un nouvel utilisateur donne ses règles dans la review de création** (2026-10-28) — une carte par réseau sous la default voice, une décision par carte, pas une intro ni une case « tout apprendre ». Un réseau laissé sans réponse n'a **pas** la default voice posée d'office : son premier draft demande (l'étape Voice du chat). Avant, la création la posait en silence, elle comptait comme choisie, et un nouvel utilisateur ne voyait jamais le modèle.
+- **Un nouvel utilisateur donne ses règles dans la review de création** (2026-10-28) — d'abord le choix d'en avoir ou non (The same voice everywhere · Rules for each network), puis une carte par réseau sous la default voice, une décision par carte, pas une intro ni une case « tout apprendre ». Un réseau laissé sans réponse n'a **pas** la default voice posée d'office : son premier draft demande (l'étape Voice du chat). Avant, la création la posait en silence, elle comptait comme choisie, et un nouvel utilisateur ne voyait jamais le modèle.
 
 **Retiré (ne pas reproposer) :**
 

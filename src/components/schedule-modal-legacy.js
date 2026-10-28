@@ -1,6 +1,6 @@
-import { html, raw, escapeText } from "../utils.js?v=2345";
-import { showToast } from "./toast.js?v=2345";
-import { bindReorder } from "../drag-reorder.js?v=2345";
+import { html, raw, escapeText } from "../utils.js?v=2347";
+import { showToast } from "./toast.js?v=2347";
+import { bindReorder } from "../drag-reorder.js?v=2347";
 import {
   getQueue,
   getQueueOn,
@@ -8,9 +8,9 @@ import {
   dayKey,
   addToQueue,
   subscribe as subscribeQueue,
-} from "../schedule-store.js?v=2345";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2345";
-import { renderProfileTag, profileForNetwork } from "../social-profiles.js?v=2345";
+} from "../schedule-store.js?v=2347";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2347";
+import { renderProfileTag, profileForNetwork } from "../social-profiles.js?v=2347";
 
 // ⚠️ LEGACY — the schedule modal as it was before the redesign, kept behind
 // the `newScheduleModal` flag ("New SM", default ON) so the two can be
