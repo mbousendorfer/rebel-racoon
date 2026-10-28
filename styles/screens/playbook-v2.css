@@ -1066,3 +1066,11 @@
   width: 320px;
   max-width: 100%;
 }
+
+/* A network tab that only follows the default voice says so, quietly. */
+.pb2-voice-tabs__inherit {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  font-weight: var(--sys-text-style-caption-weight);
+  color: var(--ref-color-grey-80);
+}
