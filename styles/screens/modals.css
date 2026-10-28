@@ -2489,6 +2489,14 @@ body.has-modal {
   color: var(--ref-color-grey-80);
 }
 /* Reading the account's posts: the orange sheen of Archie at work (chat.css). */
+/* Where the Playbook stands: a checkbox per network to personalize — the
+   default network's slot stays empty, so the rows keep one edge. */
+.voice-intro__slot {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+}
 /* Personalize: a way to adapt the default voice, the best one recommended
    (a .voice-intro__voice row); keeping it is a quiet link under the list. */
 .voice-intro__best {
