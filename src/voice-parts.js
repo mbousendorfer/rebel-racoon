@@ -10,17 +10,31 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2261";
-import { isFlagOn } from "./feature-flags.js?v=2261";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2261";
-import { networkMeta, normalizeNetwork, getConnectedProfileById, profileForNetwork } from "./social-profiles.js?v=2261";
+import { escapeHtml } from "./utils.js?v=2274";
+import { isFlagOn } from "./feature-flags.js?v=2274";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2274";
+import {
+  networkMeta,
+  networkLabel,
+  networkIcon,
+  normalizeNetwork,
+  getConnectedProfileById,
+  profileForNetwork,
+} from "./social-profiles.js?v=2274";
 
+// `hint`: what the part holds, said under its title — on the Playbook's tab
+// and in a voice proposal (one source for both).
 const VOICE_PARTS = [
-  { field: "voiceSummary", title: "How the Brand sounds", kind: "text" },
-  { field: "voiceAlways", title: "Always", kind: "rules" },
-  { field: "voiceNever", title: "Never", kind: "rules" },
-  { field: "voiceByPost", title: "Depending on the post", kind: "cases" },
-  { field: "voiceSometimes", title: "Now and then", kind: "rules" },
+  { field: "voiceSummary", title: "How the Brand sounds", kind: "text", hint: "The overall tone, in a few sentences." },
+  { field: "voiceAlways", title: "Always", kind: "rules", hint: "Rules every post follows." },
+  { field: "voiceNever", title: "Never", kind: "rules", hint: "What no post ever does, and the words I never use." },
+  {
+    field: "voiceByPost",
+    title: "Depending on the post",
+    kind: "cases",
+    hint: "How each kind of post is written — a launch, a hiring post, a recap.",
+  },
+  { field: "voiceSometimes", title: "Now and then", kind: "rules", hint: "Habits I use sometimes, not in every post." },
 ];
 
 export function voiceParts() {
@@ -37,6 +51,12 @@ export function cloneItems(v) {
   return v
     .map((i) => (typeof i === "string" ? { text: i } : i && typeof i === "object" ? structuredClone(i) : null))
     .filter((i) => i && String(i.text || i.when || "").trim());
+}
+
+// What marks a rule (or the summary) as a network's own — « For LinkedIn ».
+// Shared by the Playbook's network tabs and the voice proposal.
+export function voiceNetTagHtml(net) {
+  return `<span class="ap-tag grey mini pb2-voice-tag"><i class="${networkIcon(net)}" aria-hidden="true"></i><span>For ${escapeHtml(networkLabel(net))}</span></span>`;
 }
 
 // A part's items, read: the rule in ink, a case's kind of post above it in
@@ -117,24 +137,26 @@ export function learnNetworkVoice(ctx, network, { from, postCount = 0 }) {
   return { ...voice, optimizedBy: "learned", learnedFrom: from, postCount };
 }
 
-// The network's voice, learned from the user's own answers in the chat (the
-// Voice step's interview, network-voice-flow.js): the default voice, with what
-// they said as the network's own rules. `answers`: { length, layout, tags,
-// never, example } — any may be empty. ponytail: their words go in as written;
-// in the product a model turns them into rules.
+// The network's voice, learned from the user's own answers (the Voice step's
+// interview, network-voice-flow.js INTERVIEW): ONE question per part of the
+// Voice profile, so each answer lands in its part — the summary sentence goes
+// after the default voice's, every other answer is the part's new rule for
+// the network. `answers`: { [field]: text } — any may be missing. ponytail:
+// their words go in as written; in the product a model turns them into rules.
 export function interviewNetworkVoice(ctx, network, answers) {
-  const sentence = (s) => (s && !/[.!?…]$/.test(s) ? `${s}.` : s);
-  const rule = (prefix, text, extra = {}) =>
-    text ? [{ text: sentence(prefix ? `${prefix}: ${text}` : text), adapted: true, ...extra }] : [];
+  // A rule reads as a sentence: capital first, full stop last.
+  const sentence = (s) => {
+    if (!s) return s;
+    const t = s.charAt(0).toUpperCase() + s.slice(1);
+    return /[.!?…]$/.test(t) ? t : `${t}.`;
+  };
   const voice = brandVoiceAsIs(ctx);
-  const example = answers.example ? { examples: [answers.example] } : {};
-  voice.voiceAlways = [
-    ...voice.voiceAlways,
-    ...rule("Length", answers.length, example),
-    ...rule("Layout", answers.layout, answers.length ? {} : example),
-  ];
-  voice.voiceSometimes = [...voice.voiceSometimes, ...rule("Hashtags and mentions", answers.tags)];
-  voice.voiceNever = [...voice.voiceNever, ...rule("", answers.never)];
+  VOICE_PARTS.forEach(({ field, kind }) => {
+    const said = sentence((answers?.[field] || "").trim());
+    if (!said) return;
+    if (kind === "text") voice[field] = [voice[field], said].filter(Boolean).join(" ");
+    else voice[field] = [...voice[field], { text: said, adapted: true }];
+  });
   return { ...voice, optimizedBy: "learned", learnedFrom: "your answers" };
 }
 

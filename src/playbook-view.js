@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2261";
-import { conceptHint } from "./concepts.js?v=2261";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2274";
+import { conceptHint } from "./concepts.js?v=2274";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2261";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2261";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2261";
-import { isFlagOn } from "./feature-flags.js?v=2261";
-import { clipLookOf } from "./videos-store.js?v=2261";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2261";
-import { parseHashParams } from "./url-state.js?v=2261";
+} from "./playbook-brand-kit.js?v=2274";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2274";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2274";
+import { isFlagOn } from "./feature-flags.js?v=2274";
+import { clipLookOf } from "./videos-store.js?v=2274";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2274";
+import { parseHashParams } from "./url-state.js?v=2274";
 import {
   isListPart,
   voiceParts,
@@ -48,14 +48,15 @@ import {
   playbookNetworks,
   brandVoiceAsIs,
   cloneNetworkVoice,
+  voiceNetTagHtml,
   markAdapted,
   withNetworkVoices,
-} from "./voice-parts.js?v=2261";
-import { showToast } from "./components/toast.js?v=2261";
-import { introSeen } from "./components/voice-intro-modal.js?v=2261";
-import { consumeHandoff } from "./handoff.js?v=2261";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2261";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2261";
+} from "./voice-parts.js?v=2274";
+import { showToast } from "./components/toast.js?v=2274";
+import { introSeen } from "./components/voice-intro-modal.js?v=2274";
+import { consumeHandoff } from "./handoff.js?v=2274";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2274";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2274";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2034,10 +2035,8 @@ function voiceTarget(data) {
   return (voiceNet && data?.voiceByNetwork?.[voiceNet]) || data;
 }
 
-// What marks a rule (or the summary) as this network's own.
-function voiceNetTag(net) {
-  return `<span class="ap-tag grey mini pb2-voice-tag"><i class="${networkIcon(net)}" aria-hidden="true"></i><span>For ${esc(networkLabel(net))}</span></span>`;
-}
+// What marks a rule (or the summary) as this network's own (voice-parts).
+const voiceNetTag = voiceNetTagHtml;
 
 // The voice intro's door on this tab (voice-intro-modal.js): on a Playbook,
 // until the intro was seen, an infobox that opens it. Never in the creation
@@ -2436,27 +2435,22 @@ function pb2Traits(data) {
 // What each part says when it's empty, and what its editor asks.
 const PART_COPY = {
   voiceSummary: {
-    hint: "The overall tone, in a few sentences.",
     empty: "Not set yet — say in a few sentences how the Brand sounds.",
     placeholder: "How the Brand sounds, in a few sentences…",
   },
   voiceAlways: {
-    hint: "Rules every post follows.",
     empty: "No rules yet — what every post does.",
     placeholder: "A rule every post follows…",
   },
   voiceNever: {
-    hint: "What no post ever does, and the words I never use.",
     empty: "Nothing yet — what no post does.",
     placeholder: "Something no post does…",
   },
   voiceByPost: {
-    hint: "How each kind of post is written — a launch, a hiring post, a recap.",
     empty: "No cases yet — how each kind of post is written.",
     placeholder: "How this kind of post is written…",
   },
   voiceSometimes: {
-    hint: "Habits I use sometimes, not in every post.",
     empty: "Nothing yet — the habits that come back now and then.",
     placeholder: "A habit that comes back now and then…",
   },
@@ -2528,7 +2522,7 @@ function pb2AvoidRow(data, { edit = false } = {}) {
 // Brand's (shown, not edited here).
 function pb2VoiceParts(data, { edit = false, lead = "", index = 2, brand = data, net = null } = {}) {
   const tag = net ? voiceNetTag(net) : "";
-  return voiceParts().map(({ field, title }, i) => {
+  return voiceParts().map(({ field, title, hint }, i) => {
     let body = edit
       ? renderPartEditor(field, field === "voiceSummary" ? baseValue(data, field) : data[field])
       : pb2PartBody(field, baseValue(data, field), tag);
@@ -2538,7 +2532,7 @@ function pb2VoiceParts(data, { edit = false, lead = "", index = 2, brand = data,
     return pb2Block(title, body, {
       aside: ownSummary && !edit ? tag : "",
       wide: true,
-      hint: PART_COPY[field]?.hint,
+      hint,
       index: index + i,
       icon: field === "voiceSummary" ? "ap-icon-quote" : "",
     });

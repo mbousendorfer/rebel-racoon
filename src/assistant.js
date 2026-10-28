@@ -6,13 +6,13 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2261";
-import { findConnector } from "./connectors-store.js?v=2261";
-import { createSessionNotifier } from "./store-utils.js?v=2261";
-import { addPostDraft } from "./posts-store.js?v=2261";
-import { showToast } from "./components/toast.js?v=2261";
-import { isFlagOn } from "./feature-flags.js?v=2261";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2261";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2274";
+import { findConnector } from "./connectors-store.js?v=2274";
+import { createSessionNotifier } from "./store-utils.js?v=2274";
+import { addPostDraft } from "./posts-store.js?v=2274";
+import { showToast } from "./components/toast.js?v=2274";
+import { isFlagOn } from "./feature-flags.js?v=2274";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2274";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -836,11 +836,12 @@ export function postImageLookSet(sessionId, { contextId, styleId, label }) {
   notify(sessionId);
 }
 
-// The voice step's proposal (network-voice-flow.js): « voice-learned », what
-// Archie learned for a network (`voice`, not saved yet) and what it changes
-// from the default voice (learnedVoiceHtml), to use or edit — `resolved` once
-// answered (resolveTurn). Returns the turn's id.
-export function postVoiceTurn(sessionId, variant, { contextId, network, voice = null }) {
+// The voice step's turns (network-voice-flow.js), rendered from the Playbook:
+//   « voice-ask »     the step itself — `choices`, `giving` — a block with tiles;
+//   « voice-learned » what Archie learned for a network (`voice`, not saved
+//                     yet) — to add to the Voice profile or edit.
+// Both are `resolved` once answered (resolveTurn). Returns the turn's id.
+export function postVoiceTurn(sessionId, variant, { contextId, network, ...fields }) {
   const id = newId();
   getThread(sessionId).push({
     id,
@@ -849,7 +850,7 @@ export function postVoiceTurn(sessionId, variant, { contextId, network, voice = 
     meta: "Archie",
     contextId,
     network,
-    voice,
+    ...fields,
     status: "ready",
     createdAt: Date.now(),
   });

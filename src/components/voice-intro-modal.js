@@ -15,13 +15,14 @@
 //   init() · maybeOpenVoiceIntro(path)
 //   introSeen() · markIntroSeen() · resetIntro()
 //   learnedVoiceHtml(ctx, net, voice?, { only, pending })
+//   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2261";
-import { getContextById } from "../contexts-store.js?v=2261";
-import { playbookForNewWork } from "../active-playbook.js?v=2261";
-import { isNewUser } from "../user-mode.js?v=2261";
-import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2261";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2274";
+import { getContextById } from "../contexts-store.js?v=2274";
+import { playbookForNewWork } from "../active-playbook.js?v=2274";
+import { isNewUser } from "../user-mode.js?v=2274";
+import { networkLabel, networkIcon, profileForNetwork } from "../social-profiles.js?v=2274";
 import {
   networkVoiceOn,
   networkVoice,
@@ -30,18 +31,20 @@ import {
   voiceParts,
   cloneItems,
   baseValue,
-} from "../voice-parts.js?v=2261";
+  voiceItemsHtml,
+  voiceNetTagHtml,
+} from "../voice-parts.js?v=2274";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2261";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2261";
-import "../archie-pixels.js?v=2261";
-import { navigate } from "../router.js?v=2261";
-import { escapeHtml } from "../utils.js?v=2261";
+} from "../network-voice-flow.js?v=2274";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2274";
+import "../archie-pixels.js?v=2274";
+import { navigate } from "../router.js?v=2274";
+import { escapeHtml } from "../utils.js?v=2274";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -155,13 +158,23 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
     : String(voice?.voiceSummary || "")
         .replace(baseValue(ctx, "voiceSummary"), "")
         .trim();
-  const changes = voiceParts()
-    .filter((p) => p.kind !== "text")
-    .flatMap((p) =>
-      cloneItems(voice?.[p.field])
-        .filter((i) => (only ? only.includes(i.text) : i.adapted))
-        .map((i) => ({ part: p.title, ...i })),
-    );
+  // Grouped under the Voice profile section each rule goes into — the same
+  // titles as the Playbook's tab (Always, Never, Depending on the post…).
+  // The summary part holds the network's own sentence (what follows the
+  // default voice's), shown as that part's one line.
+  const groups = voiceParts()
+    .map((p) => ({
+      title: p.title,
+      hint: p.hint,
+      kind: p.kind,
+      rules:
+        p.kind === "text"
+          ? summary
+            ? [{ text: summary }]
+            : []
+          : cloneItems(voice?.[p.field]).filter((i) => (only ? only.includes(i.text) : i.adapted)),
+    }))
+    .filter((g) => g.rules.length);
   const from = only
     ? "from your feedback"
     : voice?.postCount
@@ -170,6 +183,9 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
         ? `from ${voice.learnedFrom}`
         : "";
   const name = `For ${label}`;
+  // Proposed rules look exactly like saved ones: the Voice profile's renderer
+  // and its « For X » tag (every proposed rule is the network's own).
+  const tag = voiceNetTagHtml(net);
   const card = `
     <section class="voice-edit__card" aria-label="${name}">
       <div class="voice-edit__say">
@@ -181,24 +197,92 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
           </span>
           ${pending ? `<span class="ap-status grey voice-edit__pending">Not saved yet</span>` : ""}
         </header>
-        ${summary ? `<p class="voice-edit__line">${escapeHtml(summary)}</p>` : ""}
       </div>
-      <ul class="voice-edit__changes" aria-label="${only ? "What I'd add" : "What I'd add to your default voice"}">${changes
-        .map(
-          (c) => `<li class="voice-edit__change">
-            <i class="ap-icon-plus voice-edit__plus" aria-hidden="true"></i>
-            <span class="voice-edit__part">${escapeHtml(c.part)}</span>
-            <span class="voice-edit__rule">${c.when ? `<strong>${escapeHtml(c.when)}:</strong> ` : ""}${escapeHtml(c.text)}${(
-              c.examples || []
-            )
-              .map((x) => `<q class="voice-edit__example">${escapeHtml(x)}</q>`)
-              .join("")}</span>
-          </li>`,
-        )
-        .join("")}</ul>
+      <div class="voice-edit__changes">
+        <p class="voice-edit__where">Goes into your Voice profile, ${label} tab</p>
+        ${groups
+          .map(
+            (g) => `<section class="voice-edit__group" aria-label="${escapeHtml(g.title)}">
+          <h4 class="voice-edit__part">${escapeHtml(g.title)}</h4>
+          <p class="voice-edit__hint">${escapeHtml(g.hint)}</p>
+          <div class="voice-edit__body">${
+            g.kind === "text"
+              ? `<p class="voice-edit__lead">${escapeHtml(g.rules[0].text)}</p>${tag}`
+              : voiceItemsHtml(g.rules, { tag })
+          }</div>
+        </section>`,
+          )
+          .join("")}
+      </div>
       <p class="voice-edit__rest">${only ? `Your other ${label} rules stay as they are.` : "Everything else comes from your default voice."}</p>
     </section>`;
   return `<div class="voice-edit">${card}</div>`;
+}
+
+// ── The Voice step, in the thread ──────────────────────────────────────────
+// A network with no rules of its own, before a draft for it (or « Add rules
+// for X » on one): a sibling of the voice edit — on butter, Archie says what's
+// missing and what rules for the network cover; on white, the ways to add
+// them as tiles — the best one first, full width, recommended; the others
+// in a row below — then the way out. Once answered, it folds to its title
+// line (the answer is the user's turn below it).
+export function voiceAskHtml(ctx, net, { id, choices = [], giving = false, resolved = false }) {
+  const label = escapeHtml(networkLabel(net));
+  const traits = NETWORK_VOICE_TRAITS[net] || [];
+  // What a rule for the network looks like — examples, each one its own chip.
+  const examples = traits.length
+    ? `<div class="voice-ask__examples">
+        <p class="voice-ask__label">Rules for ${label} would say things like</p>
+        <ul class="voice-ask__chips">${traits.map((t) => `<li>${escapeHtml(t)}</li>`).join("")}</ul>
+      </div>`
+    : "";
+  const tiles = choices.filter((c) => c.tile);
+  const hasDefault = choices.some((c) => c.value === "default");
+  const pick = (value) => `data-voice-ask="${escapeHtml(id)}" data-voice-choice="${value}"`;
+  return `
+    <div class="voice-edit voice-ask${resolved ? " is-resolved" : ""}">
+      <section class="voice-edit__card" aria-label="Rules for ${label}">
+        <div class="voice-edit__say">
+          <header class="voice-edit__head">
+            <span class="voice-edit__net" aria-hidden="true"><i class="${networkIcon(net)}"></i></span>
+            <span class="voice-edit__title"><span class="voice-edit__name">No rules for ${label} yet</span></span>
+          </header>
+          ${
+            resolved
+              ? ""
+              : `<p class="voice-edit__line">${
+                  giving
+                    ? `These drafts follow your default voice.`
+                    : `I'd write for ${label} with your default voice — what works elsewhere may not work there.`
+                }</p>`
+          }
+        </div>
+        ${
+          resolved
+            ? ""
+            : `<div class="voice-ask__body">
+          ${examples}
+          <p class="voice-ask__label">How should I add them?</p>
+          <div class="voice-ask__options" style="--others:${Math.max(tiles.length - 1, 1)}">${tiles
+            .map(
+              (c, i) => `<button type="button" class="voice-ask__option${i ? "" : " is-best"}" ${pick(c.value)}>
+                <span class="voice-ask__icon" aria-hidden="true"><i class="${c.icon}"></i></span>
+                <span class="voice-ask__text">
+                  <span class="voice-ask__name">${escapeHtml(c.tile)}</span>
+                  <span class="voice-ask__hint">${escapeHtml(c.hint)}</span>
+                </span>
+                ${i ? "" : `<span class="ap-tag green mini voice-ask__best">Recommended</span>`}
+              </button>`,
+            )
+            .join("")}</div>
+          <div class="voice-ask__foot">
+            ${hasDefault ? `<button type="button" class="ap-button ghost grey" ${pick("default")}>Use my default voice</button>` : ""}
+            <button type="button" class="ap-button ghost grey" ${pick("cancel")}>Not now</button>
+          </div>
+        </div>`
+        }
+      </section>
+    </div>`;
 }
 
 // ── The dialog ──────────────────────────────────────────────────────────────
