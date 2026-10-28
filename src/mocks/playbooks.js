@@ -290,14 +290,14 @@ export const contexts = [
             {
               type: "image",
               name: "Product on navy",
-              url: "https://picsum.photos/seed/acme-style-navy/480/480",
+              url: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=480&h=480&q=70",
               colors: ["#141A30", "#1F2742", "#FF6A2B"],
               weight: 0.7,
             },
             {
               type: "image",
               name: "Dark desk, one lamp",
-              url: "https://picsum.photos/seed/acme-style-lamp/480/480",
+              url: "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=480&h=480&q=70",
               colors: ["#0F1324", "#2A2F45", "#E8612A"],
               weight: 0.5,
             },
@@ -330,18 +330,22 @@ export const contexts = [
       {
         id: "acme-ref-1",
         label: "Product UI",
-        url: "https://picsum.photos/seed/acme-brand-ui/480/480",
+        url: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=480&h=480&q=70",
         note: "Use for feature launches & how-to posts. Keep the real UI — don't mock up fake screens or crop the logo.",
         networks: ["linkedin", "x"],
       },
       {
         id: "acme-ref-2",
         label: "Team candid",
-        url: "https://picsum.photos/seed/acme-brand-team/480/480",
+        url: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=480&h=480&q=70",
         note: "Great for culture & hiring content. Don't over-retouch — keep it authentic.",
         networks: ["instagram", "facebook"],
       },
-      { id: "acme-ref-3", label: "Brand board", url: "https://picsum.photos/seed/acme-brand-board/480/480" },
+      {
+        id: "acme-ref-3",
+        label: "Brand board",
+        url: "https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=480&h=480&q=70",
+      },
     ],
     // Competitors — the market Archie positions this brand against. `suggested`
     // marks the ones Archie discovered (vs. added by hand). Logos resolve from
@@ -994,14 +998,14 @@ export const contexts = [
             {
               type: "image",
               name: "Morning walk",
-              url: "https://picsum.photos/seed/pawtrack-style-walk/480/480",
+              url: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=480&h=480&q=70",
               colors: ["#C98A4B", "#E3B77A", "#6F8F5A"],
               weight: 0.7,
             },
             {
               type: "image",
               name: "Golden hour, park",
-              url: "https://picsum.photos/seed/pawtrack-style-park/480/480",
+              url: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?auto=format&fit=crop&w=480&h=480&q=70",
               colors: ["#D9954F", "#A8683A", "#8FAF6E"],
               weight: 0.5,
             },
@@ -1031,14 +1035,14 @@ export const contexts = [
       {
         id: "pawtrack-ref-1",
         label: "Owner + dog, daylight",
-        url: "https://picsum.photos/seed/pawtrack-owner-dog/480/480",
+        url: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&w=480&h=480&q=70",
         note: "The default hero for reunion stories. Real light, animal mid-motion, collar visible but not the subject.",
         networks: ["instagram", "facebook"],
       },
       {
         id: "pawtrack-ref-2",
         label: "Collar detail",
-        url: "https://picsum.photos/seed/pawtrack-collar/480/480",
+        url: "https://images.unsplash.com/photo-1507146426996-ef05306b995a?auto=format&fit=crop&w=480&h=480&q=70",
         note: "Only for posts that genuinely need the hardware. Never the lead image on a story post.",
         networks: ["instagram"],
       },

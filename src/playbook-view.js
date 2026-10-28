@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2290";
-import { conceptHint } from "./concepts.js?v=2290";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2292";
+import { conceptHint } from "./concepts.js?v=2292";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2290";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2290";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2290";
-import { isFlagOn } from "./feature-flags.js?v=2290";
-import { clipLookOf } from "./videos-store.js?v=2290";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2290";
-import { parseHashParams } from "./url-state.js?v=2290";
+} from "./playbook-brand-kit.js?v=2292";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2292";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2292";
+import { isFlagOn } from "./feature-flags.js?v=2292";
+import { clipLookOf } from "./videos-store.js?v=2292";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2292";
+import { parseHashParams } from "./url-state.js?v=2292";
 import {
   isListPart,
   voiceParts,
@@ -51,12 +51,12 @@ import {
   voiceNetTagHtml,
   markAdapted,
   withNetworkVoices,
-} from "./voice-parts.js?v=2290";
-import { showToast } from "./components/toast.js?v=2290";
-import { introSeen } from "./components/voice-intro-modal.js?v=2290";
-import { consumeHandoff } from "./handoff.js?v=2290";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2290";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2290";
+} from "./voice-parts.js?v=2292";
+import { showToast } from "./components/toast.js?v=2292";
+import { introSeen } from "./components/voice-intro-modal.js?v=2292";
+import { consumeHandoff } from "./handoff.js?v=2292";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2292";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2292";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1721,8 +1721,6 @@ function renderRosterModal(data) {
 //     isn't editable and hides, exactly as it does there.
 // Nothing lands at creation: every Playbook starts on the empty state.
 
-const INF_INTRO = "The creators your audience already follows, with their website and social profiles.";
-
 function influencerSocialUrl(c, network) {
   return (Array.isArray(c?.socials) ? c.socials : []).find((s) => s?.network === network)?.url || "";
 }
@@ -1803,6 +1801,18 @@ function renderInfluencerEditRow(r, c, i) {
     </div>`;
 }
 
+// A creator has no logo to show: two initials give each row a face, the way
+// the Competitors cards have theirs.
+function initialsOf(name) {
+  return name
+    .replace(/'s\b/g, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+}
+
 function renderInfluencersPanel(data, edit) {
   const r = ROSTERS.influencers;
   const section = SECTIONS.find((s) => s.scope === r.scope);
@@ -1828,9 +1838,14 @@ function renderInfluencersPanel(data, edit) {
         const desc = (c.description || "").trim();
         return `
         <li class="recap__inf-row">
-          <span class="recap__inf-name">${esc(c.name || r.untitled)}</span>
-          ${renderInfluencerLinks(c, r)}
-          ${desc ? `<p class="recap__inf-desc">${esc(desc)}</p>` : ""}
+          <span class="ap-avatar size-40" aria-hidden="true"><span class="ap-avatar-initials">${esc(initialsOf(c.name || r.untitled))}</span></span>
+          <div class="recap__inf-main">
+            <div class="recap__inf-head">
+              <span class="recap__inf-name">${esc(c.name || r.untitled)}</span>
+              ${renderInfluencerLinks(c, r)}
+            </div>
+            ${desc ? `<p class="recap__inf-desc">${esc(desc)}</p>` : ""}
+          </div>
         </li>`;
       })
       .join("")}</ul>`;
@@ -1852,7 +1867,6 @@ function renderInfluencersPanel(data, edit) {
       ${renderPanelHead(section, edit, addBtn)}
       <div class="recap__panel-body">
         <div class="recap__infsec">
-          ${list.length ? `<p class="recap__inf-intro">${esc(INF_INTRO)}</p>` : ""}
           ${rows}
         </div>
       </div>

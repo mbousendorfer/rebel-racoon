@@ -3421,16 +3421,10 @@ button.recap__logotile:hover {
   padding: var(--ref-spacing-md) var(--ref-spacing-lg);
 }
 
-.recap__inf-intro {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
-}
-
+/* Two columns of creators when there's room, like the Competitors cards. */
 .recap__inf-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: var(--ref-spacing-sm);
   margin: 0;
   padding: 0;
@@ -3445,6 +3439,27 @@ button.recap__logotile:hover {
   padding: var(--ref-spacing-sm) var(--ref-spacing-md);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-md);
+}
+
+/* Read row: the initials avatar, then the name, its profiles and the note. */
+.recap__inf-row {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--ref-spacing-sm);
+}
+
+.recap__inf-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.recap__inf-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs) var(--ref-spacing-sm);
 }
 
 .recap__inf-name {
