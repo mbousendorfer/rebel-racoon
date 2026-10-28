@@ -2,11 +2,11 @@
 // active brand, the list to switch to, and what a switch re-points (see
 // switchPlaybook). Moved out of sidebar.js, unchanged.
 
-import { isWorkspaceMode, getActivePlaybook, setActivePlaybook } from "../../active-playbook.js?v=2288";
-import { escapeHtml } from "../../utils.js?v=2288";
-import { visibleContexts } from "../../playbook-access.js?v=2288";
-import { getPath, navigate } from "../../router.js?v=2288";
-import { closePanel as closeRightPanel } from "../right-panel.js?v=2288";
+import { isWorkspaceMode, getActivePlaybook, setActivePlaybook } from "../../active-playbook.js?v=2289";
+import { escapeHtml } from "../../utils.js?v=2289";
+import { visibleContexts } from "../../playbook-access.js?v=2289";
+import { getPath, navigate } from "../../router.js?v=2289";
+import { closePanel as closeRightPanel } from "../right-panel.js?v=2289";
 
 // Initials for the collapsed rail. Playbooks are named "Brand · framing", so
 // the part before the separator is the identity — "Acme · Q2 marketing" is an
@@ -54,8 +54,8 @@ export function renderPlaybookSwitcher({ collapsed }) {
           type="button"
           class="app-sidebar__pb-chip"
           data-sidebar-toggle
-          aria-label="Playbook: ${escapeHtml(active.name)} — expand to switch. Chats, Topics, and Insights follow it."
-          title="Playbook: ${escapeHtml(active.name)} — expand to switch. Chats, Topics, and Insights follow it."
+          aria-label="Playbook: ${escapeHtml(active.name)}. Expand to switch. Chats, Topics, and Insights follow it."
+          title="Playbook: ${escapeHtml(active.name)}. Expand to switch. Chats, Topics, and Insights follow it."
         >
           <span class="ap-avatar square size-24">
             <span class="ap-avatar-initials">${escapeHtml(playbookInitials(active.name))}</span>
@@ -103,7 +103,7 @@ export function renderPlaybookSwitcher({ collapsed }) {
       <details class="ap-select app-sidebar__pb-select" data-pb-switcher>
         <summary
           class="ap-select-trigger app-sidebar__pb-trigger"
-          title="Playbook: ${escapeHtml(active.name)} — switch. Chats, Topics, and Insights follow it."
+          title="Playbook: ${escapeHtml(active.name)}. Switch here. Chats, Topics, and Insights follow it."
         >
           <span class="${dotClass}" aria-hidden="true"></span>
           <span class="ap-select-inline-label">Playbook</span>

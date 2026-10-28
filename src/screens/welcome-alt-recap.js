@@ -4,14 +4,14 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2288";
-import { catalogueRoute } from "../active-playbook.js?v=2288";
-import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=2288";
-import { mount } from "../playbook-view.js?v=2288";
-import { isFlagOn } from "../feature-flags.js?v=2288";
-import { renderReview } from "./welcome-alt-review.js?v=2288";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2288";
-import { networkLabel } from "../social-profiles.js?v=2288";
+import { navigate } from "../router.js?v=2289";
+import { catalogueRoute } from "../active-playbook.js?v=2289";
+import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=2289";
+import { mount } from "../playbook-view.js?v=2289";
+import { isFlagOn } from "../feature-flags.js?v=2289";
+import { renderReview } from "./welcome-alt-review.js?v=2289";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2289";
+import { networkLabel } from "../social-profiles.js?v=2289";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";

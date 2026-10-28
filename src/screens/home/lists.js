@@ -11,16 +11,16 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=2288";
-import { isFlagOn } from "../../feature-flags.js?v=2288";
-import { escapeAttr, escapeText } from "../../utils.js?v=2288";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2288";
-import { getSessions } from "../../sessions-store.js?v=2288";
-import { renderEmptyState } from "../../components/empty-state.js?v=2288";
-import { getSources, getIdeas } from "../../library.js?v=2288";
-import { getPosts } from "../../posts-store.js?v=2288";
-import { getContextById } from "../../contexts-store.js?v=2288";
-import { pageState } from "../home.js?v=2288";
+} from "../../playbook-access.js?v=2289";
+import { isFlagOn } from "../../feature-flags.js?v=2289";
+import { escapeAttr, escapeText } from "../../utils.js?v=2289";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2289";
+import { getSessions } from "../../sessions-store.js?v=2289";
+import { renderEmptyState } from "../../components/empty-state.js?v=2289";
+import { getSources, getIdeas } from "../../library.js?v=2289";
+import { getPosts } from "../../posts-store.js?v=2289";
+import { getContextById } from "../../contexts-store.js?v=2289";
+import { pageState } from "../home.js?v=2289";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -62,7 +62,7 @@ function renderPlaybookRow(ctx) {
   const sharing = isFlagOn("playbookSharing");
   const owner = sharing ? ownerOf(ctx) : null;
   const mine = isMine(ctx);
-  const accessTitle = canEdit(ctx) ? "You can edit it" : `View only — ${owner?.name || "its owner"} edits it`;
+  const accessTitle = canEdit(ctx) ? "You can edit it" : `View only. ${owner?.name || "Its owner"} edits it`;
   const title = startChatTitle(ctx);
   return `
     <tr
@@ -129,12 +129,12 @@ function playbookThumb(ctx) {
 
 function playbookBrief(ctx) {
   const summary = (ctx.businessSummary || ctx.briefSummary || "").trim();
-  return summary || "No business summary yet — open this Playbook to add one.";
+  return summary || "No business summary yet. Open this Playbook to add one.";
 }
 
 function defaultBadge(ctx) {
   return ctx.isDefault
-    ? `<span class="contexts-card__badge" title="Default Playbook — new chats start with it"><i class="ap-icon-star_fill"></i></span>`
+    ? `<span class="contexts-card__badge" title="Default Playbook: new chats start with it"><i class="ap-icon-star_fill"></i></span>`
     : "";
 }
 
@@ -234,7 +234,7 @@ export function renderChatsTab() {
       : renderEmptyState({
           icon: "ap-icon-single-chat-bubble",
           title: "No chats yet",
-          body: "Start one from the box above — pick a Playbook and tell me what you need.",
+          body: "Start one from the box above: pick a Playbook and tell me what you need.",
           wrapperClass: "contexts-view__empty contexts-view__empty--rich",
           level: 2,
         });
@@ -317,7 +317,7 @@ export function renderContextsEmpty(allContexts, pageState) {
     return renderEmptyState({
       icon: "ap-icon-target",
       title: "No Playbooks yet",
-      body: "A Playbook holds your Brand's voice, audience, and look — I write every draft from it.",
+      body: "A Playbook holds your Brand's voice, audience, and look. I write every draft from it.",
       actionHtml: `<button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create your first Playbook</span></button>`,
       wrapperClass: "contexts-view__empty contexts-view__empty--rich",
     });
@@ -354,7 +354,7 @@ export function renderGhostCard() {
     <button type="button" class="contexts-card contexts-card--ghost" data-contexts-new aria-label="Create a Playbook">
       <span class="contexts-card--ghost__glyph"><i class="ap-icon-archie-official"></i></span>
       <span class="contexts-card--ghost__title">Create a Playbook</span>
-      <span class="contexts-card--ghost__sub">One brand, one voice, one goal — I'll keep every draft aligned.</span>
+      <span class="contexts-card--ghost__sub">One Brand, its voice and its goal. I write every draft from it.</span>
     </button>
   `;
 }
@@ -457,36 +457,15 @@ export function renderContextCard(ctx) {
   const briefHtml = summary
     ? `<p class="contexts-card__brief">${escapeText(summary)}</p>`
     : `<p class="contexts-card__brief contexts-card__brief--empty">${escapeText(playbookBrief(ctx))}</p>`;
+  // Each figure names what it counts: an icon beside a number never did.
+  const counter = (icon, n, one, many) =>
+    `<span class="contexts-card__counter"><i class="${icon}" aria-hidden="true"></i><span>${n} ${n === 1 ? one : many}</span></span>`;
   const countersHtml = `
     <div class="contexts-card__counters">
-      <span class="contexts-card__counter" title="${usedIn} ${usedIn === 1 ? "chat uses this Playbook" : "chats use this Playbook"}">
-        <i class="ap-icon-single-chat-bubble"></i>
-        <span>${usedIn}</span>
-      </span>
-      ${
-        audienceCount
-          ? `<span class="contexts-card__counter" title="${audienceCount} ${audienceCount === 1 ? "audience" : "audiences"}">
-              <i class="ap-icon-target"></i>
-              <span>${audienceCount}</span>
-            </span>`
-          : ""
-      }
-      ${
-        competitorCount
-          ? `<span class="contexts-card__counter" title="${competitorCount} ${competitorCount === 1 ? "competitor" : "competitors"}">
-              <i class="ap-icon-buildings"></i>
-              <span>${competitorCount}</span>
-            </span>`
-          : ""
-      }
-      ${
-        influencerCount
-          ? `<span class="contexts-card__counter" title="${influencerCount} ${influencerCount === 1 ? "influencer" : "influencers"}">
-              <i class="ap-icon-star"></i>
-              <span>${influencerCount}</span>
-            </span>`
-          : ""
-      }
+      ${counter("ap-icon-single-chat-bubble", usedIn, "chat", "chats")}
+      ${audienceCount ? counter("ap-icon-target", audienceCount, "audience", "audiences") : ""}
+      ${competitorCount ? counter("ap-icon-buildings", competitorCount, "competitor", "competitors") : ""}
+      ${influencerCount ? counter("ap-icon-star", influencerCount, "influencer", "influencers") : ""}
     </div>
   `;
   const openAttrs = `
