@@ -18,8 +18,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2353";
-import { navigate } from "../router.js?v=2353";
+import { html, raw, escapeHtml } from "../utils.js?v=2354";
+import { navigate } from "../router.js?v=2354";
 import {
   getDraft,
   patchDraft,
@@ -28,16 +28,16 @@ import {
   readAltFiles,
   writeAltManually,
   analyzeAltInterview,
-} from "../context-builder.js?v=2353";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2353";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2353";
-import { connectors as connectorMocks } from "../mocks.js?v=2353";
-import { NETWORKS, networkLabel } from "../social-profiles.js?v=2353";
-import { brandVoiceAsIs, mainNetwork, networkVoice, networkVoiceOn, playbookNetworks } from "../voice-parts.js?v=2353";
-import { voiceChoices } from "../network-voice-flow.js?v=2353";
-import { learnedVoiceHtml, voiceAskHtml } from "../components/voice-intro-modal.js?v=2353";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2353";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceTraits } from "./welcome-alt-shell.js?v=2353";
+} from "../context-builder.js?v=2354";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2354";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2354";
+import { connectors as connectorMocks } from "../mocks.js?v=2354";
+import { NETWORKS, networkLabel } from "../social-profiles.js?v=2354";
+import { brandVoiceAsIs, mainNetwork, networkVoice, networkVoiceOn, playbookNetworks } from "../voice-parts.js?v=2354";
+import { voiceChoices } from "../network-voice-flow.js?v=2354";
+import { learnedVoiceHtml, voiceAskHtml } from "../components/voice-intro-modal.js?v=2354";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2354";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceTraits } from "./welcome-alt-shell.js?v=2354";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 // `mounted(shell, sid)`: once painted; may return its own cleanup.
@@ -104,7 +104,7 @@ export function renderWelcomeAltNetworks(_params, target) {
           ready.
         </p>
         <form data-choice-form novalidate>
-          <ul class="welcome-flow__options" aria-label="Networks">
+          <ul class="welcome-flow__options is-grid" aria-label="Networks">
             ${Object.keys(NETWORKS).map((id) =>
               optionRow({
                 type: "checkbox",
@@ -119,7 +119,7 @@ export function renderWelcomeAltNetworks(_params, target) {
           ${nets.length > 1
             ? raw(html`
                 <p class="welcome-flow__or" id="welcomeMainNet">Which one matters most? I'll set up its voice first.</p>
-                <ul class="welcome-flow__options" aria-labelledby="welcomeMainNet">
+                <ul class="welcome-flow__options is-grid" aria-labelledby="welcomeMainNet">
                   ${nets.map((id) =>
                     optionRow({
                       name: "main",

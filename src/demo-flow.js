@@ -14,14 +14,14 @@
 //   - blockInDemo(): every way to schedule asks for a real brand instead.
 //   - exitDemo(): wipes it all and goes back to the real setup.
 
-import { DEMO_ACCOUNTS, DEMO_PLAYBOOK, DEMO_SAMPLES } from "./mocks.js?v=2353";
-import { isDemo, isDemoDone, markDemoDone, writeDemo } from "./demo-mode.js?v=2353";
-import { postAssistantMessage, postUserTurn } from "./assistant.js?v=2353";
-import * as inlineQuestion from "./inline-question.js?v=2353";
-import { getPosts, subscribe as subscribePosts } from "./posts-store.js?v=2353";
-import { open as openConfirm } from "./components/confirm-modal.js?v=2353";
-import { showToast } from "./components/toast.js?v=2353";
-import { pushScriptedSource, completeScriptedSource } from "./sources-stream.js?v=2353";
+import { DEMO_ACCOUNTS, DEMO_PLAYBOOK, DEMO_SAMPLES } from "./mocks.js?v=2354";
+import { isDemo, isDemoDone, markDemoDone, writeDemo } from "./demo-mode.js?v=2354";
+import { postAssistantMessage, postUserTurn } from "./assistant.js?v=2354";
+import * as inlineQuestion from "./inline-question.js?v=2354";
+import { getPosts, subscribe as subscribePosts } from "./posts-store.js?v=2354";
+import { open as openConfirm } from "./components/confirm-modal.js?v=2354";
+import { showToast } from "./components/toast.js?v=2354";
+import { pushScriptedSource, completeScriptedSource } from "./sources-stream.js?v=2354";
 
 const PROFILES_KEY = "archie-connected-profiles";
 
