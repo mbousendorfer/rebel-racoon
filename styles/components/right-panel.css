@@ -208,10 +208,7 @@
   border-color: var(--ref-color-electric-blue-100);
 }
 
-/* Card head — what it is (the kind tag, "Story idea") on the left, the
-   reader's verdict (thumbs) on the right. The thumbs' 32px hit area would
-   push the row taller than the tag: the negative block margin keeps the row
-   at the tag's height without shrinking the targets. */
+/* Card head — kind tag (left) + source attribution (right) on one row. */
 .rpanel-ideas__card-head {
   display: flex;
   align-items: center;
@@ -223,91 +220,22 @@
   flex: 0 0 auto;
 }
 
-.rpanel-ideas__card-head .rpanel-ideas__feedback {
-  margin-inline-start: auto;
-  margin-block: calc(-1 * var(--ref-spacing-xxs));
-}
-
-/* Provenance + "Why this idea" — one quiet caption line under the gist:
-   where the idea was found (left, truncates), why Archie kept it (right). */
-.rpanel-ideas__meta {
+/* Source attribution — "Source:" label + pill, left-aligned right after
+   the kind tag. min-width:0 lets a long filename pill truncate (the DS
+   tag's own .ap-tag > span ellipsis) rather than overflow. */
+.rpanel-ideas__head-source {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xs);
-  margin-top: var(--ref-spacing-xxs);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
-}
-
-.rpanel-ideas__from {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
+  gap: var(--ref-spacing-xxs);
   min-width: 0;
 }
 
-.rpanel-ideas__from > i {
+.rpanel-ideas__source-label {
   flex: 0 0 auto;
-  font-size: var(--sys-icon-css-sm);
-}
-
-.rpanel-ideas__from-text {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.rpanel-ideas__from-name {
+  font-size: var(--sys-text-style-caption-bold-size);
   font-weight: var(--sys-text-style-caption-bold-weight);
+  line-height: var(--sys-text-style-caption-bold-line-height);
   color: var(--ref-color-grey-100);
-}
-
-.rpanel-ideas__from-more {
-  flex: 0 0 auto;
-}
-
-.rpanel-ideas__why-toggle {
-  appearance: none;
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  margin-inline-start: auto;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  font: inherit;
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-100);
-  cursor: pointer;
-}
-
-.rpanel-ideas__why-toggle:hover span {
-  text-decoration: underline;
-}
-
-.rpanel-ideas__why-toggle > i {
-  font-size: var(--sys-icon-css-sm);
-}
-
-/* Open: the chevron points up (the toggle re-renders, so no transition). */
-.rpanel-ideas__meta[data-why-open="true"] .rpanel-ideas__why-toggle > i {
-  transform: rotate(180deg);
-}
-
-/* The rationale gets its box only once it's open. */
-.rpanel-ideas__rationale {
-  margin: 0;
-  padding: var(--ref-spacing-xs);
-  border-radius: var(--ref-border-radius-md);
-  background: var(--ref-color-grey-05);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-100);
-  cursor: auto;
-  word-break: break-word;
 }
 
 /* Zone 1 — content block (Figma "content" frame). Kind tag, H3 title,
@@ -401,16 +329,16 @@
   word-break: break-word;
 }
 
-/* Zone 3 — what you can do with it. A grey-20 hairline parts it from the
-   content; the actions group on the right (a clip card keeps its feedback on
-   the left of this row, an idea card carries its thumbs in the head). */
+/* Zone 3 — action bar. Feedback (secondary, left) opposite the
+   primary Draft CTA (right). No top border — the Why panel above
+   already provides the visual break, and the design keeps the
+   footer flush with the content for a quieter card silhouette. */
 .rpanel-ideas__card-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  border-top: 1px solid var(--ref-color-grey-20);
+  padding: 0 var(--ref-spacing-xs) var(--ref-spacing-xxs);
 }
 
 .rpanel-ideas__feedback {
@@ -426,14 +354,6 @@
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xs);
-  margin-inline-start: auto;
-}
-
-/* The whole idea card drafts (idea-card-compact.js): while it's hovered, its
-   Draft button shows its own DS hover fill, so the card says which action
-   the click will run. */
-.rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
-  background-color: var(--ref-color-electric-blue-20);
 }
 
 /* Individual thumb button — DS .ap-icon-button.transparent.sm
@@ -449,6 +369,119 @@
   .rpanel-ideas__card {
     transition: none;
   }
+}
+
+/* ── Idea card, flag uiIdeaCard (body.ui-idea-card, set in app.js) ──────
+   The card says what it is, where it comes from and what to do with it
+   (idea-card-compact.js, renderClearIdeaCard). When the flag is baked: drop
+   the body.ui-idea-card prefix and the rules it replaces above. */
+
+/* Head — the kind tag ("Story idea") left, the thumbs right. The thumbs' 32px
+   hit area would push the row taller than the tag: the negative block margin
+   keeps the row at the tag's height without shrinking the targets. */
+body.ui-idea-card .rpanel-ideas__card-head .rpanel-ideas__feedback {
+  margin-inline-start: auto;
+  margin-block: calc(-1 * var(--ref-spacing-xxs));
+}
+
+/* Provenance + "Why this idea" — one quiet caption line under the gist:
+   where the idea was found (left, truncates), why Archie kept it (right). */
+body.ui-idea-card .rpanel-ideas__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+body.ui-idea-card .rpanel-ideas__from {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+body.ui-idea-card .rpanel-ideas__from > i {
+  flex: 0 0 auto;
+  font-size: var(--sys-icon-css-sm);
+}
+
+body.ui-idea-card .rpanel-ideas__from-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.ui-idea-card .rpanel-ideas__from-name {
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+body.ui-idea-card .rpanel-ideas__from-more {
+  flex: 0 0 auto;
+}
+
+body.ui-idea-card .rpanel-ideas__why-toggle {
+  appearance: none;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  margin-inline-start: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+  cursor: pointer;
+}
+
+body.ui-idea-card .rpanel-ideas__why-toggle:hover span {
+  text-decoration: underline;
+}
+
+body.ui-idea-card .rpanel-ideas__why-toggle > i {
+  font-size: var(--sys-icon-css-sm);
+}
+
+/* Open: the chevron points up (the toggle re-renders, so no transition). */
+body.ui-idea-card .rpanel-ideas__meta[data-why-open="true"] .rpanel-ideas__why-toggle > i {
+  transform: rotate(180deg);
+}
+
+/* The rationale gets its box only once it's open. */
+body.ui-idea-card .rpanel-ideas__rationale {
+  margin: 0;
+  padding: var(--ref-spacing-xs);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-grey-05);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-100);
+  cursor: auto;
+  word-break: break-word;
+}
+
+/* Footer — what you can do with it. A grey-20 hairline parts it from the
+   content; the actions group on the right (a clip card keeps its feedback on
+   the left of this row, an idea card carries its thumbs in the head). */
+body.ui-idea-card .rpanel-ideas__card-actions {
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+body.ui-idea-card .rpanel-ideas__primary {
+  margin-inline-start: auto;
+}
+
+/* The whole idea card drafts: while it's hovered, its Draft button shows its
+   own DS hover fill, so the card says which action the click will run. */
+body.ui-idea-card .rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
+  background-color: var(--ref-color-electric-blue-20);
 }
 
 /* ── Drafts mode (Lot 21) — rich PostCard feed ──────────────────────
@@ -1605,6 +1638,10 @@
   border-color: var(--ref-color-grey-20);
 }
 
+.app-right-panel.is-content .rpanel-ideas__source-label {
+  display: none;
+}
+
 .app-right-panel.is-content .rpanel-ideas__why {
   padding: 0;
   background: transparent;
@@ -1624,6 +1661,10 @@
 .app-right-panel.is-content .rpanel-ideas__why-info,
 .app-right-panel.is-content .rpanel-ideas__why-chevron {
   font-size: var(--sys-icon-css-xs);
+}
+
+.app-right-panel.is-content .rpanel-ideas__card-actions {
+  border-top: 1px solid var(--ref-color-grey-20);
 }
 
 /* Drafts — the filters on the white toolbar; each network's band is the

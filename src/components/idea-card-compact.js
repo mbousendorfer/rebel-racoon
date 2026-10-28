@@ -17,15 +17,16 @@
 //     showMention — render the Mention button (default true; false where there
 //                   is no composer, e.g. the standalone Ideas page)
 
-import { iconFor } from "../file-kinds.js?v=2325";
-import { escapeText, escapeAttr } from "../utils.js?v=2325";
+import { iconFor } from "../file-kinds.js?v=2326";
+import { escapeText, escapeAttr } from "../utils.js?v=2326";
+import { isFlagOn } from "../feature-flags.js?v=2326";
 
 // Each idea kind → its DS `.ap-tag` colour variant. The one table: every kind
 // tag (this card, the panel's Overview and Sources, the full idea card, the
 // composer's mention pills) reads it.
 export const IDEA_KIND_TAG = { stat: "blue", quote: "menthol", hook: "tagOrange", story: "grey", insight: "green" };
 
-// What each kind of idea is, in the kind tag's tooltip.
+// What each kind of idea is, in the kind tag's tooltip (flag uiIdeaCard).
 const IDEA_KIND_HINT = {
   hook: "An opening line built to stop the scroll",
   stat: "A number from your source, made the point of a post",
@@ -47,7 +48,7 @@ document.addEventListener("click", (event) => {
   if (!card || card.closest("[inert]")) return;
   if (
     event.target.closest(
-      "button, a, input, label, select, textarea, .rpanel-ideas__rationale, .rpanel-ideas__card-actions",
+      "button, a, input, label, select, textarea, .rpanel-ideas__why, .rpanel-ideas__rationale, .rpanel-ideas__card-actions",
     )
   )
     return;
@@ -62,6 +63,120 @@ export function renderCompactIdeaCard(
   sources = [],
   { verdict = null, whyOpen = false, showMention = true } = {},
 ) {
+  if (isFlagOn("uiIdeaCard")) return renderClearIdeaCard(idea, sources, { verdict, whyOpen, showMention });
+  const kind = idea.kind || "insight";
+  const linkedSources = (idea.sourceIds || []).map((id) => sources.find((s) => s.id === id)).filter(Boolean);
+
+  const thumbBtn = (side) => {
+    const isActive = verdict === side;
+    const icon = isActive ? `ap-icon-thumb-${side}_fill` : `ap-icon-thumb-${side}`;
+    const label = side === "up" ? "Mark idea as useful" : "Mark idea as not useful";
+    return `
+      <button
+        type="button"
+        class="ap-icon-button transparent sm rpanel-ideas__thumb${isActive ? " is-active" : ""}"
+        data-rpanel-ideas-feedback="${escapeAttr(idea.id)}"
+        data-verdict="${side}"
+        aria-pressed="${isActive}"
+        aria-label="${label}"
+        title="${label}"
+      >
+        <i class="${icon}"></i>
+      </button>
+    `;
+  };
+
+  const whyId = `rpanel-idea-why-${idea.id}`;
+  const sourceTags = linkedSources.length
+    ? linkedSources
+        .map(
+          (s) => `
+            <span class="ap-tag grey" title="${escapeAttr(s.filename)}">
+              <i class="${iconFor(s.kind)}" aria-hidden="true"></i>
+              <span>${escapeText(s.filename)}</span>
+            </span>
+          `,
+        )
+        .join("")
+    : idea.ref
+      ? `<span class="ap-tag grey" title="${escapeAttr(idea.ref)}">
+           <i class="ap-icon-file" aria-hidden="true"></i>
+           <span>${escapeText(idea.ref)}</span>
+         </span>`
+      : "";
+
+  const whyPanel = idea.rationale
+    ? `
+      <section class="rpanel-ideas__why" data-why-open="${whyOpen ? "true" : "false"}">
+        <button
+          type="button"
+          class="rpanel-ideas__why-head"
+          data-rpanel-idea-why-toggle="${escapeAttr(idea.id)}"
+          aria-expanded="${whyOpen ? "true" : "false"}"
+          aria-controls="${whyId}"
+        >
+          <i class="ap-icon-info rpanel-ideas__why-info" aria-hidden="true"></i>
+          <span class="rpanel-ideas__why-title">Why this idea</span>
+          <i class="ap-icon-chevron-${whyOpen ? "up" : "down"} rpanel-ideas__why-chevron" aria-hidden="true"></i>
+        </button>
+        <div id="${whyId}" class="rpanel-ideas__why-body" ${whyOpen ? "" : "hidden"}>
+          <p class="rpanel-ideas__why-rationale">${escapeText(idea.rationale)}</p>
+        </div>
+      </section>
+    `
+    : "";
+
+  const cardHead = `
+    <div class="rpanel-ideas__card-head">
+      <span class="ap-tag ${IDEA_KIND_TAG[kind] || "green"} rpanel-ideas__kind">${kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
+      ${
+        sourceTags
+          ? `<div class="rpanel-ideas__head-source">
+              <span class="rpanel-ideas__source-label">Source:</span>
+              ${sourceTags}
+            </div>`
+          : ""
+      }
+    </div>
+  `;
+
+  const mentionBtn = showMention
+    ? `<button type="button" class="ap-button ghost blue rpanel-ideas__mention" data-rpanel-mention-idea="${escapeAttr(idea.id)}">
+        <i class="ap-icon-at"></i>
+        <span>Reference</span>
+      </button>`
+    : "";
+
+  return `
+    <article class="rpanel-ideas__card" data-idea-id="${escapeAttr(idea.id)}">
+      <div class="rpanel-ideas__card-content">
+        ${cardHead}
+        ${idea.title ? `<h4 class="rpanel-ideas__card-title">${escapeText(idea.title)}</h4>` : ""}
+        <p class="rpanel-ideas__card-body">${escapeText(idea.body || "")}</p>
+        ${whyPanel}
+      </div>
+      <footer class="rpanel-ideas__card-actions">
+        <div class="rpanel-ideas__feedback">
+          ${thumbBtn("up")}
+          ${thumbBtn("down")}
+        </div>
+        <div class="rpanel-ideas__primary">
+          ${mentionBtn}
+          <button type="button" class="ap-button secondary blue rpanel-ideas__use" data-rpanel-use-idea="${escapeAttr(idea.id)}">
+            <i class="ap-icon-sparkles"></i>
+            <span>Draft post</span>
+          </button>
+        </div>
+      </footer>
+    </article>
+  `;
+}
+
+// Flag `uiIdeaCard` ON: the card says what it is ("Story idea", the thumbs
+// beside it), where it comes from ("From notes.pdf", Why this idea at the end
+// of that line) and what to do with it (a footer of actions alone). Same
+// options and data-* hooks as the card below, so every host wires both alike.
+function renderClearIdeaCard(idea, sources = [], { verdict = null, whyOpen = false, showMention = true } = {}) {
   const kind = idea.kind || "insight";
   const linkedSources = (idea.sourceIds || []).map((id) => sources.find((s) => s.id === id)).filter(Boolean);
 

@@ -204,6 +204,24 @@ export const FLAGS = Object.freeze([
       "OFF shows the thread as it was on Monday 5 October, for a before / after.",
   },
   {
+    id: "uiIdeaCard",
+    group: "Chat & drafts",
+    tip: "The idea card says what it is (Story idea), where it comes from (From notes.pdf) and what you can do with it.",
+    label: "UI-Idea card: clearer",
+    // OFF: the card as it was: kind tag + "Source:" pill, the grey Why this
+    // idea block, thumbs in the actions row.
+    default: false,
+    hides:
+      "When ON, an idea card (Ideas panel, the chat's extracted ideas) reads " +
+      "top to bottom as what it is, where it comes from, what to do with it. " +
+      "Its tag says Story idea (a bare Story reads as an Instagram Story), " +
+      "the kind's meaning in its tooltip, and the thumbs sit beside it. " +
+      "Under the gist, one quiet line, From notes.pdf, with Why this idea at " +
+      "its end, whose grey box appears only once open. The footer holds the " +
+      "actions alone, under a hairline, on the right; hovering the card " +
+      "lights up its Draft post, since a click on the card drafts.",
+  },
+  {
     id: "newChatHero",
     group: "Chat & drafts",
     tip: "On a new chat, the three workflows become rows (title + description) instead of three big cards.",
