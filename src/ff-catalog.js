@@ -209,8 +209,9 @@ export const FLAGS = Object.freeze([
     tip: "On a new chat, the three workflows become rows (title + description) instead of three big cards.",
     label: "UP-New chat: workflow rows",
     // OFF: the three big starter cards and six Topics. Same three workflows,
-    // same handlers either way.
-    default: false,
+    // same handlers either way. ON by default since R3 (2026-10-28): a first
+    // screen with one main action and two quiet ways in beats ten entries.
+    default: true,
     hides:
       "When ON, a new chat keeps its wordmark, sub-line and composer, and the " +
       "three workflows (batch from a source, clip a video, repurpose a top " +

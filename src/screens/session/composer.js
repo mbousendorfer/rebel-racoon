@@ -4,22 +4,22 @@
 // session.js, unchanged; the mention picker stays there, since bindSession
 // writes its highlight state.
 
-import { isFlagOn } from "../../feature-flags.js?v=2302";
-import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2302";
-import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2302";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2302";
-import { getSources, getIdeas } from "../../library.js?v=2302";
-import * as clipStudio from "../../clip-studio.js?v=2302";
-import { getThread } from "../../assistant.js?v=2302";
-import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2302";
-import { revokedContextFor } from "../../playbook-access.js?v=2302";
-import { getSessionById } from "../../sessions-store.js?v=2302";
-import { catalogueRoute } from "../../active-playbook.js?v=2302";
-import { getActiveConnector } from "../../composer-connector.js?v=2302";
-import { isDemo } from "../../demo-mode.js?v=2302";
-import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=2302";
-import { renderTopicPickerRow } from "./empty-hero.js?v=2302";
-import { renderChatGallery } from "./chat-gallery.js?v=2302";
+import { isFlagOn } from "../../feature-flags.js?v=2303";
+import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2303";
+import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2303";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2303";
+import { getSources, getIdeas } from "../../library.js?v=2303";
+import * as clipStudio from "../../clip-studio.js?v=2303";
+import { getThread } from "../../assistant.js?v=2303";
+import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2303";
+import { revokedContextFor } from "../../playbook-access.js?v=2303";
+import { getSessionById } from "../../sessions-store.js?v=2303";
+import { catalogueRoute } from "../../active-playbook.js?v=2303";
+import { getActiveConnector } from "../../composer-connector.js?v=2303";
+import { isDemo } from "../../demo-mode.js?v=2303";
+import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=2303";
+import { renderTopicPickerRow } from "./empty-hero.js?v=2303";
+import { renderChatGallery } from "./chat-gallery.js?v=2303";
 
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the
@@ -428,7 +428,11 @@ export function renderComposer(attachedContext, session, selectable) {
                 ${renderConnectorsSubmenu()}
               </div>
             </div>
-            <button
+            ${
+              // An empty chat has nothing to reference: no greyed button there.
+              selectable && !hasMentionable
+                ? ""
+                : `<button
               type="button"
               class="ap-button stroked grey composer-mention-trigger"
               aria-label="Reference a source or idea"
@@ -440,7 +444,8 @@ export function renderComposer(attachedContext, session, selectable) {
             >
               <i class="ap-icon-at"></i>
               <span>Reference</span>
-            </button>
+            </button>`
+            }
             ${renderPlaybookControl(attachedContext, selectable)}
             <button
               type="button"
