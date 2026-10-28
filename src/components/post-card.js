@@ -19,13 +19,13 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2322";
-import { isPortraitFormat } from "../clip-formats.js?v=2322";
-import { presetById } from "../clip-captions.js?v=2322";
-import { renderFeedbackControl } from "./feedback-control.js?v=2322";
-import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2322";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2322";
-import { REVEAL_MS } from "../archie-pixels.js?v=2322";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2323";
+import { isPortraitFormat } from "../clip-formats.js?v=2323";
+import { presetById } from "../clip-captions.js?v=2323";
+import { renderFeedbackControl } from "./feedback-control.js?v=2323";
+import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2323";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2323";
+import { REVEAL_MS } from "../archie-pixels.js?v=2323";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -391,7 +391,87 @@ export function renderPostCard(post, opts = {}) {
           )}
           ${raw(renderFirstComment(post, { hidden: editing || regenerating }))}
         </article>
-        ${raw(editing ? "" : renderActionBar(post, { rail, inlineEdit, regenerating }))} ${raw(belowCard)}
+        ${raw(belowCard)}
+      </div>
+
+      <!-- The rail is prod's (studio-mfe post-card-actions), in its order:
+           Reference · Schedule · Edit · Save as draft · Assign · Delete.
+           Rewriting is asked in the chat; images live in the media block. -->
+      <div class="posts__row-actions" aria-label="Draft actions">
+        ${raw(
+          rail(
+            "mention",
+            `<button
+              type="button"
+              class="ap-icon-button stroked blue"
+              aria-label="Reference in chat"
+              title="Reference"
+              data-post-mention="${post.id}"
+              ${regenerating ? "disabled" : ""}
+            >
+              <i class="ap-icon-at"></i>
+            </button>`,
+          ),
+        )}
+        ${raw(
+          rail(
+            "schedule",
+            renderBlockedAction(post, regenerating, {
+              label: "Schedule draft",
+              icon: "ap-icon-calendar",
+              attr: "data-post-schedule",
+            }),
+          ),
+        )}
+        ${raw(
+          inlineEdit
+            ? `<button
+                type="button"
+                class="ap-icon-button stroked"
+                aria-label="Edit draft"
+                title="Edit"
+                data-post-edit="${post.id}"
+                ${regenerating ? "disabled" : ""}
+              >
+                <i class="ap-icon-pen"></i>
+              </button>`
+            : "",
+        )}
+        ${raw(
+          rail(
+            "save",
+            `<button
+              type="button"
+              class="ap-icon-button stroked"
+              aria-label="Save as draft"
+              title="Save as draft in Agorapulse. It leaves this chat."
+              data-post-save-draft="${post.id}"
+              ${regenerating ? "disabled" : ""}
+            >
+              <i class="ap-icon-file--text"></i>
+            </button>`,
+          ),
+        )}
+        ${raw(
+          rail(
+            "assign",
+            renderBlockedAction(post, regenerating, {
+              label: "Assign for review",
+              icon: "ap-icon-user--plus",
+              attr: "data-post-assign",
+            }),
+          ),
+        )}
+        <button
+          type="button"
+          class="ap-icon-button stroked posts__row-action--danger"
+          aria-label="Delete draft"
+          title="Delete draft"
+          data-post-delete="${post.id}"
+          ${regenerating ? "disabled" : ""}
+        >
+          <i class="ap-icon-trash"></i>
+        </button>
       </div>
     </article>
   `;
@@ -480,59 +560,14 @@ function infobox(tone, icon, body, role = "") {
 // A rail action that can't run on a draft that won't publish (Assign, Schedule).
 // The tooltip sits on a wrapper: a disabled button gets no pointer events, so it
 // could never show its own.
-// The draft's actions, under the card and named: what you do next with a draft
-// is the point of the whole flow, so it reads as words, not a column of six
-// icons (prod's post-card-actions rail, left 2026-10-28). Schedule leads, the
-// flow's final act; Edit and Reference beside it; the rare ones sit in More.
-// The data-* hooks are the rail's, so right-panel.js handles them unchanged.
-function renderActionBar(post, { rail, inlineEdit, regenerating }) {
+function renderBlockedAction(post, regenerating, { label, icon, attr }) {
   const blocker = validatePost(post).errors[0];
-  const off = regenerating ? "disabled" : "";
-  const gate = (button) =>
-    blocker
-      ? `<span class="posts__row-action-blocked" data-tooltip="Fix this draft first: ${escapeAttr(blocker.message)}">${button}</span>`
-      : button;
-  const schedule = rail(
-    "schedule",
-    gate(
-      `<button type="button" class="ap-button primary orange" data-post-schedule="${post.id}" ${
-        regenerating || blocker ? "disabled" : ""
-      }><i class="ap-icon-calendar" aria-hidden="true"></i><span>Schedule</span></button>`,
-    ),
-  );
-  const edit = inlineEdit
-    ? `<button type="button" class="ap-button stroked grey" data-post-edit="${post.id}" ${off}><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></button>`
-    : "";
-  const mention = rail(
-    "mention",
-    `<button type="button" class="ap-button ghost grey" data-post-mention="${post.id}" title="Use this draft in your next message" ${off}><i class="ap-icon-at" aria-hidden="true"></i><span>Reference</span></button>`,
-  );
-  const item = (attr, icon, label, { disabled = false, danger = false, tip = "" } = {}) =>
-    `<button type="button" class="ap-action-dropdown-item${danger ? " red-mode" : ""}" role="menuitem" ${attr}="${post.id}" ${
-      disabled ? "disabled" : ""
-    } ${tip ? `title="${escapeAttr(tip)}"` : ""}><i class="${icon}"></i><div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">${label}</span></div></div></button>`;
-  const more = [
-    rail(
-      "save",
-      item("data-post-save-draft", "ap-icon-file--text", "Save as draft in Agorapulse", { disabled: regenerating }),
-    ),
-    rail(
-      "assign",
-      item("data-post-assign", "ap-icon-user--plus", "Assign for review", {
-        disabled: regenerating || !!blocker,
-        tip: blocker ? `Fix this draft first: ${blocker.message}` : "",
-      }),
-    ),
-    item("data-post-delete", "ap-icon-trash", "Delete draft", { disabled: regenerating, danger: true }),
-  ].join("");
-  // Right-grouped like every DS footer, the primary last, More after it.
-  return `<div class="posts__row-actions" aria-label="Draft actions">
-    ${mention}${edit}${schedule}
-    <details class="ap-select posts__row-more" data-post-more>
-      <summary class="ap-icon-button transparent grey" aria-label="More actions" title="More actions"><i class="ap-icon-more"></i></summary>
-      <div class="ap-action-dropdown posts__row-more-menu" role="menu">${more}</div>
-    </details>
-  </div>`;
+  const button = `<button type="button" class="ap-icon-button stroked" aria-label="${label}" ${
+    blocker ? "" : `title="${label}"`
+  } ${attr}="${post.id}" ${regenerating || blocker ? "disabled" : ""}><i class="${icon}"></i></button>`;
+  return blocker
+    ? `<span class="posts__row-action-blocked" data-tooltip="Fix this draft first: ${escapeAttr(blocker.message)}">${button}</span>`
+    : button;
 }
 
 // ── The network's own chrome ────────────────────────────────────────

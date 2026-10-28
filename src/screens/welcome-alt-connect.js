@@ -7,7 +7,7 @@
 // stays possible behind skip-connect-modal (its reasons are optional), so the
 // ask comes first without becoming a prerequisite.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2322";
+import { html, raw, escapeHtml } from "../utils.js?v=2323";
 import {
   getConnectedProfiles,
   getConnectableNetworks,
@@ -15,13 +15,13 @@ import {
   NETWORK_LABEL,
   BRAND_INITIALS,
   subscribe as subscribeProfiles,
-} from "../social-profiles.js?v=2322";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2322";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2322";
-import { open as openSkipConnectModal } from "../components/skip-connect-modal.js?v=2322";
-import { recordReasons } from "../feedback-store.js?v=2322";
-import { SKIP_CONNECT_TARGET, syncAltProfiles } from "../context-builder.js?v=2322";
-import { ensureFlowDraft, goBack, goNext, mountShell } from "./welcome-alt-shell.js?v=2322";
+} from "../social-profiles.js?v=2323";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2323";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2323";
+import { open as openSkipConnectModal } from "../components/skip-connect-modal.js?v=2323";
+import { recordReasons } from "../feedback-store.js?v=2323";
+import { SKIP_CONNECT_TARGET, syncAltProfiles } from "../context-builder.js?v=2323";
+import { ensureFlowDraft, goBack, goNext, mountShell } from "./welcome-alt-shell.js?v=2323";
 
 function connectedRow(p) {
   const inner = p.photo

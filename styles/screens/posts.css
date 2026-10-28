@@ -32,40 +32,11 @@
   padding-top: var(--ref-spacing-sm);
 }
 
-/* The draft's actions, under the card: right-grouped, the primary last. */
 .posts__row-actions {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--ref-spacing-xs);
-  padding-top: var(--ref-spacing-xs);
-}
-
-/* The DS select stretches to its container; More is one icon button. */
-.posts__row-more {
-  position: relative;
-  flex: none;
-  width: auto;
-}
-
-.posts__row-more > summary {
-  list-style: none;
-}
-
-.posts__row-more > summary::-webkit-details-marker {
-  display: none;
-}
-
-/* Opens upward and right-aligned: the bar sits low in a scrolling panel. */
-.posts__row-more-menu {
-  position: absolute;
-  top: auto;
-  left: auto;
-  right: 0;
-  bottom: calc(100% + var(--ref-spacing-xxs));
-  z-index: 3;
-  min-width: max-content;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding-top: var(--ref-spacing-xxs);
 }
 
 .posts__row-action--danger {

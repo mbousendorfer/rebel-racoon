@@ -13,26 +13,26 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2322";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2322";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2322";
-import { getTopPost } from "../../top-posts-store.js?v=2322";
-import { getTopicById } from "../../topics-store.js?v=2322";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2322";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2322";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2322";
-import { getIdeas } from "../../library.js?v=2322";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2322";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2322";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2322";
-import { getPlans } from "../../post-plan-store.js?v=2322";
-import { isFlagOn } from "../../feature-flags.js?v=2322";
-import { CURRENT_USER } from "../../org.js?v=2322";
-import { getSessionById } from "../../sessions-store.js?v=2322";
-import { getContextById } from "../../contexts-store.js?v=2322";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2322";
-import { getFocusKey } from "../../components/right-panel.js?v=2322";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2322";
+} from "./thread-turns.js?v=2323";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2323";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2323";
+import { getTopPost } from "../../top-posts-store.js?v=2323";
+import { getTopicById } from "../../topics-store.js?v=2323";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2323";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2323";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2323";
+import { getIdeas } from "../../library.js?v=2323";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2323";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2323";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2323";
+import { getPlans } from "../../post-plan-store.js?v=2323";
+import { isFlagOn } from "../../feature-flags.js?v=2323";
+import { CURRENT_USER } from "../../org.js?v=2323";
+import { getSessionById } from "../../sessions-store.js?v=2323";
+import { getContextById } from "../../contexts-store.js?v=2323";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2323";
+import { getFocusKey } from "../../components/right-panel.js?v=2323";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2323";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -589,21 +589,6 @@ function renderDraftsCardTurn(message) {
 
 function renderExtractionTurn(message, sessionId) {
   const count = message.count ?? (message.ideas ? message.ideas.length : 0);
-  // The step after ideas is drafts: one named action under them, until a
-  // draft has been written further down the thread (R2, 2026-10-28).
-  const thread = sessionId ? getThread(sessionId) : [];
-  const drafted = thread
-    .slice(thread.findIndex((m) => m.id === message.id) + 1)
-    .some((m) => m.batch?.length || m.variant === "draft");
-  const next =
-    message.status !== "loading" && count && !drafted
-      ? `<div class="extraction-turn__next">
-          <span class="extraction-turn__next-text">Draft from ${count === 1 ? "this idea" : "the strongest of these"} in one go, or pick one above.</span>
-          <button type="button" class="ap-button primary orange" data-extraction-draft="${message.id}">
-            <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Draft posts</span>
-          </button>
-        </div>`
-      : "";
   if (contentCards() && message.status !== "loading" && count) {
     return `
       <div class="chat-turn chat-turn--ai chat-turn--extraction">
@@ -615,7 +600,6 @@ function renderExtractionTurn(message, sessionId) {
           sub: `From <span class="drafts-card__sub-quote">${escapeHtml(message.filename || "your source")}</span>`,
           cta: "View ideas",
         })}
-        ${next}
       </div>
     `;
   }
@@ -649,7 +633,6 @@ function renderExtractionTurn(message, sessionId) {
               <span>${message.filename}</span>
             </div>
             ${cards}
-            ${next}
           </div>
         `,
       })}

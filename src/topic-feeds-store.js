@@ -30,12 +30,12 @@
 //     cadence,             — a CADENCES id; copy, never a timer
 //     websites: string[] } — the sites the Brand-website source scans
 
-import { topicFeeds as seed, DEMO_TOPIC_FEED } from "./mocks.js?v=2322";
-import { isDemo } from "./demo-mode.js?v=2322";
-import { getContexts } from "./contexts-store.js?v=2322";
-import { isNewUser } from "./user-mode.js?v=2322";
-import { createNotifier } from "./store-utils.js?v=2322";
-import { DEFAULT_ENABLED_IDS, DEFAULT_CADENCE, findCadence, findTopicSource } from "./topics-catalog.js?v=2322";
+import { topicFeeds as seed, DEMO_TOPIC_FEED } from "./mocks.js?v=2323";
+import { isDemo } from "./demo-mode.js?v=2323";
+import { getContexts } from "./contexts-store.js?v=2323";
+import { isNewUser } from "./user-mode.js?v=2323";
+import { createNotifier } from "./store-utils.js?v=2323";
+import { DEFAULT_ENABLED_IDS, DEFAULT_CADENCE, findCadence, findTopicSource } from "./topics-catalog.js?v=2323";
 
 // First-time user mode starts with no seeded feed, so /topics renders its
 // nothing-found-yet state. Returning user keeps the seed. Same guard as

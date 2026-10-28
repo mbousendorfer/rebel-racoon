@@ -1788,30 +1788,3 @@ span.chat-bubble-choice-chip {
   ) {
   border-top-left-radius: 0;
 }
-
-/* The step after ideas (R2): one line under them, the action on the right. */
-.extraction-turn__next {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  margin-top: var(--ref-spacing-xs);
-  padding-top: var(--ref-spacing-sm);
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
-.extraction-turn__next-text {
-  flex: 1 1 200px;
-  min-width: 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-100);
-}
-
-/* Under a result card (contentPanel), the step needs no hairline: the card
-   already closes the result above it. */
-.chat-turn--extraction > .extraction-turn__next {
-  border-top: 0;
-  padding-top: 0;
-}
