@@ -10,9 +10,9 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2340";
-import { isFlagOn } from "./feature-flags.js?v=2340";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2340";
+import { escapeHtml } from "./utils.js?v=2342";
+import { isFlagOn } from "./feature-flags.js?v=2342";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2342";
 import {
   networkMeta,
   networkLabel,
@@ -20,7 +20,7 @@ import {
   normalizeNetwork,
   getConnectedProfileById,
   profileForNetwork,
-} from "./social-profiles.js?v=2340";
+} from "./social-profiles.js?v=2342";
 
 // `hint`: what the part holds, said under its title — on the Playbook's tab
 // and in a voice proposal (one source for both).
@@ -117,20 +117,9 @@ export function playbookNetworks(ctx) {
   return [...new Set(nets.filter((n) => networkMeta(n)))];
 }
 
-// The default voice IS a network's: the Playbook's first one — the network it
-// was created from. Its voice is the Playbook's own five parts; every other
-// network starts from it and adds rules of its own. Null without a network.
-export function defaultNetwork(ctx) {
-  return playbookNetworks(ctx)[0] || null;
-}
-
-// The default voice, named by its network — « LinkedIn voice » — or « default
-// voice » for a Playbook with no network yet.
-export function defaultVoiceName(ctx) {
-  const net = defaultNetwork(ctx);
-  return net ? `${networkLabel(net)} voice` : "default voice";
-}
-
+// The default voice is the Playbook's own five parts: generic, tied to no
+// network. Each network the Playbook publishes on is a variation of it — the
+// same voice, plus rules of its own (« For LinkedIn »).
 const LIST_PARTS = VOICE_PARTS.filter((p) => p.kind !== "text").map((p) => p.field);
 
 // Below this many posts an account has nothing to learn from.
@@ -150,6 +139,13 @@ export function learnNetworkVoice(ctx, network, { from, postCount = 0 }) {
   });
   return { ...voice, optimizedBy: "learned", learnedFrom: from, postCount };
 }
+
+// The default voice adapted to a network, with nothing to read: what works on
+// the network (its length, layout, hashtags) laid over the default voice.
+// ponytail: the same mock adaptations as learning; in the product a model
+// writes them from the default voice and the network's conventions.
+export const ADAPTED_FROM = "your default voice";
+export const adaptNetworkVoice = (ctx, network) => learnNetworkVoice(ctx, network, { from: ADAPTED_FROM });
 
 // The network's voice, learned from the user's own answers (the Voice step's
 // interview, network-voice-flow.js INTERVIEW): ONE question per part of the
@@ -186,9 +182,8 @@ function bestNetworkVoice(ctx, network) {
 // Every network of the Playbook with a voice — the best one where it has none
 // yet, its own kept. Creation and its review read it this way.
 export function withNetworkVoices(ctx) {
-  const others = playbookNetworks(ctx).filter((n) => n !== defaultNetwork(ctx));
   return {
-    ...Object.fromEntries(others.map((n) => [n, bestNetworkVoice(ctx, n)])),
+    ...Object.fromEntries(playbookNetworks(ctx).map((n) => [n, bestNetworkVoice(ctx, n)])),
     ...(ctx?.voiceByNetwork || {}),
   };
 }
@@ -216,22 +211,15 @@ export function cloneNetworkVoice(v) {
 
 // Which voice a network writes in, and in what state:
 //   "brand"    the flag is off, or no network named
-//   "default"  the network writes in the default voice (its network's — `from`
-//              names it, « LinkedIn voice ») — never
-//              given one (`chosen` false: the next draft for it asks first,
+//   "default"  the network writes in the default voice — never given one (`chosen` false: the next draft for it asks first,
 //              network-voice-flow.js), or « Use the default voice » picked
 //              (`chosen` true). One state for the user, warned the same way.
-//   "own"      its own voice: learned, or edited — or, for the default
-//              network itself (`isDefault`), the Playbook's own parts
+//   "own"      its own voice: learned, adapted, or edited
 // `network` as a draft names it ("twitter") or as a voice is keyed ("x").
 export function networkVoice(ctx, network) {
   if (!networkVoiceOn() || !network) return { state: "brand", voice: ctx };
-  const net = normalizeNetwork(network);
-  // The default network's voice is the Playbook's own: its own, by definition.
-  if (net === defaultNetwork(ctx)) return { state: "own", isDefault: true, voice: ctx };
-  const own = ctx?.voiceByNetwork?.[net];
-  if (!own || own.optimizedBy === "brand")
-    return { state: "default", chosen: !!own, voice: ctx, from: defaultVoiceName(ctx) };
+  const own = ctx?.voiceByNetwork?.[normalizeNetwork(network)];
+  if (!own || own.optimizedBy === "brand") return { state: "default", chosen: !!own, voice: ctx };
   return { state: "own", voice: own };
 }
 
@@ -239,8 +227,8 @@ export function networkVoice(ctx, network) {
 // its own voice's, else the default voice's. A draft written before it says
 // so (post-card's voice status, « Rewrite it »).
 export function voiceChangedAt(ctx, network) {
-  const { state, voice, isDefault } = networkVoice(ctx, network);
-  return (state === "own" && !isDefault ? voice.changedAt : ctx?.voiceChangedAt) || 0;
+  const { state, voice } = networkVoice(ctx, network);
+  return (state === "own" ? voice.changedAt : ctx?.voiceChangedAt) || 0;
 }
 
 // A draft's rule, from the user's feedback on a draft (feedback-control): the
@@ -255,9 +243,9 @@ const FEEDBACK_RULES = {
 // Returns { voice, added: [rule texts] }, or null when the feedback says
 // nothing about the voice (Off-topic, Inaccurate…).
 export function feedbackNetworkVoice(ctx, network, { reasons = [], comment = "" }) {
-  const { state, voice, isDefault } = networkVoice(ctx, network);
+  const { state, voice } = networkVoice(ctx, network);
   if (state === "brand") return null;
-  const base = state === "own" && !isDefault ? cloneNetworkVoice(voice) : brandVoiceAsIs(ctx);
+  const base = state === "own" ? cloneNetworkVoice(voice) : brandVoiceAsIs(ctx);
   const rules = comment.trim()
     ? [{ field: "voiceAlways", text: comment.trim() }]
     : reasons.map((r) => FEEDBACK_RULES[r]).filter(Boolean);
@@ -266,7 +254,7 @@ export function feedbackNetworkVoice(ctx, network, { reasons = [], comment = "" 
     base[field] = [...base[field], { text: rule, adapted: true }];
     return rule;
   });
-  if (state !== "own" || isDefault) Object.assign(base, { optimizedBy: "learned", learnedFrom: "your feedback" });
+  if (state !== "own") Object.assign(base, { optimizedBy: "learned", learnedFrom: "your feedback" });
   return added.length ? { voice: base, added } : null;
 }
 

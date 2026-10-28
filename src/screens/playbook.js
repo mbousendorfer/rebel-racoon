@@ -17,10 +17,10 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=2340";
-import { parseHashParams } from "../url-state.js?v=2340";
-import { escapeHtml as esc } from "../utils.js?v=2340";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2340";
+import { navigate, getPath } from "../router.js?v=2342";
+import { parseHashParams } from "../url-state.js?v=2342";
+import { escapeHtml as esc } from "../utils.js?v=2342";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2342";
 import {
   getContextById,
   getContexts,
@@ -28,15 +28,15 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=2340";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2340";
-import { mount, snapshotEditable } from "../playbook-view.js?v=2340";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2340";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2340";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2340";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2340";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2340";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=2340";
+} from "../contexts-store.js?v=2342";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2342";
+import { mount, snapshotEditable } from "../playbook-view.js?v=2342";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2342";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2342";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2342";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2342";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2342";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=2342";
 import {
   canView,
   canEdit,
@@ -48,12 +48,12 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=2340";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2340";
-import { showToast } from "../components/toast.js?v=2340";
-import { learnNetworkVoice } from "../voice-parts.js?v=2340";
-import { openVoiceProposal, openVoiceInterview } from "../components/voice-proposal-modal.js?v=2340";
-import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2340";
+} from "../playbook-access.js?v=2342";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2342";
+import { showToast } from "../components/toast.js?v=2342";
+import { learnNetworkVoice } from "../voice-parts.js?v=2342";
+import { openVoiceProposal, openVoiceInterview } from "../components/voice-proposal-modal.js?v=2342";
+import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2342";
 
 const AUTOFILL_MS = 1500;
 
@@ -274,7 +274,15 @@ export function renderPlaybook(params, target) {
   // voice, learned — shown before it's used (voice-proposal-modal), never the
   // default voice. The tab repaints once it's used.
   function proposeVoice(net, opts) {
-    openVoiceProposal({ ctxId: id, net, onUse: () => toast(`Added to your ${networkLabel(net)} rules.`), ...opts });
+    openVoiceProposal({
+      ctxId: id,
+      net,
+      onUse: () => {
+        remount();
+        toast(`Added to your ${networkLabel(net)} rules.`);
+      },
+      ...opts,
+    });
   }
   function learnNetworkVoiceFromPosts(net) {
     openAnalyzeProfilesModal({
@@ -448,7 +456,8 @@ export function renderPlaybook(params, target) {
     if (learn) {
       learn.closest("details")?.removeAttribute("open");
       const net = learn.dataset.recapLearnNet;
-      if (learn.dataset.recapLearn === "interview") learnNetworkVoiceFromAnswers(net);
+      if (learn.dataset.recapLearn === "adapt") proposeVoice(net, { choice: "adapt" });
+      else if (learn.dataset.recapLearn === "interview") learnNetworkVoiceFromAnswers(net);
       else if (learn.dataset.recapLearn === "posts") net ? learnNetworkVoiceFromPosts(net) : onAnalyzeVoice();
       else if (learn.dataset.recapLearn === "documents")
         net ? learnNetworkVoiceFromDocument(net) : learnVoiceFromDocument();

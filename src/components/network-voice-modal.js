@@ -14,20 +14,19 @@
 //   `giving` (« Give X its own voice » on a draft): asked even for a network on
 //   the default voice, without that answer.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2340";
-import { getContextById } from "../contexts-store.js?v=2340";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2340";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2342";
+import { getContextById } from "../contexts-store.js?v=2342";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2342";
 import {
   missingNetworkVoices,
   voiceChoices,
   useDefaultVoice,
   editNetworkVoiceInPlaybook,
   documentName,
-} from "../network-voice-flow.js?v=2340";
-import { defaultVoiceName } from "../voice-parts.js?v=2340";
-import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2340";
-import { openVoiceProposal, openVoiceInterview } from "./voice-proposal-modal.js?v=2340";
-import { escapeHtml } from "../utils.js?v=2340";
+} from "../network-voice-flow.js?v=2342";
+import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2342";
+import { openVoiceProposal, openVoiceInterview } from "./voice-proposal-modal.js?v=2342";
+import { escapeHtml } from "../utils.js?v=2342";
 
 const MODAL_ID = "network-voice";
 
@@ -68,8 +67,8 @@ function injectOnce() {
   bindOverlayDismissal({ modal, backdrop, close });
 }
 
-const groupHtml = (net, giving, ctx) => {
-  const { items } = voiceChoices(net, { needed: !giving, ctx });
+const groupHtml = (net, giving) => {
+  const { items } = voiceChoices(net, { needed: !giving });
   return `<fieldset class="network-voice-modal__group">
     <legend class="network-voice-modal__legend"><i class="${networkIcon(net)}" aria-hidden="true"></i>How should I write on ${escapeHtml(networkLabel(net))}?</legend>
     ${items
@@ -97,9 +96,9 @@ export function requireNetworkVoicesInDialog(contextId, networks, onReady, { giv
       : `How should I write on these ${missing.length} networks?`;
   bodyEl.innerHTML = `<p class="network-voice-modal__lead">${
     giving
-      ? `These drafts use your ${escapeHtml(defaultVoiceName(getContextById(contextId)))}. Once ${escapeHtml(one)} has its own rules, you can rewrite each one.`
+      ? `These drafts use your default voice. Once ${escapeHtml(one)} has its own rules, you can rewrite each one.`
       : `I don't know how you write on ${missing.length === 1 ? escapeHtml(one) : "these networks"} yet. Pick how I should learn it before I write.`
-  }</p>${missing.map((n) => groupHtml(n, giving, getContextById(contextId))).join("")}`;
+  }</p>${missing.map((n) => groupHtml(n, giving)).join("")}`;
   backdrop.hidden = false;
   backdrop.classList.add("open");
   modal.classList.add("open");
@@ -140,7 +139,7 @@ function giveVoices(p, [pick, ...rest]) {
       onUse: () => giveVoices(p, rest),
       onCancel: back,
     });
-  if (choice === "learn") return propose();
+  if (choice === "learn" || choice === "adapt") return propose();
   if (choice === "interview") return openVoiceInterview({ net, onDone: propose, onCancel: back });
   openFillDocumentModal({
     onConfirm: ({ file, url }) => propose(file?.name || documentName(url)),

@@ -152,14 +152,14 @@ export const FLAGS = Object.freeze([
   {
     id: "voicePerNetwork",
     group: "Playbook",
-    tip: "The Playbook's first network sets the default voice; each other network can add rules of its own — learned by Archie, reviewed before they're saved.",
+    tip: "A default voice tied to no network; each network adapts it with rules of its own — learned or adapted by Archie, reviewed before they're saved.",
     label: "Voice per network",
     default: false,
     hides:
       "When OFF (default), a Playbook has one voice for every network. When " +
-      "ON, the Voice profile tab has a row of tabs — the first network (the " +
-      "default voice, « LinkedIn · Default »), then one per other network. A network gets its own rules from its posts, a document, " +
-      "a few questions, or by hand; Archie shows what he'd add and the user " +
+      "ON, the Voice profile tab has a row of tabs — the default voice (generic, " +
+      "« All networks »), then one per network. A network gets its own rules from its posts, the default voice adapted, " +
+      "a document, a few questions, or by hand; Archie shows what he'd add and the user " +
       "adds it to the Voice profile or edits it first. Until then it follows " +
       "the default voice, warned. A draft written before its rules changed " +
       "says so and can be rewritten.",

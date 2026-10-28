@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2340";
-import { conceptHint } from "./concepts.js?v=2340";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2342";
+import { conceptHint } from "./concepts.js?v=2342";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2340";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2340";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2340";
-import { isFlagOn } from "./feature-flags.js?v=2340";
-import { clipLookOf } from "./videos-store.js?v=2340";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2340";
-import { parseHashParams } from "./url-state.js?v=2340";
+} from "./playbook-brand-kit.js?v=2342";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2342";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2342";
+import { isFlagOn } from "./feature-flags.js?v=2342";
+import { clipLookOf } from "./videos-store.js?v=2342";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2342";
+import { parseHashParams } from "./url-state.js?v=2342";
 import {
   isListPart,
   voiceParts,
@@ -49,16 +49,15 @@ import {
   brandVoiceAsIs,
   cloneNetworkVoice,
   voiceNetTagHtml,
-  defaultNetwork,
-  defaultVoiceName,
   markAdapted,
   withNetworkVoices,
-} from "./voice-parts.js?v=2340";
-import { showToast } from "./components/toast.js?v=2340";
-import { introSeen } from "./components/voice-intro-modal.js?v=2340";
-import { consumeHandoff } from "./handoff.js?v=2340";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2340";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2340";
+  ADAPTED_FROM,
+} from "./voice-parts.js?v=2342";
+import { showToast } from "./components/toast.js?v=2342";
+import { introSeen } from "./components/voice-intro-modal.js?v=2342";
+import { consumeHandoff } from "./handoff.js?v=2342";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2342";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2342";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -219,7 +218,6 @@ export function mount(target, config) {
   setInlineChoices(cfg.chipCloud);
   activeTab = tabFromUrl();
   voiceNet = parseHashParams().get("voice") || null;
-  if (voiceNet && voiceNet === defaultNetwork(cfg.getData?.())) voiceNet = null;
   editScope = null;
   snapshot = null;
   audienceCustom = false;
@@ -242,14 +240,7 @@ export function mount(target, config) {
     // voice, else from the default voice.
     const edit = isLibrary() ? consumeHandoff("editNetworkVoice") : null;
     const d = cfg.getData();
-    // On the default network, the voice IS the Playbook's own parts.
-    if (edit?.playbookId === d?.id && edit.net === defaultNetwork(d) && !voiceNet) {
-      const before = snapshotEditable(d);
-      if (edit.voice) voiceParts().forEach(({ field }) => (d[field] = structuredClone(edit.voice[field])));
-      openEdit(d, "voice");
-      snapshot = before;
-      editBaseline = JSON.stringify(before);
-    } else if (edit?.playbookId === d?.id && edit.net === voiceNet) {
+    if (edit?.playbookId === d?.id && edit.net === voiceNet) {
       if (edit.voice) editNetworkVoiceFrom(edit.voice);
       else if (networkVoice(d, voiceNet).state === "own") openEdit(d, "voice");
       else editNetworkVoiceFrom(brandVoiceAsIs(d));
@@ -2037,14 +2028,13 @@ function setTab(id) {
 }
 
 // ── Voice per network (flag voicePerNetwork) ───────────────────────────────
-// The Voice profile tab has its own row of tabs: the default voice, then one per
-// network the Playbook publishes on. Which one is on screen is `?voice=` — kept
-// like `?tab=`, without a route change.
-// The networks with a tab of their own — all but the default one, whose voice
-// is the Playbook's own parts (its tab is the first, « LinkedIn · Default »).
+// The Voice profile tab has its own row of tabs: the default voice — generic,
+// tied to no network, the Playbook's own parts — then one per network the
+// Playbook publishes on, each a variation of it. Which one is on screen is
+// `?voice=` — kept like `?tab=`, without a route change.
 function voiceNets(data) {
   if (!networkVoiceOn() || data?.voiceMode === "manual") return [];
-  return playbookNetworks(data).filter((n) => n !== defaultNetwork(data));
+  return playbookNetworks(data);
 }
 
 function setVoiceNet(net) {
@@ -2075,7 +2065,7 @@ function voiceIntroHtml(data) {
     <div class="ap-infobox-content">
       <div class="ap-infobox-texts">
         <span class="ap-infobox-title">Each network can now have its own rules</span>
-        <span class="ap-infobox-message">On top of your ${esc(defaultVoiceName(data))}, I learn what works on each network from your posts.</span>
+        <span class="ap-infobox-message">On top of your default voice, I add what works on each network: from your posts, or by adapting it.</span>
         <button type="button" class="ap-link" data-vi-open="${esc(data.id || "")}">Show me</button>
       </div>
     </div>
@@ -2092,20 +2082,12 @@ function renderVoiceTabs(data) {
     const inherits = net && networkVoice(data, net).state !== "own";
     return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}" data-pb2-voice-net="${net}">
       ${icon ? `<i class="${icon}" aria-hidden="true"></i>` : ""}<span>${esc(label)}</span>${mark}${
-        inherits ? `<span class="pb2-voice-tabs__inherit">${esc(defaultVoiceName(data))}</span>` : ""
+        inherits ? `<span class="pb2-voice-tabs__inherit">Default voice</span>` : ""
       }
     </button>`;
   };
-  // The default voice's tab is its network's: « LinkedIn · Default ».
-  const def = defaultNetwork(data);
-  const defaultTab = def
-    ? tab(
-        "",
-        networkLabel(def),
-        networkIcon(def),
-        `<span class="ap-tag grey mini pb2-voice-default"><span>Default</span></span>`,
-      )
-    : tab("", "Default voice", "");
+  // The default voice's tab: no network, every network starts from it.
+  const defaultTab = tab("", "Default voice", "", `<span class="pb2-voice-tabs__inherit">All networks</span>`);
   return `
     <div class="ap-tabs flush pb2-voice-tabs">
       <div class="ap-tabs-nav" role="tablist" aria-label="Voices">
@@ -2594,7 +2576,9 @@ function renderVoiceRead2(data, learnMenu) {
 
 function networkVoiceLead(net, voice, data) {
   const label = networkLabel(net);
-  const base = `Your ${defaultVoiceName(data)}`;
+  const base = "Your default voice";
+  if (voice?.learnedFrom === ADAPTED_FROM)
+    return `${base}, adapted for ${label}: its own rules are tagged « For ${label} ».`;
   if (voice?.optimizedBy === "learned")
     return voice.postCount
       ? `${base}, plus rules for ${label} learned from ${voice.postCount} posts of ${voice.learnedFrom}, tagged « For ${label} ».`
@@ -2628,15 +2612,15 @@ function renderNetworkVoiceRead(data) {
   if (state === "default") {
     // Edit starts from the default voice (data-pb2-voice-own).
     const actions = canEditView()
-      ? `${learnMenu(net)}<button type="button" class="ap-button stroked blue" data-pb2-voice-own><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></button>`
+      ? `${learnMenu(net)}<button type="button" class="ap-button stroked blue" data-pb2-voice-own><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></button><button type="button" class="ap-button primary orange" data-recap-learn="adapt" data-recap-learn-net="${esc(net)}"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Adapt for ${esc(label)}</span></button>`
       : "";
     const notice = voiceNotice(
-      `${label} follows your ${defaultVoiceName(data)}`,
+      `${label} follows your default voice`,
       `No rules for ${label} yet (length, format, hashtags), so drafts may miss what works there.`,
     );
     return `${tabs}${pb2TabHead("voice", actions, {
       noEdit: true,
-      lead: `Add rules for ${label}: I can learn them from your posts, a document, or a few questions, or you can write them with Edit.`,
+      lead: `Adapt your default voice for ${label}, or add rules from your posts, a document or a few questions.`,
     })}${voiceIntroHtml(data)}${notice}<div class="pb2-grid pb2-grid--borrowed">${pb2VoiceParts(data).join("")}</div>`;
   }
   return `${tabs}${pb2TabHead("voice", canEditView() ? learnMenu(net) : "", { lead: networkVoiceLead(net, voice, data) })}${voiceIntroHtml(data)}<div class="pb2-grid">${pb2VoiceParts(
@@ -3113,7 +3097,7 @@ function commitEdit(data) {
   if (voice !== data) {
     const changed = markAdapted(data, voice);
     if (voice.optimizedBy !== "learned") voice.optimizedBy = changed ? "you" : "brand";
-    if (!changed) showToast(`Nothing changed. ${networkLabel(voiceNet)} still follows your ${defaultVoiceName(data)}.`);
+    if (!changed) showToast(`Nothing changed. ${networkLabel(voiceNet)} still follows your default voice.`);
   }
   // A voice saved with a change is stamped: the drafts written before it say so.
   if (editScope === "voice" && isDirty(data)) {

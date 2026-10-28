@@ -15,9 +15,9 @@
 //     `only`: the rules the proposal adds (shown alone).
 //     onUse runs after the voice is saved.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2340";
-import { getContextById } from "../contexts-store.js?v=2340";
-import { networkLabel } from "../social-profiles.js?v=2340";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2342";
+import { getContextById } from "../contexts-store.js?v=2342";
+import { networkLabel } from "../social-profiles.js?v=2342";
 import {
   INTERVIEW,
   learnPhases,
@@ -25,9 +25,9 @@ import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
-} from "../network-voice-flow.js?v=2340";
-import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2340";
-import { escapeHtml } from "../utils.js?v=2340";
+} from "../network-voice-flow.js?v=2342";
+import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2342";
+import { escapeHtml } from "../utils.js?v=2342";
 
 const MODAL_ID = "voice-proposal";
 
@@ -121,7 +121,7 @@ export function openVoiceProposal(opts) {
     button("close", "ghost grey", "Cancel") +
     button("use", "primary blue", opts.useLabel || "Add to Voice profile", true);
   // Learning takes a moment, and says what it's doing.
-  const phases = opts.phases || (voice ? null : learnPhases(net, from));
+  const phases = opts.phases || (voice ? null : learnPhases(net, from, choice));
   if (!phases) return showProposal(voice);
   bodyEl.innerHTML = `<p class="voice-proposal-modal__phase" data-vp-phase>${escapeHtml(phases[0])}</p>`;
   phases.slice(1).forEach((p, i) =>
