@@ -15,9 +15,9 @@
 //     `only`: the rules the proposal adds (shown alone).
 //     onUse runs after the voice is saved.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2307";
-import { getContextById } from "../contexts-store.js?v=2307";
-import { networkLabel } from "../social-profiles.js?v=2307";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2309";
+import { getContextById } from "../contexts-store.js?v=2309";
+import { networkLabel } from "../social-profiles.js?v=2309";
 import {
   INTERVIEW,
   learnPhases,
@@ -25,9 +25,9 @@ import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
-} from "../network-voice-flow.js?v=2307";
-import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2307";
-import { escapeHtml } from "../utils.js?v=2307";
+} from "../network-voice-flow.js?v=2309";
+import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2309";
+import { escapeHtml } from "../utils.js?v=2309";
 
 const MODAL_ID = "voice-proposal";
 

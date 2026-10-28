@@ -1206,6 +1206,8 @@ Le flow « Create a Playbook » depuis `/contexts` réutilise ce flow en mode **
 
 ## 11. Connectors / MCP
 
+- **Connected d'abord** (2026-10-28) : la page s'ouvre sur une section _Connected_ (logo, compte, « synced … », **Details** + **Ask in a chat** orange qui ouvre un chat branché sur le connecteur) ; la galerie par catégorie ne liste plus que ce qu'on peut ajouter, un connecteur n'apparaît donc toujours qu'une fois.
+
 **Toute la feature est derrière le flag `connectors` (défaut OFF).** Fichiers : [`screens/connectors.js`](../../src/screens/connectors.js), [`connectors-store.js`](../../src/connectors-store.js), [`connectors-view.js`](../../src/connectors-view.js), [`connector-ask.js`](../../src/connector-ask.js), [`connectors-modal.js`](../../src/components/connectors-modal.js).
 
 - **Concept** : un connecteur connecté devient une **source live** — Archie le requête live via un aller-retour MCP simulé, rien n'est importé. _« I query {name} live over MCP — these are the tools I'll call. »_
