@@ -13,36 +13,36 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=2349";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2349";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2349";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2349";
-import { showToast } from "./components/toast.js?v=2349";
-import { recordReasons } from "./feedback-store.js?v=2349";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2349";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2349";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2349";
+import * as inlineQuestion from "./inline-question.js?v=2353";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2353";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2353";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2353";
+import { showToast } from "./components/toast.js?v=2353";
+import { recordReasons } from "./feedback-store.js?v=2353";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2353";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2353";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2353";
 import {
   analyzeWebsite,
   analyzeBrandFiles,
   analyzeInterview,
   nextInterviewQuestion,
   INTERVIEW_OPENING,
-} from "./context-mock-analysis.js?v=2349";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2349";
-import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=2349";
-import { markIntroSeen } from "./components/voice-intro-modal.js?v=2349";
-import { connectors as connectorMocks } from "./mocks.js?v=2349";
+} from "./context-mock-analysis.js?v=2353";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2353";
+import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=2353";
+import { markIntroSeen } from "./components/voice-intro-modal.js?v=2353";
+import { connectors as connectorMocks } from "./mocks.js?v=2353";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=2349";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2349";
-import { isFlagOn } from "./feature-flags.js?v=2349";
-import { startDemo } from "./demo-flow.js?v=2349";
-import { navigate } from "./router.js?v=2349";
-import { setHandoff } from "./handoff.js?v=2349";
+} from "./social-profiles.js?v=2353";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2353";
+import { isFlagOn } from "./feature-flags.js?v=2353";
+import { startDemo } from "./demo-flow.js?v=2353";
+import { navigate } from "./router.js?v=2353";
+import { setHandoff } from "./handoff.js?v=2353";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -326,7 +326,7 @@ export function createAltDraft(sessionId, { onComplete = null, prefilledUrl = ""
 }
 
 // Take the connected accounts as the Playbook's, as they stand now.
-export function syncAltProfiles(sessionId) {
+function syncAltProfiles(sessionId) {
   commitAltProfiles(sessionId, getConnectedProfiles(), { echo: false });
   notify(sessionId);
 }
@@ -705,7 +705,7 @@ function commitAltProfiles(sessionId, profiles, { echo = true } = {}) {
 
 // The feedback-store key for the skip reasons. One key, not one per user: the
 // question is asked once, and a second answer replaces the first.
-export const SKIP_CONNECT_TARGET = "skip:connect-profiles";
+const SKIP_CONNECT_TARGET = "skip:connect-profiles";
 
 // The account step. It is a CHOICE rather than a
 // gate: optional either way, and shaped by what the user actually has.

@@ -728,6 +728,12 @@
   list-style: none;
 }
 
+/* The open network on the Voice step: its card, among the rows. */
+.welcome-flow__voice-net .voice-edit {
+  width: 100%;
+  margin: 0;
+}
+
 .welcome-flow__option {
   display: flex;
   align-items: center;
@@ -784,12 +790,6 @@
   color: var(--ref-color-orange-150);
 }
 
-.welcome-flow__option.is-static {
-  cursor: default;
-  background: var(--app-surface-subtle);
-  border-color: transparent;
-}
-
 .welcome-flow__glyph {
   display: grid;
   place-items: center;
@@ -836,21 +836,6 @@
 .welcome-flow__option-add {
   flex-shrink: 0;
   color: var(--ref-color-electric-blue-100);
-}
-
-.welcome-flow__connected {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  flex-shrink: 0;
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.welcome-flow__connected i {
-  color: var(--app-butter-accent);
 }
 
 /* The website: one field, prefilled, and the action beside it. */

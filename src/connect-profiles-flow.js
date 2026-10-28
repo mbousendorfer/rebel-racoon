@@ -14,10 +14,13 @@
 // always the case with the flag off, so this module is a no-op there. That
 // single short-circuit is why callers can wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2349";
-import { postAssistantMessage, postUserProfilesTurn } from "./assistant.js?v=2349";
-import { getConnectedProfiles, getConnectableNetworks } from "./social-profiles.js?v=2349";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2349";
+import * as inlineQuestion from "./inline-question.js?v=2353";
+import { postAssistantMessage, postUserProfilesTurn } from "./assistant.js?v=2353";
+import { getConnectedProfiles, getConnectableNetworks, normalizeNetwork } from "./social-profiles.js?v=2353";
+import { getSessionById } from "./sessions-store.js?v=2353";
+import { getContextById } from "./contexts-store.js?v=2353";
+import { playbookNetworks } from "./voice-parts.js?v=2353";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2353";
 
 // The connect step's cards — one per NETWORK, laid out like Agorapulse's own
 // "Add new social profiles" grid: the network's full-colour glyph, its name,
@@ -25,9 +28,15 @@ import { open as openConnectAccountModal } from "./components/connect-account-mo
 // product's real unit here — you don't pick from accounts you already have, you
 // pick a network and its dialog hands one back.
 // Exported because Playbook creation offers the same grid as its (optional)
-// account step.
-export function connectableNetworkCards() {
-  return getConnectableNetworks().map((net) => ({
+// account step. `first`: the networks to lead with, in order — the Playbook's,
+// its main one first.
+export function connectableNetworkCards({ first = [] } = {}) {
+  const rank = (platform) => {
+    const i = first.indexOf(normalizeNetwork(platform));
+    return i < 0 ? first.length : i;
+  };
+  const nets = [...getConnectableNetworks()].sort((a, b) => rank(a.platform) - rank(b.platform));
+  return nets.map((net) => ({
     value: net.platform,
     label: net.label,
     caption: net.kinds,
@@ -48,7 +57,8 @@ export function requireConnectedProfiles(sessionId, { stepLabel = "Account", onR
     return;
   }
 
-  const items = connectableNetworkCards();
+  const ctx = getContextById(getSessionById(sessionId)?.contextId);
+  const items = connectableNetworkCards({ first: playbookNetworks(ctx) });
   if (!items.length) {
     // Nothing connected and nothing left to connect — say so rather than
     // showing an empty picker.

@@ -1,18 +1,18 @@
 // The onboarding shell — flag connectFirst. Every screen of the first-time
-// flow (connect → brand → language → documents → ready) is the same
+// flow (networks → brand → language → documents → voice → ready) is the same
 // split: the step on the left, Archie's stage on the right, where the Playbook
-// card fills in with the user's REAL answers as they go — the connected
-// profiles, the site's name and voice once it's read, the colours. The intro
+// card fills in with the user's REAL answers as they go — the networks it
+// posts on, the site's name and voice once it's read, the colours. The intro
 // (/welcome-alt/intro) shows the same card filled with an example.
 //
 // One draft for the whole run, in context-builder (createAltDraft…), keyed by
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2349";
-import { html, raw, escapeHtml } from "../utils.js?v=2349";
-import { navigate } from "../router.js?v=2349";
-import { isFlagOn } from "../feature-flags.js?v=2349";
+import "../archie-pixels.js?v=2353";
+import { html, raw, escapeHtml } from "../utils.js?v=2353";
+import { navigate } from "../router.js?v=2353";
+import { isFlagOn } from "../feature-flags.js?v=2353";
 import {
   altSteps,
   createAltDraft,
@@ -20,8 +20,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2349";
-import { getConnectedProfiles, renderProfileTag, subscribe as subscribeProfiles } from "../social-profiles.js?v=2349";
+} from "../context-builder.js?v=2353";
+import { networkIcon, networkLabel } from "../social-profiles.js?v=2353";
+import { playbookNetworks } from "../voice-parts.js?v=2353";
 import {
   readSessionId,
   persistDraft,
@@ -29,8 +30,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2349";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2349";
+} from "./welcome-alt-recap.js?v=2353";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2353";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -38,25 +39,29 @@ const SESSION_KEY = "welcomeAltSessionId";
 // What each step is called, everywhere it's named (the intro's list, the
 // progress, each screen's title).
 export const STEP_TEXT = {
-  connect: { title: "Connect your accounts", desc: "So I write for the networks you publish on." },
+  networks: { title: "Pick your networks", desc: "Where you post, and the one that matters most." },
   url: { title: "Show me your Brand", desc: "Your website, a few files, or a handful of questions." },
   language: { title: "Pick your language", desc: "The one I'll write your posts in." },
   documents: { title: "Add brand documents", desc: "Optional: a brand book or guidelines." },
+  voice: { title: "Set your voice", desc: "One default voice, and rules for each network." },
   recap: { title: "Review your Playbook", desc: "Everything I learned, before I write a word." },
 };
 
 const ROUTE = {
-  connect: "/welcome-alt/connect",
+  networks: "/welcome-alt/networks",
   url: "/welcome-alt/brand",
   language: "/welcome-alt/language",
   documents: "/welcome-alt/documents",
+  voice: "/welcome-alt/voice",
   recap: "/welcome-alt/ready",
 };
 
-// The run, in order, under the flags of the moment: the account screen, the
-// chat's own steps (the account step is the first screen here), the reveal.
+// The run, in order, under the flags of the moment: the networks, the chat's
+// own steps (no account step: the first draft asks), the voice, the reveal. A
+// Playbook filled by hand has no voice to read yet: no voice step.
 export function flowSteps() {
-  return ["connect", ...altSteps().filter((id) => ROUTE[id]), "recap"];
+  const manual = getDraft(readSessionId())?.sourceType === "manual";
+  return ["networks", ...altSteps().filter((id) => ROUTE[id]), ...(manual ? [] : ["voice"]), "recap"];
 }
 
 function goTo(step) {
@@ -197,6 +202,15 @@ export function playbookCard({ mark, name, sub = "", status = "", rows }) {
 
 // ── The live card ─────────────────────────────────────────────────────────
 
+// The default voice in a few words: the headline's traits, else its tones.
+export function voiceTraits(d) {
+  const traits = (d?.voiceProfile?.headline || "")
+    .split(/\s*·\s*/)
+    .filter(Boolean)
+    .slice(0, 3);
+  return traits.length ? traits : (d?.tones || []).slice(0, 2);
+}
+
 const landed = new Set(); // `${sid}:${row}` already shown filled — it lands once, not on every step
 
 const domainOf = (url) =>
@@ -218,33 +232,35 @@ const text = (t) => (t ? `<span class="welcome-flow__line">${escapeHtml(t)}</spa
 // by then. The voice, the audience, the goal and the About wait for their
 // stage of "Building your Playbook" (the stage's `lands`), and land one stage
 // at a time; before it they stay quiet. `build`: where that screen is
-// ({ at, done }) — none on the steps before it.
-function cardRows(d, sid, build) {
+// ({ at, done }) — none on the steps before it. `early`: rows a step before it
+// already shows (the voice, from its own step on).
+function cardRows(d, sid, build, early = new Set()) {
   const analysing = Boolean(d?.analysisStartedAt) && !isAnalysisReady(sid);
   const at = d?.revealed || build?.done ? Infinity : (build?.at ?? -1);
   const stageOf = new Map();
   stagesFor(d).forEach((st, i) => (st.lands || []).forEach((k) => stageOf.set(k, i)));
   const rows = [];
   const push = (row, known) => {
-    const i = stageOf.get(row.key);
+    const i = early.has(row.key) ? undefined : stageOf.get(row.key);
     const due = i === undefined || i < at;
     const working = i === undefined ? analysing : i <= at;
     rows.push({ ...row, state: known && due ? "filled" : working && (analysing || known) ? "pending" : "empty" });
   };
   const summary = d?.businessSummary || "";
   push({ key: "summary", label: "About", value: text(summary), lines: 3 }, Boolean(summary));
-  const profiles = getConnectedProfiles();
+  const nets = playbookNetworks(d);
   rows.push({
-    key: "profiles",
+    key: "networks",
     label: "Publishes on",
-    state: profiles.length ? "filled" : "empty",
-    value: `<span class="welcome-flow__chips">${profiles.map((p) => renderProfileTag(p)).join("")}</span>`,
+    state: nets.length ? "filled" : "empty",
+    value: nets
+      .map(
+        (n) =>
+          `<span class="welcome-intro__net" title="${escapeHtml(networkLabel(n))}"><i class="${networkIcon(n)}" aria-hidden="true"></i></span>`,
+      )
+      .join(""),
   });
-  const traits = (d?.voiceProfile?.headline || "")
-    .split(/\s*·\s*/)
-    .filter(Boolean)
-    .slice(0, 3);
-  const voice = traits.length ? traits : (d?.tones || []).slice(0, 2);
+  const voice = voiceTraits(d);
   push(
     {
       key: "voice",
@@ -297,9 +313,11 @@ function cardRows(d, sid, build) {
   return { rows };
 }
 
-function renderCard(sid, build) {
+function renderCard(sid, build, step) {
   const d = getDraft(sid);
-  const { rows } = cardRows(d, sid, build);
+  const steps = flowSteps();
+  const early = new Set(steps.includes("voice") && steps.indexOf(step) >= steps.indexOf("voice") ? ["voice"] : []);
+  const { rows } = cardRows(d, sid, build, early);
   // "Ready" belongs to the reveal (/welcome-alt/ready sets `revealed`); until
   // then a read source is still being learned, whatever has landed already.
   const ready = d?.revealed === true;
@@ -362,7 +380,7 @@ function renderProgress(step) {
 }
 
 // Paint the shell into `target` once; `left()` is repainted by `paint()`, the
-// card on every change to the draft or to the connected accounts.
+// card on every change to the draft.
 // `sheet`: the review (/welcome-alt/recap) — the same stage, no card around:
 // the part's blocks, dealt as a stack, floating on the pixels.
 // `build`: /welcome-alt/ready's stages ({ at, done }), which gate the card.
@@ -390,7 +408,7 @@ export function mountShell(target, { step, sid, left, sheet = false, build }) {
   const leftEl = target.querySelector("[data-flow-left]");
   const cardEl = target.querySelector("[data-flow-card]");
   const paintCard = () => {
-    if (cardEl) cardEl.innerHTML = renderCard(sid, build?.());
+    if (cardEl) cardEl.innerHTML = renderCard(sid, build?.(), step);
   };
   const paint = () => {
     leftEl.innerHTML = left();
@@ -401,13 +419,11 @@ export function mountShell(target, { step, sid, left, sheet = false, build }) {
     persistDraft(sid);
     paintCard();
   });
-  const offProfiles = subscribeProfiles(paintCard);
   return {
     paint,
     sheet: target.querySelector("[data-flow-sheet]"),
     cleanup: () => {
       offDraft();
-      offProfiles();
     },
   };
 }

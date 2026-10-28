@@ -241,20 +241,24 @@ export const FLAGS = Object.freeze([
   {
     id: "connectFirst",
     group: "Onboarding",
-    tip: "The first-time run as screens: profiles first, the Playbook card filling in on the right, then a reveal.",
-    label: "UP-Onboarding: connect profiles first",
+    tip: "The first-time run as screens: your networks first, then the brand, then your voice, with the Playbook card filling in on the right, then a reveal.",
+    label: "UP-Onboarding: networks & voice first",
     // OFF: a new user lands straight in the onboarding chat, where connecting
     // an account is the step after the website URL.
     default: false,
     hides:
       "When ON, the first-time run is a series of screens instead of the chat. " +
-      "First the plan — the steps ahead, in order — then one screen per step, " +
+      "First the plan (the steps ahead, in order), then one screen per step, " +
       "all in the same split: the step on the left, and on the right Archie's " +
       "stage where the Playbook card fills in with the real answers (the " +
-      "connected profiles, the site's name, voice, audience, colours). " +
-      "Profiles come first (Skip stays, its reasons optional); the website is " +
-      "a field, prefilled, with files, a short interview or by hand as other " +
-      "ways in. It ends on a reveal — Start writing, or review the details.",
+      "networks, the site's name, voice, audience, colours). It starts with " +
+      "the networks you post on and the one that matters most (nothing to " +
+      "connect: the first draft asks for an account); the website is a " +
+      "field, prefilled, with files, a short interview or by hand as other " +
+      "ways in; then your voice: the default voice read from your source, " +
+      "and (with voicePerNetwork) the same voice everywhere or rules for each " +
+      "network, the main one first. It ends on a reveal: Start writing, or " +
+      "review the details.",
   },
   {
     id: "demoMode",

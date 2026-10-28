@@ -227,6 +227,15 @@ effects on the draft are context-builder's (`createAltDraft`, `readAltWebsite`, 
 implementation and two hosts. Every list of steps (the plan, the progress) comes from `altSteps()`,
 so no screen announces a step the run won't ask.
 
+**No account in the run (flag `connectFirst`, 2026-10-28, asked: « on va enlever la question de connexion des réseaux »).**
+The connect screen is gone from the first-time run: its first screen asks **where you post** and **which
+network matters most** (`/welcome-alt/networks`), written to `connectedSocials` as network slugs, the
+main one first — nothing is connected. This rule is what makes that safe: `requireConnectedProfiles`
+already wraps every path that produces a draft, so the first draft asks for an account and its grid
+leads with the Playbook's networks, the main one first. The time saved goes to the voice, now a step of
+its own (`/welcome-alt/voice`, see « Une voix par réseau »). The skip dialog and its feedback key stay,
+for the chat onboarding (flag OFF).
+
 ⚠️ A surface that merely _lists_ profiles is out of scope on purpose — it renders its empty list.
 But a surface that makes the user _pick_ one must never render an empty picker: that is a silent
 dead end, which is the exact failure this feature removes. Top Posts was gated for that reason after
@@ -327,6 +336,7 @@ Behind `voicePerNetwork`. Revu avec l'utilisateur le 2026-10-27 (« tout a l'air
 - **L'étape Voice du chat est un bloc dans la conversation**, pas le Quickpicker : elle explique ce qui manque et guide avec des tuiles (la recommandée en tête). Exception assumée à la règle « question in-chat = Quickpicker » — c'est une décision à expliquer, pas une question à choix.
 - **Le feedback d'un draft peut mettre à jour la voix** — seulement s'il parle d'écriture, et comme une proposition.
 - **L'onboarding : le dialog seul** (+ l'infobox de la fiche), pour les utilisateurs existants ; le dialog en trois temps est gardé tel quel.
+- **Le réseau principal = une priorité, pas la source de la default voice** (2026-10-28, à la demande : « axer en amont la création d'une voice par défaut, et de voices par network (avec sélection d'un network préféré) »). Choisi au premier écran du parcours (`connectFirst`), il est le premier de `connectedSocials` (`mainNetwork()`, voice-parts.js ; pas de champ à lui tant qu'aucun écran ne réordonne les réseaux) : ses règles se règlent en premier, il mène dans la review et dans la grille de connexion du premier draft. La default voice reste générique — ce n'est pas le `defaultNetwork` retiré le même jour. La voix se règle **en amont**, à son propre écran (`/welcome-alt/voice`, après la source) : la default voice, puis la même partout ou des règles par réseau, un réseau ouvert à la fois ; la review ne fait plus que relire.
 - **Un nouvel utilisateur donne ses règles dans la review de création** (2026-10-28) — d'abord le choix d'en avoir ou non (The same voice everywhere · Rules for each network), puis une carte par réseau sous la default voice, une décision par carte, pas une intro ni une case « tout apprendre ». Un réseau laissé sans réponse n'a **pas** la default voice posée d'office : son premier draft demande (l'étape Voice du chat). Avant, la création la posait en silence, elle comptait comme choisie, et un nouvel utilisateur ne voyait jamais le modèle. La fiche porte le même choix (Your networks, sous la default voice), lu sur le Playbook sans champ de plus ; un réseau gardé sur la default voice par choix n'est plus averti, et un réseau avec ses règles peut revenir à la default voice (confirmé).
 
 **Retiré (ne pas reproposer) :**

@@ -10,9 +10,9 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2349";
-import { isFlagOn } from "./feature-flags.js?v=2349";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2349";
+import { escapeHtml } from "./utils.js?v=2353";
+import { isFlagOn } from "./feature-flags.js?v=2353";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2353";
 import {
   networkMeta,
   networkLabel,
@@ -20,7 +20,7 @@ import {
   normalizeNetwork,
   getConnectedProfileById,
   profileForNetwork,
-} from "./social-profiles.js?v=2349";
+} from "./social-profiles.js?v=2353";
 
 // `hint`: what the part holds, said under its title — on the Playbook's tab
 // and in a voice proposal (one source for both).
@@ -116,6 +116,12 @@ export function playbookNetworks(ctx) {
   );
   return [...new Set(nets.filter((n) => networkMeta(n)))];
 }
+
+// The network that matters most to the brand: its rules are set first, it is
+// offered first when an account is needed. Never the source of the default
+// voice, which stays generic. ponytail: the order carries it (picked first in
+// the run's Networks step); a field of its own once a screen lets you reorder.
+export const mainNetwork = (ctx) => playbookNetworks(ctx)[0] || null;
 
 // The default voice is the Playbook's own five parts: generic, tied to no
 // network. Each network the Playbook publishes on is a variation of it — the

@@ -13,19 +13,19 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2349";
-import { startDemo } from "../demo-flow.js?v=2349";
-import { isFlagOn } from "../feature-flags.js?v=2349";
-import { html, raw, escapeHtml } from "../utils.js?v=2349";
+import "../archie-pixels.js?v=2353";
+import { startDemo } from "../demo-flow.js?v=2353";
+import { isFlagOn } from "../feature-flags.js?v=2353";
+import { html, raw, escapeHtml } from "../utils.js?v=2353";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORKS,
   getConnectedProfiles,
   getConnectableNetworks,
-} from "../social-profiles.js?v=2349";
-import { navigate } from "../router.js?v=2349";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2349";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2349";
+} from "../social-profiles.js?v=2353";
+import { navigate } from "../router.js?v=2353";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2353";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2353";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -35,7 +35,7 @@ const PARTS = ["goals", "voice", "brand", "competitors"];
 // gets a line only where its title doesn't say why it's asked; the documents
 // step is marked Optional instead.
 const STEP_HINT = {
-  connect: () =>
+  networks: () =>
     raw(
       `<span class="welcome-intro__nets"><span>Works with</span><span class="welcome-intro__nets" role="list" aria-label="Supported networks">${supportedNetworks()
         .map(
@@ -48,8 +48,8 @@ const STEP_HINT = {
 };
 const OPTIONAL = new Set(["documents"]);
 
-// The networks the account step actually offers (connected or connectable),
-// named — so nobody starts the run expecting one that isn't there.
+// The networks Archie writes for, named — so nobody starts the run expecting
+// one that isn't there.
 function supportedNetworks() {
   const ids = new Set([
     ...getConnectedProfiles().map((p) => p.platform),
@@ -71,14 +71,14 @@ const line = (t) => `<span class="welcome-flow__line">${t}</span>`;
 // it, and lands when that step lights up (the step names are STEP_TEXT). The
 // Playbook's real parts, filled with an example brand.
 const ROWS = [
-  { step: "connect", label: "Publishes on", value: ["linkedin", "instagram", "facebook", "x"].map(glyph).join("") },
+  { step: "networks", label: "Publishes on", value: ["linkedin", "instagram", "facebook", "x"].map(glyph).join("") },
   {
     step: "url",
     label: "About",
     value: line("Small-batch soap, made by hand in Lyon with plant oils and nothing you can't pronounce."),
   },
   {
-    step: "url",
+    step: "voice",
     label: "Voice",
     value: `<span class="welcome-flow__stack">${chips(["Warm", "Witty", "Never salesy"], "welcome-intro__trait")}${line(
       "Talks like a friend who knows their stuff: short sentences, one idea per post.",
@@ -191,7 +191,7 @@ export function renderWelcomeAltIntro(_params, target) {
     if (event.target.closest("[data-welcome-demo]")) return startDemo();
     if (!event.target.closest("[data-welcome-begin]")) return;
     startFlow();
-    navigate("/welcome-alt/connect");
+    navigate("/welcome-alt/networks");
   };
   target.addEventListener("click", onClick);
   return () => target.removeEventListener("click", onClick);
