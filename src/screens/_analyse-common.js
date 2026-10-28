@@ -64,6 +64,10 @@ export function renderPicker(picker) {
     customPlaceholder = null,
     customValue = "",
     customHandler = null,
+    // The free-text row leads instead of trailing (and takes shortcut 1): for
+    // a question whose typed answer is the main way in (the Playbook's URL).
+    customFirst = false,
+    customIcon = "ap-icon-pen",
     multi = false,
     submitLabel = "Continue",
     // Blue by default (the Quickpicker's routine Continue). "orange" when the
@@ -133,6 +137,8 @@ export function renderPicker(picker) {
     searchPlaceholder = "Search…",
     searchQuery = "",
   } = picker;
+  // Shortcut offset for the option rows when the free-text row leads.
+  const lead = customFirst && customPlaceholder ? 1 : 0;
   // A short-hand for "hide the numbered shortcut on this row" — true only in
   // searchable mode.
   const showShortcut = !searchable;
@@ -224,7 +230,7 @@ export function renderPicker(picker) {
             tabindex="0"
             aria-pressed="${isActive ? "true" : "false"}"
           >
-            ${showShortcut ? `<span class="analyse__option-shortcut" aria-hidden="true">${i + 1}</span>` : ""}
+            ${showShortcut ? `<span class="analyse__option-shortcut" aria-hidden="true">${i + 1 + lead}</span>` : ""}
             ${iconSlot}
             <span class="analyse__option-text">
               <span class="analyse__option-label">${it.label}</span>
@@ -264,7 +270,7 @@ export function renderPicker(picker) {
             role="button"
             tabindex="0"
           >
-            <span class="analyse__option-shortcut" aria-hidden="true">${i + 1}</span>
+            <span class="analyse__option-shortcut" aria-hidden="true">${i + 1 + lead}</span>
             ${iconSlot}
             <span class="analyse__option-text">
               <span class="analyse__option-label">${it.label}</span>
@@ -299,7 +305,7 @@ export function renderPicker(picker) {
           ${isDisabled ? `disabled aria-disabled="true"` : ""}
           ${selectable ? `aria-pressed="${isPreset ? "true" : "false"}"` : ""}
         >
-          ${showShortcut ? `<span class="analyse__option-shortcut" aria-hidden="true">${i + 1}</span>` : ""}
+          ${showShortcut ? `<span class="analyse__option-shortcut" aria-hidden="true">${i + 1 + lead}</span>` : ""}
           ${iconSlot}
           <span class="analyse__option-text">
             <span class="analyse__option-label">${it.label}</span>
@@ -317,10 +323,10 @@ export function renderPicker(picker) {
   const hasRows = items.length > 0;
   const customRow = customPlaceholder
     ? `
-      <label class="analyse__option analyse__option--input" data-custom-row>
-        ${hasRows ? `<span class="analyse__option-shortcut" aria-hidden="true">${items.length + 1}</span>` : ""}
+      <label class="analyse__option analyse__option--input${customFirst ? " analyse__option--lead" : ""}" data-custom-row${customFirst ? " data-custom-first" : ""}>
+        ${hasRows ? `<span class="analyse__option-shortcut" aria-hidden="true">${customFirst ? 1 : items.length + 1}</span>` : ""}
         <span class="analyse__option-icon">
-          <i class="ap-icon-pen"></i>
+          <i class="${customIcon}"></i>
         </span>
         <input
           type="text"
@@ -534,7 +540,7 @@ export function renderPicker(picker) {
     ? `<div class="analyse__options-list">${rows}<div class="analyse__options-empty muted"${noMatches ? "" : " hidden"}>No matches — try a different search.</div></div>`
     : rows;
 
-  return `<div class="analyse__options${selectable ? " analyse__options--multi" : ""}${stepper ? " analyse__options--stepper" : ""}${searchable ? " analyse__options--searchable" : ""}" ${multi ? "data-multi" : ""}${single ? " data-single" : ""}${stepper ? " data-stepper" : ""}>${header}${searchBox}${rowsBlock}${customRow}${fileRow}${footer}</div>`;
+  return `<div class="analyse__options${selectable ? " analyse__options--multi" : ""}${stepper ? " analyse__options--stepper" : ""}${searchable ? " analyse__options--searchable" : ""}" ${multi ? "data-multi" : ""}${single ? " data-single" : ""}${stepper ? " data-stepper" : ""}>${header}${searchBox}${customFirst ? customRow + rowsBlock : rowsBlock + customRow}${fileRow}${footer}</div>`;
 }
 
 // -- Keyboard wiring --------------------------------------------------------

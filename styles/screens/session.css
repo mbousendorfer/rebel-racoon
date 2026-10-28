@@ -139,36 +139,6 @@
 
 /* Capability chips — visualise the three facets the URL extraction
    produces (voice / audience / visual identity). */
-.welcome-alt-hero__chips {
-  list-style: none;
-  margin: var(--ref-spacing-xs) 0 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--ref-spacing-xs);
-}
-
-.welcome-alt-hero__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
-  border-radius: var(--app-radius-pill);
-  background: var(--app-surface);
-  border: 1px solid var(--app-border);
-  color: var(--ref-color-grey-150);
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  box-shadow: var(--app-shadow-subtle);
-}
-
-.welcome-alt-hero__chip i {
-  font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-orange-100);
-}
-
 /* Subtle decorative canvas for the welcome-alt session — soft warm
    blob top-right + cool blob bottom-left, same recipe as
    `.welcome-screen__bg` on the linear /welcome surface. Keeps the
