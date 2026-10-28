@@ -17,10 +17,10 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=2289";
-import { parseHashParams } from "../url-state.js?v=2289";
-import { escapeHtml as esc } from "../utils.js?v=2289";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2289";
+import { navigate, getPath } from "../router.js?v=2290";
+import { parseHashParams } from "../url-state.js?v=2290";
+import { escapeHtml as esc } from "../utils.js?v=2290";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2290";
 import {
   getContextById,
   getContexts,
@@ -28,15 +28,15 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=2289";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2289";
-import { mount, snapshotEditable } from "../playbook-view.js?v=2289";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2289";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2289";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2289";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2289";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2289";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=2289";
+} from "../contexts-store.js?v=2290";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2290";
+import { mount, snapshotEditable } from "../playbook-view.js?v=2290";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2290";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2290";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2290";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2290";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2290";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=2290";
 import {
   canView,
   canEdit,
@@ -48,12 +48,12 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=2289";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2289";
-import { showToast } from "../components/toast.js?v=2289";
-import { learnNetworkVoice } from "../voice-parts.js?v=2289";
-import { openVoiceProposal, openVoiceInterview } from "../components/voice-proposal-modal.js?v=2289";
-import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2289";
+} from "../playbook-access.js?v=2290";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2290";
+import { showToast } from "../components/toast.js?v=2290";
+import { learnNetworkVoice } from "../voice-parts.js?v=2290";
+import { openVoiceProposal, openVoiceInterview } from "../components/voice-proposal-modal.js?v=2290";
+import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2290";
 
 const AUTOFILL_MS = 1500;
 
@@ -122,9 +122,7 @@ function buildOwnership(ctx) {
   return {
     tag,
     // The tag's tooltip: what the tag means for me, not the tag again.
-    hint: isMine(ctx)
-      ? "You own it — only you can edit it."
-      : `${ownerName(ctx)} owns it. You can use it, not edit it.`,
+    hint: isMine(ctx) ? "You own it. Only you can edit it." : `${ownerName(ctx)} owns it. You can use it, not edit it.`,
     owner: owner ? `${owner.name}${isMine(ctx) ? " (you)" : ""}` : ownerName(ctx),
     initials: owner?.initials || "?",
   };
@@ -146,8 +144,8 @@ function buildNotice(ctx) {
     ? `${esc(ownerName(ctx))} shared this Playbook with everyone in your organization`
     : `${esc(ownerName(ctx))} shared this Playbook with you`;
   const message = canGovern(ctx)
-    ? `You can use it in chats, share it, transfer ownership, or delete it. Only ${esc(ownerName(ctx))} can edit it — duplicate it to make your own version.`
-    : "You can read it and use it in chats. To change anything, duplicate it — the copy is yours.";
+    ? `You can use it in chats, share it, transfer ownership, or delete it. Only ${esc(ownerName(ctx))} can edit it. Duplicate it to make your own version.`
+    : "You can read it and use it in chats. To change anything, duplicate it: the copy is yours.";
   return `
     <div class="ap-infobox info recap__notice">
       <i class="ap-icon-info" aria-hidden="true"></i>
@@ -311,7 +309,7 @@ export function renderPlaybook(params, target) {
     const ctx = getContextById(id);
     // Guard: every chat needs a Playbook, so never delete the last one.
     if (getContexts().length <= 1) {
-      toast("Can't delete your only Playbook. Every chat needs one — create another first.");
+      toast("Can't delete your only Playbook. Every chat needs one, so create another first.");
       return;
     }
     const shared = ctx?.scope === "organization";
@@ -319,7 +317,7 @@ export function renderPlaybook(params, target) {
     const body = shared
       ? `"${esc(ctx?.name || "This Playbook")}" is shared with everyone in your organization${
           n ? `, and ${n === 1 ? "1 chat uses" : `${n} chats use`} it` : ""
-        }. They keep their drafts — those can still be saved or scheduled — but I can't draft anything new in them. This can't be undone.`
+        }. They keep their drafts and can still save or schedule them, but I can't draft anything new in them. This can't be undone.`
       : `"${esc(ctx?.name || "This Playbook")}" will be removed. Chats using it will need a new Playbook. This can't be undone.`;
     openConfirmModal({
       title: "Delete Playbook?",

@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2289";
-import { conceptHint } from "./concepts.js?v=2289";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2290";
+import { conceptHint } from "./concepts.js?v=2290";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2289";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2289";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2289";
-import { isFlagOn } from "./feature-flags.js?v=2289";
-import { clipLookOf } from "./videos-store.js?v=2289";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2289";
-import { parseHashParams } from "./url-state.js?v=2289";
+} from "./playbook-brand-kit.js?v=2290";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2290";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2290";
+import { isFlagOn } from "./feature-flags.js?v=2290";
+import { clipLookOf } from "./videos-store.js?v=2290";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2290";
+import { parseHashParams } from "./url-state.js?v=2290";
 import {
   isListPart,
   voiceParts,
@@ -51,12 +51,12 @@ import {
   voiceNetTagHtml,
   markAdapted,
   withNetworkVoices,
-} from "./voice-parts.js?v=2289";
-import { showToast } from "./components/toast.js?v=2289";
-import { introSeen } from "./components/voice-intro-modal.js?v=2289";
-import { consumeHandoff } from "./handoff.js?v=2289";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2289";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2289";
+} from "./voice-parts.js?v=2290";
+import { showToast } from "./components/toast.js?v=2290";
+import { introSeen } from "./components/voice-intro-modal.js?v=2290";
+import { consumeHandoff } from "./handoff.js?v=2290";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2290";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2290";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -92,7 +92,7 @@ const SECTIONS = [
 const FIELD_HINTS = {
   languages: {
     q: "Which languages do you publish in?",
-    a: "Pick one or more. I write posts in the language you choose — natively, never a translation.",
+    a: "Pick one or more. I write each post natively in the language you choose, never as a translation.",
   },
   businessSummary: {
     q: "Does this describe your business correctly?",
@@ -124,7 +124,7 @@ const FIELD_HINTS = {
   },
   brandColors: {
     q: "Which colors does the Brand use?",
-    a: "I use these in every image I make — the role says where each one goes.",
+    a: "I use these in every image I make. The role says where each one goes.",
   },
   brandType: {
     q: "Which fonts does the Brand use?",
@@ -140,7 +140,7 @@ const FIELD_HINTS = {
   },
   imageDefaults: {
     q: "What should generated images look like by default?",
-    a: "I start every image here. Change any of it per post in the Image Studio — nothing you change there changes this Playbook.",
+    a: "I start every image here. Change any of it per post in the Image Studio. That never changes this Playbook.",
   },
 };
 
@@ -154,11 +154,11 @@ const SECTION_HINTS = {
     // can't find for you — a banner claiming it picked everything up from the site
     // would be contradicted by the very first row.
     q: "Visual identity",
-    a: "Your logo, plus the colors and fonts I found on your site — so visuals stay on-brand.",
+    a: "Your logo, plus the colors and fonts I found on your site, so visuals stay on-brand.",
   },
   competitors: {
     q: "Who you're up against",
-    a: "I scan your market and suggest competitors. Add the ones that matter — I won't suggest a dismissed one again.",
+    a: "I scan your market and suggest competitors. Add the ones that matter. I won't suggest a dismissed one again.",
   },
 };
 
@@ -679,9 +679,9 @@ function renderAudiencePicker(data) {
     .join("");
   const otherOption = `<div class="ap-select-option${audienceCustom ? " selected" : ""}" data-recap-audience-pick="other" role="option" aria-selected="${audienceCustom}">
       <i class="ap-icon-plus ap-select-option-icon" aria-hidden="true"></i>
-      <span class="ap-select-option-text">Other — define your own…</span>
+      <span class="ap-select-option-text">Other: define your own…</span>
     </div>`;
-  const triggerLabel = audienceCustom ? "Other — define your own…" : selected;
+  const triggerLabel = audienceCustom ? "Other: define your own…" : selected;
   return `
     <div class="recap__audience-picker">
       <details class="ap-select recap__audience-select" data-recap-audience-details>
@@ -1067,7 +1067,7 @@ function renderLanguagePicker(data) {
   const primaryPicker =
     selected.length > 1
       ? `<label class="recap__lang-primary">
-           <span class="recap__lang-primary-label">Primary — the language I write in by default</span>
+           <span class="recap__lang-primary-label">Primary: the language I write in by default</span>
            <select class="ap-native-select recap__lang-select" data-recap-primary-language aria-label="Primary language">
              ${selected.map((o) => `<option value="${esc(o)}" ${o === primary ? "selected" : ""}>${esc(o)}</option>`).join("")}
            </select>
@@ -1204,8 +1204,8 @@ const ROSTERS = {
     sitePlaceholder: "https://competitor.com",
     descPlaceholder: "How they position, who they win with, where you differ…",
     ownGroup: "Your competitors",
-    pendingEmpty: "None added yet — pick from my suggestions below.",
-    emptyEdit: "No competitors yet. Add the ones you know — I can find the rest.",
+    pendingEmpty: "None added yet. Pick from my suggestions below.",
+    emptyEdit: "No competitors yet. Add the ones you know and I'll find the rest.",
     emptyRead: "No competitors yet. Select Discover competitors and I'll suggest a few.",
     scanning: "Scanning your market for competitors…",
     noneFound: "No new competitors found. Add one by hand instead.",
@@ -1415,7 +1415,7 @@ const PICKER_COPY = {
   },
   influencers: {
     title: "Who your audience follows",
-    hint: "The creators your audience listens to — I turn what they post into Topics.",
+    hint: "The creators your audience listens to. I turn what they post into Topics.",
     empty: "No one yet. Add the creators your audience already follows.",
     add: "Add an influencer",
   },
@@ -1498,7 +1498,7 @@ function renderRosterPanel(data, r, edit) {
                : ""
            }
          </header>
-         <p class="recap__cmpgroup-sub">Not in your Playbook yet — add the ones that matter.</p>
+         <p class="recap__cmpgroup-sub">Not in your Playbook yet. Add the ones that matter.</p>
          ${gridOf(pending, { edit, pending: true })}
        </section>`
     : "";
@@ -1668,7 +1668,7 @@ function renderRosterModal(data) {
           ${renderRosterLogo(c, 48)}
           ${
             c.suggested
-              ? `<span class="ap-tag grey mini recap__cmp-badge"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Suggested — not added yet</span></span>`
+              ? `<span class="ap-tag grey mini recap__cmp-badge"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Suggested, not added yet</span></span>`
               : ""
           }
         </div>
@@ -1964,9 +1964,9 @@ const TABS = [
 // names it, so the panel head carries the sentence instead of repeating the title.
 const SECTION_LEADS = {
   goals: "What the business is, who the posts are for, and what they should make happen.",
-  voice: "How the Brand sounds, in five parts — I follow them in every draft.",
-  brand: "How the Brand looks — its logos, colors, type, and the rules its images follow.",
-  images: "How I make this Brand's images — the styles I draw them in, and what Generate an image does on a draft.",
+  voice: "How the Brand sounds, in five parts. I follow them in every draft.",
+  brand: "How the Brand looks: its logos, colors, type, and the rules its images follow.",
+  images: "How I make this Brand's images: the styles I draw them in, and what Generate an image does on a draft.",
   competitors: "Who the Brand is measured against, so I can position it.",
   influencers: "The creators your audience listens to. I turn what they post into Topics in your Topic Feed.",
 };
@@ -2155,7 +2155,10 @@ function watchTabHeadStuck() {
 
 function renderTabs2(data) {
   // Pending suggestions are not part of the Playbook: they are never counted.
-  const cmpCount = rosterList(data, ROSTERS.competitors).filter((c) => !c.suggested).length;
+  const counts = {
+    competitors: rosterList(data, ROSTERS.competitors).filter((c) => !c.suggested).length,
+    influencers: rosterList(data, ROSTERS.influencers).filter((c) => !c.suggested).length,
+  };
   return `
     <div class="ap-tabs flush pb2-tabs">
       <div class="ap-tabs-nav" role="tablist" aria-label="Playbook sections">
@@ -2165,7 +2168,7 @@ function renderTabs2(data) {
             return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}"
             data-pb2-tab="${t.id}">
             <span>${esc(t.title)}</span>
-            ${t.id === "competitors" && cmpCount ? `<span class="ap-counter normal grey">${cmpCount}</span>` : ""}
+            ${counts[t.id] ? `<span class="ap-counter normal grey">${counts[t.id]}</span>` : ""}
           </button>`;
           })
           .join("")}
@@ -2329,11 +2332,7 @@ function renderBrandEdit2(data) {
     pb2Block(
       "Personality",
       pb2Hint(FIELD_HINTS.brandPersonality) +
-        renderTextarea(
-          "brandPersonality",
-          data.brandPersonality,
-          "How the Brand comes across — its character in a few sentences…",
-        ),
+        renderTextarea("brandPersonality", data.brandPersonality, "How the Brand comes across, in a few sentences…"),
       { index: 3 },
     ),
   ];
@@ -2380,7 +2379,7 @@ function renderGoalsRead2(data) {
     pb2Block("Goal", (data.objective || []).length ? pb2Checklist(data.objective) : pb2Empty("No goal set yet."), {
       index: 3,
       icon: "ap-icon-target",
-      hint: "The goal I write toward.",
+      hint: "What the posts work toward.",
     }),
     pb2Block(
       "Call to action",
@@ -2400,7 +2399,7 @@ function renderGoalsRead2(data) {
                 )}</span>${c.url ? `<span class="pb2-link__url">${esc(prettyUrl(c.url))}</span>` : ""}</span></li>`,
             )
             .join("")}</ul>`
-        : pb2Empty("No links yet — add the pages a post can send readers to."),
+        : pb2Empty("No links yet. Add the pages a post can send readers to."),
       { wide: true, index: 5, icon: "ap-icon-link", hint: "Links I add when a post calls for an action." },
     ),
   ];
@@ -2435,23 +2434,23 @@ function pb2Traits(data) {
 // What each part says when it's empty, and what its editor asks.
 const PART_COPY = {
   voiceSummary: {
-    empty: "Not set yet — say in a few sentences how the Brand sounds.",
+    empty: "Not set yet. Say in a few sentences how the Brand sounds.",
     placeholder: "How the Brand sounds, in a few sentences…",
   },
   voiceAlways: {
-    empty: "No rules yet — what every post does.",
+    empty: "No rules yet. Add what every post does.",
     placeholder: "A rule every post follows…",
   },
   voiceNever: {
-    empty: "Nothing yet — what no post does.",
+    empty: "Nothing yet. Add what no post does.",
     placeholder: "Something no post does…",
   },
   voiceByPost: {
-    empty: "No cases yet — how each kind of post is written.",
+    empty: "No cases yet. Add how each kind of post is written.",
     placeholder: "How this kind of post is written…",
   },
   voiceSometimes: {
-    empty: "Nothing yet — the habits that come back now and then.",
+    empty: "Nothing yet. Add the habits that come back now and then.",
     placeholder: "A habit that comes back now and then…",
   },
 };
@@ -2552,9 +2551,9 @@ function networkVoiceLead(net, voice) {
   const label = networkLabel(net);
   if (voice?.optimizedBy === "learned")
     return voice.postCount
-      ? `Your default voice, plus rules for ${label} learned from ${voice.postCount} posts of ${voice.learnedFrom} — tagged « For ${label} ».`
-      : `Your default voice, plus rules for ${label} learned from ${voice.learnedFrom} — tagged « For ${label} ».`;
-  return `Your default voice, plus rules for ${label} you wrote — tagged « For ${label} ».`;
+      ? `Your default voice, plus rules for ${label} learned from ${voice.postCount} posts of ${voice.learnedFrom}, tagged « For ${label} ».`
+      : `Your default voice, plus rules for ${label} learned from ${voice.learnedFrom}, tagged « For ${label} ».`;
+  return `Your default voice, plus rules for ${label} you wrote, tagged « For ${label} ».`;
 }
 
 // A warning infobox on a network's voice tab: its title, its message, an
@@ -2587,11 +2586,11 @@ function renderNetworkVoiceRead(data) {
       : "";
     const notice = voiceNotice(
       `${label} follows your default voice`,
-      `No rules for ${label} yet — length, format, hashtags — so drafts may miss what works there.`,
+      `No rules for ${label} yet (length, format, hashtags), so drafts may miss what works there.`,
     );
     return `${tabs}${pb2TabHead("voice", actions, {
       noEdit: true,
-      lead: `Add rules for ${label}: I can learn them from your posts, a document or a few questions — or write them yourself with Edit.`,
+      lead: `Add rules for ${label}: I can learn them from your posts, a document, or a few questions, or you can write them with Edit.`,
     })}${voiceIntroHtml(data)}${notice}<div class="pb2-grid pb2-grid--borrowed">${pb2VoiceParts(data).join("")}</div>`;
   }
   return `${tabs}${pb2TabHead("voice", canEditView() ? learnMenu(net) : "", { lead: networkVoiceLead(net, voice) })}${voiceIntroHtml(data)}<div class="pb2-grid">${pb2VoiceParts(
@@ -2683,7 +2682,7 @@ function renderBrandRead2(data) {
         wide: true,
         index: 5,
         icon: "ap-icon-image",
-        hint: "Pick a look to start from — or leave it, and I'll ask the first time you generate an image.",
+        hint: "Pick a look to start from, or leave it and I'll ask the first time you generate an image.",
       }),
     );
   return `${pb2TabHead("brand")}<div class="pb2-grid">${blocks.join("")}</div>`;
@@ -2712,7 +2711,7 @@ function renderClipLook(data) {
       attr: "data-pb2-cliplook-preset",
       options: SUBTITLE_IDS.map((id) => ({ id, label: presetLabel(id) })),
     })}
-    ${toggle("logo", data.brandLogo ? "The logo on every clip" : "The logo on every clip — add a logo first", b.logo && !!data.brandLogo, !data.brandLogo)}
+    ${toggle("logo", data.brandLogo ? "The logo on every clip" : "The logo on every clip. Add a logo first", b.logo && !!data.brandLogo, !data.brandLogo)}
     ${
       b.logo && data.brandLogo
         ? dsSelect({
@@ -3068,7 +3067,7 @@ function commitEdit(data) {
   if (voice !== data) {
     const changed = markAdapted(data, voice);
     if (voice.optimizedBy !== "learned") voice.optimizedBy = changed ? "you" : "brand";
-    if (!changed) showToast(`Nothing changed — ${networkLabel(voiceNet)} still follows your default voice.`);
+    if (!changed) showToast(`Nothing changed. ${networkLabel(voiceNet)} still follows your default voice.`);
   }
   // A voice saved with a change is stamped: the drafts written before it say so.
   if (editScope === "voice" && isDirty(data)) {

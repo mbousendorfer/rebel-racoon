@@ -10,9 +10,9 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2289";
-import { isFlagOn } from "./feature-flags.js?v=2289";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2289";
+import { escapeHtml } from "./utils.js?v=2290";
+import { isFlagOn } from "./feature-flags.js?v=2290";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2290";
 import {
   networkMeta,
   networkLabel,
@@ -20,7 +20,7 @@ import {
   normalizeNetwork,
   getConnectedProfileById,
   profileForNetwork,
-} from "./social-profiles.js?v=2289";
+} from "./social-profiles.js?v=2290";
 
 // `hint`: what the part holds, said under its title — on the Playbook's tab
 // and in a voice proposal (one source for both).
@@ -32,7 +32,7 @@ const VOICE_PARTS = [
     field: "voiceByPost",
     title: "Depending on the post",
     kind: "cases",
-    hint: "How each kind of post is written — a launch, a hiring post, a recap.",
+    hint: "How each kind of post is written: a launch, a hiring post, a recap.",
   },
   { field: "voiceSometimes", title: "Now and then", kind: "rules", hint: "Habits I use sometimes, not in every post." },
 ];
@@ -228,7 +228,7 @@ export function voiceChangedAt(ctx, network) {
 // a model turns feedback into the change.
 const FEEDBACK_RULES = {
   "wrong-tone": { field: "voiceAlways", text: "Keep the tone of the posts that work best here." },
-  "too-generic": { field: "voiceAlways", text: "Name one concrete detail — a number, a customer, a place." },
+  "too-generic": { field: "voiceAlways", text: "Name one concrete detail: a number, a customer, or a place." },
   formatting: { field: "voiceAlways", text: "Keep the layout of the posts that work best here." },
 };
 // Returns { voice, added: [rule texts] }, or null when the feedback says
