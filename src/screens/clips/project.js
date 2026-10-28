@@ -7,36 +7,36 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2331";
-import { isFlagOn } from "../../feature-flags.js?v=2331";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2331";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2331";
-import { showToast } from "../../components/toast.js?v=2331";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2331";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2331";
-import { startRewrite } from "../../draft-rewrite.js?v=2331";
-import { networkVoice, voiceChangedAt } from "../../voice-parts.js?v=2331";
-import { renderPostCard } from "../../components/post-card.js?v=2331";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2331";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2331";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2331";
+import { navigate } from "../../router.js?v=2336";
+import { isFlagOn } from "../../feature-flags.js?v=2336";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2336";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2336";
+import { showToast } from "../../components/toast.js?v=2336";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2336";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2336";
+import { startRewrite } from "../../draft-rewrite.js?v=2336";
+import { networkVoice, voiceChangedAt } from "../../voice-parts.js?v=2336";
+import { renderPostCard } from "../../components/post-card.js?v=2336";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2336";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2336";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2336";
 import {
   getConnectedProfiles,
   renderProfileTag,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-} from "../../social-profiles.js?v=2331";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2331";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2331";
-import { captionStateFor } from "../../clip-captions.js?v=2331";
+} from "../../social-profiles.js?v=2336";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2336";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2336";
+import { captionStateFor } from "../../clip-captions.js?v=2336";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2331";
-import { escapeHtml } from "../../utils.js?v=2331";
+} from "../../posts-store.js?v=2336";
+import { escapeHtml } from "../../utils.js?v=2336";
 import {
   getVideo,
   draftKey,
@@ -47,7 +47,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2331";
+} from "../../videos-store.js?v=2336";
 import {
   fmtMs,
   formatSelect,
@@ -67,7 +67,7 @@ import {
   bestFor,
   CTA_OPTIONS,
   EDITOR_TOOLS,
-} from "./shared.js?v=2331";
+} from "./shared.js?v=2336";
 
 let target = null;
 let videoId = null;
@@ -838,7 +838,7 @@ function renderDraftSetup(v, hasDrafts) {
               ? `<section class="clips-write__group">
                   <div class="clips-write__group-head">
                     <h3 class="clips-write__label">How they render</h3>
-                    <span class="clips-write__meta">Set under « All clips » above, or on a clip at step 1</span>
+                    <button type="button" class="ap-button ghost blue" data-clips-tab="clips">Change at step 1</button>
                   </div>
                   <ul class="clips-write__looks">${looks
                     .map(
@@ -856,8 +856,8 @@ function renderDraftSetup(v, hasDrafts) {
             <div class="clips-write__choices" role="radiogroup" aria-label="Call to action">${ctaChoices}</div>
           </section>
           <section class="clips-write__group">
-            <div class="clips-write__group-head"><h3 class="clips-write__label">Accounts</h3></div>
-            ${profiles.length ? `<p class="clips-write__meta">Pick one or more, across networks — I write one post per clip for each.</p>` : ""}
+            <div class="clips-write__group-head"><h3 class="clips-write__label" id="clips-write-accounts">Accounts</h3></div>
+            ${profiles.length ? `<p class="clips-write__meta">Pick one or more, across networks. I write one post per clip for each.</p>` : ""}
             ${accountBlock}
           </section>
         </div>
@@ -891,7 +891,12 @@ function renderDraftSetup(v, hasDrafts) {
         <p class="clips-write__count">
           ${
             why
-              ? `<span class="clips-write__why"><i class="ap-icon-info" aria-hidden="true"></i>${why}</span>`
+              ? `<span class="clips-write__why"><i class="ap-icon-info" aria-hidden="true"></i>${
+                  // What blocks the run is one click away: the accounts sit below the fold.
+                  accounts.length || !profiles.length || !clips.length
+                    ? why
+                    : `<button type="button" class="ap-link standalone" data-clips-goto-accounts>${why}</button>`
+                }</span>`
               : `<strong>${plural(count, "draft")}</strong><span>${plural(clips.length, "clip")} × ${plural(accounts.length, "account")}</span>`
           }
         </p>
@@ -920,8 +925,8 @@ function lookGroups(v, clips) {
   return [...groups.values()].map((g) => ({
     label: g.label,
     who: g.own
-      ? `${g.nums.length === 1 ? "Clip" : "Clips"} ${g.nums.join(", ")} — set on the clip`
-      : `${g.nums.length} clip${g.nums.length === 1 ? "" : "s"} — the video's look`,
+      ? `${g.nums.length === 1 ? "Clip" : "Clips"} ${g.nums.join(", ")} · ${g.nums.length === 1 ? "its" : "their"} own look`
+      : `${g.nums.length} clip${g.nums.length === 1 ? "" : "s"} in the video's look`,
   }));
 }
 
@@ -1006,6 +1011,13 @@ function onClick(e) {
   (target || document).querySelectorAll("details.clips-more[open]").forEach((d) => {
     if (!d.contains(t) || t.closest("[role=menuitem]")) d.removeAttribute("open");
   });
+
+  if (t.closest("[data-clips-goto-accounts]")) {
+    const head = target.querySelector("#clips-write-accounts");
+    head?.scrollIntoView({ behavior: "smooth", block: "start" });
+    head?.closest("section")?.querySelector("input[type=checkbox]")?.focus({ preventScroll: true });
+    return;
+  }
 
   const tabBtn = t.closest("[data-clips-tab]");
   if (tabBtn) return setHashQuery(path(), tabBtn.dataset.clipsTab === "drafts" ? { tab: "drafts" } : {});

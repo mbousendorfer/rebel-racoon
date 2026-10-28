@@ -2854,3 +2854,13 @@ body.clips-editing .app-content {
   left: auto;
   right: 0;
 }
+
+/* « Pick one or more accounts » in the bar scrolls here: clear the page's top. */
+#clips-write-accounts {
+  scroll-margin-top: var(--ref-spacing-lg);
+}
+
+/* The editor's one-time intro sits above the tool's title. */
+.clips-ed__intro {
+  margin-bottom: var(--ref-spacing-md);
+}

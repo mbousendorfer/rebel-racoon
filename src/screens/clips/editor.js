@@ -22,19 +22,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2331";
-import { isFlagOn } from "../../feature-flags.js?v=2331";
-import { parseHashParams } from "../../url-state.js?v=2331";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2331";
-import { showToast } from "../../components/toast.js?v=2331";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2331";
-import { open as openRename } from "../../components/rename-modal.js?v=2331";
-import { getContextById } from "../../contexts-store.js?v=2331";
-import { escapeHtml } from "../../utils.js?v=2331";
-import * as ce from "../../caption-editor.js?v=2331";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2331";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2331";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2331";
+import { navigate } from "../../router.js?v=2336";
+import { isFlagOn } from "../../feature-flags.js?v=2336";
+import { parseHashParams } from "../../url-state.js?v=2336";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2336";
+import { showToast } from "../../components/toast.js?v=2336";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2336";
+import { open as openRename } from "../../components/rename-modal.js?v=2336";
+import { getContextById } from "../../contexts-store.js?v=2336";
+import { escapeHtml } from "../../utils.js?v=2336";
+import * as ce from "../../caption-editor.js?v=2336";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2336";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2336";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2336";
 import {
   framingContext,
   initialSegments,
@@ -54,7 +54,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2331";
+} from "../../clip-framing.js?v=2336";
 import {
   fmtMs,
   fmtPrecise,
@@ -69,8 +69,8 @@ import {
   dsSelect,
   bindSelectDismiss,
   EDITOR_TOOLS as TOOLS,
-} from "./shared.js?v=2331";
-import { primeDraftSetup } from "./project.js?v=2331";
+} from "./shared.js?v=2336";
+import { primeDraftSetup } from "./project.js?v=2336";
 
 const MIN_CLIP_MS = 5000;
 const MAX_CLIP_MS = 300000;
@@ -825,10 +825,36 @@ function paintPanel() {
     text: textPanel,
     brand: brandPanel,
   }[ed.tool]();
-  host.innerHTML = `<h2 class="clips-ed__panel-title">${tool.label}</h2>${body}`;
+  host.innerHTML = `${introHtml()}<h2 class="clips-ed__panel-title">${tool.label}</h2>${body}`;
   // The caption engine renders into the panel's hooks (presets, transcript,
   // cleanup) — they're new each time the panel is painted.
   if (ed.tool === "subtitles" || ed.tool === "transcript") ce.refreshControls();
+}
+
+// The first time, the editor says how it works in three moves: the tools
+// here, the trim on the timeline, nothing kept before Save. Once closed, never again.
+const INTRO_KEY = "archie-clips-editor-intro-seen";
+function introSeen() {
+  try {
+    return localStorage.getItem(INTRO_KEY) === "1";
+  } catch {
+    return true;
+  }
+}
+
+function introHtml() {
+  if (introSeen()) return "";
+  return `
+    <div class="ap-infobox info has-title clips-ed__intro" role="note">
+      <i class="ap-icon-info_fill" aria-hidden="true"></i>
+      <div class="ap-infobox-content">
+        <div class="ap-infobox-texts">
+          <span class="ap-infobox-title">How this editor works</span>
+          <span class="ap-infobox-message">Pick a tool on the left. Drag the clip's edges on the timeline to trim it. Nothing changes until you Save.</span>
+        </div>
+      </div>
+      <button type="button" class="ap-infobox-close" aria-label="Got it" data-clips-intro-close><i class="ap-icon-close" aria-hidden="true"></i></button>
+    </div>`;
 }
 
 // The words of the clip: click to jump, double-click to fix, the menu to stress
@@ -875,10 +901,10 @@ function reframePanel() {
   // No zoom slider (prod): a window zooms from its corners on the source.
   const gesture =
     seg.layout === "TWO"
-      ? "drag a window on the source to move it, a corner to zoom that window."
-      : "drag the window on the source to move it, a corner to zoom.";
+      ? "Drag a window on the source to move it, a corner to zoom that window."
+      : "Drag the window on the source to move it, a corner to zoom.";
   return `
-    <p class="clips-ed__panel-lead">The clip is cut in parts, one per camera shot. I framed each one — ${gesture}</p>
+    <p class="clips-ed__panel-lead">The clip is cut in parts, one per camera shot. I framed each one. ${gesture}</p>
     <div class="clips-ed__seg-head">
       <span class="clips-ed__seg-name">Part ${i + 1} of ${segs.length}</span>
       <span class="clips-ed__seg-tags">
@@ -1199,6 +1225,13 @@ function bindAll() {
 function handleClick(e) {
   if (!ed) return;
   const t = e.target;
+  if (t.closest("[data-clips-intro-close]")) {
+    try {
+      localStorage.setItem(INTRO_KEY, "1");
+    } catch {}
+    t.closest(".clips-ed__intro")?.remove();
+    return;
+  }
   const tool = t.closest("[data-clips-tool]");
   if (tool) {
     ed.tool = tool.dataset.clipsTool;
