@@ -174,8 +174,9 @@ export const contexts = [
     brandLogo: "assets/logos/brands/acme.svg",
     websiteUrl: "https://acme.example.com",
     audience: ["Operators and marketing leads at 50–200-person B2B startups"],
+    // What the business IS. The campaign line lives in briefSummary (2026-10-28).
     businessSummary:
-      "Drive awareness for Acme's Q2 launch. Lead with concrete time savings + customer outcomes, not feature lists.",
+      "Acme is planning software for operators at 50–200-person B2B startups. It turns a quarter's plan into weekly priorities the whole team can see.",
     briefSummary:
       "Drive awareness for Acme's Q2 launch. Lead with concrete time savings + customer outcomes, not feature lists.",
     tones: ["Direct", "Operator-first"],
