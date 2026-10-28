@@ -1099,6 +1099,9 @@ span.chat-bubble-choice-chip {
    and the actions (thumbs, Draft) can't be reached in a hover card — they
    stay on the card in the panel, where the click lands. */
 .chat-ref-preview .rpanel-ideas__why,
+.chat-ref-preview .rpanel-ideas__why-toggle,
+.chat-ref-preview .rpanel-ideas__rationale,
+.chat-ref-preview .rpanel-ideas__feedback,
 .chat-ref-preview .rpanel-ideas__card-actions {
   display: none;
 }

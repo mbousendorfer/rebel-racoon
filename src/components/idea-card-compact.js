@@ -17,13 +17,22 @@
 //     showMention — render the Mention button (default true; false where there
 //                   is no composer, e.g. the standalone Ideas page)
 
-import { iconFor } from "../file-kinds.js?v=2282";
-import { escapeText, escapeAttr } from "../utils.js?v=2282";
+import { iconFor } from "../file-kinds.js?v=2283";
+import { escapeText, escapeAttr } from "../utils.js?v=2283";
 
 // Each idea kind → its DS `.ap-tag` colour variant. The one table: every kind
 // tag (this card, the panel's Overview and Sources, the full idea card, the
 // composer's mention pills) reads it.
 export const IDEA_KIND_TAG = { stat: "blue", quote: "menthol", hook: "tagOrange", story: "grey", insight: "green" };
+
+// What each kind of idea is, in the kind tag's tooltip.
+const IDEA_KIND_HINT = {
+  hook: "An opening line built to stop the scroll",
+  stat: "A number from your source, made the point of a post",
+  quote: "A line worth quoting, with its context",
+  story: "A moment to tell, start to finish",
+  insight: "A takeaway your audience can use",
+};
 
 // The whole card is the Draft target. Its hover border says "clickable", and
 // FullStory showed people clicking the idea's text and getting nothing (dead
@@ -37,7 +46,9 @@ document.addEventListener("click", (event) => {
   const card = event.target.closest(".rpanel-ideas__card");
   if (!card || card.closest("[inert]")) return;
   if (
-    event.target.closest("button, a, input, label, select, textarea, .rpanel-ideas__why, .rpanel-ideas__card-actions")
+    event.target.closest(
+      "button, a, input, label, select, textarea, .rpanel-ideas__rationale, .rpanel-ideas__card-actions",
+    )
   )
     return;
   const selection = window.getSelection();
@@ -73,62 +84,56 @@ export function renderCompactIdeaCard(
     `;
   };
 
-  const whyId = `rpanel-idea-why-${idea.id}`;
-  const sourceTags = linkedSources.length
-    ? linkedSources
-        .map(
-          (s) => `
-            <span class="ap-tag grey" title="${escapeAttr(s.filename)}">
-              <i class="${iconFor(s.kind)}" aria-hidden="true"></i>
-              <span>${escapeText(s.filename)}</span>
-            </span>
-          `,
-        )
-        .join("")
-    : idea.ref
-      ? `<span class="ap-tag grey" title="${escapeAttr(idea.ref)}">
-           <i class="ap-icon-file" aria-hidden="true"></i>
-           <span>${escapeText(idea.ref)}</span>
-         </span>`
-      : "";
-
-  const whyPanel = idea.rationale
-    ? `
-      <section class="rpanel-ideas__why" data-why-open="${whyOpen ? "true" : "false"}">
-        <button
-          type="button"
-          class="rpanel-ideas__why-head"
-          data-rpanel-idea-why-toggle="${escapeAttr(idea.id)}"
-          aria-expanded="${whyOpen ? "true" : "false"}"
-          aria-controls="${whyId}"
-        >
-          <i class="ap-icon-info rpanel-ideas__why-info" aria-hidden="true"></i>
-          <span class="rpanel-ideas__why-title">Why this idea</span>
-          <i class="ap-icon-chevron-${whyOpen ? "up" : "down"} rpanel-ideas__why-chevron" aria-hidden="true"></i>
-        </button>
-        <div id="${whyId}" class="rpanel-ideas__why-body" ${whyOpen ? "" : "hidden"}>
-          <p class="rpanel-ideas__why-rationale">${escapeText(idea.rationale)}</p>
-        </div>
-      </section>
-    `
+  // Where the idea comes from, said as a sentence ("From notes.pdf"), not a
+  // second grey pill beside the kind: the kind says what it is, this says
+  // where it was found. More than one source → the first, "+ N more", all in
+  // the tooltip.
+  const fromNames = linkedSources.length ? linkedSources.map((s) => s.filename) : idea.ref ? [idea.ref] : [];
+  const fromIcon = linkedSources.length ? iconFor(linkedSources[0].kind) : "ap-icon-file";
+  const fromLine = fromNames.length
+    ? `<span class="rpanel-ideas__from" title="${escapeAttr(fromNames.join(", "))}">
+        <i class="${fromIcon}" aria-hidden="true"></i>
+        <span class="rpanel-ideas__from-text">From <span class="rpanel-ideas__from-name">${escapeText(fromNames[0])}</span></span>
+        ${fromNames.length > 1 ? `<span class="rpanel-ideas__from-more">+ ${fromNames.length - 1} more</span>` : ""}
+      </span>`
     : "";
 
+  // "Why this idea" is a quiet toggle on the provenance line; the rationale
+  // gets its grey-05 box only once it's open, when there is something in it.
+  const whyId = `rpanel-idea-why-${idea.id}`;
+  const whyToggle = idea.rationale
+    ? `<button
+        type="button"
+        class="rpanel-ideas__why-toggle"
+        data-rpanel-idea-why-toggle="${escapeAttr(idea.id)}"
+        aria-expanded="${whyOpen ? "true" : "false"}"
+        aria-controls="${whyId}"
+      >
+        <span>Why this idea</span>
+        <i class="ap-icon-chevron-down" aria-hidden="true"></i>
+      </button>`
+    : "";
+  const rationale = idea.rationale
+    ? `<p id="${whyId}" class="rpanel-ideas__rationale" ${whyOpen ? "" : "hidden"}>${escapeText(idea.rationale)}</p>`
+    : "";
+
+  const kindLabel = kind.charAt(0).toUpperCase() + kind.slice(1);
+  // The head says what this is: an idea, and which kind ("Story idea" — a
+  // bare "Story" reads as an Instagram Story in a social tool), the kind's
+  // meaning in its tooltip. Rating it sits beside it: a verdict on the idea,
+  // not something to do with it, so it stays out of the actions row.
   const cardHead = `
     <div class="rpanel-ideas__card-head">
-      <span class="ap-tag ${IDEA_KIND_TAG[kind] || "green"} rpanel-ideas__kind">${kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
-      ${
-        sourceTags
-          ? `<div class="rpanel-ideas__head-source">
-              <span class="rpanel-ideas__source-label">Source:</span>
-              ${sourceTags}
-            </div>`
-          : ""
-      }
+      <span class="ap-tag ${IDEA_KIND_TAG[kind] || "green"} rpanel-ideas__kind" title="${escapeAttr(IDEA_KIND_HINT[kind] || "")}">${kindLabel} idea</span>
+      <div class="rpanel-ideas__feedback">
+        ${thumbBtn("up")}
+        ${thumbBtn("down")}
+      </div>
     </div>
   `;
 
   const mentionBtn = showMention
-    ? `<button type="button" class="ap-button ghost blue rpanel-ideas__mention" data-rpanel-mention-idea="${escapeAttr(idea.id)}">
+    ? `<button type="button" class="ap-button ghost blue rpanel-ideas__mention" data-rpanel-mention-idea="${escapeAttr(idea.id)}" title="Add this idea to your message, to ask me about it">
         <i class="ap-icon-at"></i>
         <span>Reference</span>
       </button>`
@@ -140,16 +145,17 @@ export function renderCompactIdeaCard(
         ${cardHead}
         ${idea.title ? `<h4 class="rpanel-ideas__card-title">${escapeText(idea.title)}</h4>` : ""}
         <p class="rpanel-ideas__card-body">${escapeText(idea.body || "")}</p>
-        ${whyPanel}
+        ${
+          fromLine || whyToggle
+            ? `<div class="rpanel-ideas__meta" data-why-open="${whyOpen ? "true" : "false"}">${fromLine}${whyToggle}</div>`
+            : ""
+        }
+        ${rationale}
       </div>
       <footer class="rpanel-ideas__card-actions">
-        <div class="rpanel-ideas__feedback">
-          ${thumbBtn("up")}
-          ${thumbBtn("down")}
-        </div>
         <div class="rpanel-ideas__primary">
           ${mentionBtn}
-          <button type="button" class="ap-button secondary blue rpanel-ideas__use" data-rpanel-use-idea="${escapeAttr(idea.id)}">
+          <button type="button" class="ap-button secondary blue rpanel-ideas__use" data-rpanel-use-idea="${escapeAttr(idea.id)}" title="Write a post from this idea">
             <i class="ap-icon-sparkles"></i>
             <span>Draft post</span>
           </button>

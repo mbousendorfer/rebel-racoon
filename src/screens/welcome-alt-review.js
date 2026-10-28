@@ -25,13 +25,13 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2282";
-import { navigate } from "../router.js?v=2282";
-import { getDraft, patchDraft } from "../context-builder.js?v=2282";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2282";
-import { parseHashParams } from "../url-state.js?v=2282";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2282";
-import { enterArchie } from "./welcome-alt-recap.js?v=2282";
+import { html, raw } from "../utils.js?v=2283";
+import { navigate } from "../router.js?v=2283";
+import { getDraft, patchDraft } from "../context-builder.js?v=2283";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2283";
+import { parseHashParams } from "../url-state.js?v=2283";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2283";
+import { enterArchie } from "./welcome-alt-recap.js?v=2283";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
