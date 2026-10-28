@@ -15,7 +15,7 @@
 // in-memory `pendingBatch` slot — the SPA never reloads between the two
 // navigations, so a module-level variable is the safe bridge.
 
-import { pastedTextName } from "./sources-stream.js?v=2283";
+import { pastedTextName } from "./sources-stream.js?v=2285";
 
 const states = new Map(); // sessionId → state
 const subscribers = new Map(); // sessionId → Set<fn>

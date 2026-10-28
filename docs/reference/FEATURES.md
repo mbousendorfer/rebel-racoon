@@ -160,7 +160,7 @@ Store **per-session** [`posts-store.js`](../../src/posts-store.js). Draft = auth
   - **TikTok** : idem, média portrait, _Original sound_ au bout de la barre.
   - **YouTube** : la vidéo, puis **le titre** (`youtubeTitle` : `post.title`, sinon la première phrase), la chaîne, la description, _Like / Share_. Un clip vertical dit _« Vertical: publishes as a YouTube Short. »_ sous le lecteur.
   - **Read more** : le corps se replie à 3 lignes (`-webkit-line-clamp`), avec le libellé du réseau (_…see more_, _See more_, _Show more_, _more_) ; le clic (`data-post-readmore`) bascule `.is-expanded` sans re-render. Affiché au-delà de ~180 caractères ou 3 paragraphes (heuristique, pas une mesure).
-- **Char counter** par network (LinkedIn 3000, X 280, IG 2200, FB 63206, TikTok 2200, YT 5000) → rouge si dépassé.
+- **Char counter** par network (LinkedIn 3000, X 280, IG 2200, FB 63206, TikTok 2200, YT 5000) → rouge si dépassé. Il se lit en texte (_2,721 left_, _25 over_ ; un nombre nu ne disait pas ce qu'il comptait) et reste affiché **pendant l'édition**, recalculé à chaque frappe (`renderCharCount`, écouteur `input` de right-panel.js).
 - **Media** : clip (faux player, gradient, play, durée, scrubber 24%, badge sous-titres) / image
   (_Edit_ → studio · _Change_ → file picker · _Remove_) / **fente vide** (`.posts__card-media-empty`) :
   une **vraie dropzone média** — pointillé, **sans fond**, 254px, centrée, **toute la zone est

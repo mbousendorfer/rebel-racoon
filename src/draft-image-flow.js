@@ -23,20 +23,20 @@
 // message: the image appearing in the slot is the feedback; a failure says so
 // in a toast.
 
-import { showToast } from "./components/toast.js?v=2283";
-import { setHandoff } from "./handoff.js?v=2283";
-import { navigate } from "./router.js?v=2283";
-import * as inlineQuestion from "./inline-question.js?v=2283";
+import { showToast } from "./components/toast.js?v=2285";
+import { setHandoff } from "./handoff.js?v=2285";
+import { navigate } from "./router.js?v=2285";
+import * as inlineQuestion from "./inline-question.js?v=2285";
 import {
   finishPending,
   postAssistantMessage,
   postImageLookSet,
   postSelectionEcho,
   startPending,
-} from "./assistant.js?v=2283";
-import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=2283";
-import { getSessionById } from "./sessions-store.js?v=2283";
-import { escapeHtml } from "./utils.js?v=2283";
+} from "./assistant.js?v=2285";
+import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=2285";
+import { getSessionById } from "./sessions-store.js?v=2285";
+import { escapeHtml } from "./utils.js?v=2285";
 import {
   defaultQuickLook,
   generateQuickImage,
@@ -45,7 +45,7 @@ import {
   setImageLook,
   styleFromImages,
   suggestImageSubject,
-} from "./modules/image-studio/index.js?v=2283";
+} from "./modules/image-studio/index.js?v=2285";
 
 const FALLBACK_SUBJECT = "One simple object that stands for the idea, on a plain background. No text in the image.";
 
@@ -143,7 +143,7 @@ export function requireImageLook(sessionId, { brandId, onReady, intro = null }) 
     putOff.add(brandId);
     // From a draft, the image is still made — say in what. Elsewhere, onReady says it.
     if (!intro)
-      postAssistantMessage(sessionId, `No problem — I'll use ${escapeHtml(choices.styles[0].label)} for this one.`);
+      postAssistantMessage(sessionId, `No problem. I'll use ${escapeHtml(choices.styles[0].label)} for this one.`);
     onReady();
   };
 
@@ -154,7 +154,7 @@ export function requireImageLook(sessionId, { brandId, onReady, intro = null }) 
       postAssistantMessage(
         sessionId,
         intro?.(brand) ||
-          `First image for ${brand} — how should its images look? I'll start every draft's image from your answer.`,
+          `First image for ${brand}. How should its images look? I'll start every draft's image from your answer.`,
       );
     inlineQuestion.ask(sessionId, {
       stepLabel: "1 of 2",
@@ -206,7 +206,7 @@ export function requireImageLook(sessionId, { brandId, onReady, intro = null }) 
     if (announce)
       postAssistantMessage(
         sessionId,
-        `Add 2 to 6 images that already look like ${brand} — past posts, photos, visuals. I'll learn the look they share.`,
+        `Add 2 to 6 images that already look like ${brand}: past posts, photos, or visuals. I'll learn the look they share.`,
       );
     inlineQuestion.ask(sessionId, {
       stepLabel: "2 of 2",
@@ -257,12 +257,12 @@ export function openImageLookChat(contextId) {
 export function startImageLookChat(sessionId, { contextId }) {
   requireImageLook(sessionId, {
     brandId: contextId,
-    intro: (brand) => `Let's settle how ${brand}'s images look — every draft's Generate an image will start from it.`,
+    intro: (brand) => `Let's settle how ${brand}'s images look. Every draft's Generate an image starts from it.`,
     onReady: () =>
       postAssistantMessage(
         sessionId,
         needsImageLook(contextId)
-          ? "Whenever you're ready — the first Generate an image on a draft will ask again."
+          ? "Whenever you're ready. The first Generate an image on a draft will ask again."
           : "Want to draft a post to try it on?",
       ),
   });

@@ -20,13 +20,13 @@
 // list scroll position survives — same rationale as the clip/idea thumbs it
 // replaces.
 
-import { escapeAttr, escapeText } from "../utils.js?v=2283";
-import { showToast } from "./toast.js?v=2283";
-import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2283";
-import { getContextById } from "../contexts-store.js?v=2283";
-import { networkLabel } from "../social-profiles.js?v=2283";
-import { feedbackNetworkVoice } from "../voice-parts.js?v=2283";
-import { openVoiceProposal } from "./voice-proposal-modal.js?v=2283";
+import { escapeAttr, escapeText } from "../utils.js?v=2285";
+import { showToast } from "./toast.js?v=2285";
+import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2285";
+import { getContextById } from "../contexts-store.js?v=2285";
+import { networkLabel } from "../social-profiles.js?v=2285";
+import { feedbackNetworkVoice } from "../voice-parts.js?v=2285";
+import { openVoiceProposal } from "./voice-proposal-modal.js?v=2285";
 
 // "What was off?" reasons per element kind. value = stable key, label = UI.
 const REASONS = {
@@ -159,7 +159,7 @@ export function onFeedbackClick(event) {
       }
     } else {
       if (panel) panel.hidden = true;
-      if (rec?.verdict === "up") showToast("Thanks — noted.", { duration: 2600 });
+      if (rec?.verdict === "up") showToast("Thanks, noted.", { duration: 2600 });
     }
     return true;
   }
@@ -188,7 +188,7 @@ export function onFeedbackClick(event) {
       )
         return true;
     }
-    showToast("Thanks — this helps me improve.", { duration: 2600 });
+    showToast("Thanks. I'll use this next time.", { duration: 2600 });
     return true;
   }
 
@@ -208,7 +208,7 @@ function offerVoiceUpdate(playbookId, net, feedback) {
     net,
     voice: proposal.voice,
     only: proposal.added,
-    title: `Thanks — add this to your ${label} rules?`,
+    title: `Thanks. Add this to your ${label} rules?`,
     useLabel: "Add to Voice profile",
     onUse: () => showToast(`Added to your ${label} rules.`, { duration: 3200 }),
   });
