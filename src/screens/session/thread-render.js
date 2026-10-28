@@ -13,26 +13,26 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2277";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2277";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2277";
-import { getTopPost } from "../../top-posts-store.js?v=2277";
-import { getTopicById } from "../../topics-store.js?v=2277";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2277";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2277";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2277";
-import { getIdeas } from "../../library.js?v=2277";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2277";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2277";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2277";
-import { getPlans } from "../../post-plan-store.js?v=2277";
-import { isFlagOn } from "../../feature-flags.js?v=2277";
-import { CURRENT_USER } from "../../org.js?v=2277";
-import { getSessionById } from "../../sessions-store.js?v=2277";
-import { getContextById } from "../../contexts-store.js?v=2277";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2277";
-import { getFocusKey } from "../../components/right-panel.js?v=2277";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2277";
+} from "./thread-turns.js?v=2278";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2278";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2278";
+import { getTopPost } from "../../top-posts-store.js?v=2278";
+import { getTopicById } from "../../topics-store.js?v=2278";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2278";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2278";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2278";
+import { getIdeas } from "../../library.js?v=2278";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2278";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2278";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2278";
+import { getPlans } from "../../post-plan-store.js?v=2278";
+import { isFlagOn } from "../../feature-flags.js?v=2278";
+import { CURRENT_USER } from "../../org.js?v=2278";
+import { getSessionById } from "../../sessions-store.js?v=2278";
+import { getContextById } from "../../contexts-store.js?v=2278";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2278";
+import { getFocusKey } from "../../components/right-panel.js?v=2278";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2278";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
