@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2342";
-import { conceptHint } from "./concepts.js?v=2342";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2343";
+import { conceptHint } from "./concepts.js?v=2343";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2342";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2342";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2342";
-import { isFlagOn } from "./feature-flags.js?v=2342";
-import { clipLookOf } from "./videos-store.js?v=2342";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2342";
-import { parseHashParams } from "./url-state.js?v=2342";
+} from "./playbook-brand-kit.js?v=2343";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2343";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2343";
+import { isFlagOn } from "./feature-flags.js?v=2343";
+import { clipLookOf } from "./videos-store.js?v=2343";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2343";
+import { parseHashParams } from "./url-state.js?v=2343";
 import {
   isListPart,
   voiceParts,
@@ -52,12 +52,12 @@ import {
   markAdapted,
   withNetworkVoices,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2342";
-import { showToast } from "./components/toast.js?v=2342";
-import { introSeen } from "./components/voice-intro-modal.js?v=2342";
-import { consumeHandoff } from "./handoff.js?v=2342";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2342";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2342";
+} from "./voice-parts.js?v=2343";
+import { showToast } from "./components/toast.js?v=2343";
+import { introSeen } from "./components/voice-intro-modal.js?v=2343";
+import { consumeHandoff } from "./handoff.js?v=2343";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2343";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2343";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -240,7 +240,8 @@ export function mount(target, config) {
     // voice, else from the default voice.
     const edit = isLibrary() ? consumeHandoff("editNetworkVoice") : null;
     const d = cfg.getData();
-    if (edit?.playbookId === d?.id && edit.net === voiceNet) {
+    // No handoff → nothing to open (a draft without an id matched undefined === undefined).
+    if (edit && edit.playbookId === d?.id && edit.net === voiceNet) {
       if (edit.voice) editNetworkVoiceFrom(edit.voice);
       else if (networkVoice(d, voiceNet).state === "own") openEdit(d, "voice");
       else editNetworkVoiceFrom(brandVoiceAsIs(d));
