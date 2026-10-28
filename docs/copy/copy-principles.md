@@ -45,8 +45,8 @@ The voice is constant; the **tone** modulates by context.
 | Surface                                | Posture                                                                           | Latitude                                                                                                                  |
 | -------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | **Onboarding**                         | Warm but composed. The user just landed; greet them once, then get to work.       | `Hi` allowed once at the very first turn. No emojis. No exclamation marks.                                                |
-| **AI bubbles (in-chat)**               | Conversational. 1st-person Archie. Short paragraphs. Can ask the user a question. | `I'll`, `Let me`, `Got it — ` is OK rarely, not as a verbal tic (max 1 per session).                                      |
-| **Empty states**                       | Helpful + actionable. Always offer a next move. No apology for emptiness.         | Mild warmth is welcome (`Nothing here yet — drop a source to get started.`).                                              |
+| **AI bubbles (in-chat)**               | Conversational. 1st-person Archie. Short paragraphs. Can ask the user a question. | `I'll`, `Let me`, `Got it. ` is OK rarely, not as a verbal tic (max 1 per session).                                       |
+| **Empty states**                       | Helpful + actionable. Always offer a next move. No apology for emptiness.         | Mild warmth is welcome (`Nothing here yet. Drop a source to get started.`).                                               |
 | **Errors**                             | Direct, factual, no apology. Name what happened, name what to do.                 | Never `Please`, never `We're sorry`, never `Something went wrong`. No exclamation.                                        |
 | **Loading / Pending**                  | Descriptive neutral. Tell the user what's happening if it takes more than 2s.     | `Reading 4 sources…`, `Drafting 3 variants…`. No narration in the 1st person (`I'm reading…`) unless the wait exceeds 6s. |
 | **Confirmations (destructive)**        | Spell out the consequence, name the action. No "Are you sure?"                    | `Delete Playbook?` + `"Acme · Q2" will be removed. 4 chats using it will need a new Playbook.`                            |
@@ -185,7 +185,7 @@ The product's own words (Playbook, chat, Topic Feed, Topic, Source, Idea, Clip, 
 **Examples**:
 
 - ✅ `No drafts yet` / `Pick an idea and choose Draft post. Your drafts land here, ready to review and schedule.`
-- ✅ `No ideas yet` / `Attach a source — I'll extract hooks, stats, quotes, and stories you can use to draft posts.` / `[Attach a source]`
+- ✅ `No ideas yet` / `Attach a source. I'll pull out hooks, stats, quotes and stories to draft posts from.` / `[Attach a source]`
 - ❌ `No content yet.` (no actionable next step)
 - ❌ `Oops, nothing here!` (banned tone + exclamation)
 
@@ -222,7 +222,7 @@ The product's own words (Playbook, chat, Topic Feed, Topic, Source, Idea, Clip, 
 
 - **Short (<2s)**: silent spinner, no copy.
 - **Medium (2–6s)**: `[Verb-ing] {object}…` e.g. `Reading source…`, `Generating image…`, `Scheduling…`.
-- **Long (>6s)**: 1st-person narration allowed, with optional ETA. `I'm reading 4 sources — about 8s left.` Avoid hard promises (`Up to 45s`); use `~45s` or `about 45s`.
+- **Long (>6s)**: 1st-person narration allowed, with optional ETA. `I'm reading 4 sources, about 8s left.` Avoid hard promises (`Up to 45s`); use `~45s` or `about 45s`.
 
 **Examples**:
 
@@ -397,7 +397,7 @@ The product's own words (Playbook, chat, Topic Feed, Topic, Source, Idea, Clip, 
 
 - **AI failure**: factual. `Couldn't draft from this source. The file might be empty or unreadable. Try a different source.`
 - **Quota / limit**: factual + when it resets. `Quota reached. Resets at 00:00 UTC.`
-- **Sensitive content refusal**: factual + reason if knowable. `Skipped this passage — it includes content I won't draft from. Pick a different excerpt.`
+- **Sensitive content refusal**: factual + reason if knowable. `I skipped this passage: it has content I won't draft from. Pick a different excerpt.`
 - **Never apologise.** `Sorry`, `We're sorry`, `Apologies` are banned.
 
 ### 6.5 Reasoning / "Drafting" pill
