@@ -8,13 +8,13 @@
 // The state machine timers live here (not inside the modal) so uploads
 // continue in background after the user closes the modal.
 
-import { sourcesBySession as seedByCsesssion, DEMO_CLIPS } from "./mocks.js?v=2276";
-import { isDemo } from "./demo-mode.js?v=2276";
-import { isFlagOn } from "./feature-flags.js?v=2276";
-import { isNewUser } from "./user-mode.js?v=2276";
-import { createNotifier } from "./store-utils.js?v=2276";
-import { detectUrlService } from "./url-services.js?v=2276";
-import { showToast } from "./components/toast.js?v=2276";
+import { sourcesBySession as seedByCsesssion, DEMO_CLIPS } from "./mocks.js?v=2281";
+import { isDemo } from "./demo-mode.js?v=2281";
+import { isFlagOn } from "./feature-flags.js?v=2281";
+import { isNewUser } from "./user-mode.js?v=2281";
+import { createNotifier } from "./store-utils.js?v=2281";
+import { detectUrlService } from "./url-services.js?v=2281";
+import { showToast } from "./components/toast.js?v=2281";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.
@@ -207,7 +207,7 @@ export function classifyFile(file) {
   if (!map)
     return {
       ok: false,
-      reason: `Couldn't add ${file.name} — that file type isn't supported. Use PDF, Word, text, video, audio, or images.`,
+      reason: `Couldn't add ${file.name}: I can't read that file type. Use PDF, Word, text, video, audio, or images.`,
     };
   if (file.size > MAX_FILE_BYTES)
     return { ok: false, reason: `${file.name} is over 100 MB. Compress or split it, then try again.` };
@@ -554,19 +554,22 @@ export function startUrlImport(url, sessionId) {
 // PDF first"). Skips the upload phase entirely: a raw text blob goes
 // straight into Processing as a "Text" source. A title is derived from the
 // first non-empty line so the source list reads sensibly.
+// A pasted text's name: its first line, cut at a word when long, so two
+// pasted texts never both read "Pasted text"; the generic name only for a URL
+// or nothing. Shared with the Batch Studio's staging list.
+export function pastedTextName(text) {
+  const firstLine = ((text || "").split("\n").find((l) => l.trim().length) || "").trim();
+  if (!firstLine || /^https?:\/\//i.test(firstLine)) return "Pasted text";
+  return firstLine.length <= 52 ? firstLine : `${firstLine.slice(0, 48).replace(/\s+\S*$/, "")}…`;
+}
+
 export function startTextImport(text, sessionId, title) {
   const trimmed = (text || "").trim();
   // One-line, whitespace-collapsed view of the blob — used for the preview
   // snippet + word count. We never surface the full content as the title.
   const collapsed = trimmed.replace(/\s+/g, " ").trim();
-  const firstLine = (trimmed.split("\n").find((l) => l.trim().length) || "").trim();
   const wordCount = collapsed ? collapsed.split(" ").length : 0;
-  const looksLikeUrl = /^https?:\/\//i.test(firstLine);
-  // Clean, concise label: an explicit title wins; otherwise a short,
-  // title-like first line; otherwise the generic "Pasted text" (so a giant
-  // paragraph or a pasted URL never becomes the source name).
-  const name =
-    (title && title.trim()) || (firstLine && !looksLikeUrl && firstLine.length <= 52 ? firstLine : "Pasted text");
+  const name = (title && title.trim()) || pastedTextName(trimmed);
   const preview = truncate(collapsed, 100);
   const meta = `${wordCount} ${wordCount === 1 ? "word" : "words"}`;
   const upload = {

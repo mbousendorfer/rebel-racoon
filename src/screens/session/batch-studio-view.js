@@ -12,35 +12,38 @@
 // The intake card lives OUTSIDE [data-batch-rest]; staging-loader ticks repaint
 // only the rest (list + commit), so the field is never clobbered mid-typing.
 
-import { isDemo } from "../../demo-mode.js?v=2276";
-import { renderDemoSample } from "../../demo-flow.js?v=2276";
-import * as batchStudio from "../../batch-studio.js?v=2276";
-import { isFlagOn } from "../../feature-flags.js?v=2276";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2276";
-import { escapeHtml, html, raw } from "../../utils.js?v=2276";
-import { dropzoneHTML } from "../../components/dropzone.js?v=2276";
-import { getContextById } from "../../contexts-store.js?v=2276";
-import { renderSourceCard } from "../../components/source-card.js?v=2276";
-import { isWorkspaceMode, playbookForNewWork } from "../../active-playbook.js?v=2276";
-import { usableContexts } from "../../playbook-access.js?v=2276";
+import { isDemo } from "../../demo-mode.js?v=2281";
+import { renderDemoSample } from "../../demo-flow.js?v=2281";
+import * as batchStudio from "../../batch-studio.js?v=2281";
+import { isFlagOn } from "../../feature-flags.js?v=2281";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2281";
+import { escapeHtml, html, raw } from "../../utils.js?v=2281";
+import { dropzoneHTML } from "../../components/dropzone.js?v=2281";
+import { getContextById } from "../../contexts-store.js?v=2281";
+import { renderSourceCard } from "../../components/source-card.js?v=2281";
+import { isWorkspaceMode, playbookForNewWork } from "../../active-playbook.js?v=2281";
+import { usableContexts } from "../../playbook-access.js?v=2281";
 import {
   classifyFile,
   startFileUpload,
   startUrlImport,
   startTextImport,
   startConnectorImport,
-} from "../../sources-stream.js?v=2276";
-import { showToast } from "../../components/toast.js?v=2276";
-import { setHashQuery } from "../../url-state.js?v=2276";
-import { navigate } from "../../router.js?v=2276";
-import { dotColorVar } from "../session.js?v=2276";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=2276";
+} from "../../sources-stream.js?v=2281";
+import { showToast } from "../../components/toast.js?v=2281";
+import { setHashQuery } from "../../url-state.js?v=2281";
+import { navigate } from "../../router.js?v=2281";
+import { dotColorVar } from "../session.js?v=2281";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=2281";
 
 // Origin sub-line for a staged batch source, shown in the source-card's meta row
 // (in place of the usual "N ideas · Processed · Added X").
 function batchSourceSub(s) {
   if (s.origin === "url") return "Public link";
-  if (s.origin === "text") return "Pasted text";
+  if (s.origin === "text") {
+    const words = (s.text || "").split(/\s+/).filter(Boolean).length;
+    return `Pasted text · ${words} ${words === 1 ? "word" : "words"}`;
+  }
   if (s.origin === "connector") {
     return s.connector?.name ? `${s.connector.name}${s.kind ? ` · ${s.kind}` : ""}` : "From a connector";
   }
@@ -52,7 +55,7 @@ const BATCH_STUDIO_STEPS = [
     tone: "in",
     icon: "ap-icon-upload",
     title: "Add your sources",
-    text: "Attach files, paste a link, or drop in text — add as many as you like.",
+    text: "Attach files, paste a link, or drop in text. Add as many as you like.",
   },
   {
     tone: "ai",
@@ -64,7 +67,7 @@ const BATCH_STUDIO_STEPS = [
     tone: "out",
     icon: "ap-icon-stack",
     title: "A batch of drafts",
-    text: "I draft a post for each idea in your Playbook's voice — ready to review and schedule.",
+    text: "Pick the ideas you want and I draft each one in your Playbook's voice, ready to review and schedule.",
   },
 ];
 
@@ -111,10 +114,6 @@ export function renderBatchStudio(session) {
               ><i class="ap-icon-archie-official" aria-hidden="true"></i>Batch Studio</span
             >
             <h1 class="batch-studio__title">Turn your sources into a batch of drafts</h1>
-            <p class="batch-studio__sub">
-              Drop files, paste a link, or paste any text — add as many sources as you like and I'll pull the strongest
-              ideas and draft a set of posts from them.
-            </p>
           </div>
 
           ${raw(buildBatchStudioSteps())}
@@ -152,7 +151,7 @@ export function renderBatchStudio(session) {
               ${raw(isDemo() ? "" : connectorMenu)} ${raw(renderDemoSample("batch"))}
             </div>
             <div class="batch-studio__dropzone-overlay" aria-hidden="true">
-              <i class="ap-icon-upload" aria-hidden="true"></i><span>Drop files to upload</span>
+              <i class="ap-icon-upload" aria-hidden="true"></i><span>Drop files to add them</span>
             </div>
           </div>
 
@@ -205,7 +204,7 @@ function renderBatchRest(session) {
           <span>Extract ideas${canStart ? ` · ${countLabel}` : ""}</span>
         </button>
       </div>
-      <p class="batch-studio__field-hint muted">I'll extract ideas first, then draft every post in this Playbook's voice, audience, and CTAs.</p>
+      <p class="batch-studio__field-hint muted">I'll pull the ideas first. You pick the ones to draft, and I write them in this Playbook's voice.</p>
     </div>
   `;
 }
@@ -275,8 +274,8 @@ export function handleBatchFiles(session, fileList) {
   if (rejected.length) {
     showToast(
       rejected.length === 1
-        ? `Couldn't add ${rejected[0]} — that file type isn't supported. Use PDF, Word, text, video, audio, or images.`
-        : `Skipped ${rejected.length} files — that type isn't supported. Use PDF, Word, text, video, audio, or images.`,
+        ? `Couldn't add ${rejected[0]}: I can't read that file type. Use PDF, Word, text, video, audio, or images.`
+        : `Skipped ${rejected.length} files: I can't read that type. Use PDF, Word, text, video, audio, or images.`,
     );
   }
 }

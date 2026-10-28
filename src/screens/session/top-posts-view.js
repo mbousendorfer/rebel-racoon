@@ -1,18 +1,18 @@
 // The Top posts repurpose screen as the session hosts it: its steps, the
 // winners picker, and its Playbook control. Moved out of session.js, unchanged.
 
-import { isWorkspaceMode } from "../../active-playbook.js?v=2276";
-import { usableContexts } from "../../playbook-access.js?v=2276";
-import { escapeHtml, html, raw } from "../../utils.js?v=2276";
-import * as topPostsFlow from "../../top-posts-flow.js?v=2276";
-import { renderEmptyState } from "../../components/empty-state.js?v=2276";
-import { profileForNetwork } from "../../social-profiles.js?v=2276";
-import { renderPicker } from "../_analyse-common.js?v=2276";
-import * as inlineQuestion from "../../inline-question.js?v=2276";
-import { getContextById } from "../../contexts-store.js?v=2276";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=2276";
-import { TOP_POSTS_LIMIT, renderTopPostsBoard } from "../../components/top-post-card.js?v=2276";
-import { dotColorVar } from "../session.js?v=2276";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2281";
+import { usableContexts } from "../../playbook-access.js?v=2281";
+import { escapeHtml, html, raw } from "../../utils.js?v=2281";
+import * as topPostsFlow from "../../top-posts-flow.js?v=2281";
+import { renderEmptyState } from "../../components/empty-state.js?v=2281";
+import { profileForNetwork } from "../../social-profiles.js?v=2281";
+import { renderPicker } from "../_analyse-common.js?v=2281";
+import * as inlineQuestion from "../../inline-question.js?v=2281";
+import { getContextById } from "../../contexts-store.js?v=2281";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=2281";
+import { TOP_POSTS_LIMIT, renderTopPostsBoard } from "../../components/top-post-card.js?v=2281";
+import { dotColorVar } from "../session.js?v=2281";
 
 // Playbook picker for the top-posts step 1 (account screen) — the chosen
 // Playbook governs the voice of the repurposed drafts. Mirrors the batch / clip
@@ -65,13 +65,13 @@ const TOP_POSTS_STEPS = [
     tone: "ai",
     icon: "ap-icon-archie-official",
     title: "See your top posts",
-    text: "I rank them by how far they beat your average — pick one to repurpose.",
+    text: "I rank them by how far they beat your average. Pick one to repurpose.",
   },
   {
     tone: "out",
     icon: "ap-icon-stack",
     title: "Reuse into drafts",
-    text: "I write fresh drafts in your Playbook's voice — ready to review and schedule.",
+    text: "I write fresh drafts in your Playbook's voice, ready to review and schedule.",
   },
 ];
 
@@ -127,7 +127,7 @@ export function renderTopPostsPickerScreen(session) {
     // clicking a row (or pressing its digit) routes through the shared
     // inline-question delegate → inlineQuestion.pick → chooseProfile.
     intro =
-      "Pick a connected account and I'll surface its best-performing posts — repurpose any into fresh drafts in your Playbook's voice.";
+      "Pick a connected account and I'll show its best-performing posts. Repurpose any of them into fresh drafts.";
     const picker = renderPicker(inlineQuestion.renderChrome(session.id)?.picker);
     // The Playbook whose voice the repurposed drafts will follow, chosen here on
     // step 1 (defaults to the workspace default; persists through to generation).
@@ -165,7 +165,7 @@ export function renderTopPostsPickerScreen(session) {
     `;
   } else {
     intro = profileName
-      ? `Your top-performing posts on ${profileName} — pick one to repurpose.`
+      ? `Your top-performing posts on ${profileName}. Pick one to repurpose.`
       : "Pick one of your top posts to repurpose.";
     body = html`
       ${raw(buildWorkflowFlow(TOP_POSTS_STEPS))}

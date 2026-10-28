@@ -44,9 +44,6 @@
   text-align: center;
   gap: var(--ref-spacing-xs);
 }
-.batch-studio__intro .batch-studio__sub {
-  max-width: 540px;
-}
 
 /* A little extra air around the explainer strip, on top of the column gap. */
 .batch-studio__inner .workflow-flow {
@@ -78,15 +75,6 @@
   font-weight: var(--sys-text-style-marketing-weight);
   letter-spacing: -0.01em;
   color: var(--ref-color-grey-100);
-}
-
-.batch-studio__sub {
-  margin: 0;
-  max-width: 540px;
-  font-size: var(--sys-text-style-subtitle-size);
-  line-height: var(--sys-text-style-subtitle-line-height);
-  font-weight: var(--sys-text-style-subtitle-weight);
-  color: var(--ref-color-grey-80);
 }
 
 /* "How it works" flow is the shared .workflow-flow component

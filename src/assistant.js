@@ -6,13 +6,13 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2276";
-import { findConnector } from "./connectors-store.js?v=2276";
-import { createSessionNotifier } from "./store-utils.js?v=2276";
-import { addPostDraft } from "./posts-store.js?v=2276";
-import { showToast } from "./components/toast.js?v=2276";
-import { isFlagOn } from "./feature-flags.js?v=2276";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2276";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2281";
+import { findConnector } from "./connectors-store.js?v=2281";
+import { createSessionNotifier } from "./store-utils.js?v=2281";
+import { addPostDraft } from "./posts-store.js?v=2281";
+import { showToast } from "./components/toast.js?v=2281";
+import { isFlagOn } from "./feature-flags.js?v=2281";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2281";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -45,9 +45,9 @@ function newId() {
 
 // --- Public API -----------------------------------------------------------
 
-export function getThread(sessionId, { hasContext = false } = {}) {
+export function getThread(sessionId) {
   if (!threads.has(sessionId)) {
-    seedThread(sessionId, { hasContext });
+    seedThread(sessionId);
   }
   return threads.get(sessionId);
 }
@@ -878,7 +878,7 @@ function notify(sessionId) {
   notifier.notify(sessionId, (threads.get(sessionId) || []).slice());
 }
 
-function seedThread(sessionId, { hasContext }) {
+function seedThread(sessionId) {
   // Welcome-alt onboarding owns its own intro (context-builder startAlt), so
   // seed it empty regardless of which read (topbar / status card / panel)
   // triggers the seed first — otherwise the chat opens with a stray greeting
@@ -909,9 +909,10 @@ function seedThread(sessionId, { hasContext }) {
     return;
   }
 
-  const greeting = hasContext
-    ? "Hi. Want me to compare ideas, pick the strongest one, or draft a post? You can also type a question or drop a source."
-    : "Hi. I'll help you pick sources, sharpen ideas, and draft posts. Pick a Playbook any time so I write in your Brand's voice.";
+  // One greeting, whether or not a Playbook is attached yet: the first read
+  // often comes from the topbar, before the chat's Playbook is known, and the
+  // composer's own picker already asks for one when it's missing.
+  const greeting = "Hi. Drop a source or tell me what to post, and I'll draft from it in your Brand's voice.";
 
   threads.set(sessionId, [
     {
@@ -1010,10 +1011,10 @@ function mockConnectorReply(connector, prompt) {
   const cited = pool.slice(0, Math.min(2, pool.length));
   const lead = cited[0];
   const sourcesBlock = cited.length
-    ? `\n\nSources I pulled:\n${cited.map((d) => `• ${d.title} — ${d.kind}`).join("\n")}`
+    ? `\n\nSources I pulled:\n${cited.map((d) => `• ${d.title} · ${d.kind}`).join("\n")}`
     : "";
 
-  const reasoning = `Called ${connector.name} over MCP — ran ${mcpCallTrace(connector)}. Scanned the workspace and pulled the ${
+  const reasoning = `Called ${connector.name} over MCP and ran ${mcpCallTrace(connector)}. Scanned the workspace and pulled the ${
     cited.length || "most"
   } most relevant item${cited.length === 1 ? "" : "s"} to ground the answer.`;
 
@@ -1032,7 +1033,7 @@ function mockConnectorReply(connector, prompt) {
   } else if (/summar|tl;?dr|bullet|recap/i.test(p)) {
     body = `Here's the recap from ${connector.name}, drawn mainly from "${lead.title}": the core decision, the reasoning behind it, and the one open question still worth resolving. I can turn any of those three into a post.`;
   } else if (/post|draft|repurpose|content|idea/i.test(p)) {
-    body = `Based on "${lead.title}", the most post-worthy thread is the concrete before/after it captures. Let's lead a draft with that specific change — it's believable and it earns the claim.`;
+    body = `Based on "${lead.title}", the most post-worthy thread is the concrete before/after it captures. Let's open a draft on that change. Readers believe it, and it earns the claim.`;
   } else {
     body = `Here's what I found in ${connector.name}, grounded in "${lead.title}": the clearest, most specific point is the one I'd build on. Want me to draft a post from it, or dig into another item?`;
   }
@@ -1088,7 +1089,7 @@ function mockAiReply({ prompt, sessionId }) {
     // One draft per line — a batch reads as a list, not a sentence.
     const named = batch.map((d) => `\n- [[post:${d.id}]]`).join("");
     return {
-      reasoning: `Scanned ${ideaCount} extracted ideas, ranked by confidence and relevance. "${leadIdea.title}" came out on top (${leadIdea.confidence}% confidence) — composing a ${batch.length}-post batch grounded in its source.`,
+      reasoning: `Scanned ${ideaCount} extracted ideas, ranked by confidence and relevance. "${leadIdea.title}" came out on top (${leadIdea.confidence}% confidence). Composing a ${batch.length}-post batch grounded in its source.`,
       text: isLaunch
         ? `Here's a ${batch.length}-day sequence built from ${lead}, one post per day across networks:${named}\nOpen the Drafts panel to review and schedule.`
         : `I drafted ${batch.length} posts grounded in ${lead}, each sized for its network and following the active Playbook's tone rules:${named}`,
@@ -1114,9 +1115,8 @@ function mockAiReply({ prompt, sessionId }) {
 
   if (/source|pdf|video|url|attach|add/i.test(prompt)) {
     return {
-      reasoning:
-        "Reviewed current source coverage and the ideas already extracted — most are derived from marketing-adjacent material.",
-      text: "Drop one more source to pressure-test the current idea — ideally something that isn't a marketing post. A transcript, a product retro, or a customer interview moves the needle fastest.",
+      reasoning: "Reviewed the sources and the ideas already extracted. Most come from marketing material.",
+      text: "Drop one more source to test this idea against, preferably not a marketing post. A transcript, a product retro, or a customer interview works best.",
     };
   }
 

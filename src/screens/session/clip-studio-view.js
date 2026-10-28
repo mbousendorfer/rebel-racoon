@@ -6,26 +6,26 @@
 // binding and the refreshAssistantAside node-swap keep working; state lives in
 // clip-studio.js.
 
-import { isDemo } from "../../demo-mode.js?v=2276";
-import { renderDemoSample } from "../../demo-flow.js?v=2276";
-import * as clipStudio from "../../clip-studio.js?v=2276";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2276";
-import { usableContexts } from "../../playbook-access.js?v=2276";
-import { escapeHtml, html, raw } from "../../utils.js?v=2276";
-import { getContextById } from "../../contexts-store.js?v=2276";
-import { dropzoneHTML } from "../../components/dropzone.js?v=2276";
-import { renderClipCard } from "../../components/clip-card.js?v=2276";
-import { connectableNetworkCards } from "../../connect-profiles-flow.js?v=2276";
-import { getConnectedProfiles, PROFILE_SEARCH_THRESHOLD, renderProfileTag } from "../../social-profiles.js?v=2276";
-import { defaultFormatFor, formatsForNetwork } from "../../clip-formats.js?v=2276";
+import { isDemo } from "../../demo-mode.js?v=2281";
+import { renderDemoSample } from "../../demo-flow.js?v=2281";
+import * as clipStudio from "../../clip-studio.js?v=2281";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2281";
+import { usableContexts } from "../../playbook-access.js?v=2281";
+import { escapeHtml, html, raw } from "../../utils.js?v=2281";
+import { getContextById } from "../../contexts-store.js?v=2281";
+import { dropzoneHTML } from "../../components/dropzone.js?v=2281";
+import { renderClipCard } from "../../components/clip-card.js?v=2281";
+import { connectableNetworkCards } from "../../connect-profiles-flow.js?v=2281";
+import { getConnectedProfiles, PROFILE_SEARCH_THRESHOLD, renderProfileTag } from "../../social-profiles.js?v=2281";
+import { defaultFormatFor, formatsForNetwork } from "../../clip-formats.js?v=2281";
 import {
   classifyFile,
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
-} from "../../sources-stream.js?v=2276";
-import { showToast } from "../../components/toast.js?v=2276";
-import { open as openVideoClipsModal } from "../../components/video-clips-modal.js?v=2276";
+} from "../../sources-stream.js?v=2281";
+import { showToast } from "../../components/toast.js?v=2281";
+import { open as openVideoClipsModal } from "../../components/video-clips-modal.js?v=2281";
 import {
   postAssistantMessage,
   postClipExtractionTurn,
@@ -33,12 +33,12 @@ import {
   finishPending,
   GENERATION_TOOLS,
   postDraftResult,
-} from "../../assistant.js?v=2276";
-import { addPostDraft } from "../../posts-store.js?v=2276";
-import { requireNetworkVoices } from "../../network-voice-flow.js?v=2276";
-import { clipContext } from "./clip-draft-flow.js?v=2276";
-import { dotColorVar } from "../session.js?v=2276";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=2276";
+} from "../../assistant.js?v=2281";
+import { addPostDraft } from "../../posts-store.js?v=2281";
+import { requireNetworkVoices } from "../../network-voice-flow.js?v=2281";
+import { clipContext } from "./clip-draft-flow.js?v=2281";
+import { dotColorVar } from "../session.js?v=2281";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=2281";
 
 // Config catalogs for the upload/config screen.
 const CLIP_CAPTION_STYLES = [
@@ -161,7 +161,7 @@ const CLIP_STUDIO_STEPS = [
     tone: "in",
     icon: "ap-icon-file--video",
     title: "Add your video",
-    text: "Drop in a video file or paste a YouTube or Google Drive link — even a long one.",
+    text: "Drop in a video file or paste a YouTube or Google Drive link. Long ones are fine.",
   },
   {
     tone: "ai",
@@ -264,7 +264,7 @@ function renderClipStudioUpload(st) {
           >
           <h1 class="clip-studio__title">Turn a video into post-ready clips</h1>
           <p class="clip-studio__sub">
-            Drop in a long video and I'll find the moments worth posting — cut to length and ready to draft in your
+            Drop in a long video and I'll find the moments worth posting, cut to length and ready to draft in your
             Playbook's voice.
           </p>
         </header>
@@ -450,8 +450,7 @@ function renderClipStudioConnect(session, st) {
           </button>
           <h1 class="clip-studio__title">Connect an account to draft these</h1>
           <p class="clip-studio__sub muted">
-            Drafts are written for the network they publish on — that's what sets the format and the length. Nothing
-            publishes yet.
+            I write each draft for the network it publishes on, which sets its format and length. Nothing publishes yet.
           </p>
         </div>
         <div class="analyse__options analyse__options--cards clip-studio__connect">
@@ -522,7 +521,7 @@ function renderClipStudioProfiles(session, st) {
           </button>
           <h1 class="clip-studio__title">Where should I post these?</h1>
           <p class="clip-studio__sub muted">
-            Pick the accounts to draft for. I've set the best video format per network — change any if you like.
+            Pick the accounts to draft for. I've set the best video format per network. Change any you like.
           </p>
           ${searchable
             ? html`

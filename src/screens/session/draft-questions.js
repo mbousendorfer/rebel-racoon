@@ -4,10 +4,10 @@
 // Moved out of session.js, unchanged; askAngleQuestion is also the right
 // panel's entry point (it imports this module, not the whole screen).
 
-import { getSessionById } from "../../sessions-store.js?v=2276";
-import { getContextById } from "../../contexts-store.js?v=2276";
-import { playbookForNewWork } from "../../active-playbook.js?v=2276";
-import { isFlagOn } from "../../feature-flags.js?v=2276";
+import { getSessionById } from "../../sessions-store.js?v=2281";
+import { getContextById } from "../../contexts-store.js?v=2281";
+import { playbookForNewWork } from "../../active-playbook.js?v=2281";
+import { isFlagOn } from "../../feature-flags.js?v=2281";
 import {
   postAssistantMessage,
   postSelectionEcho,
@@ -18,25 +18,25 @@ import {
   postActivity,
   postExtractionResult,
   postClipExtractionTurn,
-} from "../../assistant.js?v=2276";
-import * as inlineQuestion from "../../inline-question.js?v=2276";
-import { getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../../library.js?v=2276";
+} from "../../assistant.js?v=2281";
+import * as inlineQuestion from "../../inline-question.js?v=2281";
+import { getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../../library.js?v=2281";
 import {
   getSources as getStreamSources,
   setSourceIdeaCount,
   setSourceUse,
   extractClipsForSource,
-} from "../../sources-stream.js?v=2276";
+} from "../../sources-stream.js?v=2281";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
   getConnectedProfileById,
   normalizeNetwork,
-} from "../../social-profiles.js?v=2276";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2276";
-import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=2276";
-import * as topPostsFlow from "../../top-posts-flow.js?v=2276";
+} from "../../social-profiles.js?v=2281";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2281";
+import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=2281";
+import * as topPostsFlow from "../../top-posts-flow.js?v=2281";
 
 // Build + show the "Which profile?" question, reached from every Draft Post
 // entry point. The chosen profile's platform becomes the draft's network so
@@ -75,7 +75,7 @@ function askLanguageQuestion(sessionId, ideaId, proceed) {
     items: languages.map((l) => ({
       value: l,
       label: l,
-      caption: l === primary ? "Primary — your Playbook default" : undefined,
+      caption: l === primary ? "Primary · your Playbook's default" : undefined,
       icon: "ap-icon-web",
     })),
     onPick: (lang) => {
@@ -189,7 +189,7 @@ export function askRepurposeProfiles(sessionId, postIds) {
   postAssistantMessage(sessionId, "Where should I repurpose these?");
   inlineQuestion.ask(sessionId, {
     title: "Pick the profiles to repurpose to",
-    subtitle: "Set how many drafts I'll write for each account — leave one at 0 to skip it.",
+    subtitle: "Set how many drafts I'll write for each account. Leave one at 0 to skip it.",
     stepLabel: "Drafts per account",
     // Per-profile version counter, capped so a single run stays scannable.
     stepper: true,
@@ -261,7 +261,7 @@ export function askAngleQuestion(sessionId, ideaId, { language = null } = {}) {
     if (!inlineQuestion.isActive(sessionId)) return;
     inlineQuestion.ask(sessionId, {
       title: "Suggested angles",
-      subtitle: "Set how many drafts I'll write for each angle — leave one at 0 to skip it.",
+      subtitle: "Set how many drafts I'll write for each angle. Leave one at 0 to skip it.",
       stepLabel: "Drafts per angle",
       skipLabel: "Cancel",
       // Stepper mode — each angle row carries its own drafts counter (0 to
@@ -350,19 +350,22 @@ function askDraftCountQuestion(sessionId, ideaId, { angle = null, onBack = null,
 //
 // `onAsk(src)` (optional, one source only) adds "Ask about it" — the session
 // owns that question.
-export function askSourceUse(sessionId, sourceIds, { onAsk = null } = {}) {
+// `answer` skips the question when the user already gave it upstream (the
+// Batch Studio's « Extract ideas »): the pick runs as if clicked.
+export function askSourceUse(sessionId, sourceIds, { onAsk = null, answer = null } = {}) {
   const srcs = sourceIds.map((id) => getStreamSources(sessionId).find((s) => s.id === id)).filter(Boolean);
   if (!srcs.length) return;
   const single = srcs.length === 1 ? srcs[0] : null;
   const isVideo = single?.kind === "Video";
   const ids = srcs.map((s) => s.id);
 
-  postAssistantMessage(
-    sessionId,
-    single
-      ? `[[source:${single.id}]] is in. What should I do with it?`
-      : `${srcs.map((s) => `[[source:${s.id}]]`).join(", ")} are in. What should I do with them?`,
-  );
+  if (!answer)
+    postAssistantMessage(
+      sessionId,
+      single
+        ? `[[source:${single.id}]] is in. What should I do with it?`
+        : `${srcs.map((s) => `[[source:${s.id}]]`).join(", ")} are in. What should I do with them?`,
+    );
 
   const items = single
     ? [
@@ -412,22 +415,28 @@ export function askSourceUse(sessionId, sourceIds, { onAsk = null } = {}) {
         },
       ];
 
+  const onPick = (value) => {
+    const label = items.find((i) => i.value === value)?.label;
+    if (value !== "ask" && label && !answer) postUserTurn(sessionId, label);
+    if (value === "ideas") runFindIdeas(sessionId, srcs);
+    else if (value === "clips") {
+      setSourceUse(sessionId, ids, "clips");
+      runVideoClipsChoice(sessionId, single.id, single.filename);
+    } else if (value === "post") runWritePost(sessionId, srcs);
+    else if (value === "summary") runSummary(sessionId, single);
+    else if (value === "ask") onAsk(single);
+  };
+  if (answer) {
+    onPick(answer);
+    return;
+  }
+
   inlineQuestion.ask(sessionId, {
     title: single ? "Use this source" : `Use these ${srcs.length} sources`,
     stepLabel: single ? single.kind || "Source" : "Sources",
     skipLabel: "Not now",
     items,
-    onPick: (value) => {
-      const label = items.find((i) => i.value === value)?.label;
-      if (value !== "ask" && label) postUserTurn(sessionId, label);
-      if (value === "ideas") runFindIdeas(sessionId, srcs);
-      else if (value === "clips") {
-        setSourceUse(sessionId, ids, "clips");
-        runVideoClipsChoice(sessionId, single.id, single.filename);
-      } else if (value === "post") runWritePost(sessionId, srcs);
-      else if (value === "summary") runSummary(sessionId, single);
-      else if (value === "ask") onAsk(single);
-    },
+    onPick,
     onSkip: () => {
       setSourceUse(sessionId, ids, "set_aside");
       postAssistantMessage(

@@ -320,7 +320,7 @@ The product's own words (Playbook, chat, Topic Feed, Topic, Source, Idea, Clip, 
 - **Period on full sentences** in body text, confirm bodies, hints, descriptions.
 - **No exclamation marks anywhere in product UI.** Period.
 - **Question marks** only on actual questions (form labels, picker titles, confirm modals).
-- **Em dash (—)** preferred for parenthetical splits in conversational copy: `Got it — I'll draft 5 posts.`
+- **No em dash (—)** in product copy (decided 2026-10-28). Split with a comma, a period, or a colon: `Got it. I'll draft 5 posts.` Run new copy through `/stop-slop` (no adverbs, no filler, no binary contrasts).
 - **Middle dot (·)** for inline metadata separation: `4 sources · 7 ideas · 3 drafts`.
 
 ### 5.3 Ellipsis
@@ -438,6 +438,7 @@ Confirmed Phase 0 + Phase 2 bans. Phase 3 cannot produce any of these.
 ### Punctuation / typography
 
 - **Exclamation marks**: zero in product UI.
+- **Em dashes (—)**: zero in product UI. A comma, a period, or a colon instead.
 - **Decorative ellipses** (`...` three dots): zero. Use `…` and only when it signals loading or "more UI".
 - **`(s)` pluralisation**: zero.
 

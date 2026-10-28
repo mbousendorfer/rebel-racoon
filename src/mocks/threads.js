@@ -49,7 +49,7 @@ export const threadsBySession = {
     {
       role: "assistant",
       meta: "Archie",
-      text: "Hi. Want me to compare ideas, pick the strongest one, or draft a post? You can also type a question or drop a source.",
+      text: "Hi. Drop a source or tell me what to post, and I'll draft from it in your Brand's voice.",
     },
     {
       role: "source-intake",
@@ -118,7 +118,7 @@ export const threadsBySession = {
       role: "assistant",
       meta: "Archie",
       text: [
-        "I drafted 4 posts grounded in [[idea:idea-acme-1]], each sized for its network and following the Acme · Q2 marketing playbook:",
+        'I drafted 4 posts grounded in [[idea:idea-acme-1]], each sized for its network and following the "Acme · Q2 marketing" Playbook:',
         "- [[post:post-acme-1]], ready",
         "- [[post:post-acme-3]], ready",
         "- [[post:post-acme-2]], needs an image before Instagram will publish it",
@@ -164,7 +164,7 @@ export const threadsBySession = {
     {
       role: "assistant",
       meta: "Archie",
-      text: "Hi. Want me to compare ideas, pick the strongest one, or draft a post? You can also type a question or drop a source.",
+      text: "Hi. Drop a source or tell me what to post, and I'll draft from it in your Brand's voice.",
     },
     {
       role: "source-intake",
@@ -278,7 +278,7 @@ export const threadsBySession = {
     {
       role: "assistant",
       meta: "Archie",
-      text: "Hi. Want me to compare ideas, pick the strongest one, or draft a post? You can also type a question or drop a source.",
+      text: "Hi. Drop a source or tell me what to post, and I'll draft from it in your Brand's voice.",
     },
     {
       role: "source-intake",
@@ -389,7 +389,7 @@ export const threadsBySession = {
     {
       role: "assistant",
       meta: "Archie",
-      text: "Hi. Want me to compare ideas, pick the strongest one, or draft a post? You can also type a question or drop a source.",
+      text: "Hi. Drop a source or tell me what to post, and I'll draft from it in your Brand's voice.",
     },
     {
       role: "source-intake",
@@ -452,7 +452,7 @@ export const threadsBySession = {
     {
       role: "assistant",
       meta: "Archie",
-      text: "Hi. Want me to compare ideas, pick the strongest one, or draft a post? You can also type a question or drop a source.",
+      text: "Hi. Drop a source or tell me what to post, and I'll draft from it in your Brand's voice.",
     },
     {
       role: "user",
@@ -494,7 +494,7 @@ export const threadsBySession = {
     {
       role: "assistant",
       meta: "Archie",
-      text: "Hi. Want me to compare ideas, pick the strongest one, or draft a post? You can also type a question or drop a source.",
+      text: "Hi. Drop a source or tell me what to post, and I'll draft from it in your Brand's voice.",
     },
     { role: "user", meta: "You", text: "Two posts about night walks, now that the evenings are darker." },
     {
@@ -523,7 +523,7 @@ export const threadsBySession = {
     {
       role: "assistant",
       meta: "Archie",
-      text: "Hi. Want me to compare ideas, pick the strongest one, or draft a post? You can also type a question or drop a source.",
+      text: "Hi. Drop a source or tell me what to post, and I'll draft from it in your Brand's voice.",
     },
     { role: "user", meta: "You", text: "Two posts to get people to Saturday's open mat — one for parents." },
     {
