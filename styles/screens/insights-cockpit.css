@@ -111,9 +111,20 @@
 
 .ins-cockpit-row__meta {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  min-width: 0;
+}
+
+/* The measure that decides the state, and its trend. */
+.ins-cockpit-row__why {
+  display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
-  min-width: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
 }
 
 .ins-cockpit-rail__foot {

@@ -22,8 +22,8 @@
 // chart the headline measure and leave the others as 96px sparklines in the
 // table, which meant an objective's second measure had no curve anywhere.
 
-import { readingFor } from "../model.js?v=2306";
-import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=2306";
+import { readingFor } from "../model.js?v=2307";
+import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=2307";
 import {
   tierCounts,
   statusPill,
@@ -40,7 +40,7 @@ import {
   playbookTitle,
   pageTitle,
   esc,
-} from "../pieces.js?v=2306";
+} from "../pieces.js?v=2307";
 
 export const id = "cockpit";
 export const label = "Cockpit";
@@ -75,7 +75,13 @@ function renderRail(entries, rollup, selected, ctx) {
           <span class="ins-cockpit-row__ring">${ringSvg(e.progress, e.tier, { size: 44, stroke: 4, pending: e.tier === "collecting", name: weak?.metricLabel })}</span>
           <span class="ins-cockpit-row__text">
             <span class="ins-cockpit-row__name">${esc(e.label)}</span>
-            <span class="ins-cockpit-row__meta">${statusPill(e, { dot: false })}</span>
+            <span class="ins-cockpit-row__meta">${statusPill(e, { dot: false })}${
+              // Why that state: the measure that decides it and where it is
+              // heading. 84% can be at risk when it is falling (R5, 2026-10-28).
+              weak && !e.collecting
+                ? `<span class="ins-cockpit-row__why">${esc(weak.metricLabel || "")} ${trendGlyph(weak)}</span>`
+                : ""
+            }</span>
           </span>
         </button>
       </li>`;
