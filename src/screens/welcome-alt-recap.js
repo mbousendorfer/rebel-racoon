@@ -4,14 +4,14 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2312";
-import { catalogueRoute } from "../active-playbook.js?v=2312";
-import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=2312";
-import { mount } from "../playbook-view.js?v=2312";
-import { isFlagOn } from "../feature-flags.js?v=2312";
-import { renderReview } from "./welcome-alt-review.js?v=2312";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2312";
-import { networkLabel } from "../social-profiles.js?v=2312";
+import { navigate } from "../router.js?v=2314";
+import { catalogueRoute } from "../active-playbook.js?v=2314";
+import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=2314";
+import { mount } from "../playbook-view.js?v=2314";
+import { isFlagOn } from "../feature-flags.js?v=2314";
+import { renderReview } from "./welcome-alt-review.js?v=2314";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2314";
+import { networkLabel } from "../social-profiles.js?v=2314";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -26,7 +26,7 @@ export const LOADING_STAGES = [
   { title: "Learning your voice", sub: "Capturing your tone, vocabulary, and rhythm.", lands: ["voice"] },
   {
     title: "Mapping your audience",
-    sub: "Working out who you're for — and what moves them.",
+    sub: "Working out who you're for, and what moves them.",
     lands: ["audience", "goal"],
   },
   { title: "Putting it together", sub: "Turning it all into a Playbook every draft draws from." },
@@ -39,7 +39,7 @@ export const FILE_LOADING_STAGES = [
   { title: "Picking out your colors", sub: "Sampling the palette your visuals already use.", lands: ["branding"] },
   {
     title: "Mapping your audience",
-    sub: "Working out who you're for — and what moves them.",
+    sub: "Working out who you're for, and what moves them.",
     lands: ["audience", "goal"],
   },
   { title: "Putting it together", sub: "Turning it all into a Playbook every draft draws from.", lands: ["voice"] },

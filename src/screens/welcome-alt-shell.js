@@ -9,10 +9,10 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2312";
-import { html, raw, escapeHtml } from "../utils.js?v=2312";
-import { navigate } from "../router.js?v=2312";
-import { isFlagOn } from "../feature-flags.js?v=2312";
+import "../archie-pixels.js?v=2314";
+import { html, raw, escapeHtml } from "../utils.js?v=2314";
+import { navigate } from "../router.js?v=2314";
+import { isFlagOn } from "../feature-flags.js?v=2314";
 import {
   altSteps,
   createAltDraft,
@@ -20,8 +20,8 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2312";
-import { getConnectedProfiles, renderProfileTag, subscribe as subscribeProfiles } from "../social-profiles.js?v=2312";
+} from "../context-builder.js?v=2314";
+import { getConnectedProfiles, renderProfileTag, subscribe as subscribeProfiles } from "../social-profiles.js?v=2314";
 import {
   readSessionId,
   persistDraft,
@@ -29,8 +29,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2312";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2312";
+} from "./welcome-alt-recap.js?v=2314";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2314";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -41,7 +41,7 @@ export const STEP_TEXT = {
   connect: { title: "Connect your accounts", desc: "So I write for the networks you publish on." },
   url: { title: "Show me your Brand", desc: "Your website, a few files, or a handful of questions." },
   language: { title: "Pick your language", desc: "The one I'll write your posts in." },
-  documents: { title: "Add brand documents", desc: "Optional — a brand book or guidelines." },
+  documents: { title: "Add brand documents", desc: "Optional: a brand book or guidelines." },
   recap: { title: "Review your Playbook", desc: "Everything I learned, before I write a word." },
 };
 

@@ -41,10 +41,10 @@
 // "Something else" field: it belongs to its tick. Taking it leaves the run for
 // the demo chat; the Skip stays the Skip.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2312";
-import { isFlagOn } from "../feature-flags.js?v=2312";
-import { isNewUser } from "../user-mode.js?v=2312";
-import { startDemo } from "../demo-flow.js?v=2312";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2314";
+import { isFlagOn } from "../feature-flags.js?v=2314";
+import { isNewUser } from "../user-mode.js?v=2314";
+import { startDemo } from "../demo-flow.js?v=2314";
 
 const MODAL_ID = "skip-connect";
 
@@ -129,7 +129,7 @@ const HTML = `
     </ul>
     <div class="ap-form-field skip-connect__question">
       <label class="skip-connect__label" id="skipConnectReasonsLabel">Why not now?</label>
-      <p class="skip-connect__hint">Optional — tick anything that applies.</p>
+      <p class="skip-connect__hint">Optional. Tick anything that applies.</p>
       <div class="skip-connect__reasons" id="skipConnectReasons" role="group" aria-labelledby="skipConnectReasonsLabel">
         ${REASONS.map(
           (r) => `
@@ -141,7 +141,7 @@ const HTML = `
           r.value === "try-first"
             ? `
         <div class="skip-connect__demo" id="skipConnectDemo" hidden>
-          <span>Try me on a made-up brand first — nothing gets posted.</span>
+          <span>Try me on a made-up brand first. Nothing gets posted.</span>
           <button type="button" class="ap-button stroked grey" id="skipConnectDemoBtn">Try the demo</button>
         </div>`
             : ""
@@ -156,7 +156,7 @@ const HTML = `
       <i class="ap-icon-info_fill" aria-hidden="true"></i>
       <div class="ap-infobox-content">
         <div class="ap-infobox-texts">
-          <span class="ap-infobox-message">Skipping costs you nothing — I'll ask again when I write your first draft, and you can connect an account from any chat.</span>
+          <span class="ap-infobox-message">Skipping costs you nothing. I'll ask again when I write your first draft, and you can connect an account from any chat.</span>
         </div>
       </div>
     </div>
