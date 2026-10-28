@@ -9,25 +9,25 @@
 // upload state machines live outside in sources-stream.js so they
 // continue running even after the modal closes.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2282";
-import { iconFor } from "../file-kinds.js?v=2282";
-import { connectorDocs } from "../mocks.js?v=2282";
+import { html, raw, escapeHtml } from "../utils.js?v=2283";
+import { iconFor } from "../file-kinds.js?v=2283";
+import { connectorDocs } from "../mocks.js?v=2283";
 import {
   getConnectors,
   findConnector,
   setConnectorStatus,
   subscribe as subscribeConnectors,
-} from "../connectors-store.js?v=2282";
-import { postConnectPrompt } from "../assistant.js?v=2282";
-import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2282";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2282";
-import { navigate } from "../router.js?v=2282";
-import { renderConnectorLogo } from "../connectors-view.js?v=2282";
-import { isFlagOn } from "../feature-flags.js?v=2282";
-import { showToast } from "./toast.js?v=2282";
-import { dropzoneHTML } from "./dropzone.js?v=2282";
-import { isDemo } from "../demo-mode.js?v=2282";
-import { addDemoSource } from "../demo-flow.js?v=2282";
+} from "../connectors-store.js?v=2283";
+import { postConnectPrompt } from "../assistant.js?v=2283";
+import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2283";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2283";
+import { navigate } from "../router.js?v=2283";
+import { renderConnectorLogo } from "../connectors-view.js?v=2283";
+import { isFlagOn } from "../feature-flags.js?v=2283";
+import { showToast } from "./toast.js?v=2283";
+import { dropzoneHTML } from "./dropzone.js?v=2283";
+import { isDemo } from "../demo-mode.js?v=2283";
+import { addDemoSource } from "../demo-flow.js?v=2283";
 
 const MODAL_ID = "addSource";
 import {
@@ -39,7 +39,7 @@ import {
   cancelUpload,
   getUploads,
   subscribeUploads,
-} from "../sources-stream.js?v=2282";
+} from "../sources-stream.js?v=2283";
 
 let backdrop, modal, contentEl, footerEl, fileInput;
 let initialized = false;
@@ -250,12 +250,12 @@ function renderUrlTab() {
           role="alert"
           ${showUrlError ? "" : "hidden"}
         >
-          Enter a URL starting with http:// or https://.
+          Enter a web address, like acme.com/blog.
         </p>
         <p class="add-source__sub muted" data-url-hint ${showUrlError ? "hidden" : ""}>
           ${raw(
             svc
-              ? `I recognized a <strong>${escapeHtml(svc.name)}</strong> link — I'll import it.`
+              ? `I recognized a <strong>${escapeHtml(svc.name)}</strong> link. I'll import it.`
               : "Public web pages, blog posts, YouTube videos, podcasts.",
           )}
         </p>
@@ -268,9 +268,16 @@ function renderUrlTab() {
   `;
 }
 
+// A bare domain (acme.com/blog) is what people paste half the time: it gets
+// https:// rather than an error.
+function normalizeUrl(value) {
+  const trimmed = (value || "").trim();
+  return /^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(trimmed) ? `https://${trimmed}` : trimmed;
+}
+
 function isValidUrl(value) {
   if (!value) return false;
-  return /^https?:\/\/[^\s]+$/.test(value.trim());
+  return /^https?:\/\/[^\s]+$/.test(normalizeUrl(value));
 }
 
 // Single entry point for "Add URL" (the footer button + Enter). Routes the
@@ -278,8 +285,12 @@ function isValidUrl(value) {
 // a connect-first prompt when the link's service isn't connected, or imported
 // straight away.
 function submitUrl() {
-  const trimmed = state.urlValue.trim();
-  if (!isValidUrl(trimmed)) return;
+  const trimmed = normalizeUrl(state.urlValue);
+  // Enter on a bad value says why instead of doing nothing.
+  if (!isValidUrl(trimmed)) {
+    setUrlError(trimmed.length > 0);
+    return;
+  }
   // Staging mode (Batch Studio) — hand the URL back to the caller and close.
   if (state.onStageUrl) {
     const cb = state.onStageUrl;
@@ -297,7 +308,7 @@ function submitUrl() {
   startUrlImport(trimmed, state.currentSessionId);
   state.urlValue = "";
   close();
-  showToast("Link added — I'll fetch it now.");
+  showToast("Link added. I'm reading it now.");
 }
 
 // If the URL belongs to a connector-backed service (Slite, Notion, Google
@@ -346,7 +357,7 @@ function renderPasteTextTab() {
           class="add-source__paste-input"
           data-paste-input
           rows="10"
-          placeholder="Paste a transcript, a blog draft, notes, an email — anything I should read."
+          placeholder="Paste a transcript, a blog draft, notes, or an email"
         >
 ${state.pasteValue}</textarea
         >
@@ -354,7 +365,7 @@ ${state.pasteValue}</textarea
           <span class="add-source__sub muted"
             >${count
               ? `${count} character${count === 1 ? "" : "s"}`
-              : "No formatting needed — plain text is fine."}</span
+              : "Plain text is fine. No formatting needed."}</span
           >
         </div>
       </div>
@@ -379,7 +390,7 @@ function submitPastedText() {
   startTextImport(text, state.currentSessionId);
   state.pasteValue = "";
   close();
-  showToast("Text added — I'll read it now.");
+  showToast("Text added. I'm reading it now.");
 }
 
 // ─── Connectors tab ──────────────────────────────────────────────────────
@@ -391,7 +402,7 @@ function renderConnectorsTab() {
   const connected = getConnectors().filter((c) => c.status === "connected");
   const rows = connected.length
     ? connected.map(renderConnectorRow).join("")
-    : `<li class="add-source__connectors-empty muted">No connectors connected yet — browse the gallery to add one.</li>`;
+    : `<li class="add-source__connectors-empty muted">No connectors yet. Browse the gallery to connect one.</li>`;
   return html`
     <ul class="add-source__connectors">
       ${raw(rows)}
@@ -887,7 +898,7 @@ function onInput(event) {
     if (meta) {
       meta.textContent = state.pasteValue.length
         ? `${state.pasteValue.length} character${state.pasteValue.length === 1 ? "" : "s"}`
-        : "No formatting needed — plain text is fine.";
+        : "Plain text is fine. No formatting needed.";
     }
     renderFooter();
     return;
@@ -930,7 +941,7 @@ function updateUrlServiceAffix() {
   const hintEl = contentEl.querySelector("[data-url-hint]");
   if (hintEl) {
     hintEl.innerHTML = svc
-      ? `I recognized a <strong>${escapeHtml(svc.name)}</strong> link — I'll import it.`
+      ? `I recognized a <strong>${escapeHtml(svc.name)}</strong> link. I'll import it.`
       : "Public web pages, blog posts, YouTube videos, podcasts.";
   }
 }
