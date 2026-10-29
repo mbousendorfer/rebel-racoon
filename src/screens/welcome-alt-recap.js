@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2529";
-import { catalogueRoute } from "../active-playbook.js?v=2529";
+import { navigate } from "../router.js?v=2530";
+import { catalogueRoute } from "../active-playbook.js?v=2530";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,11 +13,11 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2529";
-import { RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2529";
-import { renderReview } from "./welcome-alt-review.js?v=2529";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2529";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2529";
+} from "../context-builder.js?v=2530";
+import { RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2530";
+import { renderReview } from "./welcome-alt-review.js?v=2530";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2530";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2530";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -27,15 +27,15 @@ import {
   playbookNetworks,
   voiceNetworks,
   onlyNetwork,
-} from "../voice-parts.js?v=2529";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2529";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2529";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2529";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2529";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2529";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2529";
-import { showToast } from "../components/toast.js?v=2529";
-import { open as openConfirm } from "../components/confirm-modal.js?v=2529";
+} from "../voice-parts.js?v=2530";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2530";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2530";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2530";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2530";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2530";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2530";
+import { showToast } from "../components/toast.js?v=2530";
+import { open as openConfirm } from "../components/confirm-modal.js?v=2530";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -121,7 +121,7 @@ function startVoiceRules(sid) {
 const playbookReview = () => ({
   step: "recap",
   title: "Check what I learned",
-  sub: "Here's what I learned. Fix anything that's off; I save as you type.",
+  sub: "Fix anything that's off. I save as you type.",
   parts: RECAP_SECTIONS.filter((t) => t.id !== "voice"),
   next: { label: "Check my voice", go: () => navigate("/welcome-alt/voice") },
   lastLabel: "Looks good, on to your voice",
@@ -296,7 +296,9 @@ function voiceReview(sid, overrides = {}) {
     title: "Check your voice",
     sub: only()
       ? `Your default voice is how your ${only()} posts sound. I save as you type.`
-      : "Your default voice works on every network. Give a network its own voice when it needs one. I save as you type.",
+      : networkVoiceOn()
+        ? "Your default voice works on every network. Give a network its own voice when it needs one. I save as you type."
+        : "Every draft I write starts from this voice. I save as you type.",
     parts,
     onWay,
     next: { label: finishLabel(), go: () => finishRun(sid) },

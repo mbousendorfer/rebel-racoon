@@ -32,12 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2529";
-import { navigate } from "../router.js?v=2529";
-import { getDraft, patchDraft } from "../context-builder.js?v=2529";
-import { mount } from "../playbook-view.js?v=2529";
-import { parseHashParams } from "../url-state.js?v=2529";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2529";
+import { html, raw } from "../utils.js?v=2530";
+import { navigate } from "../router.js?v=2530";
+import { getDraft, patchDraft } from "../context-builder.js?v=2530";
+import { mount } from "../playbook-view.js?v=2530";
+import { parseHashParams } from "../url-state.js?v=2530";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2530";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -85,8 +85,10 @@ export function renderReview(target, sid, config, review) {
           const here = t.id === current();
           // A group opens with its name and a sentence (the voice review:
           // the default voice, then the networks).
+          // Only when there are groups to tell apart: a group of one part was a
+          // kicker and a hint repeating the sub-line above it.
           const group =
-            t.group && t.group !== all[i - 1]?.group
+            t.group && new Set(all.map((p) => p.group)).size > 1 && t.group !== all[i - 1]?.group
               ? html`<li class="welcome-review__group">
                   <p class="welcome-flow__kicker">${t.group}</p>
                   ${t.groupHint ? raw(html`<p class="welcome-review__group-hint">${t.groupHint}</p>`) : ""}
