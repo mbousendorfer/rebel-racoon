@@ -20,15 +20,15 @@
 //     connectAccounts(ids) then fires onConfirm with the accounts that flipped.
 //   - Cancel / Esc / backdrop / close-X dismiss without connecting anything.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2546";
-import { escapeHtml as esc } from "../utils.js?v=2546";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2547";
+import { escapeHtml as esc } from "../utils.js?v=2547";
 import {
   getConnectableAccounts,
   connectAccounts,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=2546";
+} from "../social-profiles.js?v=2547";
 
 const MODAL_ID = "connect-account";
 
@@ -79,6 +79,8 @@ function renderList(preselected, network) {
   // never enable, just the line and one way out.
   const none = !accounts.length;
   modal.querySelector(".connect-account-modal__note").hidden = none;
+  // The subtitle explains connecting; with nothing to connect, the empty line is the message.
+  modal.querySelector(".connect-account-modal__lead").hidden = none;
   confirmBtn.hidden = none;
   cancelBtn.textContent = none ? "Done" : "Cancel";
   cancelBtn.className = `ap-button ${none ? "stroked" : "ghost"} grey`;

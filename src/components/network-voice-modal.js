@@ -14,19 +14,19 @@
 //   `giving` (« Give X its own voice » on a draft): asked even for a network on
 //   the default voice, without that answer.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2546";
-import { getContextById } from "../contexts-store.js?v=2546";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2546";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2547";
+import { getContextById } from "../contexts-store.js?v=2547";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2547";
 import {
   missingNetworkVoices,
   voiceChoices,
   useDefaultVoice,
   editNetworkVoiceInPlaybook,
   documentName,
-} from "../network-voice-flow.js?v=2546";
-import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2546";
-import { openVoiceProposal, openVoiceInterview } from "./voice-proposal-modal.js?v=2546";
-import { escapeHtml } from "../utils.js?v=2546";
+} from "../network-voice-flow.js?v=2547";
+import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2547";
+import { openVoiceProposal, openVoiceInterview } from "./voice-proposal-modal.js?v=2547";
+import { escapeHtml } from "../utils.js?v=2547";
 
 const MODAL_ID = "network-voice";
 

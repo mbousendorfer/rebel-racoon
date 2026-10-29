@@ -11,9 +11,9 @@
 //       object = file the drafts into it. New folders are created here
 //       (addFolder via the dropdown's create item) before the callback fires.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2546";
-import { getFolders, addFolder } from "../folders-store.js?v=2546";
-import { escapeHtml } from "../utils.js?v=2546";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2547";
+import { getFolders, addFolder } from "../folders-store.js?v=2547";
+import { escapeHtml } from "../utils.js?v=2547";
 
 const MODAL_ID = "saveFolder";
 
@@ -267,7 +267,7 @@ export function open({ count = 0, onConfirm = null } = {}) {
   say(
     "folder",
     "Save to a folder",
-    one ? "File it in an Agorapulse folder." : "Group these drafts in an Agorapulse folder.",
+    one ? "Filed in an Agorapulse folder you pick." : "Group these drafts in an Agorapulse folder.",
   );
   pendingOnConfirm = onConfirm;
 
