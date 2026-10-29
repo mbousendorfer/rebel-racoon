@@ -4,7 +4,7 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta } from "../../social-profiles.js?v=2485";
+import { networkMeta } from "../../social-profiles.js?v=2486";
 import {
   getPosts,
   removePost,
@@ -12,24 +12,24 @@ import {
   updatePostContent,
   attachImageToDraft,
   attachCarouselToDraft,
-} from "../../posts-store.js?v=2485";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2485";
-import { getSessionById } from "../../sessions-store.js?v=2485";
-import { renderPostCard } from "../post-card.js?v=2485";
-import { isPostValid } from "../../post-validation.js?v=2485";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2485";
-import { html, raw } from "../../utils.js?v=2485";
-import { isFlagOn } from "../../feature-flags.js?v=2485";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2485";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2485";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2485";
-import { open as openAssignModal } from "../assign-modal.js?v=2485";
-import { showToast } from "../toast.js?v=2485";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2485";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2485";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2485";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2485";
-import { blockInDemo } from "../../demo-flow.js?v=2485";
+} from "../../posts-store.js?v=2486";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2486";
+import { getSessionById } from "../../sessions-store.js?v=2486";
+import { renderPostCard } from "../post-card.js?v=2486";
+import { isPostValid } from "../../post-validation.js?v=2486";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2486";
+import { html, raw } from "../../utils.js?v=2486";
+import { isFlagOn } from "../../feature-flags.js?v=2486";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2486";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2486";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2486";
+import { open as openAssignModal } from "../assign-modal.js?v=2486";
+import { showToast } from "../toast.js?v=2486";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2486";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2486";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2486";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2486";
+import { blockInDemo } from "../../demo-flow.js?v=2486";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -176,10 +176,11 @@ export function renderDraftsView() {
     const count = id === "all" ? allPosts.length : allPosts.filter((p) => p.network === id).length;
     const selected = draftsNetwork === id;
     return `
-      <div class="ap-select-option ${selected ? "selected" : ""}" data-rpanel-drafts-network="${id}">
-        <i class="${meta.icon} ap-select-option-icon"></i>
+      <div class="ap-select-option ${selected ? "selected" : ""}" data-rpanel-drafts-network="${id}"
+        role="option" aria-selected="${selected}" tabindex="0">
+        <i class="${meta.icon} ap-select-option-icon" aria-hidden="true"></i>
         <span class="ap-select-option-text">${meta.label} (${count})</span>
-        ${selected ? `<i class="ap-icon-check ap-select-option-check"></i>` : ""}
+        ${selected ? `<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}
       </div>
     `;
   };
@@ -199,7 +200,7 @@ export function renderDraftsView() {
           </span>
           <i class="ap-icon-chevron-down ap-select-arrow"></i>
         </summary>
-        <div class="ap-select-dropdown">
+        <div class="ap-select-dropdown" role="listbox" aria-label="Network">
           <div class="ap-select-options">
             ${networkOption("all")}
             ${presentNetworks.map((n) => networkOption(n)).join("")}
@@ -553,7 +554,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2485"), import("../../folders-store.js?v=2485")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2486"), import("../../folders-store.js?v=2486")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,

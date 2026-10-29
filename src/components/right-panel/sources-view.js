@@ -3,15 +3,15 @@
 // the panel shell (open / close / resize / URL state / delegated listeners)
 // stays there.
 
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2485";
-import { isFlagOn } from "../../feature-flags.js?v=2485";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2485";
-import { escapeAttr, escapeText } from "../../utils.js?v=2485";
-import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2485";
-import { conceptText } from "../../concepts.js?v=2485";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2485";
-import { renderTopPostEcho } from "../top-post-card.js?v=2485";
-import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2485";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2486";
+import { isFlagOn } from "../../feature-flags.js?v=2486";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2486";
+import { escapeAttr, escapeText } from "../../utils.js?v=2486";
+import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2486";
+import { conceptText } from "../../concepts.js?v=2486";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2486";
+import { renderTopPostEcho } from "../top-post-card.js?v=2486";
+import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2486";
 
 // Sources mode view — list of source rows for the active session + a
 // trailing "+ Attach" button. Each row carries kind icon, filename,
@@ -340,13 +340,13 @@ function renderAttachMenu(btnClass, label) {
       </summary>
       <div class="ap-select-dropdown" role="menu" aria-label="Add a source">
         <div class="ap-select-options">
-          <div class="ap-select-option" data-rpanel-attach-method="upload" role="menuitem">
+          <div class="ap-select-option" data-rpanel-attach-method="upload" role="menuitem" tabindex="0">
             <i class="ap-icon-upload" aria-hidden="true"></i><span class="ap-select-option-text">Add file</span>
           </div>
-          <div class="ap-select-option" data-rpanel-attach-method="url" role="menuitem">
+          <div class="ap-select-option" data-rpanel-attach-method="url" role="menuitem" tabindex="0">
             <i class="ap-icon-link" aria-hidden="true"></i><span class="ap-select-option-text">Add URL</span>
           </div>
-          <div class="ap-select-option" data-rpanel-attach-method="pasteText" role="menuitem">
+          <div class="ap-select-option" data-rpanel-attach-method="pasteText" role="menuitem" tabindex="0">
             <i class="ap-icon-pen" aria-hidden="true"></i><span class="ap-select-option-text">Paste text</span>
           </div>
         </div>

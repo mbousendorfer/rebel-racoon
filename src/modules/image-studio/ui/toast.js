@@ -1,7 +1,7 @@
 // Image Generator — snackbars (.ap-snackbar), in the module's own region so it
 // never shares Archie's #toastRegion.
 
-import { html, toString } from "../lib/html.js?v=2485";
+import { html, toString } from "../lib/html.js?v=2486";
 
 const DURATION = 4000;
 
