@@ -1959,7 +1959,7 @@ body.has-modal {
 .voice-ask__options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
 }
 .voice-ask__option.is-best {
   grid-column: 1 / -1;
@@ -2022,7 +2022,8 @@ body.has-modal {
   color: var(--ref-color-grey-80);
 }
 /* The best way: roomier, its icon on Archie's orange. The others step back:
-   no borders, each with its hint; a row lights grey-05 on hover. */
+   on a grey-05 ground, no border, each with its hint; hover = blue border
+   (asked 2026-10-29: « met un background derrière les 4 actions du bas »). */
 .voice-ask__option.is-best {
   margin-bottom: var(--ref-spacing-xs);
   padding: var(--ref-spacing-sm);
@@ -2035,11 +2036,11 @@ body.has-modal {
 }
 .voice-ask__option:not(.is-best) {
   border-color: transparent;
+  background: var(--ref-color-grey-05);
   padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
 }
 .voice-ask__option:not(.is-best):hover {
-  border-color: transparent;
-  background: var(--ref-color-grey-05);
+  border-color: var(--ref-color-electric-blue-100);
 }
 .voice-ask__option:not(.is-best) .voice-ask__icon {
   width: 24px;
