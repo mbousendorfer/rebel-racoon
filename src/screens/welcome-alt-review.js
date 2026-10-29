@@ -32,12 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2488";
-import { navigate } from "../router.js?v=2488";
-import { getDraft, patchDraft } from "../context-builder.js?v=2488";
-import { mount } from "../playbook-view.js?v=2488";
-import { parseHashParams } from "../url-state.js?v=2488";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2488";
+import { html, raw } from "../utils.js?v=2489";
+import { navigate } from "../router.js?v=2489";
+import { getDraft, patchDraft } from "../context-builder.js?v=2489";
+import { mount } from "../playbook-view.js?v=2489";
+import { parseHashParams } from "../url-state.js?v=2489";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2489";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -281,6 +281,11 @@ export function renderReview(target, sid, config, review) {
   let applying = false;
   const applyColumn = () => {
     applying = true;
+    // The nav, the confirm and the left list are rebuilt below, which destroys a
+    // focused button: note its data-* hook and focus its twin after (WCAG 2.4.3).
+    // The confirm's value names the part, so a twin by hook name alone also counts.
+    const focused = target.contains(document.activeElement) ? document.activeElement : null;
+    const hook = focused && [...focused.attributes].find((a) => a.name.startsWith("data-"));
     const list = cards();
     count = list.length;
     index = Math.min(index, Math.max(0, count - 1));
@@ -299,6 +304,11 @@ export function renderReview(target, sid, config, review) {
     `;
     applying = false;
     shell.paint();
+    if (hook && !target.contains(document.activeElement)) {
+      const twin =
+        target.querySelector(`[${hook.name}="${CSS.escape(hook.value)}"]`) || target.querySelector(`[${hook.name}]`);
+      twin?.focus({ preventScroll: true });
+    }
   };
   // A repaint (a box ticked, a chip added) rebuilds the column: the card being
   // edited stays where it was instead of the column jumping back to the top.
@@ -508,6 +518,8 @@ export function renderReview(target, sid, config, review) {
   const onKey = (e) => {
     if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
     if (e.target.closest?.("input, textarea, select, [contenteditable]")) return;
+    // Arrows inside a widget (a card's action menu, a radio group) belong to it.
+    if (e.target.closest?.('[role="menu"], [role="listbox"], [role="radiogroup"], [role="tablist"]')) return;
     if (document.querySelector(".app-modal-backdrop:not([hidden]), body.has-modal")) return;
     if (shell.sheet.classList.contains("is-asking")) return;
     e.preventDefault();
