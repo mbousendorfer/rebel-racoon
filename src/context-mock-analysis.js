@@ -8,7 +8,7 @@
 // Suggested values become menthol chips (AI-suggested). Other static
 // option lists come from the brief panel renderer.
 
-import { objectivesInText } from "./objective-measures.js?v=2422";
+import { objectivesInText } from "./objective-measures.js?v=2423";
 
 const AGORAPULSE = {
   name: "Agorapulse",
@@ -286,14 +286,15 @@ const GENERIC = {
       emotionalTone: "Neutral, supportive, and quietly confident. Reassures without overpromising.",
       contentPatterns:
         "Problem → solution → proof structure across most pages. Calls to action are clear and singular.",
-      uniqueTraits:
-        "Edit this profile to capture what makes your brand's voice distinctive — the words you reach for, the metaphors you avoid, the moments where the writing relaxes.",
+      // Values only, never a note to the user: an instruction left in a field
+      // is saved as the brand's voice the moment they click Looks good
+      // (2026-10-29). The review's own lines say the voice can be edited.
+      uniqueTraits: "",
     },
     contentStyle: ["Direct and actionable"],
     objective: ["Brand awareness"],
     contentAction: ["Visit the website"],
-    voiceSummary:
-      "Clear, professional and direct. Each post opens with the benefit and follows with the evidence. Edit this to say how your brand actually sounds.",
+    voiceSummary: "Clear, professional and direct. Each post opens with the benefit and follows with the evidence.",
     voiceAlways: [
       {
         text: "Open with the benefit to the reader.",
@@ -318,7 +319,6 @@ const GENERIC = {
       {
         when: "Product post",
         text: "The problem, what changes, then one call to action.",
-        examples: ["What if you could [outcome]?"],
       },
     ],
     voiceSometimes: [
@@ -328,7 +328,7 @@ const GENERIC = {
       },
     ],
     brandPersonality:
-      "Trustworthy, helpful, and knowledgeable. Speaks to the reader as an equal who has done the homework. Edit to capture what makes your brand's personality distinctive.",
+      "Trustworthy, helpful, and knowledgeable. Speaks to the reader as an equal who has done the homework.",
     brandTypography: { headingFont: "System UI", bodyFont: "System UI" },
     brandColors: [
       { name: "Primary", hex: "#178DFE" },
