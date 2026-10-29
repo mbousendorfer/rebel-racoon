@@ -20,11 +20,11 @@
 //   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2409";
-import { getContextById } from "../contexts-store.js?v=2409";
-import { playbookForNewWork } from "../active-playbook.js?v=2409";
-import { isNewUser } from "../user-mode.js?v=2409";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2409";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2410";
+import { getContextById } from "../contexts-store.js?v=2410";
+import { playbookForNewWork } from "../active-playbook.js?v=2410";
+import { isNewUser } from "../user-mode.js?v=2410";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2410";
 import {
   networkVoiceOn,
   networkVoice,
@@ -34,7 +34,7 @@ import {
   baseValue,
   voiceItemsHtml,
   voiceNetTagHtml,
-} from "../voice-parts.js?v=2409";
+} from "../voice-parts.js?v=2410";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -44,11 +44,11 @@ import {
   INTERVIEW,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2409";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2409";
-import "../archie-pixels.js?v=2409";
-import { navigate } from "../router.js?v=2409";
-import { escapeHtml } from "../utils.js?v=2409";
+} from "../network-voice-flow.js?v=2410";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2410";
+import "../archie-pixels.js?v=2410";
+import { navigate } from "../router.js?v=2410";
+import { escapeHtml } from "../utils.js?v=2410";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -228,8 +228,9 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
 // A network with no rules of its own, before a draft for it (or « Add rules
 // for X » on one): a sibling of the voice edit, three levels and no more —
 // on butter, the WHY: what's missing, and what a voice for the network would
-// say; on white, the HOW: the best way as the one tile, the others as plain
-// ghost buttons under « Other ways »; under a hairline, the way out. Once
+// say; on white, the HOW: its question as the body's heading, the best way
+// as the one tile, the others as stroked buttons (a contour, lighter than the
+// tile); under a hairline, the way out, ghost. Once
 // answered, it folds to its title line (the answer is the user's turn below).
 // `line` replaces Archie's sentence; `later` names the way out (null: none —
 // the creation review, where leaving it is the answer).
@@ -278,6 +279,7 @@ export function voiceAskHtml(
           resolved || !best
             ? ""
             : `<div class="voice-ask__body">
+          <h4 class="voice-ask__ask">How should I learn your ${label} voice?</h4>
           <button type="button" class="voice-ask__option" ${pick(best.value)}>
             <span class="voice-ask__icon" aria-hidden="true"><i class="${best.icon}"></i></span>
             <span class="voice-ask__text">
@@ -289,11 +291,10 @@ export function voiceAskHtml(
           ${
             others.length
               ? `<div class="voice-ask__others" role="group" aria-label="Other ways">
-            <p class="voice-ask__label">Other ways</p>
             ${others
               .map(
                 (c) =>
-                  `<button type="button" class="ap-button ghost grey" title="${escapeHtml(c.hint)}" ${pick(c.value)}><i class="${c.icon}" aria-hidden="true"></i><span>${escapeHtml(c.tile)}</span></button>`,
+                  `<button type="button" class="ap-button stroked grey" title="${escapeHtml(c.hint)}" ${pick(c.value)}><i class="${c.icon}" aria-hidden="true"></i><span>${escapeHtml(c.tile)}</span></button>`,
               )
               .join("")}
           </div>`

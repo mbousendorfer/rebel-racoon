@@ -11,9 +11,9 @@
 //     Archie's last rewrite; called again, it redoes it
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2409";
-import { isNewUser } from "./user-mode.js?v=2409";
-import { createSessionNotifier } from "./store-utils.js?v=2409";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2410";
+import { isNewUser } from "./user-mode.js?v=2410";
+import { createSessionNotifier } from "./store-utils.js?v=2410";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).
