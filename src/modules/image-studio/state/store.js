@@ -3,11 +3,11 @@
 // brands, and the brand's own styles, are the Playbooks', read through the
 // adapter and re-exported here so views have one import.
 
-import { storageService as storage } from "../services/index.js?v=2395";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=2395";
-import { findPlaybookStyle, getPlaybookStyles, subscribeBrands } from "./playbook-brand.js?v=2395";
+import { storageService as storage } from "../services/index.js?v=2399";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=2399";
+import { findPlaybookStyle, getPlaybookStyles, subscribeBrands } from "./playbook-brand.js?v=2399";
 
-export { getActiveBrandId, getBrand, canEditBrand } from "./playbook-brand.js?v=2395";
+export { getActiveBrandId, getBrand, canEditBrand } from "./playbook-brand.js?v=2399";
 
 /** One subscription for everything a view shows: module storage + Playbooks. */
 export function subscribe(fn) {

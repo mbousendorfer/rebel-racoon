@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2395";
-import { conceptHint } from "./concepts.js?v=2395";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2399";
+import { conceptHint } from "./concepts.js?v=2399";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2395";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2395";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2395";
-import { isFlagOn } from "./feature-flags.js?v=2395";
-import { clipLookOf } from "./videos-store.js?v=2395";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2395";
-import { parseHashParams } from "./url-state.js?v=2395";
+} from "./playbook-brand-kit.js?v=2399";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2399";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2399";
+import { isFlagOn } from "./feature-flags.js?v=2399";
+import { clipLookOf } from "./videos-store.js?v=2399";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2399";
+import { parseHashParams } from "./url-state.js?v=2399";
 import {
   isListPart,
   voiceParts,
@@ -53,14 +53,14 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2395";
-import { showToast } from "./components/toast.js?v=2395";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2395";
-import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2395";
-import { updateContext } from "./contexts-store.js?v=2395";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2395";
-import { consumeHandoff } from "./handoff.js?v=2395";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2395";
+} from "./voice-parts.js?v=2399";
+import { showToast } from "./components/toast.js?v=2399";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2399";
+import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2399";
+import { updateContext } from "./contexts-store.js?v=2399";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2399";
+import { consumeHandoff } from "./handoff.js?v=2399";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2399";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2395";
+} from "./social-profiles.js?v=2399";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2741,10 +2741,7 @@ function networkVoiceCards(data) {
 // (2026-10-29, asked: in the right column, in edit, for the default voice AND a
 // network's rules). `net` null: the default voice (posts of any account, a
 // document); a network: its posts, a document, a few questions, adapted.
-function voiceWaysCard(
-  net = null,
-  { title = "Rewrite it from a source", hint = "", className = "pb2-voice-ways" } = {},
-) {
+function voiceWaysCard(net = null, { title = "Rewrite it from", hint = "", className = "pb2-voice-ways" } = {}) {
   const account = getConnectedProfiles().find((p) => canLearnFrom(p) && (!net || normalizeNetwork(p.platform) === net));
   const label = net ? networkLabel(net) : "";
   const tiles = [
@@ -2774,21 +2771,28 @@ function voiceWaysCard(
     },
     net && { value: "write", icon: "ap-icon-pen", tile: "Write it myself", hint: "Start from an empty page" },
   ].filter(Boolean);
-  // At the head of a voice being edited, the ways are a tool, not a part: one
-  // butter strip of buttons (Archie offers), never a card like the fields below
-  // (2026-10-29, asked: « ressemble beaucoup trop à une card éditable »).
+  // At the head of a voice being edited, the ways are a tool, not a part: a
+  // compact white capsule, the stage's chrome like the ↑ / ↓ nav (2026-10-29,
+  // asked: « ressemble beaucoup trop à une card éditable » ; a butter strip the
+  // same day vanished on the stage). Already editing: no « Write it myself ».
   if (className === "pb2-voice-ways")
-    return `<section class="pb2-block pb2-block--wide pb2-voice-ways">
-      <p class="pb2-voice-ways__lead"><i class="ap-icon-sparkles" aria-hidden="true"></i><span><strong>${esc(title)}</strong> ${esc(
-        hint ||
-          (net
-            ? "I show you what I'd change, and you decide what to keep."
-            : "I rewrite your default voice from what I read. You can edit it after."),
-      )}</span></p>
+    return `<section class="pb2-block pb2-block--wide pb2-voice-ways" title="${esc(
+      hint ||
+        (net
+          ? "I show you what I'd change, and you decide what to keep."
+          : "I rewrite your default voice from what I read. You can edit it after."),
+    )}">
+      <p class="pb2-voice-ways__lead"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>${esc(title)}</span></p>
       <div class="pb2-voice-ways__actions">${tiles
+        .filter((c) => c.value !== "write")
+        // The labels finish « Rewrite it from … ».
+        .map((c) => ({
+          ...c,
+          tile: { learn: net ? `${label} posts` : c.tile, adapt: "My default voice" }[c.value] || c.tile,
+        }))
         .map(
           (c) =>
-            `<button type="button" class="ap-button stroked grey" data-voice-ask="${esc(net || "")}" data-voice-choice="${c.value}" title="${esc(c.hint)}"><i class="${c.icon}" aria-hidden="true"></i><span>${esc(c.tile)}</span></button>`,
+            `<button type="button" class="ap-button ghost grey" data-voice-ask="${esc(net || "")}" data-voice-choice="${c.value}" title="${esc(c.hint)}"><i class="${c.icon}" aria-hidden="true"></i><span>${esc(c.tile)}</span></button>`,
         )
         .join("")}</div>
     </section>`;

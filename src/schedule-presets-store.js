@@ -24,7 +24,7 @@
 // Preset shape: { cadence, timeOfDay, skip: number[] } — the ids the modal's
 // CADENCES / TIMES_OF_DAY declare, `skip` as sunday-first weekday numbers.
 
-import { createNotifier } from "./store-utils.js?v=2395";
+import { createNotifier } from "./store-utils.js?v=2399";
 
 const presets = new Map(); // playbookId → Preset
 

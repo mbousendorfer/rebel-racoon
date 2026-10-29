@@ -1111,35 +1111,42 @@
   color: var(--ref-color-grey-80);
 }
 
-/* « Rewrite it from a source », at the head of a voice in edit: a tool, not a
-   field. Archie's butter strip, a sentence and a row of buttons; no title, no
-   card chrome, so it never reads as one more card to fill. In the review it
-   is pinned over the column (.welcome-review__tools). */
+/* « Rewrite it from », at the head of a voice in edit: a tool, not a field.
+   A compact white capsule (the stage's chrome, like the review's ↑ / ↓ nav):
+   the label, then ghost buttons; hugs its content, never the column's width,
+   so it can't read as one more card. A butter strip was tried and vanished on
+   the pixel stage (2026-10-29). */
 .pb2-block.pb2-voice-ways,
 .welcome-review__tools {
   display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  flex-flow: row wrap;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 4px 4px var(--ref-spacing-sm);
   border: none;
-  border-radius: var(--app-radius-card);
-  background: var(--app-butter);
+  border-radius: 20px;
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow-popover-md);
 }
 .pb2-voice-ways__lead {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--ref-spacing-xxs);
   margin: 0;
-  color: var(--ref-color-grey-100);
+  /* The label stays quiet, the buttons are the actions; a grey-20 rule
+     between them. */
+  margin-right: var(--ref-spacing-xxs);
+  padding-right: var(--ref-spacing-xs);
+  border-right: 1px solid var(--ref-color-grey-20);
+  color: var(--ref-color-grey-80);
   font-size: var(--ref-font-size-sm);
+  white-space: nowrap;
 }
 .pb2-voice-ways__lead > i {
   flex: none;
-  align-self: center;
   color: var(--app-butter-accent);
 }
+/* The buttons flow on the label's line: one row while it fits. */
 .pb2-voice-ways__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xxs);
+  display: contents;
 }

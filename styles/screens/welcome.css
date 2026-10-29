@@ -3506,14 +3506,17 @@ button.recap__logotile:hover {
   color: var(--ref-color-grey-80);
 }
 
-/* The part's tool strip, pinned at the top of the stage, the column's width;
+/* The part's tool capsule, pinned at the top of the stage, centred, as wide
+   as its content;
    the column starts under it, so its fade never eats the strip. */
 .welcome-review__tools {
   position: absolute;
   top: var(--ref-spacing-md);
   left: 50%;
   z-index: 2;
-  width: min(720px - 2 * var(--ref-spacing-xs), calc(100% - 2 * (28px + 2 * var(--ref-spacing-lg))));
+  width: max-content;
+  /* Wider than the column if it must: at the top it never meets the nav. */
+  max-width: calc(100% - 2 * var(--ref-spacing-lg));
   transform: translateX(-50%);
 }
 .welcome-review__tools:empty,
