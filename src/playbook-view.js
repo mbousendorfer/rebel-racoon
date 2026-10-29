@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2431";
-import { conceptHint } from "./concepts.js?v=2431";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2432";
+import { conceptHint } from "./concepts.js?v=2432";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2431";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2431";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2431";
-import { isFlagOn } from "./feature-flags.js?v=2431";
-import { clipLookOf } from "./videos-store.js?v=2431";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2431";
-import { parseHashParams } from "./url-state.js?v=2431";
+} from "./playbook-brand-kit.js?v=2432";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2432";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2432";
+import { isFlagOn } from "./feature-flags.js?v=2432";
+import { clipLookOf } from "./videos-store.js?v=2432";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2432";
+import { parseHashParams } from "./url-state.js?v=2432";
 import {
   isListPart,
   voiceParts,
@@ -53,13 +53,13 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2431";
-import { showToast } from "./components/toast.js?v=2431";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2431";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2431";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2431";
-import { consumeHandoff } from "./handoff.js?v=2431";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2431";
+} from "./voice-parts.js?v=2432";
+import { showToast } from "./components/toast.js?v=2432";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2432";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2432";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2432";
+import { consumeHandoff } from "./handoff.js?v=2432";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2432";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -69,7 +69,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2431";
+} from "./social-profiles.js?v=2432";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -3022,6 +3022,64 @@ function giveNetworkVoice(net, choice) {
   openVoiceProposal({ ctx: d, net, choice, onUse: set });
 }
 
+// A network with no voice of its own, on the fiche: what happens meanwhile,
+// then the ways to give it one, as the run's tiles. Each tile is the fiche's
+// own hook (screens/playbook.js `data-recap-learn`, `data-pb2-voice-own`).
+function networkVoiceEmpty(net, chosen) {
+  const label = networkLabel(net);
+  const account = getConnectedProfiles().find((p) => canLearnFrom(p) && normalizeNetwork(p.platform) === net);
+  const hook = (way) => `data-recap-learn="${way}" data-recap-learn-net="${esc(net)}"`;
+  const tiles = [
+    account && {
+      attrs: hook("posts"),
+      icon: "ap-icon-double-chat-bubbles",
+      name: `Your ${label} posts`,
+      hint: `${account.handle} · ${account.postCount} posts`,
+    },
+    { attrs: hook("documents"), icon: "ap-icon-file--text", name: "A document", hint: "A style guide or a brief" },
+    {
+      attrs: hook("interview"),
+      icon: "ap-icon-question",
+      name: "A few questions",
+      hint: "5 questions, about a minute",
+    },
+    {
+      attrs: hook("adapt"),
+      icon: "ap-icon-sparkles",
+      name: "Adapt my default voice",
+      hint: `I tune its length and format for ${label}`,
+    },
+    {
+      attrs: "data-pb2-voice-own",
+      icon: "ap-icon-pen",
+      name: "Write it myself",
+      hint: "Start from your default voice",
+    },
+  ].filter(Boolean);
+  const keep = chosen
+    ? ""
+    : `<div class="pb2-voice-reset"><button type="button" class="ap-button ghost grey" data-pb2-voice-keep="${esc(net)}">Keep the default voice</button></div>`;
+  return `${pb2Block(
+    chosen ? `${label} uses your default voice` : `No ${label} voice yet`,
+    `<div class="voice-ask__options" style="--others:${Math.max(tiles.length - 1, 1)}">${tiles
+      .map(
+        (t, i) => `<button type="button" class="voice-ask__option${i ? "" : " is-best"}" ${t.attrs}>
+          <span class="voice-ask__icon" aria-hidden="true"><i class="${t.icon}"></i></span>
+          <span class="voice-ask__text"><span class="voice-ask__name">${esc(t.name)}</span><span class="voice-ask__hint">${esc(t.hint)}</span></span>
+        </button>`,
+      )
+      .join("")}</div>`,
+    {
+      wide: true,
+      icon: networkIcon(net),
+      hint: chosen
+        ? `I write your ${label} posts in your default voice. To give ${label} its own, start from:`
+        : `Until it has one, I write your ${label} posts in your default voice, which may miss its length and format. Start from:`,
+      className: `pb2-voice-net pb2-voice-net--${net}`,
+    },
+  )}${keep}`;
+}
+
 function networkVoiceLead(net, voice, data) {
   const label = networkLabel(net);
   const base = "Your default voice";
@@ -3034,20 +3092,6 @@ function networkVoiceLead(net, voice, data) {
   return `${base}, plus what you wrote for ${label}, tagged « For ${label} ».`;
 }
 
-// A warning infobox on a network's voice tab: its title, its message, an
-// optional trusted action.
-const voiceNotice = (title, message, action = "") =>
-  `<div class="ap-infobox warning has-title pb2-voice-notice" role="status">
-    <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-    <div class="ap-infobox-content">
-      <div class="ap-infobox-texts">
-        <span class="ap-infobox-title">${esc(title)}</span>
-        <span class="ap-infobox-message">${esc(message)}</span>
-        ${action}
-      </div>
-    </div>
-  </div>`;
-
 // A network's voice, read — its row selected in the list: Learn from…
 // (posts, documents) and Edit, the two ways a network's voice gets optimized;
 // there is no button that optimizes it. Its own: the five parts, its rules
@@ -3057,35 +3101,27 @@ function renderNetworkVoiceRead(data) {
   const label = networkLabel(net);
   const { state, chosen, voice } = networkVoice(data, net);
   if (state === "default") {
-    // One action: Add a voice for X opens a chat on its Voice step, where posts, a
-    // document, questions, the default voice adapted and writing it by hand
-    // are all tiles. Learn from… and Edit here read as editing the default
-    // voice (2026-10-29, ux-heuristics audit), so they're gone from this tab.
-    const review = canEditView() && cfg.onAddNetworkVoice && networkVoiceOn();
-    // Edit starts from the default voice (data-pb2-voice-own).
-    const actions = !canEditView()
-      ? ""
-      : review
-        ? `<button type="button" class="ap-button primary orange" data-pb2-add-voice="${esc(net)}"><i class="ap-icon-plus" aria-hidden="true"></i><span>Add a voice for ${esc(label)}</span></button>`
-        : `${learnMenu(net)}<button type="button" class="ap-button stroked blue" data-pb2-voice-own><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></button><button type="button" class="ap-button primary orange" data-recap-learn="adapt" data-recap-learn-net="${esc(net)}"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Adapt for ${esc(label)}</span></button>`;
-    // Kept on the default voice by choice: said, not warned. Never set: warned,
-    // with the way to keep it that way.
-    const notice = chosen
-      ? ""
-      : voiceNotice(
-          `No ${label} voice yet`,
-          `Drafts for ${label} may miss its length and format.`,
-          canEditView()
-            ? `<button type="button" class="ap-link" data-pb2-voice-keep="${esc(net)}">Keep the default voice</button>`
-            : "",
-        );
+    // Read-only: that voice on grey, as it is.
+    if (!canEditView())
+      return withVoiceNav(
+        data,
+        `${pb2TabHead("voice", "", {
+          noEdit: true,
+          lead: `${label} follows your default voice.`,
+          ...voiceTitle(data),
+        })}${voiceIntroHtml(data)}<div class="pb2-grid pb2-grid--borrowed">${pb2VoiceParts(data).join("")}</div>`,
+      );
+    // No copy of the default voice: an empty state that says what happens and
+    // offers the ways to give the network its own voice (2026-10-29, asked:
+    // « directement proposer les options de création de voice et faire un empty
+    // state + compréhensible que de recopier la voice par défaut »).
     return withVoiceNav(
       data,
-      `${pb2TabHead("voice", actions, {
+      `${pb2TabHead("voice", "", {
         noEdit: true,
         lead: `${label} follows your default voice.`,
         ...voiceTitle(data),
-      })}${voiceIntroHtml(data)}${notice}<div class="pb2-grid pb2-grid--borrowed">${pb2VoiceParts(data).join("")}</div>`,
+      })}${voiceIntroHtml(data)}<div class="pb2-grid">${networkVoiceEmpty(net, chosen)}</div>`,
     );
   }
   // The way back to the default voice closes the voice, under its parts: the
