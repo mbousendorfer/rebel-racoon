@@ -169,6 +169,14 @@
   outline: none;
 }
 
+/* Keyboard focus: the grey-10 fill alone is 1.18:1 on the white rail (WCAG
+   2.4.7). The 2px blue ring of the starter rows (session.css), inset so the
+   scrolling list never clips it. */
+.app-sidebar__nav-item:focus-visible,
+.app-sidebar__row:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--ref-color-electric-blue-100);
+}
+
 /* Active nav item — same visual treatment as the active conversation
    row: the selected fill (electric-blue-05) + an electric-blue label/icon.
    A fill, never a shadow (no elevation inside the rail) and never an edge
@@ -176,11 +184,12 @@
    whole sidebar: nav and conversations share one active style. */
 .app-sidebar__nav-item.is-active {
   background: var(--ref-color-electric-blue-05);
-  color: var(--ref-color-electric-blue-100);
+  color: var(--sys-color-accent-light-text);
 }
 
+/* accent-light-text, not electric-blue-100: 4.5:1 on blue-05 against 3.15:1. */
 .app-sidebar__nav-item.is-active i {
-  color: var(--ref-color-electric-blue-100);
+  color: var(--sys-color-accent-light-text);
 }
 
 /* Live counter badge — pushed to the trailing edge of the nav row. */
@@ -355,7 +364,7 @@
    accent) — keeps the weight regular and lets color alone signal the
    "you are here" state, paired with the row's filled background. */
 .app-sidebar__row.is-active .app-sidebar__row-title {
-  color: var(--ref-color-electric-blue-100);
+  color: var(--sys-color-accent-light-text);
 }
 
 /* Leading playbook-color dot — small 8px circle on the left edge of
