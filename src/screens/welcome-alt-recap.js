@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2442";
-import { catalogueRoute } from "../active-playbook.js?v=2442";
+import { navigate } from "../router.js?v=2444";
+import { catalogueRoute } from "../active-playbook.js?v=2444";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,11 +13,11 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2442";
-import { RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2442";
-import { renderReview } from "./welcome-alt-review.js?v=2442";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2442";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2442";
+} from "../context-builder.js?v=2444";
+import { RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2444";
+import { renderReview } from "./welcome-alt-review.js?v=2444";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2444";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2444";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -25,14 +25,15 @@ import {
   networkVoice,
   networkVoiceOn,
   playbookNetworks,
-} from "../voice-parts.js?v=2442";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2442";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2442";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2442";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2442";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2442";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2442";
-import { showToast } from "../components/toast.js?v=2442";
+} from "../voice-parts.js?v=2444";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2444";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2444";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2444";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2444";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2444";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2444";
+import { showToast } from "../components/toast.js?v=2444";
+import { open as openConfirm } from "../components/confirm-modal.js?v=2444";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -407,7 +408,26 @@ function finishIntegrated(sid) {
 // user creating one Playbook more (`welcomeAltIntegrated`) saves it and goes
 // back where they started — no reload, which would re-seed the stores.
 export function finishRun(sid) {
-  return isIntegrated() ? finishIntegrated(sid) : enterArchie(sid);
+  const finish = () => (isIntegrated() ? finishIntegrated(sid) : enterArchie(sid));
+  // Networks picked for a voice of their own and left empty: said, and asked,
+  // before the run ends (2026-10-29, asked: « il faut prévenir l'utilisateur et
+  // lui demander confirmation que tout est ok et lui dire qu'il pourra toujours
+  // réediter les voices dans le playbook »).
+  const d = getDraft(sid);
+  const empty = networkVoiceOn() ? (d?.voiceRulesFor || []).filter((n) => !networkVoiceFilled(d, n)) : [];
+  if (!empty.length) return finish();
+  const names = empty.map(networkLabel);
+  const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names.at(-1)}` : names[0];
+  const count = `${empty.length} empty voice${empty.length === 1 ? "" : "s"}`;
+  openConfirm({
+    title: `Continue with ${count}?`,
+    body: `${list} ${empty.length === 1 ? "has" : "have"} no voice of ${empty.length === 1 ? "its" : "their"} own yet. Until you fill ${empty.length === 1 ? "it" : "them"} in, I write ${empty.length === 1 ? "its" : "their"} posts in your default voice. You can edit every voice later in your Playbook.`,
+    confirmLabel: "Continue",
+    cancelLabel: empty.length === 1 ? "Fill it in" : "Fill them in",
+    onConfirm: finish,
+    // The review opens the part the URL's `tab` names: the first empty voice.
+    onCancel: () => navigate(`/welcome-alt/voice?tab=voice-net-${encodeURIComponent(empty[0])}`),
+  });
 }
 export const finishLabel = () => (isIntegrated() ? "Save my Playbook" : "Draft my first post");
 
