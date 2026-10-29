@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2540";
-import { conceptHint } from "./concepts.js?v=2540";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2541";
+import { conceptHint } from "./concepts.js?v=2541";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2540";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2540";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2540";
-import { isFlagOn } from "./feature-flags.js?v=2540";
-import { clipLookOf } from "./videos-store.js?v=2540";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2540";
-import { parseHashParams } from "./url-state.js?v=2540";
+} from "./playbook-brand-kit.js?v=2541";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2541";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2541";
+import { isFlagOn } from "./feature-flags.js?v=2541";
+import { clipLookOf } from "./videos-store.js?v=2541";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2541";
+import { parseHashParams } from "./url-state.js?v=2541";
 import {
   isListPart,
   voiceParts,
@@ -55,13 +55,13 @@ import {
   canLearnFrom,
   ADAPTED_FROM,
   voiceHasRules,
-} from "./voice-parts.js?v=2540";
-import { showToast } from "./components/toast.js?v=2540";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2540";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2540";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2540";
-import { consumeHandoff } from "./handoff.js?v=2540";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2540";
+} from "./voice-parts.js?v=2541";
+import { showToast } from "./components/toast.js?v=2541";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2541";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2541";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2541";
+import { consumeHandoff } from "./handoff.js?v=2541";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2541";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2540";
+} from "./social-profiles.js?v=2541";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1104,8 +1104,8 @@ function renderVoiceModeToggle(mode) {
   return `
     <div class="ap-tabs recap__voice-mode">
       <div class="ap-tabs-nav" role="tablist" aria-label="Voice format">
-        <button type="button" class="ap-tabs-tab${manual ? "" : " active"}" role="tab" aria-selected="${!manual}" data-recap-voice-mode="guided">Part by part</button>
-        <button type="button" class="ap-tabs-tab${manual ? " active" : ""}" role="tab" aria-selected="${manual}" data-recap-voice-mode="manual">In my own words</button>
+        <button type="button" class="ap-tabs-tab${manual ? "" : " active"}" role="tab" aria-selected="${!manual}" tabindex="${manual ? -1 : 0}" data-recap-voice-mode="guided">Part by part</button>
+        <button type="button" class="ap-tabs-tab${manual ? " active" : ""}" role="tab" aria-selected="${manual}" tabindex="${manual ? 0 : -1}" data-recap-voice-mode="manual">In my own words</button>
       </div>
     </div>`;
 }
@@ -4383,6 +4383,16 @@ function onKeydown(event) {
     event.preventDefault();
     next.click();
     mountTarget?.querySelector(`#pb2-tab-${CSS.escape(next.dataset.pb2Tab)}`)?.focus();
+    return;
+  }
+  // The voice format tabs (two of them): ←/→ pick the other one and keep focus on it.
+  const mode =
+    (event.key === "ArrowRight" || event.key === "ArrowLeft") && event.target.closest?.("[data-recap-voice-mode]");
+  if (mode) {
+    const other = mode.dataset.recapVoiceMode === "guided" ? "manual" : "guided";
+    event.preventDefault();
+    mode.parentElement.querySelector(`[data-recap-voice-mode="${other}"]`)?.click();
+    mountTarget?.querySelector(`[data-recap-voice-mode="${other}"]`)?.focus();
     return;
   }
   if (!editScope) return;

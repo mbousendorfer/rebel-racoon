@@ -9,13 +9,13 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2540";
-import { navigate } from "../router.js?v=2540";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2540";
-import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2540";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2540";
-import { onlyNetwork } from "../voice-parts.js?v=2540";
-import { networkLabel } from "../social-profiles.js?v=2540";
+import { html, raw } from "../utils.js?v=2541";
+import { navigate } from "../router.js?v=2541";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2541";
+import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2541";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2541";
+import { onlyNetwork } from "../voice-parts.js?v=2541";
+import { networkLabel } from "../social-profiles.js?v=2541";
 
 // Where the default voice was read from, said on the reveal.
 const READ_FROM = { website: "your site", documents: "your files", interview: "your answers" };
