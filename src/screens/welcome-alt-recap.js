@@ -4,9 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2429";
-import { openFirstPostChat } from "../post-plan-flow.js?v=2429";
-import { catalogueRoute } from "../active-playbook.js?v=2429";
+import { navigate } from "../router.js?v=2430";
+import { catalogueRoute } from "../active-playbook.js?v=2430";
 import {
   getDraft,
   isAnalysisReady,
@@ -14,11 +13,11 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2429";
-import { RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2429";
-import { renderReview } from "./welcome-alt-review.js?v=2429";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2429";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2429";
+} from "../context-builder.js?v=2430";
+import { RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2430";
+import { renderReview } from "./welcome-alt-review.js?v=2430";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2430";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2430";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -26,14 +25,14 @@ import {
   networkVoice,
   networkVoiceOn,
   playbookNetworks,
-} from "../voice-parts.js?v=2429";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2429";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2429";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2429";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2429";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2429";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2429";
-import { showToast } from "../components/toast.js?v=2429";
+} from "../voice-parts.js?v=2430";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2430";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2430";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2430";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2430";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2430";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2430";
+import { showToast } from "../components/toast.js?v=2430";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -392,7 +391,7 @@ function finishIntegrated(sid) {
 }
 
 // "Enter Archie" — persist the Playbook, then finish the ALT flow: a new chat
-// on it, asking for the first post. The recap owns this
+// on it. The recap owns this
 // (rather than the draft's onComplete) so it still works after a reload,
 // where the in-memory onComplete is gone.
 // The run's end, whoever runs it: a first-time user enters Archie; a returning
@@ -412,8 +411,8 @@ export function enterArchie(sid) {
   document.body.classList.remove("onboarding");
   // No reload: it re-seeded the stores, dropped the Playbook just built and
   // landed in Acme's chats. The user stays new — their own Playbook, nothing
-  // else — and the first post starts on it (2026-10-29).
-  openFirstPostChat(saved.id);
+  // else — and lands on a new chat on it (2026-10-29).
+  navigate(`/session/new-${Date.now().toString(36)}?contextId=${encodeURIComponent(saved.id)}`);
 }
 
 // ── sessionStorage bridges ─────────────────────────────────────────────
