@@ -9,11 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2430";
-import { html, raw, escapeHtml } from "../utils.js?v=2430";
-import { navigate } from "../router.js?v=2430";
-import { parseHashParams } from "../url-state.js?v=2430";
-import { isFlagOn } from "../feature-flags.js?v=2430";
+import "../archie-pixels.js?v=2431";
+import { html, raw, escapeHtml } from "../utils.js?v=2431";
+import { navigate } from "../router.js?v=2431";
+import { parseHashParams } from "../url-state.js?v=2431";
+import { isFlagOn } from "../feature-flags.js?v=2431";
 import {
   altSteps,
   createAltDraft,
@@ -21,9 +21,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2430";
-import { networkIcon, networkLabel } from "../social-profiles.js?v=2430";
-import { playbookNetworks } from "../voice-parts.js?v=2430";
+} from "../context-builder.js?v=2431";
+import { networkIcon, networkLabel } from "../social-profiles.js?v=2431";
+import { playbookNetworks } from "../voice-parts.js?v=2431";
 import {
   readSessionId,
   isIntegrated,
@@ -33,8 +33,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2430";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2430";
+} from "./welcome-alt-recap.js?v=2431";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2431";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -47,7 +47,7 @@ export const STEP_TEXT = {
   documents: { title: "Add brand documents", desc: "Optional: a brand book or guidelines." },
   voice: {
     title: "Review your voice",
-    desc: "How you sound, on every network.",
+    desc: "Your default voice, and a voice of its own for the networks that need one.",
   },
   recap: { title: "Review your Playbook", desc: "Everything I learned, before I write a word." },
 };

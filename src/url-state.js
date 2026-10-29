@@ -5,7 +5,7 @@
 // shape of the returned object — they just delegate the parsing primitive
 // to parseHashParams() so each screen no longer hand-rolls the same split.
 
-import { navigate } from "./router.js?v=2430";
+import { navigate } from "./router.js?v=2431";
 
 export function parseHashParams() {
   // Capture-mode bridge: when the hash holds figma capture params, source
