@@ -13,9 +13,9 @@
 //     it fires onConfirm({ file, url }) then closes. A warning notes the
 //     overwrite. Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2492";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2492";
-import { detectUrlService } from "../url-services.js?v=2492";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2493";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2493";
+import { detectUrlService } from "../url-services.js?v=2493";
 
 const MODAL_ID = "fill-document";
 const ACCEPT = ".pdf,.doc,.docx,.txt,.md,.rtf,.pptx,.csv";
@@ -81,7 +81,7 @@ const HTML = `
   <div class="ap-dialog-footer">
     <div class="ap-dialog-footer-right">
       <button type="button" class="ap-button ghost grey" id="fillDocCancel">Cancel</button>
-      <button type="button" class="ap-button primary blue" id="fillDocConfirm" disabled>
+      <button type="button" class="ap-button primary orange" id="fillDocConfirm" disabled>
         <i class="ap-icon-archie-official"></i><span>Learn from document</span>
       </button>
     </div>

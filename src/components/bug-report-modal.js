@@ -17,10 +17,10 @@
 // On submit we simulate a ~1.4s round-trip and flash a success state; the
 // modal then closes itself. Nothing is actually posted.
 
-import { escapeHtml, formatTimeOfDay } from "../utils.js?v=2492";
-import { getSessionById } from "../sessions-store.js?v=2492";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2492";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2492";
+import { escapeHtml, formatTimeOfDay } from "../utils.js?v=2493";
+import { getSessionById } from "../sessions-store.js?v=2493";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2493";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2493";
 
 const MODAL_ID = "bugReport";
 
@@ -113,7 +113,7 @@ const HTML = `
   <div class="ap-dialog-footer">
     <div class="ap-dialog-footer-right">
       <button type="button" class="ap-button ghost grey" id="cancelBugReportBtn">Cancel</button>
-      <button type="button" class="ap-button primary orange" id="submitBugReportBtn">Submit bug report</button>
+      <button type="button" class="ap-button primary blue" id="submitBugReportBtn">Submit bug report</button>
     </div>
   </div>
   <div class="bug-report-modal__success">
