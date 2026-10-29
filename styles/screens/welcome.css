@@ -3505,3 +3505,28 @@ button.recap__logotile:hover {
   line-height: var(--sys-text-style-body-line-height);
   color: var(--ref-color-grey-80);
 }
+
+/* The part's tool strip, pinned at the top of the stage, the column's width;
+   the column starts under it, so its fade never eats the strip. */
+.welcome-review__tools {
+  position: absolute;
+  top: var(--ref-spacing-md);
+  left: 50%;
+  z-index: 2;
+  width: min(720px - 2 * var(--ref-spacing-xs), calc(100% - 2 * (28px + 2 * var(--ref-spacing-lg))));
+  transform: translateX(-50%);
+}
+.welcome-review__tools:empty,
+.welcome-flow__sheet:not(.has-tools) .welcome-review__tools {
+  display: none;
+}
+.welcome-flow__sheet.is-scroll.has-tools .welcome-flow__sheet-body {
+  height: calc(100% - var(--tools-h) - var(--ref-spacing-md));
+  margin-top: calc(var(--tools-h) + var(--ref-spacing-md));
+}
+.welcome-flow__sheet.is-part-out .welcome-review__tools {
+  animation: welcome-review-part-out 0.24s ease-in both;
+}
+.welcome-flow__sheet.is-part-intro .welcome-review__tools {
+  visibility: hidden;
+}

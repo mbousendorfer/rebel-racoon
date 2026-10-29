@@ -1110,3 +1110,36 @@
   font-weight: var(--sys-text-style-caption-weight);
   color: var(--ref-color-grey-80);
 }
+
+/* « Rewrite it from a source », at the head of a voice in edit: a tool, not a
+   field. Archie's butter strip, a sentence and a row of buttons; no title, no
+   card chrome, so it never reads as one more card to fill. In the review it
+   is pinned over the column (.welcome-review__tools). */
+.pb2-block.pb2-voice-ways,
+.welcome-review__tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: none;
+  border-radius: var(--app-radius-card);
+  background: var(--app-butter);
+}
+.pb2-voice-ways__lead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  color: var(--ref-color-grey-100);
+  font-size: var(--ref-font-size-sm);
+}
+.pb2-voice-ways__lead > i {
+  flex: none;
+  align-self: center;
+  color: var(--app-butter-accent);
+}
+.pb2-voice-ways__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+}

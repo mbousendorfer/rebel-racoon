@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2393";
-import { conceptHint } from "./concepts.js?v=2393";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2395";
+import { conceptHint } from "./concepts.js?v=2395";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2393";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2393";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2393";
-import { isFlagOn } from "./feature-flags.js?v=2393";
-import { clipLookOf } from "./videos-store.js?v=2393";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2393";
-import { parseHashParams } from "./url-state.js?v=2393";
+} from "./playbook-brand-kit.js?v=2395";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2395";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2395";
+import { isFlagOn } from "./feature-flags.js?v=2395";
+import { clipLookOf } from "./videos-store.js?v=2395";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2395";
+import { parseHashParams } from "./url-state.js?v=2395";
 import {
   isListPart,
   voiceParts,
@@ -53,14 +53,14 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2393";
-import { showToast } from "./components/toast.js?v=2393";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2393";
-import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2393";
-import { updateContext } from "./contexts-store.js?v=2393";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2393";
-import { consumeHandoff } from "./handoff.js?v=2393";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2393";
+} from "./voice-parts.js?v=2395";
+import { showToast } from "./components/toast.js?v=2395";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2395";
+import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2395";
+import { updateContext } from "./contexts-store.js?v=2395";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2395";
+import { consumeHandoff } from "./handoff.js?v=2395";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2395";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2393";
+} from "./social-profiles.js?v=2395";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2774,6 +2774,24 @@ function voiceWaysCard(
     },
     net && { value: "write", icon: "ap-icon-pen", tile: "Write it myself", hint: "Start from an empty page" },
   ].filter(Boolean);
+  // At the head of a voice being edited, the ways are a tool, not a part: one
+  // butter strip of buttons (Archie offers), never a card like the fields below
+  // (2026-10-29, asked: « ressemble beaucoup trop à une card éditable »).
+  if (className === "pb2-voice-ways")
+    return `<section class="pb2-block pb2-block--wide pb2-voice-ways">
+      <p class="pb2-voice-ways__lead"><i class="ap-icon-sparkles" aria-hidden="true"></i><span><strong>${esc(title)}</strong> ${esc(
+        hint ||
+          (net
+            ? "I show you what I'd change, and you decide what to keep."
+            : "I rewrite your default voice from what I read. You can edit it after."),
+      )}</span></p>
+      <div class="pb2-voice-ways__actions">${tiles
+        .map(
+          (c) =>
+            `<button type="button" class="ap-button stroked grey" data-voice-ask="${esc(net || "")}" data-voice-choice="${c.value}" title="${esc(c.hint)}"><i class="${c.icon}" aria-hidden="true"></i><span>${esc(c.tile)}</span></button>`,
+        )
+        .join("")}</div>
+    </section>`;
   return pb2Block(
     title,
     `<div class="voice-ask__options" style="--others:${Math.max(tiles.length - 1, 1)}">${tiles

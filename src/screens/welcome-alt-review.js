@@ -32,12 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2393";
-import { navigate } from "../router.js?v=2393";
-import { getDraft, patchDraft } from "../context-builder.js?v=2393";
-import { mount } from "../playbook-view.js?v=2393";
-import { parseHashParams } from "../url-state.js?v=2393";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2393";
+import { html, raw } from "../utils.js?v=2395";
+import { navigate } from "../router.js?v=2395";
+import { getDraft, patchDraft } from "../context-builder.js?v=2395";
+import { mount } from "../playbook-view.js?v=2395";
+import { parseHashParams } from "../url-state.js?v=2395";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2395";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -144,6 +144,21 @@ export function renderReview(target, sid, config, review) {
   introEl.className = "welcome-review__intro";
   introEl.setAttribute("aria-live", "polite");
   shell.sheet.append(introEl);
+  // The part's tool strip (the voice's « Rewrite it from a source »), pinned
+  // over the column: the view renders it, the stage shows a copy, a click on
+  // the copy clicks the original (the view's own delegation stays the one).
+  const toolsEl = document.createElement("div");
+  toolsEl.className = "welcome-review__tools";
+  shell.sheet.append(toolsEl);
+  toolsEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-voice-choice]");
+    if (!btn) return;
+    body
+      .querySelector(
+        `.pb2-voice-ways [data-voice-choice="${btn.dataset.voiceChoice}"][data-voice-ask="${btn.dataset.voiceAsk}"]`,
+      )
+      ?.click();
+  });
   const navEl = document.createElement("nav");
   navEl.className = "welcome-review__nav";
   navEl.setAttribute("aria-label", "Cards");
@@ -173,8 +188,20 @@ export function renderReview(target, sid, config, review) {
   const cards = () => {
     const all = [...body.querySelectorAll(".pb2-grid[data-recap-editing-card] > .pb2-block")];
     const pick = partOf(current()).pick;
-    const blocks = pick ? pick(all) : all;
-    all.forEach((el) => (el.hidden = !blocks.includes(el)));
+    const picked = pick ? pick(all) : all;
+    all.forEach((el) => (el.hidden = !picked.includes(el)));
+    // A tool strip (the voice's « Rewrite it from a source ») heads the column
+    // but is no card: no band, no dot, no focus.
+    const tools = picked.find((el) => el.matches(".pb2-voice-ways"));
+    if (tools) tools.hidden = true;
+    const strip = tools?.innerHTML || "";
+    if (toolsEl.dataset.html !== strip) {
+      toolsEl.dataset.html = strip;
+      toolsEl.innerHTML = strip;
+    }
+    shell.sheet.classList.toggle("has-tools", !!tools);
+    shell.sheet.style.setProperty("--tools-h", `${toolsEl.offsetHeight}px`);
+    const blocks = picked.filter((el) => el !== tools);
     if (blocks.length) return blocks;
     const panel = body.querySelector("[data-recap-editing-card]") || body.querySelector(".pb2__panel");
     return panel ? [panel] : [];
