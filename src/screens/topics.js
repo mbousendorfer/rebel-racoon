@@ -32,17 +32,17 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=2518";
-import { conceptText } from "../concepts.js?v=2518";
-import { navigate, getPath } from "../router.js?v=2518";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2518";
-import { renderTopbar } from "../components/topbar.js?v=2518";
-import { showToast } from "../components/toast.js?v=2518";
-import { renderEmptyState } from "../components/empty-state.js?v=2518";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2518";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2518";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2518";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2518";
+import { html, raw, escapeAttr } from "../utils.js?v=2519";
+import { conceptText } from "../concepts.js?v=2519";
+import { navigate, getPath } from "../router.js?v=2519";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2519";
+import { renderTopbar } from "../components/topbar.js?v=2519";
+import { showToast } from "../components/toast.js?v=2519";
+import { renderEmptyState } from "../components/empty-state.js?v=2519";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2519";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2519";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2519";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2519";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -53,7 +53,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=2518";
+} from "../topics-store.js?v=2519";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -62,13 +62,13 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=2518";
-import { renderTopicCard } from "../components/topic-card.js?v=2518";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=2518";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2518";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=2518";
-import { useTopicInChat } from "../topic-flow.js?v=2518";
-import { canEdit } from "../playbook-access.js?v=2518";
+} from "../topics-catalog.js?v=2519";
+import { renderTopicCard } from "../components/topic-card.js?v=2519";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=2519";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2519";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=2519";
+import { useTopicInChat } from "../topic-flow.js?v=2519";
+import { canEdit } from "../playbook-access.js?v=2519";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -992,6 +992,19 @@ function bind(target) {
 
   boundChange = (event) => {
     if (!view) return;
+
+    // « Source posts » opened: the tray unfolds under the article, below the
+    // sticky action bar, so a click looked like it did nothing. Bring the posts
+    // up into the pane. The renderer stays pure; the host scrolls.
+    const postsCheck = event.target.closest(".topics-view__pane-body .topic-article__section-check");
+    if (postsCheck?.checked) {
+      const pane = postsCheck.closest(".topics-view__pane-body");
+      let tray = postsCheck.nextElementSibling;
+      while (tray && !tray.classList.contains("topic-article__posts")) tray = tray.nextElementSibling;
+      if (pane && tray)
+        pane.scrollBy({ top: tray.getBoundingClientRect().top - pane.getBoundingClientRect().top - 16 });
+      return;
+    }
 
     // A multi-select checkbox: "kind" (lane), "marked" (answered statuses) or
     // "source". The filter key is the same as the data value except "source",

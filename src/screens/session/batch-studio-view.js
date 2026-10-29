@@ -12,29 +12,29 @@
 // The intake card lives OUTSIDE [data-batch-rest]; staging-loader ticks repaint
 // only the rest (list + commit), so the field is never clobbered mid-typing.
 
-import { isDemo } from "../../demo-mode.js?v=2518";
-import { renderDemoSample } from "../../demo-flow.js?v=2518";
-import * as batchStudio from "../../batch-studio.js?v=2518";
-import { isFlagOn } from "../../feature-flags.js?v=2518";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2518";
-import { escapeHtml, html, raw } from "../../utils.js?v=2518";
-import { dropzoneHTML } from "../../components/dropzone.js?v=2518";
-import { getContextById } from "../../contexts-store.js?v=2518";
-import { renderSourceCard } from "../../components/source-card.js?v=2518";
-import { isWorkspaceMode, playbookForNewWork } from "../../active-playbook.js?v=2518";
-import { usableContexts } from "../../playbook-access.js?v=2518";
+import { isDemo } from "../../demo-mode.js?v=2519";
+import { renderDemoSample } from "../../demo-flow.js?v=2519";
+import * as batchStudio from "../../batch-studio.js?v=2519";
+import { isFlagOn } from "../../feature-flags.js?v=2519";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2519";
+import { escapeHtml, html, raw } from "../../utils.js?v=2519";
+import { dropzoneHTML } from "../../components/dropzone.js?v=2519";
+import { getContextById } from "../../contexts-store.js?v=2519";
+import { renderSourceCard } from "../../components/source-card.js?v=2519";
+import { isWorkspaceMode, playbookForNewWork } from "../../active-playbook.js?v=2519";
+import { usableContexts } from "../../playbook-access.js?v=2519";
 import {
   classifyFile,
   startFileUpload,
   startUrlImport,
   startTextImport,
   startConnectorImport,
-} from "../../sources-stream.js?v=2518";
-import { showToast } from "../../components/toast.js?v=2518";
-import { setHashQuery } from "../../url-state.js?v=2518";
-import { navigate } from "../../router.js?v=2518";
-import { dotColorVar } from "../session.js?v=2518";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=2518";
+} from "../../sources-stream.js?v=2519";
+import { showToast } from "../../components/toast.js?v=2519";
+import { setHashQuery } from "../../url-state.js?v=2519";
+import { navigate } from "../../router.js?v=2519";
+import { dotColorVar } from "../session.js?v=2519";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=2519";
 
 // Origin sub-line for a staged batch source, shown in the source-card's meta row
 // (in place of the usual "N ideas · Processed · Added X").
