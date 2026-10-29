@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2502";
-import { conceptHint } from "./concepts.js?v=2502";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2504";
+import { conceptHint } from "./concepts.js?v=2504";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2502";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2502";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2502";
-import { isFlagOn } from "./feature-flags.js?v=2502";
-import { clipLookOf } from "./videos-store.js?v=2502";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2502";
-import { parseHashParams } from "./url-state.js?v=2502";
+} from "./playbook-brand-kit.js?v=2504";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2504";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2504";
+import { isFlagOn } from "./feature-flags.js?v=2504";
+import { clipLookOf } from "./videos-store.js?v=2504";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2504";
+import { parseHashParams } from "./url-state.js?v=2504";
 import {
   isListPart,
   voiceParts,
@@ -55,13 +55,13 @@ import {
   canLearnFrom,
   ADAPTED_FROM,
   voiceHasRules,
-} from "./voice-parts.js?v=2502";
-import { showToast } from "./components/toast.js?v=2502";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2502";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2502";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2502";
-import { consumeHandoff } from "./handoff.js?v=2502";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2502";
+} from "./voice-parts.js?v=2504";
+import { showToast } from "./components/toast.js?v=2504";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2504";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2504";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2504";
+import { consumeHandoff } from "./handoff.js?v=2504";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2504";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2502";
+} from "./social-profiles.js?v=2504";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1881,6 +1881,11 @@ function renderInfluencersPanel(data, edit) {
          </button>`
       : "";
 
+  // Reading: the tab's own head (lead + Add + Edit), like Competitors and the
+  // other tabs — the old panel head boxed the lead and showed an icon-only Edit.
+  if (!edit)
+    return `${pb2TabHead("influencers", addBtn)}
+      <section class="pb2-block pb2-block--bare" id="${section.id}" data-recap-roster="${r.scope}"><div class="recap__infsec">${rows}</div></section>`;
   return `
     <section class="recap__panel ${edit ? "is-editing" : ""}" id="${section.id}" data-recap-roster="${r.scope}" ${
       edit ? "data-recap-editing-card" : ""
@@ -2005,9 +2010,9 @@ const SECTION_LEADS = {
     ? "The voice I start from on every network. A network with a voice of its own adds its rules on top."
     : "How the Brand sounds, in five parts. I follow them in every draft.",
   brand: "How the Brand looks: its logos, colors, type, and the rules its images follow.",
-  images: "How I make this Brand's images: the styles I draw them in, and what Generate an image does on a draft.",
+  images: "How I make the Brand's images, and what I start from.",
   competitors: "Who the Brand is measured against, so I can position it.",
-  influencers: "The creators your audience listens to. I watch what they post for you.",
+  influencers: "The creators the Brand's audience listens to. I watch what they post.",
 };
 
 // The recap's sections with what each holds — the onboarding review walks

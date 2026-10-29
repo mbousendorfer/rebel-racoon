@@ -460,6 +460,9 @@
   align-items: center;
   gap: var(--ref-spacing-xs);
   flex-shrink: 0;
+  /* A tab without a button (Image generation) keeps the head's height, so the
+     lead and the first card don't jump on a tab switch. */
+  min-height: var(--comp-button-height);
 }
 
 .pb2-grid {
