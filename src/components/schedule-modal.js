@@ -1,17 +1,17 @@
-import { html, raw, escapeText, escapeAttr, formatTimeOfDay, formatClock } from "../utils.js?v=2547";
-import { showToast } from "./toast.js?v=2547";
-import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=2547";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2547";
+import { html, raw, escapeText, escapeAttr, formatTimeOfDay, formatClock } from "../utils.js?v=2548";
+import { showToast } from "./toast.js?v=2548";
+import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=2548";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2548";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
   normalizeNetwork,
-} from "../social-profiles.js?v=2547";
-import { getContextById } from "../contexts-store.js?v=2547";
-import { canEdit } from "../playbook-access.js?v=2547";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=2547";
+} from "../social-profiles.js?v=2548";
+import { getContextById } from "../contexts-store.js?v=2548";
+import { canEdit } from "../playbook-access.js?v=2548";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=2548";
 import {
   CADENCES,
   startOfDay,
@@ -21,7 +21,7 @@ import {
   planSlots,
   queueEntries,
   firstLine as extractFirstLine,
-} from "../schedule-engine.js?v=2547";
+} from "../schedule-engine.js?v=2548";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -788,7 +788,7 @@ function renderDayNote(slot, agenda) {
         const gap = formatGap(agenda.clash.when - slot.when);
         return gap === "same time" ? "Same time" : `${gap} apart`;
       })()
-    : `+${n} ${n === 1 ? "post" : "posts"} that day`;
+    : `+${n} scheduled that day`; // no noun: the modal says « draft » throughout
   return `
     <span class="schedule-modal__when-note${agenda.clash ? " is-clash" : ""}">
       <i class="${agenda.clash ? "ap-icon-warning_fill" : "ap-icon-calendar"}" aria-hidden="true"></i>
