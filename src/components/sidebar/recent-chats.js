@@ -2,29 +2,29 @@
 // date buckets, the rows, and their pin / rename / delete. Moved out of
 // sidebar.js, unchanged.
 
-import { isWorkspaceMode, scopeSessions } from "../../active-playbook.js?v=2504";
+import { isWorkspaceMode, scopeSessions } from "../../active-playbook.js?v=2506";
 import {
   getSessions,
   getSessionById,
   togglePin as togglePinSession,
   updateSession,
   deleteSession,
-} from "../../sessions-store.js?v=2504";
-import { isNewUser } from "../../user-mode.js?v=2504";
-import { escapeHtml } from "../../utils.js?v=2504";
-import { getContextById } from "../../contexts-store.js?v=2504";
-import { canView } from "../../playbook-access.js?v=2504";
-import { showToast } from "../toast.js?v=2504";
-import { open as openRenameModal } from "../rename-modal.js?v=2504";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2504";
-import { clearSession as clearAssistantSession } from "../../assistant.js?v=2504";
-import { clearSession as clearPostsSession } from "../../posts-store.js?v=2504";
-import { clearSession as clearLibrarySession } from "../../library.js?v=2504";
-import { clearSession as clearSourcesSession } from "../../sources-stream.js?v=2504";
-import { clearSession as clearPostPlansSession } from "../../post-plan-store.js?v=2504";
-import { getPath, navigate } from "../../router.js?v=2504";
-import { closePanel as closeRightPanel } from "../right-panel.js?v=2504";
-import { getOrganizePrefs } from "../sidebar.js?v=2504";
+} from "../../sessions-store.js?v=2506";
+import { isNewUser } from "../../user-mode.js?v=2506";
+import { escapeHtml } from "../../utils.js?v=2506";
+import { getContextById } from "../../contexts-store.js?v=2506";
+import { canView } from "../../playbook-access.js?v=2506";
+import { showToast } from "../toast.js?v=2506";
+import { open as openRenameModal } from "../rename-modal.js?v=2506";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2506";
+import { clearSession as clearAssistantSession } from "../../assistant.js?v=2506";
+import { clearSession as clearPostsSession } from "../../posts-store.js?v=2506";
+import { clearSession as clearLibrarySession } from "../../library.js?v=2506";
+import { clearSession as clearSourcesSession } from "../../sources-stream.js?v=2506";
+import { clearSession as clearPostPlansSession } from "../../post-plan-store.js?v=2506";
+import { getPath, navigate } from "../../router.js?v=2506";
+import { closePanel as closeRightPanel } from "../right-panel.js?v=2506";
+import { getOrganizePrefs } from "../sidebar.js?v=2506";
 
 // "Sort & group" control — options for the two rows. Grouping is limited to the
 // dimensions the session record supports: Playbook (contextId) and Date
@@ -277,22 +277,29 @@ function renderSessionRow(session, activeSessionId) {
   // The title gives back a truncated name and says what the dot is: the
   // chat's Playbook colour, otherwise named nowhere.
   const rowTitle = escapeHtml(ctx ? `${session.name} · Playbook: ${ctx.name}` : session.name);
-  // <div role="button"> rather than <button> so we can nest the <details>
-  // dropdown legitimately without breaking HTML semantics.
+  // The row is a plain wrapper: the chat is a real <button> and the actions
+  // menu its SIBLING — inside a role=button, the menu was presentational and
+  // unreachable for screen readers. The button's name carries the Playbook the
+  // dot only showed in colour; aria-current marks the open chat.
   return `
     <div
       title="${rowTitle}"
       class="app-sidebar__row ${isActive ? "is-active" : ""}"
       data-sidebar-session="${session.id}"
       data-sidebar-pinned="${isPinned ? "true" : "false"}"
-      role="button"
-      tabindex="0"
     >
-      <span
-        class="app-sidebar__row-color-dot app-sidebar__row-color-dot--${dotColor}"
-        aria-hidden="true"
-      ></span>
-      <span class="app-sidebar__row-title">${safeName}</span>
+      <button
+        type="button"
+        class="app-sidebar__row-link"
+        aria-label="${rowTitle}"
+        ${isActive ? 'aria-current="page"' : ""}
+      >
+        <span
+          class="app-sidebar__row-color-dot app-sidebar__row-color-dot--${dotColor}"
+          aria-hidden="true"
+        ></span>
+        <span class="app-sidebar__row-title">${safeName}</span>
+      </button>
       <details class="ap-select app-sidebar__row-menu" data-sidebar-row-menu>
         <summary
           class="app-sidebar__row-more"

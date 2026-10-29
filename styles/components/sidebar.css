@@ -173,7 +173,7 @@
    2.4.7). The 2px blue ring of the starter rows (session.css), inset so the
    scrolling list never clips it. */
 .app-sidebar__nav-item:focus-visible,
-.app-sidebar__row:focus-visible {
+.app-sidebar__row:has(.app-sidebar__row-link:focus-visible) {
   box-shadow: inset 0 0 0 2px var(--ref-color-electric-blue-100);
 }
 
@@ -339,8 +339,28 @@
 }
 
 .app-sidebar__row:hover,
-.app-sidebar__row:focus-visible {
+.app-sidebar__row:has(.app-sidebar__row-link:focus-visible) {
   background: var(--ref-color-grey-10);
+  outline: none;
+}
+
+/* The chat itself: a bare button filling the row, the row draws the states. */
+.app-sidebar__row-link {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.app-sidebar__row-link:focus-visible {
   outline: none;
 }
 
