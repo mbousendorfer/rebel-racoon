@@ -14,8 +14,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2450";
-import { navigate } from "../router.js?v=2450";
+import { html, raw, escapeHtml } from "../utils.js?v=2451";
+import { navigate } from "../router.js?v=2451";
 import {
   getDraft,
   patchDraft,
@@ -23,11 +23,13 @@ import {
   readAltFiles,
   writeAltManually,
   analyzeAltInterview,
-} from "../context-builder.js?v=2450";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2450";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2450";
-import { connectors as connectorMocks } from "../mocks.js?v=2450";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=2450";
+  setAltVoiceSource,
+} from "../context-builder.js?v=2451";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2451";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2451";
+import { connectors as connectorMocks } from "../mocks.js?v=2451";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2451";
+import { networkIcon } from "../social-profiles.js?v=2451";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
@@ -269,10 +271,10 @@ export function renderWelcomeAltInterview(_params, target) {
 
 const LANGUAGE_IN_ENGLISH = { Français: "French", Español: "Spanish" };
 
-function optionRow({ name, value, checked, type = "radio", lead, title, desc = "", badge = "" }) {
+function optionRow({ name, value, checked, disabled = false, type = "radio", lead, title, desc = "", badge = "" }) {
   const control =
     type === "radio"
-      ? `<span class="ap-radio-container"><input type="radio" name="${name}" value="${escapeHtml(value)}" ${checked ? "checked" : ""} /></span>`
+      ? `<span class="ap-radio-container"><input type="radio" name="${name}" value="${escapeHtml(value)}" ${checked ? "checked" : ""} ${disabled ? "disabled" : ""} /></span>`
       : `<span class="ap-checkbox-container"><input type="checkbox" name="${name}" value="${escapeHtml(value)}" ${checked ? "checked" : ""} /><i></i></span>`;
   return html`
     <li>
@@ -318,6 +320,167 @@ export function renderWelcomeAltLanguage(_params, target) {
       const lang = new FormData(e.target).get("language") || DEFAULT_LANGUAGE;
       patchDraft(sid, { languages: [lang], primaryLanguage: lang, language: lang });
       goNext("language");
+    },
+  });
+}
+
+// ── /welcome-alt/voice-from ──────────────────────────────────────────────
+// Prod's second question (« How should I learn your voice? », 2026-10-29,
+// asked: « Oui, comme en prod »): a connected profile's posts, a document the
+// user wrote, or their own words used as written — or Skip, and the voice comes
+// from the website. Each way asks its own follow-up on the same screen.
+
+const VOICE_WAYS = [
+  { value: "profile", icon: "ap-icon-user", title: "Analyze a connected profile", desc: "I'll read its recent posts" },
+  {
+    value: "document",
+    icon: "ap-icon-upload",
+    title: "Upload a document you wrote",
+    desc: "PDF, Word, text, or Markdown. I'll learn your voice from it",
+  },
+  {
+    value: "custom",
+    icon: "ap-icon-pen",
+    title: "Write or paste your voice",
+    desc: "Used exactly as written, no analysis",
+  },
+];
+
+function pickDocument(onFile) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".pdf,.docx,.txt,.md,.markdown,application/pdf,text/plain,text/markdown";
+  input.addEventListener("change", () => {
+    const file = input.files?.[0];
+    if (file) onFile(file);
+  });
+  input.click();
+}
+
+export function renderWelcomeAltVoiceFrom(_params, target) {
+  let view = "choose"; // "choose" | "profile" | "custom"
+  const backToChoose = raw(html`
+    <div class="welcome-flow__actions">
+      <button type="button" class="ap-button ghost grey" data-voice-back>
+        <i class="ap-icon-arrow-left"></i><span>Back</span>
+      </button>
+      ${raw(continueButton("Continue", { disabled: view === "custom" }))}
+    </div>
+  `);
+  return screen(target, {
+    step: "voiceFrom",
+    left: () => {
+      if (view === "profile") {
+        const accounts = voiceAccounts();
+        const first = accounts.find((p) => p.postCount > 0)?.id;
+        return html`
+          <h1 class="welcome-flow__title" id="welcomeFlowTitle">Which profile should I analyze?</h1>
+          <p class="welcome-intro__sub">I'll read its recent posts and learn your voice from them.</p>
+          <form data-voice-profile-form novalidate>
+            <ul class="welcome-flow__options">
+              ${accounts.map((p) =>
+                optionRow({
+                  name: "account",
+                  value: p.id,
+                  checked: p.id === first,
+                  disabled: !p.postCount,
+                  lead: `<span class="welcome-flow__glyph is-icon"><i class="${networkIcon(p.platform)}" aria-hidden="true"></i></span>`,
+                  title: p.handle,
+                  desc: p.postCount
+                    ? `${p.platformLabel} · ${p.postCount} posts`
+                    : `${p.platformLabel} · No posts to read yet`,
+                }),
+              )}
+            </ul>
+            ${backToChoose}
+          </form>
+        `;
+      }
+      if (view === "custom") {
+        return html`
+          <h1 class="welcome-flow__title" id="welcomeFlowTitle">Write or paste your voice</h1>
+          <p class="welcome-intro__sub">I'll use it exactly as written.</p>
+          <form class="welcome-flow__answer" data-voice-custom-form novalidate>
+            <div class="ap-textarea-field welcome-flow__textarea">
+              <textarea
+                name="answer"
+                rows="5"
+                placeholder="e.g. Candid and specific. Short paragraphs, no jargon. Confident but down-to-earth."
+                aria-labelledby="welcomeFlowTitle"
+                data-flow-autofocus
+              ></textarea>
+            </div>
+            ${raw(html`
+              <div class="welcome-flow__actions">
+                <button type="button" class="ap-button ghost grey" data-voice-back>
+                  <i class="ap-icon-arrow-left"></i><span>Back</span>
+                </button>
+                ${raw(continueButton("Continue", { disabled: true }))}
+              </div>
+            `)}
+          </form>
+        `;
+      }
+      return html`
+        <h1 class="welcome-flow__title" id="welcomeFlowTitle">How should I learn your voice?</h1>
+        <p class="welcome-intro__sub">Pick a source, or skip and I'll read it from your website.</p>
+        <ul class="welcome-flow__options">
+          ${VOICE_WAYS.filter((w) => w.value !== "profile" || voiceAccounts().length).map(
+            (w) => html`
+              <li>
+                <button type="button" class="welcome-flow__option" data-voice-way="${w.value}">
+                  <span class="welcome-flow__glyph is-icon"><i class="${w.icon}" aria-hidden="true"></i></span>
+                  <span class="welcome-flow__option-text">
+                    <span class="welcome-flow__option-title">${w.title}</span>
+                    <span class="welcome-flow__option-desc">${w.desc}</span>
+                  </span>
+                  <i class="ap-icon-arrow-right welcome-flow__option-add" aria-hidden="true"></i>
+                </button>
+              </li>
+            `,
+          )}
+        </ul>
+        ${actions("", { skip: "Skip" })}
+      `;
+    },
+    onInput: (e) => {
+      const next = e.target.closest("[data-voice-custom-form]")?.querySelector("[data-flow-next]");
+      if (next) next.disabled = !e.target.value.trim();
+    },
+    onSubmit: (e, sid) => {
+      if (e.target.matches("[data-voice-profile-form]")) {
+        const id = new FormData(e.target).get("account");
+        if (!id) return;
+        setAltVoiceSource(sid, { kind: "profile", id });
+        return goNext("voiceFrom");
+      }
+      if (e.target.matches("[data-voice-custom-form]")) {
+        const text = e.target.querySelector("textarea")?.value.trim();
+        if (!text) return;
+        setAltVoiceSource(sid, { kind: "custom", text });
+        goNext("voiceFrom");
+      }
+    },
+    onClick: (e, sid, shell) => {
+      if (e.target.closest("[data-voice-back]")) {
+        view = "choose";
+        return shell.paint();
+      }
+      if (e.target.closest("[data-flow-skip]")) {
+        setAltVoiceSource(sid, null);
+        return goNext("voiceFrom");
+      }
+      const way = e.target.closest("[data-voice-way]")?.dataset.voiceWay;
+      if (way === "document")
+        return pickDocument((file) => {
+          setAltVoiceSource(sid, { kind: "document", name: file.name });
+          goNext("voiceFrom");
+        });
+      if (way) {
+        view = way;
+        shell.paint();
+        target.querySelector("[data-flow-autofocus]")?.focus();
+      }
     },
   });
 }

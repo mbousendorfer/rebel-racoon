@@ -12,14 +12,20 @@
 // objective, contentAction, ctaLinks, language, color, suggestions, editingId,
 // onComplete }.
 
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2450";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2450";
-import { analyzeWebsite, analyzeBrandFiles, analyzeInterview } from "./context-mock-analysis.js?v=2450";
-import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=2450";
-import { markIntroSeen } from "./components/voice-intro-modal.js?v=2450";
-import { getConnectedProfiles } from "./social-profiles.js?v=2450";
-import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2450";
-import { isFlagOn } from "./feature-flags.js?v=2450";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2451";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2451";
+import {
+  analyzeWebsite,
+  analyzeSocialProfiles,
+  analyzeDocument,
+  analyzeBrandFiles,
+  analyzeInterview,
+} from "./context-mock-analysis.js?v=2451";
+import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=2451";
+import { markIntroSeen } from "./components/voice-intro-modal.js?v=2451";
+import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2451";
+import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2451";
+import { isFlagOn } from "./feature-flags.js?v=2451";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -240,6 +246,43 @@ function applyAnalysisToDraft(d, analysis) {
   d.color = analysis.suggestions.color || "orange";
   Object.assign(d, sectionPatchFromAnalysis(analysis));
   d.imageDefaults = imageDefaultsFromAnalysis(analysis);
+  // The voice source picked after the website wins over what the source said.
+  if (d.voiceSource) applyVoiceSource(d);
+}
+
+// Prod's « How should I learn your voice? », asked right after the website
+// (2026-10-29, asked: « Oui, comme en prod »): a connected profile's posts, a
+// document the user wrote, or their own words used as written — or null, the
+// voice read from the source. Picked before the read lands, it waits for it
+// (applyAnalysisToDraft); after, it lands now.
+//   { kind: "profile", id } | { kind: "document", name } | { kind: "custom", text }
+export function setAltVoiceSource(sessionId, source) {
+  const d = drafts.get(sessionId);
+  if (!d) return;
+  d.voiceSource = source || null;
+  d.voiceLearnedFrom = "";
+  if (d.voiceSource && isAnalysisReady(sessionId)) applyVoiceSource(d);
+  notify(sessionId);
+}
+
+function applyVoiceSource(d) {
+  const src = d.voiceSource;
+  if (src.kind === "custom") {
+    Object.assign(d, { voiceMode: "manual", voiceManual: src.text, voiceLearnedFrom: "your words" });
+    return;
+  }
+  const profile = src.kind === "profile" ? getConnectedProfileById(src.id) : null;
+  if (src.kind === "profile" && !profile) return;
+  const s = (profile ? analyzeSocialProfiles([profile.id]) : analyzeDocument({ name: src.name })).suggestions;
+  Object.assign(d, {
+    voiceMode: "guided",
+    voiceSummary: s.voiceSummary || "",
+    voiceAlways: cloneItems(s.voiceAlways),
+    voiceNever: cloneItems(s.voiceNever),
+    voiceByPost: cloneItems(s.voiceByPost),
+    voiceSometimes: cloneItems(s.voiceSometimes),
+    voiceLearnedFrom: profile ? `the posts of ${profile.handle.replace(/\.$/, "")}` : src.name,
+  });
 }
 
 // Patch the draft from outside the conversational flow — used by the
@@ -418,6 +461,8 @@ export function save(sessionId) {
     signatureHooks: Array.isArray(d.signatureHooks) ? d.signatureHooks.filter((s) => (s || "").trim()) : [],
     closingPatterns: Array.isArray(d.closingPatterns) ? d.closingPatterns.filter((s) => (s || "").trim()) : [],
     voiceSummary: d.voiceSummary || "",
+    voiceMode: d.voiceMode || "guided",
+    voiceManual: d.voiceManual || "",
     voiceAlways: cloneItems(d.voiceAlways),
     voiceNever: cloneItems(d.voiceNever),
     voiceByPost: cloneItems(d.voiceByPost),

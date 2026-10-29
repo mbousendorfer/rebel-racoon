@@ -22,19 +22,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2450";
-import { isFlagOn } from "../../feature-flags.js?v=2450";
-import { parseHashParams } from "../../url-state.js?v=2450";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2450";
-import { showToast } from "../../components/toast.js?v=2450";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2450";
-import { open as openRename } from "../../components/rename-modal.js?v=2450";
-import { getContextById } from "../../contexts-store.js?v=2450";
-import { escapeHtml } from "../../utils.js?v=2450";
-import * as ce from "../../caption-editor.js?v=2450";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2450";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2450";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2450";
+import { navigate } from "../../router.js?v=2451";
+import { isFlagOn } from "../../feature-flags.js?v=2451";
+import { parseHashParams } from "../../url-state.js?v=2451";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2451";
+import { showToast } from "../../components/toast.js?v=2451";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2451";
+import { open as openRename } from "../../components/rename-modal.js?v=2451";
+import { getContextById } from "../../contexts-store.js?v=2451";
+import { escapeHtml } from "../../utils.js?v=2451";
+import * as ce from "../../caption-editor.js?v=2451";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2451";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2451";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2451";
 import {
   framingContext,
   initialSegments,
@@ -54,7 +54,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2450";
+} from "../../clip-framing.js?v=2451";
 import {
   fmtMs,
   fmtPrecise,
@@ -69,8 +69,8 @@ import {
   dsSelect,
   bindSelectDismiss,
   EDITOR_TOOLS as TOOLS,
-} from "./shared.js?v=2450";
-import { primeDraftSetup } from "./project.js?v=2450";
+} from "./shared.js?v=2451";
+import { primeDraftSetup } from "./project.js?v=2451";
 
 const MIN_CLIP_MS = 5000;
 const MAX_CLIP_MS = 300000;

@@ -9,11 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2450";
-import { html, raw, escapeHtml } from "../utils.js?v=2450";
-import { navigate } from "../router.js?v=2450";
-import { parseHashParams } from "../url-state.js?v=2450";
-import { isFlagOn } from "../feature-flags.js?v=2450";
+import "../archie-pixels.js?v=2451";
+import { html, raw, escapeHtml } from "../utils.js?v=2451";
+import { navigate } from "../router.js?v=2451";
+import { parseHashParams } from "../url-state.js?v=2451";
+import { isFlagOn } from "../feature-flags.js?v=2451";
 import {
   altSteps,
   createAltDraft,
@@ -21,9 +21,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2450";
-import { networkIcon, networkLabel } from "../social-profiles.js?v=2450";
-import { playbookNetworks } from "../voice-parts.js?v=2450";
+} from "../context-builder.js?v=2451";
+import { getConnectedProfiles, networkIcon, networkLabel } from "../social-profiles.js?v=2451";
+import { playbookNetworks } from "../voice-parts.js?v=2451";
 import {
   readSessionId,
   isIntegrated,
@@ -33,8 +33,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2450";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2450";
+} from "./welcome-alt-recap.js?v=2451";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2451";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -45,6 +45,7 @@ export const STEP_TEXT = {
   url: { title: "Share your website", desc: "Your website, a few files, or a handful of questions." },
   language: { title: "Pick your language", desc: "The one I'll write your posts in." },
   documents: { title: "Add brand documents", desc: "Optional: a brand book or guidelines." },
+  voiceFrom: { title: "Choose how I learn your voice", desc: "Your posts, a document, or your own words." },
   voice: {
     title: "Check your voice",
     desc: "How you sound, on every network.",
@@ -56,6 +57,7 @@ const ROUTE = {
   url: "/welcome-alt/brand",
   language: "/welcome-alt/language",
   documents: "/welcome-alt/documents",
+  voiceFrom: "/welcome-alt/voice-from",
   voice: "/welcome-alt/voice",
   recap: "/welcome-alt/ready",
 };
@@ -66,7 +68,17 @@ const ROUTE = {
 // The run, in order, under the flags of the moment: the steps before the
 // reveal, the reveal and the Playbook's review, then the Voice's own review.
 export function flowSteps() {
-  return [...altSteps().filter((id) => ROUTE[id]), "recap", "voice"];
+  // The voice source is asked after the source, as in prod's wizard (2026-10-29).
+  return [...altSteps().filter((id) => ROUTE[id]), "voiceFrom", "recap", "voice"];
+}
+
+// The connected accounts a voice can be learned from: prod reads LinkedIn,
+// Facebook and Instagram (voice-accounts.ts), the ones with posts first.
+const VOICE_NETWORKS = new Set(["linkedin", "facebook", "instagram"]);
+export function voiceAccounts() {
+  return getConnectedProfiles()
+    .filter((p) => VOICE_NETWORKS.has(p.platform))
+    .sort((a, b) => (b.postCount || 0) - (a.postCount || 0));
 }
 
 function goTo(step) {
