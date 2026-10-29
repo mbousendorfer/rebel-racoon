@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2440";
-import { conceptHint } from "./concepts.js?v=2440";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2441";
+import { conceptHint } from "./concepts.js?v=2441";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2440";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2440";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2440";
-import { isFlagOn } from "./feature-flags.js?v=2440";
-import { clipLookOf } from "./videos-store.js?v=2440";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2440";
-import { parseHashParams } from "./url-state.js?v=2440";
+} from "./playbook-brand-kit.js?v=2441";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2441";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2441";
+import { isFlagOn } from "./feature-flags.js?v=2441";
+import { clipLookOf } from "./videos-store.js?v=2441";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2441";
+import { parseHashParams } from "./url-state.js?v=2441";
 import {
   isListPart,
   voiceParts,
@@ -53,13 +53,13 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2440";
-import { showToast } from "./components/toast.js?v=2440";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2440";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2440";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2440";
-import { consumeHandoff } from "./handoff.js?v=2440";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2440";
+} from "./voice-parts.js?v=2441";
+import { showToast } from "./components/toast.js?v=2441";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2441";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2441";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2441";
+import { consumeHandoff } from "./handoff.js?v=2441";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2441";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -68,7 +68,8 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2440";
+  renderProfileTag,
+} from "./social-profiles.js?v=2441";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2889,8 +2890,12 @@ function networkPickerCards(data, nets, first) {
   const row = (net) => {
     const accounts = accountsOn(net);
     const on = picked.includes(net);
-    const caption = accounts.length ? accounts.map((a) => a.handle).join(", ") : "Not connected";
+    // Each account wears its avatar (the house profile tag, asked: « les profils
+    // devraient porter leurs avatars aussi »).
     const toFill = on && !networkVoiceFilled(data, net) ? " · to fill in" : "";
+    const caption = accounts.length
+      ? `${accounts.map((a) => renderProfileTag(a)).join("")}${toFill ? `<span>${esc(toFill)}</span>` : ""}`
+      : esc(`Not connected${toFill}`);
     return `
     <label class="pb2-netpick__row">
       <span class="ap-checkbox-container" data-pb2-voice-rules="${esc(net)}"><input type="checkbox" ${
@@ -2899,7 +2904,7 @@ function networkPickerCards(data, nets, first) {
       <i class="${networkIcon(net)} pb2-netpick__icon" aria-hidden="true"></i>
       <span class="pb2-netpick__text">
         <span class="pb2-netpick__name">${esc(networkLabel(net))}</span>
-        <span class="pb2-netpick__account">${esc(caption + toFill)}</span>
+        <span class="pb2-netpick__account">${caption}</span>
       </span>
     </label>`;
   };
