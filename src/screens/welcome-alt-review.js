@@ -32,12 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2435";
-import { navigate } from "../router.js?v=2435";
-import { getDraft, patchDraft } from "../context-builder.js?v=2435";
-import { mount } from "../playbook-view.js?v=2435";
-import { parseHashParams } from "../url-state.js?v=2435";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2435";
+import { html, raw } from "../utils.js?v=2436";
+import { navigate } from "../router.js?v=2436";
+import { getDraft, patchDraft } from "../context-builder.js?v=2436";
+import { mount } from "../playbook-view.js?v=2436";
+import { parseHashParams } from "../url-state.js?v=2436";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2436";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -97,6 +97,23 @@ export function renderReview(target, sid, config, review) {
             : here && count > 1
               ? `<span class="welcome-review__count">${index + 1} of ${count}</span>`
               : "";
+          // A part that adds rather than reviews (`action`: the voice review's
+          // networks) is a + button, not a row like the parts (2026-10-29, asked:
+          // « plutôt un genre de "bouton +" »).
+          if (t.action)
+            return html`
+              ${raw(group)}
+              <li>
+                <button
+                  type="button"
+                  class="ap-button ghost blue welcome-review__add"
+                  data-review-part="${t.id}"
+                  aria-current="${here ? "true" : "false"}"
+                >
+                  <i class="ap-icon-plus" aria-hidden="true"></i><span>${t.action}</span>
+                </button>
+              </li>
+            `;
           return html`
             ${raw(group)}
             <li>
