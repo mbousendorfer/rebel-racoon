@@ -1030,12 +1030,100 @@
 }
 
 /* ── Voice per network (flag voicePerNetwork) ──
- * The Voice profile's own tabs (Default voice · one per network), between the
- * page tabs and the tab head. A network's own rules carry a grey tag; a
- * network that writes in the default voice shows it on grey (the rules turn
- * white so they still read as rules); a stale voice gets a DS warning. */
-.pb2-voice-tabs {
-  margin-bottom: var(--ref-spacing-md);
+ * The voices as the DS list panel, left of the voice on screen — the page's
+ * tabs stay the only row of tabs (2026-10-29). A network's own rules carry a
+ * grey tag; a network that writes in the default voice shows it on grey (the
+ * rules turn white so they still read as rules); a stale voice gets a DS
+ * warning. */
+.pb2-voice-layout {
+  display: grid;
+  /* 225: the DS secondary-nav column (page-patterns P6). */
+  grid-template-columns: 225px minmax(0, 1fr);
+  gap: var(--ref-spacing-md);
+  align-items: start;
+}
+
+.pb2-voice-main {
+  min-width: 0;
+}
+
+/* The DS column, as a card on the page's grey: grey-20 all round (the DS's
+   own grey-10 right edge is a full-height column's), hugging its rows, sticky
+   under the tabs like the head beside it. Visible overflow: Another network…
+   opens its menu past the card. */
+.pb2-voice-nav {
+  position: sticky;
+  top: calc(var(--pb2-tabs-h, 0px) + var(--ref-spacing-xxs));
+  height: auto;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  overflow: visible;
+}
+
+.pb2-voice-nav__items {
+  padding: var(--ref-spacing-xxs) 0;
+  overflow: visible;
+}
+
+/* A row is a <button>: only the browser's own button look is reset; the
+   hover and .selected stay the DS's. */
+.pb2-voice-nav__item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+}
+
+.pb2-voice-nav__foot {
+  /* flex: the menu hugs its button, never the column's width. */
+  display: flex;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+/* The voice on screen names itself: its title (h2) over its sentence. */
+.pb2-tabhead__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+.pb2-tabhead__title {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  color: var(--ref-color-grey-100);
+  font-family: var(--sys-text-style-h2-font-family);
+  font-size: var(--sys-text-style-h2-size);
+  font-weight: var(--sys-text-style-h2-weight);
+  line-height: var(--sys-text-style-h2-line-height);
+}
+
+.pb2-tabhead__sub {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+}
+
+/* « Use my default voice instead » closes a network's own voice. */
+.pb2-voice-reset {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--ref-spacing-md);
+}
+
+@media (max-width: 900px) {
+  .pb2-voice-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pb2-voice-nav {
+    position: static;
+  }
 }
 
 .pb2-voice-tag {
@@ -1090,43 +1178,6 @@
   margin-top: var(--ref-spacing-xs);
 }
 
-/* Your networks, at the head of the default voice on a saved Playbook: one row
-   per network (icon · name · its state · the way to its voice), grey-20
-   hairlines between rows, the action right-aligned in its own column. */
-.pb2-voice-nets {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.pb2-voice-nets__row {
-  display: grid;
-  grid-template-columns: auto minmax(96px, 160px) 1fr auto;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xs) 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-100);
-}
-
-.pb2-voice-nets__row + .pb2-voice-nets__row {
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
-.pb2-voice-nets__name {
-  font-weight: var(--sys-text-style-body-bold-weight);
-}
-
-.pb2-voice-nets__state {
-  color: var(--ref-color-grey-80);
-}
-
-.pb2-voice-nets__foot {
-  display: flex;
-  margin-top: var(--ref-spacing-xs);
-}
-
 /* How your clips look (flag clipsSpace) — four settings, saved as they change. */
 .pb2-cliplook {
   display: flex;
@@ -1138,14 +1189,6 @@
 .pb2-cliplook .ap-select {
   width: 320px;
   max-width: 100%;
-}
-
-/* A network tab that only follows the default voice says so, quietly. */
-.pb2-voice-tabs__inherit {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-80);
 }
 
 /* « Rewrite it from », at the head of a voice in edit: a tool, not a field.
