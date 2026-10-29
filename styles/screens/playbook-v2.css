@@ -1073,8 +1073,15 @@
 .pb2-voice-accounts {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--ref-spacing-xxs);
   margin-top: var(--ref-spacing-xxs);
+}
+
+.pb2-voice-accounts__label {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
 }
 
 .pb2-voice-net__foot {
