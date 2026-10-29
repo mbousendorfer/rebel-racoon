@@ -5,7 +5,7 @@
 // two modals (with z-index races and Esc behaviour undefined).
 //
 // Usage:
-//   import { requestOpen, notifyClose } from "./modal-coordinator.js?v=2536";
+//   import { requestOpen, notifyClose } from "./modal-coordinator.js?v=2537";
 //
 //   export function open() {
 //     requestOpen("bugReport", close);   // closes the active overlay first
@@ -52,14 +52,20 @@ function engage(id) {
   if (!dialog) return;
   let top = dialog;
   while (top.parentElement && top.parentElement !== document.body) top = top.parentElement;
+  // The open overlay's backdrop stays live: most backdrops are body children
+  // apart from their dialog, and an inert one swallowed the click-outside-to-close.
+  const isOpenBackdrop = (node) => node.classList.contains("app-modal-backdrop") && !node.hidden;
   inertNodes = [...document.body.children].filter(
-    (node) => node !== top && node.id !== "toastRegion" && node.tagName !== "SCRIPT" && !node.inert,
+    (node) =>
+      node !== top && node.id !== "toastRegion" && node.tagName !== "SCRIPT" && !node.inert && !isOpenBackdrop(node),
   );
   for (const node of inertNodes) node.inert = true;
   if (dialog.contains(document.activeElement)) return;
+  // The first control, but not the close X (first in the markup): a first Enter
+  // would close the dialog. The X only when it's the one control.
+  const controls = [...dialog.querySelectorAll(FOCUSABLE)].filter((el) => el.getClientRects().length);
   const target =
-    dialog.querySelector("[autofocus]") ||
-    [...dialog.querySelectorAll(FOCUSABLE)].find((el) => el.getClientRects().length);
+    dialog.querySelector("[autofocus]") || controls.find((el) => !el.matches(".ap-dialog-close")) || controls[0];
   if (target) target.focus({ preventScroll: true });
   else {
     dialog.setAttribute("tabindex", "-1");

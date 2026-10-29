@@ -19,11 +19,11 @@
 //   - Subscribes to the sessions-store so the result list refreshes if a session
 //     is renamed / deleted from elsewhere while the modal is open.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2536";
-import { escapeHtml } from "../utils.js?v=2536";
-import { navigate } from "../router.js?v=2536";
-import { getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=2536";
-import { getContextById } from "../contexts-store.js?v=2536";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2537";
+import { escapeHtml } from "../utils.js?v=2537";
+import { navigate } from "../router.js?v=2537";
+import { getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=2537";
+import { getContextById } from "../contexts-store.js?v=2537";
 
 const MODAL_ID = "search";
 
@@ -31,7 +31,6 @@ let backdrop, modal, inputEl, resultsEl;
 let initialized = false;
 let isOpen = false;
 let highlightIndex = 0;
-let lastFocus = null;
 
 const HTML = `
 <div class="app-modal-backdrop search-modal__backdrop" id="searchBackdrop" hidden></div>
@@ -249,7 +248,6 @@ export function open() {
   injectOnce();
   requestOpen(MODAL_ID, close);
 
-  lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   inputEl.value = "";
   highlightIndex = 0;
   renderResults();
@@ -274,13 +272,6 @@ function close() {
   backdrop.hidden = true;
   document.body.classList.remove("has-modal");
   isOpen = false;
+  // Focus goes back to the trigger in notifyClose (modal-coordinator.js).
   notifyClose(MODAL_ID);
-  // Return focus to whatever opened us (typically the Search… nav row) so
-  // keyboard users don't get teleported to <body>.
-  if (lastFocus && typeof lastFocus.focus === "function") {
-    try {
-      lastFocus.focus({ preventScroll: true });
-    } catch {}
-  }
-  lastFocus = null;
 }

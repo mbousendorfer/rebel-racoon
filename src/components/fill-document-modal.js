@@ -13,9 +13,9 @@
 //     it fires onConfirm({ file, url }) then closes. A warning notes the
 //     overwrite. Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2536";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2536";
-import { detectUrlService } from "../url-services.js?v=2536";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2537";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2537";
+import { detectUrlService } from "../url-services.js?v=2537";
 
 const MODAL_ID = "fill-document";
 const ACCEPT = ".pdf,.doc,.docx,.txt,.md,.rtf,.pptx,.csv";
@@ -27,7 +27,6 @@ let pendingOnDismiss = null;
 let selectedFile = null;
 // Element focused before the dialog opened — focus returns here on close so
 // keyboard users land back where they were (escape-routes / focus-management).
-let lastFocused = null;
 
 const HTML = `
 <div class="app-modal-backdrop fill-document-modal__backdrop" id="fillDocBackdrop" hidden></div>
@@ -197,7 +196,6 @@ export function open({ onConfirm = null, onDismiss = null } = {}) {
   syncConfirm();
   updateUrlPrefix();
 
-  lastFocused = document.activeElement;
   backdrop.hidden = false;
   backdrop.classList.add("open");
   modal.classList.add("open");
@@ -216,10 +214,8 @@ function close() {
   document.body.classList.remove("has-modal");
   pendingOnConfirm = null;
   selectedFile = null;
+  // Focus goes back to the trigger in notifyClose (modal-coordinator.js).
   notifyClose(MODAL_ID);
-  // Return focus to the trigger.
-  if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
-  lastFocused = null;
   const dismissed = pendingOnDismiss;
   pendingOnDismiss = null;
   if (typeof dismissed === "function") dismissed();
