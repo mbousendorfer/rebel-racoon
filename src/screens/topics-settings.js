@@ -29,22 +29,22 @@
 // now does — and a row cannot without turning the list into a form. No save bar:
 // every control commits immediately through updateFeed.
 
-import { html, raw } from "../utils.js?v=2544";
-import { navigate } from "../router.js?v=2544";
-import { parseHashParams } from "../url-state.js?v=2544";
-import { renderTopbar } from "../components/topbar.js?v=2544";
-import { renderEmptyState } from "../components/empty-state.js?v=2544";
-import { getContextById, getDefaultContext } from "../contexts-store.js?v=2544";
+import { html, raw } from "../utils.js?v=2545";
+import { navigate } from "../router.js?v=2545";
+import { parseHashParams } from "../url-state.js?v=2545";
+import { renderTopbar } from "../components/topbar.js?v=2545";
+import { renderEmptyState } from "../components/empty-state.js?v=2545";
+import { getContextById, getDefaultContext } from "../contexts-store.js?v=2545";
 import {
   getActivePlaybook,
   isWorkspaceMode,
   catalogueRoute,
   subscribe as subscribeScope,
-} from "../active-playbook.js?v=2544";
-import { editableContexts, visibleContexts, canEdit } from "../playbook-access.js?v=2544";
-import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2544";
-import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=2544";
-import { open as openFeedback } from "../components/feedback-modal.js?v=2544";
+} from "../active-playbook.js?v=2545";
+import { editableContexts, visibleContexts, canEdit } from "../playbook-access.js?v=2545";
+import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2545";
+import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=2545";
+import { open as openFeedback } from "../components/feedback-modal.js?v=2545";
 
 // Above this many Playbooks the picker earns a search field. Below it, a search
 // box over four rows is just noise.
@@ -138,7 +138,8 @@ function renderPage() {
     return html`<div class="topics-settings__content">
       ${raw(
         renderEmptyState({
-          icon: "ap-icon-target",
+          // The feed's own empty state, word for word, when there is no Playbook.
+          icon: "ap-icon-antenna",
           // Shared Playbooks only: their feed is their owner's call, so say that
           // rather than "none yet".
           ...(visibleContexts().length
@@ -147,8 +148,8 @@ function renderPage() {
                 body: "Only a Playbook's owner can change what its feed listens to. Create your own to set one up.",
               }
             : {
-                title: "No Playbooks yet",
-                body: "I listen on behalf of a Playbook. Create one and I'll show you what I can watch for it.",
+                title: "Get Topics from your competitors and influencers",
+                body: "Create a Playbook and I'll read what its competitors and influencers post.",
               }),
           actionHtml: `<button type="button" class="ap-button primary blue" data-settings-playbooks><i class="ap-icon-plus"></i><span>Create a Playbook</span></button>`,
           wrapperClass: "topics-settings__empty",
