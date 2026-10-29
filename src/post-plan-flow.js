@@ -21,16 +21,16 @@ import {
   postActivity,
   postDraftResult,
   GENERATION_TOOLS,
-} from "./assistant.js?v=2509";
-import * as inlineQuestion from "./inline-question.js?v=2509";
-import { addPostDraft } from "./posts-store.js?v=2509";
-import { getSessionById } from "./sessions-store.js?v=2509";
-import { getContextById } from "./contexts-store.js?v=2509";
-import { playbookForNewWork } from "./active-playbook.js?v=2509";
-import { getConnectedProfiles, buildConnectedProfileItems } from "./social-profiles.js?v=2509";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2509";
-import { requireNetworkVoices } from "./network-voice-flow.js?v=2509";
-import { createPlan, updatePlan, getPlans } from "./post-plan-store.js?v=2509";
+} from "./assistant.js?v=2510";
+import * as inlineQuestion from "./inline-question.js?v=2510";
+import { addPostDraft } from "./posts-store.js?v=2510";
+import { getSessionById } from "./sessions-store.js?v=2510";
+import { getContextById } from "./contexts-store.js?v=2510";
+import { playbookForNewWork } from "./active-playbook.js?v=2510";
+import { getConnectedProfiles, buildConnectedProfileItems } from "./social-profiles.js?v=2510";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2510";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2510";
+import { createPlan, updatePlan, getPlans } from "./post-plan-store.js?v=2510";
 
 // "write / draft / create a post about X" — the ask this flow answers. The
 // topic is everything after "about".

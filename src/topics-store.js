@@ -49,10 +49,10 @@
 //   markUsed(id) / ignoreTopic(id, reason) / unignoreTopic(id)
 //   subscribe(fn)                      → unsubscribe
 
-import { topics as seed, DEMO_TOPICS } from "./mocks.js?v=2509";
-import { isDemo } from "./demo-mode.js?v=2509";
-import { isNewUser } from "./user-mode.js?v=2509";
-import { createNotifier } from "./store-utils.js?v=2509";
+import { topics as seed, DEMO_TOPICS } from "./mocks.js?v=2510";
+import { isDemo } from "./demo-mode.js?v=2510";
+import { isNewUser } from "./user-mode.js?v=2510";
+import { createNotifier } from "./store-utils.js?v=2510";
 import {
   DEFAULT_MARKED_IDS,
   MARKED_STATUS_IDS,
@@ -60,7 +60,7 @@ import {
   TOPIC_STATES,
   findTopicState,
   kindOf,
-} from "./topics-catalog.js?v=2509";
+} from "./topics-catalog.js?v=2510";
 
 // The demo brand (flag demoMode) comes with three fresh Topics.
 const topics = (isNewUser() ? (isDemo() ? DEMO_TOPICS : []) : seed).map(cloneTopic);

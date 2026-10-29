@@ -3444,3 +3444,12 @@ button.recap__logotile:hover {
 .welcome-flow__sheet.is-part-intro .welcome-review__tools {
   visibility: hidden;
 }
+
+/* Website field, empty submit — the line under the field (DS gap: no error-text
+   class), paired with the DS .ap-input-group.invalid. */
+.welcome-flow__url-error {
+  margin: var(--ref-spacing-xxs) 0 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-error);
+}

@@ -14,8 +14,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2509";
-import { navigate } from "../router.js?v=2509";
+import { html, raw, escapeHtml } from "../utils.js?v=2510";
+import { navigate } from "../router.js?v=2510";
 import {
   getDraft,
   patchDraft,
@@ -24,12 +24,12 @@ import {
   writeAltManually,
   analyzeAltInterview,
   setAltVoiceSource,
-} from "../context-builder.js?v=2509";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2509";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2509";
-import { connectors as connectorMocks } from "../mocks.js?v=2509";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2509";
-import { networkIcon } from "../social-profiles.js?v=2509";
+} from "../context-builder.js?v=2510";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2510";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2510";
+import { connectors as connectorMocks } from "../mocks.js?v=2510";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2510";
+import { networkIcon } from "../social-profiles.js?v=2510";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
@@ -141,6 +141,7 @@ export function renderWelcomeAltBrand(_params, target) {
               value="${url}"
               placeholder="your-brand.com"
               aria-label="Your website"
+              aria-describedby="brandUrlError"
               autocomplete="url"
               data-flow-autofocus
             />
@@ -150,6 +151,7 @@ export function renderWelcomeAltBrand(_params, target) {
             <i class="ap-icon-arrow-right"></i>
           </button>
         </form>
+        <p class="welcome-flow__url-error" id="brandUrlError" hidden>Add your website, or pick another way below.</p>
         <p class="welcome-flow__or">Or start another way</p>
         <ul class="welcome-flow__options">
           ${OTHER_WAYS.map(
@@ -174,14 +176,21 @@ export function renderWelcomeAltBrand(_params, target) {
       const field = e.target.querySelector("input[name=url]");
       const url = normalizeUrl(field?.value);
       if (!url) {
+        // Seen, not only set: the DS invalid field, and the line that says what to do.
         field?.setAttribute("aria-invalid", "true");
+        field?.closest(".ap-input-group")?.classList.add("invalid");
+        e.target.parentElement?.querySelector("#brandUrlError")?.removeAttribute("hidden");
         field?.focus();
         return;
       }
       readAltWebsite(sid, url);
       goNext("url");
     },
-    onInput: (e) => e.target.removeAttribute?.("aria-invalid"),
+    onInput: (e) => {
+      e.target.removeAttribute?.("aria-invalid");
+      e.target.closest?.(".ap-input-group")?.classList.remove("invalid");
+      e.target.closest?.("[data-flow-left]")?.querySelector("#brandUrlError")?.setAttribute("hidden", "");
+    },
     onClick: (e, sid) => {
       const way = e.target.closest("[data-brand-way]")?.dataset.brandWay;
       if (way === "interview") navigate("/welcome-alt/interview");
