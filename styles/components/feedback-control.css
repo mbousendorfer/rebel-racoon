@@ -77,9 +77,3 @@
 .clip-card .fb__panel {
   margin: 0 var(--ref-spacing-xs) var(--ref-spacing-xs);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .fb__comment {
-    transition: none;
-  }
-}

@@ -616,126 +616,18 @@ body.has-modal {
   gap: var(--ref-spacing-sm);
 }
 
-.bug-field {
-  display: grid;
-  gap: var(--ref-spacing-xxs);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-  color: var(--sys-text-color-light);
-}
-
-.bug-field > label {
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.bug-field__label-row {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-}
-
+/* The fields are the DS's (.ap-form-field, .ap-input-group, .ap-textarea-field)
+   and the issue types .ap-filter-chip; only the required star and the chip row
+   are the forms' own. */
 .bug-field__required {
   color: var(--ref-color-red-100);
   margin-left: 2px;
 }
 
-.bug-field__optional {
-  font-weight: var(--ref-font-weight-regular);
-}
-
-/* ── Bug report: category chips ──────────────────────────── */
-
 .bug-categories {
   display: flex;
   flex-wrap: wrap;
   gap: var(--ref-spacing-xxs);
-}
-
-.bug-category-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
-  height: 28px;
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-pill);
-  background: var(--ref-color-white);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-  color: var(--sys-text-color-light);
-  cursor: pointer;
-  font-family: inherit;
-  transition:
-    border-color var(--ref-animation-short),
-    background var(--ref-animation-short),
-    color var(--ref-animation-short);
-}
-
-.bug-category-chip:hover {
-  border-color: var(--ref-color-orange-40);
-  color: var(--ref-color-grey-100);
-}
-
-.bug-category-chip:active {
-  background: var(--ref-color-grey-05);
-  border-color: var(--ref-color-orange-100);
-}
-
-.bug-category-chip.selected {
-  border-color: var(--ref-color-orange-100);
-  background: var(--ref-color-orange-10);
-  color: var(--ref-color-orange-100);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-}
-
-/* ── Bug report: native-feel input + textarea ─────────────── */
-
-.bug-input,
-.bug-textarea,
-.feedback-modal__textarea {
-  width: 100%;
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--ref-border-radius-md);
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  font-weight: var(--sys-text-style-body-weight);
-  font-family: inherit;
-  color: var(--ref-color-grey-100);
-  background: var(--ref-color-white);
-  transition:
-    border-color var(--ref-animation-short),
-    box-shadow var(--ref-animation-short);
-  box-sizing: border-box;
-}
-
-.bug-textarea,
-.feedback-modal__textarea {
-  resize: vertical;
-  min-height: 80px;
-  line-height: var(--sys-text-style-body-line-height);
-}
-
-.bug-input::placeholder,
-.bug-textarea::placeholder,
-.feedback-modal__textarea::placeholder {
-  color: var(--ref-color-grey-40);
-}
-
-.bug-input:focus,
-.bug-textarea:focus,
-.feedback-modal__textarea:focus {
-  border-color: var(--ref-color-electric-blue-100);
-  outline: none;
-  box-shadow: 0 0 0 3px var(--ref-color-electric-blue-10);
-}
-
-.bug-textarea.invalid,
-.feedback-modal__textarea.invalid {
-  border-color: var(--ref-color-red-100);
-  box-shadow: 0 0 0 3px var(--ref-color-red-10);
 }
 
 /* Inline error text under invalid fields. */
@@ -890,20 +782,6 @@ body.has-modal {
 }
 
 /* ── Modal submit-button spinner ─────────────────────────── */
-
-.bug-report-modal__submit-spinner,
-.feedback-modal__submit-spinner {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  margin-right: var(--ref-spacing-xxs);
-  border: 1.5px solid currentColor;
-  border-top-color: transparent;
-  border-radius: var(--app-radius-circle);
-  vertical-align: -2px;
-  animation: app-spin 0.9s linear infinite;
-  opacity: 0.85;
-}
 
 .bug-report-modal__success h3,
 .feedback-modal__success h3 {

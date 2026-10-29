@@ -17,10 +17,10 @@
 // On submit we simulate a ~1.4s round-trip and flash a success state; the
 // modal then closes itself. Nothing is actually posted.
 
-import { escapeHtml, formatTimeOfDay } from "../utils.js?v=2510";
-import { getSessionById } from "../sessions-store.js?v=2510";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2510";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2510";
+import { escapeHtml, formatTimeOfDay } from "../utils.js?v=2513";
+import { getSessionById } from "../sessions-store.js?v=2513";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2513";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2513";
 
 const MODAL_ID = "bugReport";
 
@@ -62,32 +62,34 @@ const HTML = `
   </button>
   <div class="ap-dialog-content">
     <div class="bug-report-modal__fields">
-      <div class="bug-field">
+      <div class="ap-form-field">
         <label>What type of issue?</label>
         <div class="bug-categories" id="bugCategories" role="group" aria-label="Issue type">
-          <button type="button" class="bug-category-chip" data-value="visual" aria-pressed="false">Visual glitch</button>
-          <button type="button" class="bug-category-chip" data-value="behavior" aria-pressed="false">Wrong behavior</button>
-          <button type="button" class="bug-category-chip" data-value="broken" aria-pressed="false">Feature not working</button>
-          <button type="button" class="bug-category-chip" data-value="performance" aria-pressed="false">Performance</button>
-          <button type="button" class="bug-category-chip" data-value="other" aria-pressed="false">Other</button>
+          <button type="button" class="ap-filter-chip" data-value="visual" aria-pressed="false">Visual glitch</button>
+          <button type="button" class="ap-filter-chip" data-value="behavior" aria-pressed="false">Wrong behavior</button>
+          <button type="button" class="ap-filter-chip" data-value="broken" aria-pressed="false">Feature not working</button>
+          <button type="button" class="ap-filter-chip" data-value="performance" aria-pressed="false">Performance</button>
+          <button type="button" class="ap-filter-chip" data-value="other" aria-pressed="false">Other</button>
         </div>
       </div>
 
-      <div class="bug-field">
+      <div class="ap-form-field">
         <label for="bugActionInput">What were you trying to do?</label>
-        <input class="bug-input" id="bugActionInput" type="text" placeholder="e.g. Schedule a post, add a source…" />
+        <div class="ap-input-group">
+          <input id="bugActionInput" type="text" placeholder="e.g. Schedule a post" />
+        </div>
       </div>
 
-      <div class="bug-field">
+      <div class="ap-form-field">
         <label for="bugProblemInput">What went wrong? <span class="bug-field__required">*</span></label>
-        <textarea class="bug-textarea" id="bugProblemInput" rows="3" required placeholder="e.g. The calendar didn't open, the button did nothing, or the state reset unexpectedly…" aria-describedby="bugProblemError"></textarea>
+        <div class="ap-textarea-field resizable">
+          <textarea id="bugProblemInput" rows="3" required placeholder="e.g. The button did nothing" aria-describedby="bugProblemError"></textarea>
+        </div>
         <p class="form-field-error" id="bugProblemError" role="alert" hidden>Describe what went wrong before submitting.</p>
       </div>
 
-      <div class="bug-field">
-        <div class="bug-field__label-row">
-          <label>Screenshot <span class="bug-field__optional">(optional)</span></label>
-        </div>
+      <div class="ap-form-field">
+        <label>Screenshot <small>(optional)</small></label>
         <div class="bug-report-dropzone has-file" id="bugScreenshotPreview" hidden>
           <div class="bug-report-preview">
             <img id="bugPreviewImg" src="" alt="Screenshot" />
@@ -118,9 +120,7 @@ const HTML = `
   </div>
   <div class="bug-report-modal__success">
     <div class="bug-report-modal__success-icon">
-      <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true">
-        <path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd"/>
-      </svg>
+      <i class="ap-icon-check" aria-hidden="true"></i>
     </div>
     <h3>Bug reported</h3>
     <p>Thanks. I read every report, and this one tells me what to fix.</p>
@@ -155,7 +155,7 @@ function clearScreenshot() {
 function reset() {
   modal.classList.remove("success");
   selectedCategory = null;
-  categoriesEl.querySelectorAll(".bug-category-chip").forEach((c) => c.classList.remove("selected"));
+  categoriesEl.querySelectorAll(".ap-filter-chip").forEach((c) => c.classList.remove("selected"));
   actionInput.value = "";
   problemInput.value = "";
   setProblemInvalid(false);
@@ -167,7 +167,7 @@ function reset() {
 }
 
 function setProblemInvalid(invalid) {
-  problemInput.classList.toggle("invalid", invalid);
+  problemInput.closest(".ap-textarea-field")?.classList.toggle("invalid", invalid);
   if (problemError) problemError.hidden = !invalid;
 }
 
@@ -251,10 +251,10 @@ export function init() {
   // sync with the visual selected state so screen readers announce which
   // chip is active.
   categoriesEl.addEventListener("click", (e) => {
-    const chip = e.target.closest(".bug-category-chip");
+    const chip = e.target.closest(".ap-filter-chip");
     if (!chip) return;
     const wasSelected = chip.dataset.value === selectedCategory;
-    categoriesEl.querySelectorAll(".bug-category-chip").forEach((c) => {
+    categoriesEl.querySelectorAll(".ap-filter-chip").forEach((c) => {
       c.classList.remove("selected");
       c.setAttribute("aria-pressed", "false");
     });
@@ -302,7 +302,7 @@ export function init() {
     }
     setProblemInvalid(false);
     submitBtn.disabled = true;
-    submitBtn.innerHTML = `<span class="bug-report-modal__submit-spinner" aria-hidden="true"></span>Submitting…`;
+    submitBtn.innerHTML = `<span class="ap-loader size-16" aria-hidden="true"><svg><circle></circle><circle></circle></svg></span><span>Submitting…</span>`;
     // In a real app we'd post { category, action, problem, screenshot, context }.
     void {
       category: selectedCategory && CATEGORY_LABELS[selectedCategory],

@@ -34,8 +34,6 @@
 .drafts-card__spinner,
 .session__composer-thinking-spinner,
 .source-card__spinner,
-.bug-report-modal__submit-spinner,
-.feedback-modal__submit-spinner,
 .gen-image-spinner,
 .schedule-modal__spinner,
 .add-source__file-spinner {
@@ -64,8 +62,6 @@
 .drafts-card__spinner > svg,
 .session__composer-thinking-spinner > svg,
 .source-card__spinner > svg,
-.bug-report-modal__submit-spinner > svg,
-.feedback-modal__submit-spinner > svg,
 .gen-image-spinner > svg,
 .schedule-modal__spinner > svg,
 .add-source__file-spinner > svg {
@@ -78,9 +74,7 @@
 .add-source__file-spinner {
   --archie-loader-size: 16px;
 }
-.bug-report-modal__submit-spinner,
 .chat-bubble-source-intake__spinner,
-.feedback-modal__submit-spinner,
 .session__composer-thinking-spinner {
   --archie-loader-size: 18px;
 }
@@ -103,8 +97,8 @@
 /* These sit on filled CTA buttons (orange / coloured surfaces) where the
    brand orange would clash with the button paint. `currentColor` here
    resolves to the button's text colour (white on filled CTAs). */
-.bug-report-modal__submit-spinner,
-.feedback-modal__submit-spinner,
+.bug-report-modal .ap-button .ap-loader,
+.feedback-modal .ap-button .ap-loader,
 .schedule-modal__spinner {
   --archie-loader-color: currentColor;
 }

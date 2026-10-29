@@ -3,7 +3,7 @@
 // toggle its visibility. No persistence — submitting shows a success flash
 // and resets on close.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2510";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2513";
 
 const MODAL_ID = "feedback";
 
@@ -52,7 +52,9 @@ const HTML = `
 
     <div class="ap-form-field">
       <label for="feedbackText">What's on your mind? <span class="bug-field__required">*</span></label>
-      <textarea id="feedbackText" class="feedback-modal__textarea" rows="5" required placeholder="What worked, what didn't, what's missing…" aria-describedby="feedbackTextError"></textarea>
+      <div class="ap-textarea-field resizable">
+        <textarea id="feedbackText" rows="5" required placeholder="What worked, what didn't, what's missing…" aria-describedby="feedbackTextError"></textarea>
+      </div>
       <p class="form-field-error" id="feedbackTextError" role="alert" hidden>Write something before sending.</p>
     </div>
   </div>
@@ -64,9 +66,7 @@ const HTML = `
   </div>
   <div class="feedback-modal__success">
     <div class="feedback-modal__success-icon">
-      <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true">
-        <path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd"/>
-      </svg>
+      <i class="ap-icon-check" aria-hidden="true"></i>
     </div>
     <h3>Feedback sent</h3>
     <p>Thanks. It goes straight into what I work on next.</p>
@@ -84,7 +84,7 @@ function focusSafe(el) {
 function reset() {
   modal.classList.remove("success");
   textArea.value = "";
-  textArea.classList.remove("invalid");
+  textArea.closest(".ap-textarea-field")?.classList.remove("invalid");
   textAreaError.hidden = true;
   featureArea.value = "content-studio";
   submitBtn.disabled = false;
@@ -93,7 +93,7 @@ function reset() {
 }
 
 function setTextAreaInvalid(invalid) {
-  textArea.classList.toggle("invalid", invalid);
+  textArea.closest(".ap-textarea-field")?.classList.toggle("invalid", invalid);
   textAreaError.hidden = !invalid;
 }
 
@@ -190,7 +190,7 @@ export function init() {
     }
     setTextAreaInvalid(false);
     submitBtn.disabled = true;
-    submitBtn.innerHTML = `<span class="feedback-modal__submit-spinner" aria-hidden="true"></span>Sending…`;
+    submitBtn.innerHTML = `<span class="ap-loader size-16" aria-hidden="true"><svg><circle></circle><circle></circle></svg></span><span>Sending…</span>`;
     await new Promise((r) => setTimeout(r, 1200));
     modal.classList.add("success");
     setTimeout(close, 2200);

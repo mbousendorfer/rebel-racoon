@@ -31,8 +31,6 @@ const LOADER_SELECTOR = [
   ".drafts-card__spinner",
   ".session__composer-thinking-spinner",
   ".source-card__spinner",
-  ".bug-report-modal__submit-spinner",
-  ".feedback-modal__submit-spinner",
   ".gen-image-spinner",
   ".schedule-modal__spinner",
   ".add-source__file-spinner",
