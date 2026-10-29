@@ -9,13 +9,13 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2506";
-import { navigate } from "../router.js?v=2506";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2506";
-import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2506";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2506";
-import { onlyNetwork } from "../voice-parts.js?v=2506";
-import { networkLabel } from "../social-profiles.js?v=2506";
+import { html, raw } from "../utils.js?v=2509";
+import { navigate } from "../router.js?v=2509";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2509";
+import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2509";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2509";
+import { onlyNetwork } from "../voice-parts.js?v=2509";
+import { networkLabel } from "../social-profiles.js?v=2509";
 
 // Where the default voice was read from, said on the reveal.
 const READ_FROM = { website: "your site", documents: "your files", interview: "your answers" };
@@ -128,7 +128,7 @@ export function renderWelcomeAltReady(_params, target) {
     return html`
       <h1 class="welcome-flow__title" id="welcomeFlowTitle">Building your Playbook</h1>
       <p class="welcome-intro__sub">A few seconds.</p>
-      <ol class="welcome-flow__stages" aria-live="polite">
+      <ol class="welcome-flow__stages">
         ${stages.map(
           (st, i) => html`
             <li class="welcome-flow__stage ${i < at ? "is-done" : i === at ? "is-current" : ""}">
@@ -136,9 +136,7 @@ export function renderWelcomeAltReady(_params, target) {
                 ? // The one at work: the chat's working mark (Archie's disc, the
                   // animated mark — thread-render.js), asked « réutiliser ceux
                   // dans la conversation ».
-                  raw(
-                    `<span class="e-turn__mark"><span class="archie-loader" role="status" aria-label="Working"></span></span>`,
-                  )
+                  raw(`<span class="e-turn__mark"><span class="archie-loader" aria-hidden="true"></span></span>`)
                 : raw(
                     `<span class="welcome-flow__stage-mark" aria-hidden="true">${
                       i < at ? `<i class="ap-icon-check"></i>` : ""
@@ -172,8 +170,12 @@ export function renderWelcomeAltReady(_params, target) {
     shown = key;
     shell.paint();
     reveal(done);
+    // Say the stage in the shell's persistent status node (welcome-alt-shell.js).
+    const status = target.querySelector("[data-flow-status]");
+    if (status) status.textContent = done ? "Your Playbook is ready." : `${progress().stages[at]?.title || ""}…`;
   };
-  shown = `${progress().done}:${progress().at}`;
+  // `shown` stays empty: the first tick (200 ms) repaints once and says the
+  // first stage in the status node, which a node filled at mount wouldn't announce.
   reveal(progress().done);
   const timer = window.setInterval(tick, 200);
 

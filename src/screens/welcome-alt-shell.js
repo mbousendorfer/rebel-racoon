@@ -9,11 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2506";
-import { html, raw, escapeHtml } from "../utils.js?v=2506";
-import { navigate } from "../router.js?v=2506";
-import { parseHashParams } from "../url-state.js?v=2506";
-import { isFlagOn } from "../feature-flags.js?v=2506";
+import "../archie-pixels.js?v=2509";
+import { html, raw, escapeHtml } from "../utils.js?v=2509";
+import { navigate } from "../router.js?v=2509";
+import { parseHashParams } from "../url-state.js?v=2509";
+import { isFlagOn } from "../feature-flags.js?v=2509";
 import {
   altSteps,
   createAltDraft,
@@ -21,9 +21,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2506";
-import { getConnectedProfiles, networkIcon, networkLabel } from "../social-profiles.js?v=2506";
-import { playbookNetworks } from "../voice-parts.js?v=2506";
+} from "../context-builder.js?v=2509";
+import { getConnectedProfiles, networkIcon, networkLabel } from "../social-profiles.js?v=2509";
+import { playbookNetworks } from "../voice-parts.js?v=2509";
 import {
   readSessionId,
   isIntegrated,
@@ -33,8 +33,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2506";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2506";
+} from "./welcome-alt-recap.js?v=2509";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2509";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -421,15 +421,22 @@ export function mountShell(target, { step, sid, left, sheet = false, build }) {
         <div class="welcome-intro__copy welcome-flow__copy">
           ${raw(renderProgress(step))}
           <div data-flow-left></div>
+          <!-- One status node that outlives the left column's repaints: a live
+               region rebuilt with its text already in it is not announced. -->
+          <p class="welcome-intro__hidden" role="status" data-flow-status></p>
         </div>
       </section>
-      <div class="welcome-intro__stage" ${sheet ? "" : raw('aria-hidden="true"')}>
-        <archie-pixels data-quiet></archie-pixels>
+      <div class="welcome-intro__stage">
+        <archie-pixels data-quiet aria-hidden="true"></archie-pixels>
         ${sheet
           ? raw(`<div class="welcome-flow__sheet" data-flow-sheet>
               <div class="welcome-flow__sheet-body" data-flow-sheet-body></div>
             </div>`)
-          : raw(`<div class="welcome-intro__card welcome-flow__card" data-flow-card></div>`)}
+          : raw(
+              // A labelled region, not live: what I found is readable, and
+              // nothing is announced as each line lands.
+              `<div class="welcome-intro__card welcome-flow__card" data-flow-card role="region" aria-label="Your Playbook"></div>`,
+            )}
       </div>
     </div>
   `;
