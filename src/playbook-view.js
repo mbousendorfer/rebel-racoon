@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2470";
-import { conceptHint } from "./concepts.js?v=2470";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2472";
+import { conceptHint } from "./concepts.js?v=2472";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2470";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2470";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2470";
-import { isFlagOn } from "./feature-flags.js?v=2470";
-import { clipLookOf } from "./videos-store.js?v=2470";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2470";
-import { parseHashParams } from "./url-state.js?v=2470";
+} from "./playbook-brand-kit.js?v=2472";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2472";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2472";
+import { isFlagOn } from "./feature-flags.js?v=2472";
+import { clipLookOf } from "./videos-store.js?v=2472";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2472";
+import { parseHashParams } from "./url-state.js?v=2472";
 import {
   isListPart,
   voiceParts,
@@ -46,6 +46,7 @@ import {
   networkVoiceOn,
   networkVoice,
   playbookNetworks,
+  voiceNetworks,
   brandVoiceAsIs,
   cloneNetworkVoice,
   voiceNetTagHtml,
@@ -54,15 +55,14 @@ import {
   canLearnFrom,
   ADAPTED_FROM,
   voiceHasRules,
-} from "./voice-parts.js?v=2470";
-import { showToast } from "./components/toast.js?v=2470";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2470";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2470";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2470";
-import { consumeHandoff } from "./handoff.js?v=2470";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2470";
+} from "./voice-parts.js?v=2472";
+import { showToast } from "./components/toast.js?v=2472";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2472";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2472";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2472";
+import { consumeHandoff } from "./handoff.js?v=2472";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2472";
 import {
-  NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   networkLabel,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2470";
+} from "./social-profiles.js?v=2472";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1136,36 +1136,6 @@ function learnMenu(net = null) {
     : "";
 }
 
-// « Another network… » at the foot of Your networks (flag voicePerNetwork, a
-// saved Playbook, cfg.onAddNetworkVoice): the networks the Playbook doesn't
-// publish on yet; picking one opens a chat on its Voice step
-// (openNetworkVoiceChat). The Playbook's own get their row's button.
-function addVoiceMenu(data) {
-  if (!isLibrary() || !canEditView() || !networkVoiceOn() || !cfg.onAddNetworkVoice) return "";
-  const mine = playbookNetworks(data);
-  const nets = Object.keys(NETWORKS).filter((n) => !mine.includes(n));
-  if (!nets.length) return "";
-  return `<details class="recap__panel-menu" data-recap-learn-menu>
-      <summary class="ap-button ghost grey recap__panel-action recap__panel-menu-toggle">
-        <i class="ap-icon-plus" aria-hidden="true"></i>
-        <span>Another network…</span>
-        <i class="ap-icon-chevron-down recap__menu-caret" aria-hidden="true"></i>
-      </summary>
-      <div class="ap-action-dropdown recap__panel-menu-pop" role="menu" aria-label="Add a voice for another network">
-        ${nets
-          .map(
-            (
-              n,
-            ) => `<button type="button" class="ap-action-dropdown-item" data-pb2-add-voice="${esc(n)}" role="menuitem">
-          <i class="${networkIcon(n)}"></i>
-          <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">${esc(networkLabel(n))}</span></div></div>
-        </button>`,
-          )
-          .join("")}
-      </div>
-    </details>`;
-}
-
 // The brand's colours as editable rows — one per colour, plus "Add colour".
 // Shared by the recap panel and the Playbook 2.0 Colour block.
 function renderColorEditor(data) {
@@ -2082,7 +2052,7 @@ function setTab(id) {
 // `?voice=` — kept like `?tab=`, without a route change.
 function voiceNets(data) {
   if (!networkVoiceOn() || data?.voiceMode === "manual") return [];
-  return playbookNetworks(data);
+  return voiceNetworks(data);
 }
 
 // The run's voice review opens a network's rules in edit (null: the default
@@ -2133,7 +2103,7 @@ function voiceIntroHtml(data) {
 // selector's CSS-UI recipe (design-guidelines O4, ap-nav-selector being
 // Angular-only): 36 px caption rows, the current one a blue fill, never an edge
 // bar. Default voice first, then the networks, each marked « Follows default »
-// when it has no voice of its own; « Another network… » at its foot.
+// when it has no voice of its own.
 function renderVoiceNav(data) {
   const nets = voiceNets(data);
   // Creation shows each network as a card under the default voice instead.
@@ -2146,7 +2116,6 @@ function renderVoiceNav(data) {
       ${note ? `<span class="ap-caption pb2-voice-nav__note">${esc(note)}</span>` : ""}
     </button>`;
   };
-  const more = addVoiceMenu(data);
   return `<nav class="pb2-voice-nav" aria-label="Voices">
       <div class="pb2-voice-nav__group">${row("", "Default voice", "ap-icon-quote")}</div>
       <div class="pb2-voice-nav__group">
@@ -2156,7 +2125,6 @@ function renderVoiceNav(data) {
           )
           .join("")}
       </div>
-      ${more ? `<div class="pb2-voice-nav__foot">${more}</div>` : ""}
     </nav>`;
 }
 
@@ -2170,7 +2138,11 @@ function withVoiceNav(data, body) {
 // The voice on screen names itself in the head: the list says which one,
 // the head says what it is.
 function voiceTitle(data) {
-  if (!renderVoiceNav(data)) return {};
+  if (!renderVoiceNav(data)) {
+    // One network: the default voice is that network's, and says so.
+    const nets = networkVoiceOn() ? playbookNetworks(data) : [];
+    return nets.length === 1 ? { lead: `The voice I write your ${networkLabel(nets[0])} posts in.` } : {};
+  }
   return voiceNet
     ? { title: `${networkLabel(voiceNet)} voice`, icon: networkIcon(voiceNet) }
     : { title: "Default voice", icon: "ap-icon-quote" };
@@ -2741,7 +2713,7 @@ function voiceSplitBlock(data, index) {
 // asks. The document and « Write them myself » stay on the saved Playbook's tab.
 function networkVoiceCards(data) {
   if (cfg.networkPicker && !isLibrary() && data.voiceMode !== "manual")
-    return networkPickerCards(data, playbookNetworks(data), voiceParts().length);
+    return networkPickerCards(data, voiceNetworks(data), voiceParts().length);
   const nets = isLibrary() ? [] : voiceNets(data);
   if (!nets.length) return [];
   const first = voiceParts().length;
@@ -2885,11 +2857,11 @@ function voiceWaysCard(net = null, { title = "Rewrite it from", hint = "", class
 // `voiceRulesFor` is the draft's (never saved): a network out of it keeps the
 // default voice, chosen; in it with no rules yet, its first draft asks.
 function networkPickerCards(data, nets, first) {
-  if (!networkVoiceOn()) return [];
-  // Every network: the Playbook's (its connected accounts') first, then the
-  // others, not connected — a voice can be made for one before connecting it
-  // (2026-10-29, asked: « créer une voice pour un network non connecté »).
-  const all = [...nets, ...Object.keys(NETWORKS).filter((n) => !nets.includes(n))];
+  // Only the connected networks, from two up (voiceNetworks) — no voice for a
+  // network not connected (2026-10-29, reverting the same morning's « créer une
+  // voice pour un network non connecté »).
+  if (!networkVoiceOn() || !nets.length) return [];
+  const all = nets;
   const picked = data.voiceRulesFor || [];
   // One row per network — a voice is a network's, not an account's — with the
   // connected accounts on it underneath, as a reminder of what I write for
@@ -2953,12 +2925,6 @@ export function networkVoiceFilled(data, net) {
 // chosen (its rules, if any, go), one in it waits for rules.
 function setNetworkRules(net, on) {
   const d = cfg.getData();
-  // A network ticked joins the Playbook's networks if it wasn't one (not
-  // connected yet); unticked, one with no connected account leaves them.
-  const nets = playbookNetworks(d);
-  const connected = getConnectedProfiles().some((p) => normalizeNetwork(p.platform) === net);
-  if (on && !nets.includes(net)) d.connectedSocials = [...(d.connectedSocials || []), net];
-  if (!on && !connected) d.connectedSocials = (d.connectedSocials || []).filter((n) => normalizeNetwork(n) !== net);
   const picked = (d.voiceRulesFor || []).filter((n) => n !== net);
   d.voiceRulesFor = on ? [...picked, net] : picked;
   const rest = Object.fromEntries(Object.entries(d.voiceByNetwork || {}).filter(([n]) => n !== net));
@@ -3290,7 +3256,7 @@ function renderActivePanel(data) {
     // to be filled — 2026-10-29, asked: « il ne faut pas qu'elles soient préremplies ».)
     if (!isLibrary() && networkVoiceOn() && !cfg.networkPicker) data.voiceByNetwork = withNetworkVoices(data);
     // The run's voice review (cfg.networkPicker) opens a network's rules in edit.
-    const keep = cfg.networkPicker ? playbookNetworks(data) : isLibrary() ? voiceNets(data) : [];
+    const keep = cfg.networkPicker ? voiceNetworks(data) : isLibrary() ? voiceNets(data) : [];
     if (voiceNet && !keep.includes(voiceNet)) setVoiceNet(null);
     return scope === "voice" ? renderVoiceEdit2(data) : renderVoiceRead2(data, learnMenu());
   }
@@ -3725,8 +3691,6 @@ function onClick(event) {
   // the saved Playbook's confirm would open twice.
   const voiceSplit = event.target.closest("[data-pb2-voice-split]");
   if (voiceSplit) return event.target.matches("input") && setVoiceSplit(voiceSplit.dataset.pb2VoiceSplit);
-  const addVoice = event.target.closest("[data-pb2-add-voice]");
-  if (addVoice) return cfg.onAddNetworkVoice?.(addVoice.dataset.pb2AddVoice);
   const keepVoice = event.target.closest("[data-pb2-voice-keep]");
   if (keepVoice) {
     useDefaultVoice(cfg.getData().id, keepVoice.dataset.pb2VoiceKeep);

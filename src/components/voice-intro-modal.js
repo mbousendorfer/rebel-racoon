@@ -20,21 +20,21 @@
 //   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2470";
-import { getContextById } from "../contexts-store.js?v=2470";
-import { playbookForNewWork } from "../active-playbook.js?v=2470";
-import { isNewUser } from "../user-mode.js?v=2470";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2470";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2472";
+import { getContextById } from "../contexts-store.js?v=2472";
+import { playbookForNewWork } from "../active-playbook.js?v=2472";
+import { isNewUser } from "../user-mode.js?v=2472";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2472";
 import {
   networkVoiceOn,
   networkVoice,
-  playbookNetworks,
+  voiceNetworks,
   voiceParts,
   cloneItems,
   baseValue,
   voiceItemsHtml,
   voiceNetTagHtml,
-} from "../voice-parts.js?v=2470";
+} from "../voice-parts.js?v=2472";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -44,11 +44,11 @@ import {
   INTERVIEW,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2470";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2470";
-import "../archie-pixels.js?v=2470";
-import { navigate } from "../router.js?v=2470";
-import { escapeHtml } from "../utils.js?v=2470";
+} from "../network-voice-flow.js?v=2472";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2472";
+import "../archie-pixels.js?v=2472";
+import { navigate } from "../router.js?v=2472";
+import { escapeHtml } from "../utils.js?v=2472";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -87,7 +87,7 @@ const brandOf = (ctx) => ctx?.brandName || ctx?.name || "your brand";
 const SAMPLE_NETS = ["linkedin", "instagram", "x"];
 
 function comparisonNets(ctx) {
-  const own = playbookNetworks(ctx).filter((n) => NETWORK_VOICE_SAMPLE[n]);
+  const own = voiceNetworks(ctx).filter((n) => NETWORK_VOICE_SAMPLE[n]);
   return [...new Set([...own, ...SAMPLE_NETS])].slice(0, 3);
 }
 
@@ -405,7 +405,7 @@ export function maybeOpenVoiceIntro(path) {
   if (!networkVoiceOn() || introSeen() || isNewUser() || document.body.classList.contains("has-modal")) return;
   if (path.startsWith("/welcome-alt")) return;
   const ctx = playbookForNewWork();
-  if (!ctx || !playbookNetworks(ctx).some((n) => networkVoice(ctx, n).state !== "own")) return;
+  if (!ctx || !voiceNetworks(ctx).some((n) => networkVoice(ctx, n).state !== "own")) return;
   openVoiceIntro(ctx.id);
 }
 
@@ -522,7 +522,7 @@ function rowHtml(ctx, net, { pick = false } = {}) {
 }
 
 const rowsHtml = (ctx, opts) =>
-  `<ul class="voice-intro__nets">${playbookNetworks(ctx)
+  `<ul class="voice-intro__nets">${voiceNetworks(ctx)
     .map((n) => rowHtml(ctx, n, opts))
     .join("")}</ul>`;
 
@@ -531,7 +531,7 @@ const picked = () => [...leftEl.querySelectorAll("[data-vi-pick]:checked")].map(
 
 function renderStandActions() {
   const ctx = getContextById(ctxId);
-  if (!playbookNetworks(ctx).length) {
+  if (!voiceNetworks(ctx).length) {
     actionsEl.innerHTML = button("done", "primary blue", "Done");
     return;
   }
@@ -580,7 +580,7 @@ function renderCard(ctx, { pending = null } = {}) {
         <span class="voice-intro__part-tile" aria-hidden="true"><i class="ap-icon-quote"></i></span>
         <h3 class="voice-intro__part-name">Voice profile</h3>
         <dl class="voice-intro__fields">
-          ${fields}${playbookNetworks(ctx)
+          ${fields}${voiceNetworks(ctx)
             .map((n) => cardFieldHtml(ctx, n, { pending: n === pending }))
             .join("")}
         </dl>
@@ -595,7 +595,7 @@ function renderStand() {
   modal.classList.add("is-stand");
   modal.classList.remove("is-personalize");
   qi = 0;
-  const waiting = playbookNetworks(ctx).filter((n) => networkVoice(ctx, n).state === "default");
+  const waiting = voiceNetworks(ctx).filter((n) => networkVoice(ctx, n).state === "default");
   titleEl.textContent = `Here's where ${brandOf(ctx)} stands`;
   subEl.textContent = waiting.length
     ? `Every network starts from your default voice. Check the ones to personalize now — one at a time, about a minute each. You review every change before it's saved.`
@@ -743,7 +743,7 @@ function renderDone() {
   const added = [...outcome].filter(([, r]) => r === "added").map(([n]) => networkLabel(n));
   titleEl.textContent = added.length ? "Added to your Voice profile" : "All set";
   // Who still writes in the default voice, said as it is.
-  const still = playbookNetworks(ctx)
+  const still = voiceNetworks(ctx)
     .filter((n) => networkVoice(ctx, n).state === "default")
     .map((n) => networkLabel(n));
   const rest = still.length
@@ -761,7 +761,7 @@ function renderDone() {
 function seeVoices() {
   const id = ctxId;
   const ctx = getContextById(id);
-  const nets = playbookNetworks(ctx);
+  const nets = voiceNetworks(ctx);
   const added = [...outcome].filter(([, r]) => r === "added").map(([n]) => n);
   const net = added[added.length - 1] || nets.find((n) => networkVoice(ctx, n).state !== "own") || null;
   close();

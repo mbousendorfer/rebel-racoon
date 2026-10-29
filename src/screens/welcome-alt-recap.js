@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2470";
-import { catalogueRoute } from "../active-playbook.js?v=2470";
+import { navigate } from "../router.js?v=2472";
+import { catalogueRoute } from "../active-playbook.js?v=2472";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,11 +13,11 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2470";
-import { RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2470";
-import { renderReview } from "./welcome-alt-review.js?v=2470";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2470";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2470";
+} from "../context-builder.js?v=2472";
+import { RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2472";
+import { renderReview } from "./welcome-alt-review.js?v=2472";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2472";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2472";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -25,15 +25,16 @@ import {
   networkVoice,
   networkVoiceOn,
   playbookNetworks,
-} from "../voice-parts.js?v=2470";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2470";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2470";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2470";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2470";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2470";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2470";
-import { showToast } from "../components/toast.js?v=2470";
-import { open as openConfirm } from "../components/confirm-modal.js?v=2470";
+  voiceNetworks,
+} from "../voice-parts.js?v=2472";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2472";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2472";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2472";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2472";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2472";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2472";
+import { showToast } from "../components/toast.js?v=2472";
+import { open as openConfirm } from "../components/confirm-modal.js?v=2472";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -138,8 +139,13 @@ const NETWORKS_GROUP = "Network by network";
 const NETWORKS_HINT = "Every network uses your default voice until you give it its own.";
 function voiceReview(sid, overrides = {}) {
   const voice = RECAP_SECTIONS.find((t) => t.id === "voice");
-  const nets = () => (networkVoiceOn() ? playbookNetworks(getDraft(sid)) : []);
+  const nets = () => (networkVoiceOn() ? voiceNetworks(getDraft(sid)) : []);
   const netOf = (partId) => partId.startsWith("voice-net-") && partId.slice("voice-net-".length);
+  // One network: the default voice is that network's, said in its words.
+  const only = () => {
+    const all = networkVoiceOn() ? playbookNetworks(getDraft(sid)) : [];
+    return all.length === 1 ? networkLabel(all[0]) : "";
+  };
   const notNetworks = (el) => !el.matches(".pb2-voice-net, .pb2-voice-networks");
   // The ways live on the cards (tiles), not on the left (2026-10-29).
   const parts = () =>
@@ -148,15 +154,15 @@ function voiceReview(sid, overrides = {}) {
         id: "voice-default",
         tab: "voice",
         tint: VOICE_TINT,
-        group: "Every network",
+        group: only() || "Every network",
         groupHint: "I wrote your default voice from what you gave me. Edit any part.",
         title: "Default voice",
         icon: voice.icon,
-        lead: "How you sound everywhere.",
+        lead: only() ? `How your ${only()} posts sound.` : "How you sound everywhere.",
         open: () => editVoiceNetwork(null),
         pick: (all) => all.filter(notNetworks),
       },
-      networkVoiceOn() && {
+      nets().length > 0 && {
         id: "voice-networks",
         tab: "voice",
         tint: VOICE_TINT,
@@ -287,7 +293,9 @@ function voiceReview(sid, overrides = {}) {
   return {
     step: "voice",
     title: "Check your voice",
-    sub: "Your default voice works on every network. Give a network its own voice when it needs one. I save as you type.",
+    sub: only()
+      ? `Your default voice is how your ${only()} posts sound. I save as you type.`
+      : "Your default voice works on every network. Give a network its own voice when it needs one. I save as you type.",
     parts,
     onWay,
     next: { label: finishLabel(), go: () => finishRun(sid) },

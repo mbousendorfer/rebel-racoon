@@ -10,9 +10,9 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2470";
-import { isFlagOn } from "./feature-flags.js?v=2470";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2470";
+import { escapeHtml } from "./utils.js?v=2472";
+import { isFlagOn } from "./feature-flags.js?v=2472";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2472";
 import {
   networkMeta,
   networkLabel,
@@ -20,7 +20,7 @@ import {
   normalizeNetwork,
   getConnectedProfileById,
   profileForNetwork,
-} from "./social-profiles.js?v=2470";
+} from "./social-profiles.js?v=2472";
 
 // `hint`: what the part holds, said under its title — on the Playbook's tab
 // and in a voice proposal (one source for both).
@@ -117,6 +117,16 @@ export function playbookNetworks(ctx) {
   return [...new Set(nets.filter((n) => networkMeta(n)))];
 }
 
+// The networks that can have a voice of their own: the Playbook's connected
+// ones, and only from two up. With one, the default voice IS that network's —
+// learned on it, nothing to vary (2026-10-29, asked: « si j'ai qu'un seul
+// profil de connecté, il n'y a que la default voice … pas possible de rajouter
+// une voice pour un network non connecté »).
+export function voiceNetworks(ctx) {
+  const nets = playbookNetworks(ctx);
+  return nets.length > 1 ? nets : [];
+}
+
 // A network's own voice with something in it — empty, it still has to be filled.
 export function voiceHasRules(voice) {
   return (
@@ -130,7 +140,7 @@ export function voiceHasRules(voice) {
 // empty. The new chat's « Finish your voices » starter lists them.
 export function voicesToFinish(ctx) {
   if (!networkVoiceOn() || !ctx) return [];
-  return playbookNetworks(ctx).filter((n) => {
+  return voiceNetworks(ctx).filter((n) => {
     const { state, chosen, voice } = networkVoice(ctx, n);
     return state === "default" ? !chosen : state === "own" && !voiceHasRules(voice);
   });
@@ -204,7 +214,7 @@ function bestNetworkVoice(ctx, network) {
 export function withNetworkVoices(ctx) {
   return {
     ...Object.fromEntries(
-      playbookNetworks(ctx)
+      voiceNetworks(ctx)
         .map((n) => [n, bestNetworkVoice(ctx, n)])
         .filter(([, v]) => v),
     ),

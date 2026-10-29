@@ -33,7 +33,7 @@
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2470";
+import * as inlineQuestion from "./inline-question.js?v=2472";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -43,14 +43,14 @@ import {
   postVoiceTurn,
   resolveTurn,
   getThread,
-} from "./assistant.js?v=2470";
-import { getContextById, updateContext } from "./contexts-store.js?v=2470";
-import { getSessionById } from "./sessions-store.js?v=2470";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2470";
-import { setHandoff } from "./handoff.js?v=2470";
-import { navigate } from "./router.js?v=2470";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2470";
-import { getPosts } from "./posts-store.js?v=2470";
+} from "./assistant.js?v=2472";
+import { getContextById, updateContext } from "./contexts-store.js?v=2472";
+import { getSessionById } from "./sessions-store.js?v=2472";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2472";
+import { setHandoff } from "./handoff.js?v=2472";
+import { navigate } from "./router.js?v=2472";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2472";
+import { getPosts } from "./posts-store.js?v=2472";
 import {
   networkVoiceOn,
   networkVoice,
@@ -58,10 +58,10 @@ import {
   learnNetworkVoice,
   interviewNetworkVoice,
   brandVoiceAsIs,
-  playbookNetworks,
+  voiceNetworks,
   voiceParts,
   adaptNetworkVoice,
-} from "./voice-parts.js?v=2470";
+} from "./voice-parts.js?v=2472";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;
@@ -84,8 +84,9 @@ export function learnPhases(net, from = null, choice = null) {
 // The networks of a batch never given a voice — none with the flag off.
 export function missingNetworkVoices(ctx, networks) {
   if (!networkVoiceOn() || !ctx) return [];
+  const own = voiceNetworks(ctx);
   return [...new Set((networks || []).map(normalizeNetwork))].filter((n) => {
-    const v = networkMeta(n) && networkVoice(ctx, n);
+    const v = own.includes(n) && networkVoice(ctx, n);
     return v && v.state === "default" && !v.chosen;
   });
 }
@@ -180,13 +181,11 @@ export function proposeNetworkVoice(ctx, net, choice, from = null) {
 }
 
 // Saves a network's voice — stamped, so the drafts written before it say so.
-// A network written for is one the Playbook publishes on.
 export function saveNetworkVoice(ctxId, net, voice) {
   const ctx = getContextById(ctxId);
   if (!ctx) return;
   updateContext(ctxId, {
     voiceByNetwork: { ...(ctx.voiceByNetwork || {}), [net]: { ...voice, changedAt: Date.now() } },
-    ...(!playbookNetworks(ctx).includes(net) && { connectedSocials: [...(ctx.connectedSocials || []), net] }),
   });
 }
 
@@ -236,29 +235,6 @@ export function giveNetworkVoice(sessionId, ctxId, net) {
         );
     },
     { giving: true },
-  );
-}
-
-// « Add a voice for X » on a Playbook's Voice tab: a new chat on that Playbook
-// opens on the same step. Both ends live here.
-export const NETWORK_VOICE_CHAT_HANDOFF = "pendingNetworkVoiceChat";
-
-export function openNetworkVoiceChat(contextId, net) {
-  setHandoff(NETWORK_VOICE_CHAT_HANDOFF, { contextId, net });
-  const params = new URLSearchParams({ contextId, title: `Voice for ${networkLabel(net)}` });
-  navigate(`/session/new-${Date.now().toString(36)}?${params.toString()}`);
-}
-
-/** session.js, on consuming the handoff. */
-export function startNetworkVoiceChat(sessionId, { contextId, net }) {
-  const label = networkLabel(net);
-  askVoice(
-    sessionId,
-    contextId,
-    [net],
-    () =>
-      postAssistantMessage(sessionId, `${label} has its own voice now. Want me to draft a post for ${label} with it?`),
-    { giving: true, line: `Until it has one, I write your ${label} posts in your default voice.` },
   );
 }
 

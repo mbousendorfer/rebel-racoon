@@ -18,9 +18,9 @@
 // the stream is handled by re-looking up the target selector each tick
 // — when it disappears the stream stops and the content commits at once.
 
-import { getPosts, updatePostContent } from "./posts-store.js?v=2470";
-import { isFlagOn } from "./feature-flags.js?v=2470";
-import { escapeText } from "./utils.js?v=2470";
+import { getPosts, updatePostContent } from "./posts-store.js?v=2472";
+import { isFlagOn } from "./feature-flags.js?v=2472";
+import { escapeText } from "./utils.js?v=2472";
 
 const inFlight = new Map(); // postId → AbortController
 

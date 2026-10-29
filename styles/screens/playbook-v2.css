@@ -1122,13 +1122,6 @@
   color: inherit;
 }
 
-.pb2-voice-nav__foot {
-  /* flex: the menu hugs its button, never the column's width. */
-  display: flex;
-  padding: var(--ref-spacing-xxs);
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
 /* The voice on screen names itself: its title (h2) over its sentence. */
 .pb2-tabhead__text {
   display: flex;
