@@ -94,10 +94,13 @@ export const allSeedSessions = [...recentSessions, ...sharedSessions];
 //                    resolved at render time to the first attached (video)
 //                    source filename, or the literal "your source" / "your
 //                    video" for first-run users.
-//   • `action`     — clicking launches a guided flow instead of injecting text.
-//                    Handled in session.js's starter click delegation:
-//                      - "open-batch"       → Batch Studio source-intake screen
-//                      - "open-video-clips" → scripted video intake + clip flow
+//   • `action`     — a guided flow. In the chat, the starter writes its
+//                    `prompt` in the composer, sends it, then runs the flow
+//                    in the thread (session.js's starter click delegation):
+//                      - "open-batch"       → add a source → ideas
+//                      - "open-video-clips" → add a video → clips
+//                      - "open-top-posts"   → the inline top-posts flow
+//                    The home mints a chat and opens the studios instead.
 //   • `comingSoon` — a teaser card rendered non-interactive with a "Coming
 //                    soon" badge. No prompt/action fires on click.
 //
@@ -111,6 +114,7 @@ export const chatStarters = [
     title: "Batch from a source",
     subtitle: "Pull the strongest ideas and draft a set of posts across your networks.",
     cta: "Start drafting",
+    prompt: "Draft a set of posts from a source.",
     // Opens the dedicated Batch Studio intake (upload 1+ sources + pick a
     // Playbook → new chat). See renderBatchStudio in screens/session.js.
     action: "open-batch",
@@ -122,8 +126,7 @@ export const chatStarters = [
     title: "Extract video clips",
     subtitle: "Find the best moments in a video and cut them into drafts.",
     cta: "Clip a video",
-    prompt:
-      "Surface the best ideas from {{video-source}} and turn them into posts across LinkedIn, X, Instagram, and TikTok.",
+    prompt: "Cut a video into clips I can post.",
     // `action` switches the starter from text-injection to a direct
     // dispatch in renderEmptyHero's click handler. See session.js.
     action: "open-video-clips",
@@ -135,6 +138,7 @@ export const chatStarters = [
     title: "Repurpose a top post",
     subtitle: "Draw on your best-performing posts and turn what works into fresh drafts.",
     cta: "Repurpose a post",
+    prompt: "Turn one of my top posts into fresh drafts.",
     // Launches the in-chat "milk a top post" flow (top-posts-flow.js) via the
     // starter click delegation in session.js — same direct-action pattern as
     // "open-batch" / "open-video-clips". No prompt injection.
