@@ -1323,15 +1323,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
   margin-bottom: var(--ref-spacing-xxxs);
 }
 
-.welcome-flow__sheet .welcome-review__card .pb2-block__title {
-  font-family: var(--sys-text-style-marketing-font-family);
-  font-size: var(--sys-text-style-marketing-size);
-  line-height: var(--sys-text-style-marketing-line-height);
-  font-weight: var(--sys-text-style-marketing-weight);
-  letter-spacing: -0.01em;
-  color: var(--ref-color-grey-100);
-}
-
 /* The block's sentence is its subtitle — the DS subtitle style (16/20). */
 .welcome-flow__sheet .welcome-review__card .pb2-block__hint,
 .welcome-review__card .pb2-panel-lead {
