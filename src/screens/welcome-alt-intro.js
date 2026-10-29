@@ -13,14 +13,14 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2437";
-import { startDemo } from "../demo-flow.js?v=2437";
-import { isFlagOn } from "../feature-flags.js?v=2437";
-import { html, raw } from "../utils.js?v=2437";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2437";
-import { navigate } from "../router.js?v=2437";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2437";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2437";
+import "../archie-pixels.js?v=2438";
+import { startDemo } from "../demo-flow.js?v=2438";
+import { isFlagOn } from "../feature-flags.js?v=2438";
+import { html, raw } from "../utils.js?v=2438";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2438";
+import { navigate } from "../router.js?v=2438";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2438";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2438";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -30,7 +30,7 @@ const PARTS = ["goals", "voice", "brand", "competitors"];
 // gets a line only where its title doesn't say why it's asked; the documents
 // step is marked Optional instead.
 const STEP_HINT = {
-  voice: "One voice for every network, and a voice of its own for the ones that need it.",
+  voice: "How you sound, on every network.",
   url: "Your website is all I need. Without one, I ask a few questions.",
 };
 const OPTIONAL = new Set(["documents"]);
@@ -71,7 +71,7 @@ const ROWS = [
   { step: "language", label: "Writes in", value: `<span class="welcome-intro__plain">English</span>` },
   {
     step: "url",
-    label: "Colors & type",
+    label: "Colors and type",
     // An example brand palette.
     value: ["--app-convo-navy", "--ref-color-orange-100", "--ref-color-yellow-40", "--app-surface-subtle"]
       .map((token) => `<span class="welcome-intro__swatch" style="background: var(${token})"></span>`)

@@ -32,12 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2437";
-import { navigate } from "../router.js?v=2437";
-import { getDraft, patchDraft } from "../context-builder.js?v=2437";
-import { mount } from "../playbook-view.js?v=2437";
-import { parseHashParams } from "../url-state.js?v=2437";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2437";
+import { html, raw } from "../utils.js?v=2438";
+import { navigate } from "../router.js?v=2438";
+import { getDraft, patchDraft } from "../context-builder.js?v=2438";
+import { mount } from "../playbook-view.js?v=2438";
+import { parseHashParams } from "../url-state.js?v=2438";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2438";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -64,7 +64,7 @@ export function renderReview(target, sid, config, review) {
   // (2026-10-20: "Confirm Brief" read as admin).
   const looksGood = (id) => {
     const next = parts()[parts().findIndex((t) => t.id === id) + 1];
-    return next ? `Looks good, on to ${next.title}` : review.lastLabel || "Looks good, finish";
+    return next ? next.nextLabel || `Looks good, on to ${next.title}` : review.lastLabel || "Looks good, finish";
   };
 
   let index = 0; // the card in focus, within the current part

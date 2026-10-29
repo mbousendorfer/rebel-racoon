@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2437";
-import { catalogueRoute } from "../active-playbook.js?v=2437";
+import { navigate } from "../router.js?v=2438";
+import { catalogueRoute } from "../active-playbook.js?v=2438";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,11 +13,11 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2437";
-import { RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2437";
-import { renderReview } from "./welcome-alt-review.js?v=2437";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2437";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2437";
+} from "../context-builder.js?v=2438";
+import { RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2438";
+import { renderReview } from "./welcome-alt-review.js?v=2438";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2438";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2438";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -25,14 +25,14 @@ import {
   networkVoice,
   networkVoiceOn,
   playbookNetworks,
-} from "../voice-parts.js?v=2437";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2437";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2437";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2437";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2437";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2437";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2437";
-import { showToast } from "../components/toast.js?v=2437";
+} from "../voice-parts.js?v=2438";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2438";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2438";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2438";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2438";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2438";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2438";
+import { showToast } from "../components/toast.js?v=2438";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -118,7 +118,7 @@ function startVoiceRules(sid) {
 const playbookReview = () => ({
   step: "recap",
   title: "Review your Playbook",
-  sub: "I've filled in every card. Fix anything that's off; I save as you type.",
+  sub: "Here's what I learned. Fix anything that's off; I save as you type.",
   parts: RECAP_SECTIONS.filter((t) => t.id !== "voice"),
   next: { label: "Review my voice", go: () => navigate("/welcome-alt/voice") },
   lastLabel: "Looks good, on to your voice",
@@ -134,8 +134,7 @@ const playbookReview = () => ({
 // default voice adapted for a network. No account yet: posts connect one first.
 const VOICE_TINT = "voice";
 const NETWORKS_GROUP = "Network by network";
-const NETWORKS_HINT =
-  "I write for each network in your default voice, unless you give it its own. I start from your connected accounts.";
+const NETWORKS_HINT = "Every network uses your default voice until you give it its own.";
 function voiceReview(sid, overrides = {}) {
   const voice = RECAP_SECTIONS.find((t) => t.id === "voice");
   const nets = () => (networkVoiceOn() ? playbookNetworks(getDraft(sid)) : []);
@@ -162,7 +161,8 @@ function voiceReview(sid, overrides = {}) {
         tint: VOICE_TINT,
         group: NETWORKS_GROUP,
         groupHint: NETWORKS_HINT,
-        title: "Pick the networks",
+        title: "Your networks",
+        nextLabel: "Looks good, on to your networks",
         action: "Add a voice for a network",
         icon: "ap-icon-web",
         lead: "Which networks get a voice of their own.",
@@ -286,7 +286,7 @@ function voiceReview(sid, overrides = {}) {
   return {
     step: "voice",
     title: "Review your voice",
-    sub: "Your default voice is how you sound everywhere. Pick the networks that need their own voice, then fill each one in. I save as you type.",
+    sub: "Your default voice works on every network. Give a network its own voice when it needs one. I save as you type.",
     parts,
     onWay,
     next: { label: finishLabel(), go: () => finishRun(sid) },

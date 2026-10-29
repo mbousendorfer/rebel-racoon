@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2437";
-import { conceptHint } from "./concepts.js?v=2437";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2438";
+import { conceptHint } from "./concepts.js?v=2438";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2437";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2437";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2437";
-import { isFlagOn } from "./feature-flags.js?v=2437";
-import { clipLookOf } from "./videos-store.js?v=2437";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2437";
-import { parseHashParams } from "./url-state.js?v=2437";
+} from "./playbook-brand-kit.js?v=2438";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2438";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2438";
+import { isFlagOn } from "./feature-flags.js?v=2438";
+import { clipLookOf } from "./videos-store.js?v=2438";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2438";
+import { parseHashParams } from "./url-state.js?v=2438";
 import {
   isListPart,
   voiceParts,
@@ -53,13 +53,13 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2437";
-import { showToast } from "./components/toast.js?v=2437";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2437";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2437";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2437";
-import { consumeHandoff } from "./handoff.js?v=2437";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2437";
+} from "./voice-parts.js?v=2438";
+import { showToast } from "./components/toast.js?v=2438";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2438";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2438";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2438";
+import { consumeHandoff } from "./handoff.js?v=2438";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2438";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -68,7 +68,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2437";
+} from "./social-profiles.js?v=2438";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1458,7 +1458,7 @@ const PICKER_COPY = {
   },
   influencers: {
     title: "Who your audience follows",
-    hint: "The creators your audience listens to. I turn what they post into Topics.",
+    hint: "The creators your audience listens to. I watch what they post for you.",
     empty: "No one yet. Add the creators your audience already follows.",
     add: "Add an influencer",
   },
@@ -2029,7 +2029,7 @@ const SECTION_LEADS = {
   brand: "How the Brand looks: its logos, colors, type, and the rules its images follow.",
   images: "How I make this Brand's images: the styles I draw them in, and what Generate an image does on a draft.",
   competitors: "Who the Brand is measured against, so I can position it.",
-  influencers: "The creators your audience listens to. I turn what they post into Topics in your Topic Feed.",
+  influencers: "The creators your audience listens to. I watch what they post for you.",
 };
 
 // The recap's sections with what each holds — the onboarding review walks
@@ -3053,7 +3053,7 @@ function networkVoiceEmpty(net, chosen) {
       icon: networkIcon(net),
       hint: chosen
         ? `I write your ${label} posts in your default voice. To give ${label} its own, start from:`
-        : `Until it has one, I write your ${label} posts in your default voice, which may miss its length and format. Start from:`,
+        : `Until then, I write your ${label} posts in your default voice. Start from:`,
       className: `pb2-voice-net pb2-voice-net--${net}`,
     },
   )}${keep}`;

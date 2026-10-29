@@ -9,11 +9,11 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2437";
-import { navigate } from "../router.js?v=2437";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2437";
-import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2437";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2437";
+import { html, raw } from "../utils.js?v=2438";
+import { navigate } from "../router.js?v=2438";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2438";
+import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2438";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2438";
 
 // Where the default voice was read from, said on the reveal.
 const READ_FROM = { website: "your site", documents: "your files", interview: "your answers" };
@@ -74,7 +74,7 @@ export function renderWelcomeAltReady(_params, target) {
         <p class="welcome-intro__sub">
           ${manual
             ? "Tell me how your brand sounds and who it speaks to. Every draft I write starts there."
-            : `I wrote your Playbook and a default voice from ${READ_FROM[getDraft(sid)?.sourceType] || "what you gave me"}. I use that voice on every network, without tuning it to any of them yet. Review and edit both now, or later from your Playbook.`}
+            : `I wrote your Playbook and a default voice from ${READ_FROM[getDraft(sid)?.sourceType] || "what you gave me"}. Review them now, or later from your Playbook.`}
         </p>
         <ul class="welcome-flow__options">
           ${raw(
@@ -82,7 +82,7 @@ export function renderWelcomeAltReady(_params, target) {
               hook: "data-ready-review",
               icon: "ap-icon-pen",
               title: manual ? "Fill in my Playbook" : "Review my Playbook",
-              desc: manual ? "Part by part, card by card." : "Your Brand and how it looks. Edit any part.",
+              desc: manual ? "Part by part, card by card." : "Your business, audience, look and competitors.",
             }),
           )}
           ${raw(
@@ -90,7 +90,7 @@ export function renderWelcomeAltReady(_params, target) {
               hook: "data-ready-voice",
               icon: "ap-icon-quote",
               title: "Review my voice",
-              desc: "Your default voice, and a voice of its own for the networks that need one.",
+              desc: "How you sound, on every network.",
             }),
           )}
           ${manual
@@ -103,7 +103,7 @@ export function renderWelcomeAltReady(_params, target) {
                   title: finishLabel(),
                   desc: isIntegrated()
                     ? "Add it to your Playbooks. You can edit it anytime."
-                    : "I'll write it now. You can review all of this later, from your Playbook.",
+                    : "Tell me what to post, and I'll draft it from your Playbook.",
                 }),
               )}
         </ul>
@@ -112,7 +112,7 @@ export function renderWelcomeAltReady(_params, target) {
     }
     return html`
       <h1 class="welcome-flow__title" id="welcomeFlowTitle">Building your Playbook</h1>
-      <p class="welcome-intro__sub">A few seconds. Watch it come together on the right.</p>
+      <p class="welcome-intro__sub">A few seconds.</p>
       <ol class="welcome-flow__stages" aria-live="polite">
         ${stages.map(
           (st, i) => html`

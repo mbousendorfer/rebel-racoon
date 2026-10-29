@@ -9,11 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2437";
-import { html, raw, escapeHtml } from "../utils.js?v=2437";
-import { navigate } from "../router.js?v=2437";
-import { parseHashParams } from "../url-state.js?v=2437";
-import { isFlagOn } from "../feature-flags.js?v=2437";
+import "../archie-pixels.js?v=2438";
+import { html, raw, escapeHtml } from "../utils.js?v=2438";
+import { navigate } from "../router.js?v=2438";
+import { parseHashParams } from "../url-state.js?v=2438";
+import { isFlagOn } from "../feature-flags.js?v=2438";
 import {
   altSteps,
   createAltDraft,
@@ -21,9 +21,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2437";
-import { networkIcon, networkLabel } from "../social-profiles.js?v=2437";
-import { playbookNetworks } from "../voice-parts.js?v=2437";
+} from "../context-builder.js?v=2438";
+import { networkIcon, networkLabel } from "../social-profiles.js?v=2438";
+import { playbookNetworks } from "../voice-parts.js?v=2438";
 import {
   readSessionId,
   isIntegrated,
@@ -33,8 +33,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2437";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2437";
+} from "./welcome-alt-recap.js?v=2438";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2438";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -47,7 +47,7 @@ export const STEP_TEXT = {
   documents: { title: "Add brand documents", desc: "Optional: a brand book or guidelines." },
   voice: {
     title: "Review your voice",
-    desc: "Your default voice, and a voice of its own for the networks that need one.",
+    desc: "How you sound, on every network.",
   },
   recap: { title: "Review your Playbook", desc: "Everything I learned, before I write a word." },
 };
@@ -162,8 +162,8 @@ const ROW_PART = {
   Goal: "goals",
   Voice: "voice",
   "Main voice": "voice",
-  "Colors & type": "brand",
-  "Up against": "competitors",
+  "Colors and type": "brand",
+  Competitors: "competitors",
 };
 const ROW_ORDER = Object.keys(ROW_PART);
 const inPlaybookOrder = (rows) => [...rows].sort((a, b) => ROW_ORDER.indexOf(a.label) - ROW_ORDER.indexOf(b.label));
@@ -314,7 +314,7 @@ function cardRows(d, sid, build) {
   push(
     {
       key: "branding",
-      label: "Colors & type",
+      label: "Colors and type",
       value:
         colors
           .map((hex) => `<span class="welcome-intro__swatch" style="background: ${escapeHtml(hex)}"></span>`)
@@ -327,7 +327,7 @@ function cardRows(d, sid, build) {
     .map((c) => c.name)
     .filter(Boolean)
     .slice(0, 3);
-  push({ key: "competitors", label: "Up against", value: chips(competitors) }, competitors.length > 0);
+  push({ key: "competitors", label: "Competitors", value: chips(competitors) }, competitors.length > 0);
   return { rows };
 }
 
