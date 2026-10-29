@@ -14,8 +14,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2452";
-import { navigate } from "../router.js?v=2452";
+import { html, raw, escapeHtml } from "../utils.js?v=2454";
+import { navigate } from "../router.js?v=2454";
 import {
   getDraft,
   patchDraft,
@@ -24,12 +24,12 @@ import {
   writeAltManually,
   analyzeAltInterview,
   setAltVoiceSource,
-} from "../context-builder.js?v=2452";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2452";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2452";
-import { connectors as connectorMocks } from "../mocks.js?v=2452";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2452";
-import { networkIcon } from "../social-profiles.js?v=2452";
+} from "../context-builder.js?v=2454";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2454";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2454";
+import { connectors as connectorMocks } from "../mocks.js?v=2454";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2454";
+import { networkIcon } from "../social-profiles.js?v=2454";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
@@ -331,18 +331,18 @@ export function renderWelcomeAltLanguage(_params, target) {
 // from the website. Each way asks its own follow-up on the same screen.
 
 const VOICE_WAYS = [
-  { value: "profile", icon: "ap-icon-user", title: "Analyze a connected profile", desc: "I'll read its recent posts" },
+  { value: "profile", icon: "ap-icon-user", title: "Learn from an account", desc: "I read its recent posts." },
   {
     value: "document",
     icon: "ap-icon-upload",
-    title: "Upload a document you wrote",
-    desc: "PDF, Word, text, or Markdown. I'll learn your voice from it",
+    title: "Use a document you wrote",
+    desc: "A PDF, Word, text or Markdown file.",
   },
   {
     value: "custom",
     icon: "ap-icon-pen",
-    title: "Write or paste your voice",
-    desc: "Used exactly as written, no analysis",
+    title: "Describe it in your own words",
+    desc: "I follow it exactly as you write it.",
   },
 ];
 
@@ -383,8 +383,8 @@ export function renderWelcomeAltVoiceFrom(_params, target) {
         const accounts = voiceAccounts();
         const first = accounts.find((p) => p.postCount > 0)?.id;
         return html`
-          <h1 class="welcome-flow__title" id="welcomeFlowTitle">Which profile should I analyze?</h1>
-          <p class="welcome-intro__sub">I'll read its recent posts and learn your voice from them.</p>
+          <h1 class="welcome-flow__title" id="welcomeFlowTitle">Which account should I learn from?</h1>
+          <p class="welcome-intro__sub">I read its recent posts and learn your voice from them.</p>
           <form data-voice-profile-form novalidate>
             <ul class="welcome-flow__options">
               ${accounts.map((p) =>
@@ -407,8 +407,8 @@ export function renderWelcomeAltVoiceFrom(_params, target) {
       }
       if (view === "custom") {
         return html`
-          <h1 class="welcome-flow__title" id="welcomeFlowTitle">Write or paste your voice</h1>
-          <p class="welcome-intro__sub">I'll use it exactly as written.</p>
+          <h1 class="welcome-flow__title" id="welcomeFlowTitle">Describe it in your own words</h1>
+          <p class="welcome-intro__sub">I follow it exactly as you write it.</p>
           <form class="welcome-flow__answer" data-voice-custom-form novalidate>
             <div class="ap-textarea-field welcome-flow__textarea">
               <textarea
@@ -432,7 +432,7 @@ export function renderWelcomeAltVoiceFrom(_params, target) {
       }
       return html`
         <h1 class="welcome-flow__title" id="welcomeFlowTitle">How should I learn your voice?</h1>
-        <p class="welcome-intro__sub">Pick a source, or ${fallbackFor(sid).sub}.</p>
+        <p class="welcome-intro__sub">Pick one, or ${fallbackFor(sid).sub}.</p>
         <ul class="welcome-flow__options">
           ${VOICE_WAYS.filter((w) => w.value !== "profile" || voiceAccounts().length).map(
             (w) => html`
