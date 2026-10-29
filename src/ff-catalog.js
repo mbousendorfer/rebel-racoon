@@ -273,7 +273,7 @@ export const FLAGS = Object.freeze([
       "draft asks for an account. The website is a field, prefilled, with " +
       "files, a short interview or by hand as other ways in. It ends on a " +
       "reveal, then two reviews in cards: the Playbook, then your voice on its " +
-      "own (the default voice, where you post and your main network, and with " +
+      "own (the default voice, where you post, and with " +
       "voicePerNetwork the networks that get rules of their own), before your " +
       "first draft.",
   },

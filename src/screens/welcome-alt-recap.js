@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2374";
-import { catalogueRoute } from "../active-playbook.js?v=2374";
+import { navigate } from "../router.js?v=2376";
+import { catalogueRoute } from "../active-playbook.js?v=2376";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,13 +13,13 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2374";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2374";
-import { isFlagOn } from "../feature-flags.js?v=2374";
-import { renderReview } from "./welcome-alt-review.js?v=2374";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2374";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2374";
-import { getContextById, updateContext } from "../contexts-store.js?v=2374";
+} from "../context-builder.js?v=2376";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2376";
+import { isFlagOn } from "../feature-flags.js?v=2376";
+import { renderReview } from "./welcome-alt-review.js?v=2376";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2376";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2376";
+import { getContextById, updateContext } from "../contexts-store.js?v=2376";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -27,14 +27,14 @@ import {
   networkVoice,
   networkVoiceOn,
   playbookNetworks,
-} from "../voice-parts.js?v=2374";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2374";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2374";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2374";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2374";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2374";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2374";
-import { showToast } from "../components/toast.js?v=2374";
+} from "../voice-parts.js?v=2376";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2376";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2376";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2376";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2376";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2376";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2376";
+import { showToast } from "../components/toast.js?v=2376";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -133,7 +133,7 @@ const playbookReview = () => ({
 });
 
 // The Voice: the default voice (its five parts), then — flag voicePerNetwork,
-// a Playbook with networks — the networks (the main one, which ones get rules),
+// a Playbook with networks — the networks (where you post, which ones get rules),
 // then a part per network picked. All open the voice tab; each picks its own
 // blocks. The ways to fill a part are listed on the left (`ways`): the fiche's
 // Learn from… for the default voice; posts, a document, questions or the
@@ -161,9 +161,7 @@ function voiceReview(sid, overrides = {}) {
         tint: VOICE_TINT,
         title: "Your networks",
         icon: "ap-icon-web",
-        lead: networkVoiceOn()
-          ? "Where you post, your main network, and the ones that get rules of their own."
-          : "Where you post.",
+        lead: networkVoiceOn() ? "Where you post, and the ones that get rules of their own." : "Where you post.",
         pick: (all) => all.filter((el) => el.matches(".pb2-voice-networks")),
       },
       ...nets()
