@@ -19,15 +19,14 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2364";
-import { isPortraitFormat } from "../clip-formats.js?v=2364";
-import { presetById } from "../clip-captions.js?v=2364";
-import { renderFeedbackControl } from "./feedback-control.js?v=2364";
-import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2364";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2364";
-import { REVEAL_MS } from "../archie-pixels.js?v=2364";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2364";
-import { revisionLead } from "../draft-rewrite.js?v=2364";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2365";
+import { isPortraitFormat } from "../clip-formats.js?v=2365";
+import { presetById } from "../clip-captions.js?v=2365";
+import { renderFeedbackControl } from "./feedback-control.js?v=2365";
+import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2365";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2365";
+import { REVEAL_MS } from "../archie-pixels.js?v=2365";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2365";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -160,35 +159,23 @@ function renderVoiceStatus(net, opts, post) {
 }
 
 // What my last rewrite changed (flag draftChanges, resolved by the host into
-// `opts.changes`): a strip glued on top, in my words, and the new words marked
-// in the text — the post still reads as it will publish. « Show removed text »
-// adds the struck words back (`opts.showRemoved`). Gone on Hide, a hand edit,
-// the next rewrite; an Undo keeps the strip, with Redo.
+// `opts.changes`): the DS green status card glued on top, « Your post has been
+// updated. » + Undo (then Redo), and the new words marked in the text, which
+// still reads as it will publish. Gone on a hand edit or the next rewrite.
 function changesShown(post, opts) {
   const r = post.revision;
-  return opts.changes && r && !r.hidden && post.status !== "scheduled" && !post.isRegenerating;
+  return opts.changes && r && post.status !== "scheduled" && !post.isRegenerating;
 }
 
-// Whether the rewrite took anything out of the text — else nothing to show.
-function removedAny(post) {
-  const r = post.revision;
-  return !r.undone && diffWords(r.before.text, post.text).some((run) => run.type === "del");
-}
-
-function renderChangesStrip(post, opts) {
+function renderChangesStatus(post, opts) {
   if (!changesShown(post, opts)) return "";
-  const r = post.revision;
-  const id = escapeAttr(post.id);
-  const link = (action, label) =>
-    `<button type="button" class="ap-link small standalone" data-post-changes="${action}" data-post-changes-id="${id}">${label}</button>`;
-  return `<div class="posts__card-changes" role="status">
-    <i class="ap-icon-${r.undone ? "rotate-left" : "sparkles"} posts__card-changes-icon" aria-hidden="true"></i>
-    <span class="posts__card-changes-text">${r.undone ? "Back to the version before." : `${escapeText(revisionLead(r.intent, r.before))}.`}</span>
-    <span class="posts__card-changes-actions">
-      ${removedAny(post) ? link("removed", opts.showRemoved ? "Hide removed text" : "Show removed text") : ""}
-      ${link("undo", r.undone ? "Redo" : "Undo")}
-      ${link("hide", "Hide changes")}
-    </span>
+  const undone = post.revision.undone;
+  return `<div class="ap-status-card green posts__card-changes" role="status">
+    <div class="upper">
+      <i class="ap-icon-${undone ? "rotate-left" : "rounded-check_fill"}" aria-hidden="true"></i>
+      <div class="flow"><span>${undone ? "Your post is back to the previous version." : "Your post has been updated."}</span></div>
+      <button type="button" class="ap-link small standalone" data-post-changes-undo="${escapeAttr(post.id)}">${undone ? "Redo" : "Undo"}</button>
+    </div>
   </div>`;
 }
 
@@ -225,9 +212,7 @@ export function renderPostCard(post, opts = {}) {
   const runs = changes ? diffWords(changes.before.text, post.text) : null;
   const marked = (inner, isNew) =>
     isNew ? `<ins class="draft-diff__add"><span class="draft-diff__sr">Added: </span>${inner}</ins>` : inner;
-  const bodyParagraphs = (
-    runs && hasChanges(runs) ? diffParagraphs(runs, opts.showRemoved ? "unified" : "after") : post.text
-  )
+  const bodyParagraphs = (runs && hasChanges(runs) ? diffParagraphs(runs, "after") : post.text)
     .map((p, i) => `<p class="posts__card-paragraph">${i === 0 ? captionLead : ""}${p}</p>`)
     .join("");
 
@@ -425,7 +410,7 @@ export function renderPostCard(post, opts = {}) {
       ${raw(checkbox)}
       <div class="posts__card-wrap">
         ${raw(renderPostIssues(post, opts))} ${raw(renderVoiceStatus(net, opts, post))}
-        ${raw(editing ? "" : renderChangesStrip(post, opts))}
+        ${raw(editing ? "" : renderChangesStatus(post, opts))}
         <article
           class="ap-card posts__card posts__card--${net} ${editing ? "is-editing" : ""} ${changes &&
           Date.now() - changes.at < 1500

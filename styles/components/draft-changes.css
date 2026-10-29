@@ -140,46 +140,8 @@
   font-size: var(--sys-text-style-caption-size);
 }
 
-/* ── The draft in the panel: the strip glued on top ────────────────────── */
-
-.posts__card-changes {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  border: 1px solid var(--ref-color-grey-20);
-  border-bottom: 0;
-  border-radius: var(--app-radius-card) var(--app-radius-card) 0 0;
-  background: var(--app-butter);
-  color: var(--ref-color-grey-100);
-  font-size: var(--sys-text-style-caption-size);
-}
-.posts__card-changes-icon {
-  width: 16px;
-  height: 16px;
-  background-color: var(--app-butter-accent);
-}
-.posts__card-changes-text {
-  flex: 1 1 auto;
-  font-weight: var(--sys-text-style-caption-bold-weight);
-}
-.posts__card-changes-actions {
-  display: inline-flex;
-  gap: var(--ref-spacing-xs);
-}
-/* Under a status card (the voice's), the seam is that card's own border. */
-.posts__card-wrap > .ap-status-card + .posts__card-changes {
-  border-top: 0;
-  border-radius: 0;
-}
-/* Glued to its draft by pulling the card over the wrap's gap: an infobox
-   before the strip (an error, a warning) keeps its space. */
-.posts__card-wrap > .posts__card-changes + .ap-card {
-  margin-top: calc(-1 * var(--ref-spacing-xxs));
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
+/* ── The draft in the panel: the DS green status card on top (its glue lives
+   with the other status cards in posts.css), the new words marked ──────── */
 
 /* Just rewritten: the marks fade in once, then stay. */
 .posts__card.has-fresh-changes .draft-diff__add {

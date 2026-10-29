@@ -91,8 +91,14 @@
 /* Glued by pulling the card up over the wrap's gap (not gap: 0 on the wrap),
    so an infobox above the status card keeps its space. */
 .posts__card-wrap > .ap-status-card + .ap-card,
-.posts__card-wrap > .ap-status-card + .posts__card-changes {
+.posts__card-wrap > .ap-status-card + .ap-status-card {
   margin-top: calc(-1 * var(--ref-spacing-xxs));
+}
+/* Two status cards (the voice's, then "Your post has been updated."): one
+   rounded top for the stack, the first card's bottom border as the seam. */
+.posts__card-wrap > .ap-status-card + .ap-status-card {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .posts__card-wrap > .ap-status-card + .ap-card {
