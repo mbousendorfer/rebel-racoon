@@ -636,9 +636,10 @@ body.ui-idea-card .rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
   overflow: hidden;
 }
 
-/* Idle hover — soft accent wash (no border). */
+/* Idle hover — a grey-10 wash on the grey-05 canvas. Not blue: blue-05 is the
+   selecting state below, and a hover must not read as selected. */
 .rpanel-drafts__group-header:not(.is-selecting) .rpanel-drafts__group-band:hover {
-  background: var(--ref-color-electric-blue-05);
+  background: var(--ref-color-grey-10);
 }
 
 /* Selecting — accent wash, no border. */
@@ -1001,11 +1002,15 @@ body.ui-idea-card .rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
   transition: background 120ms ease;
 }
 
-.rpanel-sources__idea-link:hover,
+/* Hover = the grey wash of the Overview rows, never a blue floor (UI-PATTERNS
+   § Cartes + hover); focus = their 2px blue outline, a real 3:1 indicator. */
+.rpanel-sources__idea-link:hover {
+  background: var(--ref-color-grey-05);
+}
+
 .rpanel-sources__idea-link:focus-visible {
-  background: var(--ref-color-electric-blue-05);
-  color: var(--ref-color-electric-blue-100);
-  outline: none;
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 1px;
 }
 
 .rpanel-sources__idea-icon {
@@ -1041,19 +1046,6 @@ body.ui-idea-card .rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
   flex-shrink: 0;
   font-size: var(--sys-icon-css-sm);
   color: var(--ref-color-grey-80);
-}
-
-/* Hover/focus → the whole row picks up the electric-blue accent, matching
-   the mention picker's row treatment. */
-.rpanel-sources__idea-link:hover .rpanel-sources__idea-icon,
-.rpanel-sources__idea-link:focus-visible .rpanel-sources__idea-icon,
-.rpanel-sources__idea-link:hover .rpanel-sources__idea-title,
-.rpanel-sources__idea-link:focus-visible .rpanel-sources__idea-title,
-.rpanel-sources__idea-link:hover .rpanel-sources__idea-kind,
-.rpanel-sources__idea-link:focus-visible .rpanel-sources__idea-kind,
-.rpanel-sources__idea-link:hover .rpanel-sources__idea-chevron,
-.rpanel-sources__idea-link:focus-visible .rpanel-sources__idea-chevron {
-  color: var(--ref-color-electric-blue-100);
 }
 
 .rpanel-sources__empty {

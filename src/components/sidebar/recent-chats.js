@@ -2,29 +2,29 @@
 // date buckets, the rows, and their pin / rename / delete. Moved out of
 // sidebar.js, unchanged.
 
-import { isWorkspaceMode, scopeSessions } from "../../active-playbook.js?v=2493";
+import { isWorkspaceMode, scopeSessions } from "../../active-playbook.js?v=2494";
 import {
   getSessions,
   getSessionById,
   togglePin as togglePinSession,
   updateSession,
   deleteSession,
-} from "../../sessions-store.js?v=2493";
-import { isNewUser } from "../../user-mode.js?v=2493";
-import { escapeHtml } from "../../utils.js?v=2493";
-import { getContextById } from "../../contexts-store.js?v=2493";
-import { canView } from "../../playbook-access.js?v=2493";
-import { showToast } from "../toast.js?v=2493";
-import { open as openRenameModal } from "../rename-modal.js?v=2493";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2493";
-import { clearSession as clearAssistantSession } from "../../assistant.js?v=2493";
-import { clearSession as clearPostsSession } from "../../posts-store.js?v=2493";
-import { clearSession as clearLibrarySession } from "../../library.js?v=2493";
-import { clearSession as clearSourcesSession } from "../../sources-stream.js?v=2493";
-import { clearSession as clearPostPlansSession } from "../../post-plan-store.js?v=2493";
-import { getPath, navigate } from "../../router.js?v=2493";
-import { closePanel as closeRightPanel } from "../right-panel.js?v=2493";
-import { getOrganizePrefs } from "../sidebar.js?v=2493";
+} from "../../sessions-store.js?v=2494";
+import { isNewUser } from "../../user-mode.js?v=2494";
+import { escapeHtml } from "../../utils.js?v=2494";
+import { getContextById } from "../../contexts-store.js?v=2494";
+import { canView } from "../../playbook-access.js?v=2494";
+import { showToast } from "../toast.js?v=2494";
+import { open as openRenameModal } from "../rename-modal.js?v=2494";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2494";
+import { clearSession as clearAssistantSession } from "../../assistant.js?v=2494";
+import { clearSession as clearPostsSession } from "../../posts-store.js?v=2494";
+import { clearSession as clearLibrarySession } from "../../library.js?v=2494";
+import { clearSession as clearSourcesSession } from "../../sources-stream.js?v=2494";
+import { clearSession as clearPostPlansSession } from "../../post-plan-store.js?v=2494";
+import { getPath, navigate } from "../../router.js?v=2494";
+import { closePanel as closeRightPanel } from "../right-panel.js?v=2494";
+import { getOrganizePrefs } from "../sidebar.js?v=2494";
 
 // "Sort & group" control — options for the two rows. Grouping is limited to the
 // dimensions the session record supports: Playbook (contextId) and Date
