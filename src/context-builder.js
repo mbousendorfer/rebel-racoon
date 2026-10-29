@@ -12,14 +12,14 @@
 // objective, contentAction, ctaLinks, language, color, suggestions, editingId,
 // onComplete }.
 
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2433";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2433";
-import { analyzeWebsite, analyzeBrandFiles, analyzeInterview } from "./context-mock-analysis.js?v=2433";
-import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=2433";
-import { markIntroSeen } from "./components/voice-intro-modal.js?v=2433";
-import { getConnectedProfiles } from "./social-profiles.js?v=2433";
-import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2433";
-import { isFlagOn } from "./feature-flags.js?v=2433";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2434";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2434";
+import { analyzeWebsite, analyzeBrandFiles, analyzeInterview } from "./context-mock-analysis.js?v=2434";
+import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=2434";
+import { markIntroSeen } from "./components/voice-intro-modal.js?v=2434";
+import { getConnectedProfiles } from "./social-profiles.js?v=2434";
+import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2434";
+import { isFlagOn } from "./feature-flags.js?v=2434";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -236,9 +236,6 @@ export function sectionPatchFromAnalysis(analysis) {
 // recap reads as "Archie's best guess, edit if anything's off".
 function applyAnalysisToDraft(d, analysis) {
   d.name = d.name || analysis.name;
-  // The site said too little to know the business: the run asks before it calls
-  // the Playbook ready (welcome-alt-ready.js).
-  d.thinRead = Boolean(analysis.thinRead);
   d.suggestions = analysis.suggestions;
   d.color = analysis.suggestions.color || "orange";
   Object.assign(d, sectionPatchFromAnalysis(analysis));

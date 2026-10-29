@@ -8,7 +8,7 @@
 // Suggested values become menthol chips (AI-suggested). Other static
 // option lists come from the brief panel renderer.
 
-import { objectivesInText } from "./objective-measures.js?v=2433";
+import { objectivesInText } from "./objective-measures.js?v=2434";
 
 const AGORAPULSE = {
   name: "Agorapulse",
@@ -252,9 +252,7 @@ const GENERIC = {
   name: "Untitled brand",
   // Honest when the read is thin: a paragraph that fits any brand broke the
   // trust of the first Playbook a tester built from their own site (2026-10-28).
-  // Nothing is said in its place: the run asks the one sentence that is missing
-  // before it calls the Playbook ready (welcome-alt-ready.js, 2026-10-29).
-  thinRead: true,
+  // Nothing is said in its place: the field stays empty for the user to fill.
   businessSummary: "",
   suggestions: {
     audience: [

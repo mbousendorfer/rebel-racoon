@@ -9,11 +9,11 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2433";
-import { navigate } from "../router.js?v=2433";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2433";
-import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2433";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2433";
+import { html, raw } from "../utils.js?v=2434";
+import { navigate } from "../router.js?v=2434";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2434";
+import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2434";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2434";
 
 // Where the default voice was read from, said on the reveal.
 const READ_FROM = { website: "your site", documents: "your files", interview: "your answers" };
@@ -66,35 +66,6 @@ export function renderWelcomeAltReady(_params, target) {
   const left = () => {
     const { done, at, stages } = progress();
     const manual = getDraft(sid)?.sourceType === "manual";
-    // A thin read: the one sentence missing comes before "ready" (2026-10-29).
-    if (done && getDraft(sid)?.thinRead) {
-      return html`
-        <h1 class="welcome-flow__title" id="welcomeFlowTitle">One question before I write.</h1>
-        <p class="welcome-intro__sub">
-          Your site didn't tell me enough about the business. In one sentence: what do you sell, and to whom? Or
-          <button type="button" class="ap-link" data-thin-interview>answer a few questions instead</button>.
-        </p>
-        <form class="welcome-flow__answer" data-thin-form novalidate>
-          <div class="ap-textarea-field welcome-flow__textarea">
-            <textarea
-              name="answer"
-              rows="3"
-              placeholder="e.g. Handmade soap for people with sensitive skin, sold in our Lyon shop and online."
-              aria-labelledby="welcomeFlowTitle"
-              data-flow-autofocus
-            ></textarea>
-          </div>
-          <div class="welcome-flow__actions">
-            <button type="button" class="ap-button ghost grey" data-flow-back>
-              <i class="ap-icon-arrow-left"></i><span>Back</span>
-            </button>
-            <button type="submit" class="ap-button primary blue" data-thin-next disabled>
-              <span>Continue</span>
-            </button>
-          </div>
-        </form>
-      `;
-    }
     if (done) {
       return html`
         <h1 class="welcome-flow__title" id="welcomeFlowTitle">
@@ -182,43 +153,17 @@ export function renderWelcomeAltReady(_params, target) {
   reveal(progress().done);
   const timer = window.setInterval(tick, 200);
 
-  const onInput = (event) => {
-    const next = event.target.closest("[data-thin-form]")?.querySelector("[data-thin-next]");
-    if (next) next.disabled = !event.target.value.trim();
-  };
-  const onSubmit = (event) => {
-    if (!event.target.closest("[data-thin-form]")) return;
-    event.preventDefault();
-    const answer = event.target.querySelector("textarea")?.value.trim();
-    if (!answer) return;
-    patchDraft(sid, { businessSummary: answer, thinRead: false });
-    shell.paint();
-  };
-  const onKeydown = (event) => {
-    // Enter sends; Shift+Enter is a new line.
-    if (event.key === "Enter" && !event.shiftKey && event.target.name === "answer") {
-      event.preventDefault();
-      event.target.form?.requestSubmit();
-    }
-  };
   const onClick = (event) => {
-    if (event.target.closest("[data-thin-interview]")) navigate("/welcome-alt/interview");
-    else if (event.target.closest("[data-ready-start]")) finishRun(sid);
+    if (event.target.closest("[data-ready-start]")) finishRun(sid);
     else if (event.target.closest("[data-ready-review]")) navigate("/welcome-alt/recap");
     // The Voice has its own review (2026-10-29): reachable from the reveal too.
     else if (event.target.closest("[data-ready-voice]")) navigate("/welcome-alt/voice");
     else if (event.target.closest("[data-flow-back]")) goBack("recap");
   };
   target.addEventListener("click", onClick);
-  target.addEventListener("input", onInput);
-  target.addEventListener("submit", onSubmit);
-  target.addEventListener("keydown", onKeydown);
   return () => {
     window.clearInterval(timer);
     shell.cleanup();
     target.removeEventListener("click", onClick);
-    target.removeEventListener("input", onInput);
-    target.removeEventListener("submit", onSubmit);
-    target.removeEventListener("keydown", onKeydown);
   };
 }
