@@ -18,8 +18,8 @@
 //   - the nav stands in the middle of the stage, right of the column — one
 //     compact capsule, ↑ · the dots · ↓ (and the keyboard's ↑ / ↓, outside a
 //     field) glide the next card to the middle; the index follows the scroll;
-//   - the part's cover (tile, name, sentence) is the column's first card, not
-//     counted in the dots;
+//   - no cover card: the list on the left names the part (covers removed
+//     2026-10-29, asked: they repeated the left entry);
 //   - one button at the bottom confirms the part ("Looks good — on to …"): it
 //     checks it in the list and the next part's column cascades in. The last
 //     one ends on "all set".
@@ -32,12 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2391";
-import { navigate } from "../router.js?v=2391";
-import { getDraft, patchDraft } from "../context-builder.js?v=2391";
-import { mount } from "../playbook-view.js?v=2391";
-import { parseHashParams } from "../url-state.js?v=2391";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2391";
+import { html, raw } from "../utils.js?v=2393";
+import { navigate } from "../router.js?v=2393";
+import { getDraft, patchDraft } from "../context-builder.js?v=2393";
+import { mount } from "../playbook-view.js?v=2393";
+import { parseHashParams } from "../url-state.js?v=2393";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2393";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -195,19 +195,6 @@ export function renderReview(target, sid, config, review) {
     `;
   };
 
-  // The part's cover, heading its column: its tile, name and sentence.
-  const coverEl = () => body.querySelector(".welcome-review__cover");
-  const cover = () => {
-    const part = partOf(current());
-    return html`
-      <section class="welcome-review__cover" data-part="${part.id}" style="${tintOf(part.id)}">
-        <span class="welcome-review__intro-tile"><i class="${part.icon}" aria-hidden="true"></i></span>
-        <h2 class="welcome-review__intro-title">${part.title}</h2>
-        <p class="welcome-review__cover-lead">${part.lead}</p>
-      </section>
-    `;
-  };
-
   // The nav: one compact white capsule — ↑ · the part's progress (page dots,
   // the one indicator) · ↓. ↓ goes dark on the part's last card: the confirm,
   // below, is the way on.
@@ -262,13 +249,6 @@ export function renderReview(target, sid, config, review) {
       if (!el.querySelector(":scope > .welcome-review__kicker")) el.insertAdjacentHTML("afterbegin", kicker());
       if (!el.style.getPropertyValue("--focus")) el.style.setProperty("--focus", i === index ? "1" : "0");
     });
-    if (list[0]) {
-      const head = list[0].previousElementSibling;
-      if (!head?.matches(".welcome-review__cover") || head.dataset.part !== current()) {
-        coverEl()?.remove();
-        list[0].insertAdjacentHTML("beforebegin", cover());
-      }
-    }
     navEl.innerHTML = count ? nav(list) : "";
     const part = partOf(current());
     barEl.innerHTML = html`
@@ -354,7 +334,6 @@ export function renderReview(target, sid, config, review) {
     const line = body.getBoundingClientRect().top + body.clientHeight * 0.5;
     let best = index;
     let dist = Infinity;
-    if (coverEl()) focusOf(coverEl(), line);
     cards().forEach((el, i) => {
       const d = focusOf(el, line);
       if (d < dist) [best, dist] = [i, d];
@@ -380,8 +359,6 @@ export function renderReview(target, sid, config, review) {
       el.style.setProperty("--deal", Math.abs(i - index));
       el.classList.add("is-dealt");
     });
-    coverEl()?.style.setProperty("--deal", index + 1);
-    coverEl()?.classList.add("is-dealt");
   };
 
   // Changing part: the column leaves, the new one cascades in. The snap stays

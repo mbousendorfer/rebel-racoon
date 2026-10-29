@@ -18,9 +18,9 @@
 //     review) — nothing is saved here, onUse(voice) adds it to the draft, and
 //     there is no Playbook to edit it in.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2391";
-import { getContextById } from "../contexts-store.js?v=2391";
-import { networkLabel } from "../social-profiles.js?v=2391";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2393";
+import { getContextById } from "../contexts-store.js?v=2393";
+import { networkLabel } from "../social-profiles.js?v=2393";
 import {
   INTERVIEW,
   learnPhases,
@@ -28,9 +28,9 @@ import {
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
-} from "../network-voice-flow.js?v=2391";
-import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2391";
-import { escapeHtml } from "../utils.js?v=2391";
+} from "../network-voice-flow.js?v=2393";
+import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2393";
+import { escapeHtml } from "../utils.js?v=2393";
 
 const MODAL_ID = "voice-proposal";
 
@@ -98,7 +98,7 @@ export function openVoiceInterview({ net, onDone, onCancel = null }) {
         </div>
       </div>`,
     ).join("")}`;
-  footEl.innerHTML = button("close", "ghost grey", "Cancel") + button("answers", "primary orange", "Write the rules");
+  footEl.innerHTML = button("close", "ghost grey", "Cancel") + button("answers", "primary orange", "Write the voice");
   setTimeout(() => bodyEl.querySelector("textarea")?.focus({ preventScroll: true }), 0);
 }
 
@@ -119,7 +119,7 @@ export function openVoiceProposal(opts) {
   const label = networkLabel(net);
   show();
   current = { kind: "proposal", ...opts };
-  titleEl.textContent = opts.title || `New rules for ${label}`;
+  titleEl.textContent = opts.title || `New ${label} voice`;
   footEl.innerHTML =
     button("close", "ghost grey", "Cancel") +
     button("use", "primary blue", opts.useLabel || "Add to Voice profile", true);

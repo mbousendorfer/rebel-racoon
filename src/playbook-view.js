@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2391";
-import { conceptHint } from "./concepts.js?v=2391";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2393";
+import { conceptHint } from "./concepts.js?v=2393";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2391";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2391";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2391";
-import { isFlagOn } from "./feature-flags.js?v=2391";
-import { clipLookOf } from "./videos-store.js?v=2391";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2391";
-import { parseHashParams } from "./url-state.js?v=2391";
+} from "./playbook-brand-kit.js?v=2393";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2393";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2393";
+import { isFlagOn } from "./feature-flags.js?v=2393";
+import { clipLookOf } from "./videos-store.js?v=2393";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2393";
+import { parseHashParams } from "./url-state.js?v=2393";
 import {
   isListPart,
   voiceParts,
@@ -53,14 +53,14 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2391";
-import { showToast } from "./components/toast.js?v=2391";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2391";
-import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2391";
-import { updateContext } from "./contexts-store.js?v=2391";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2391";
-import { consumeHandoff } from "./handoff.js?v=2391";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2391";
+} from "./voice-parts.js?v=2393";
+import { showToast } from "./components/toast.js?v=2393";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2393";
+import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2393";
+import { updateContext } from "./contexts-store.js?v=2393";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2393";
+import { consumeHandoff } from "./handoff.js?v=2393";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2393";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2391";
+} from "./social-profiles.js?v=2393";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2024,7 +2024,7 @@ const SECTION_LEADS = {
   // Flag voicePerNetwork: the model in one line — the creation review's cover
   // is the only place a new user meets it (the intro is for returning users).
   voice: networkVoiceOn()
-    ? "One default voice for every network, and rules for the networks that need their own. I follow them in every draft."
+    ? "One default voice for every network, and a voice of its own for the networks that need one. I follow them in every draft."
     : "How the Brand sounds, in five parts. I follow them in every draft.",
   brand: "How the Brand looks: its logos, colors, type, and the rules its images follow.",
   images: "How I make this Brand's images: the styles I draw them in, and what Generate an image does on a draft.",
@@ -2117,7 +2117,7 @@ function voiceIntroHtml(data) {
     <i class="ap-icon-info_fill" aria-hidden="true"></i>
     <div class="ap-infobox-content">
       <div class="ap-infobox-texts">
-        <span class="ap-infobox-title">Each network can now have its own rules</span>
+        <span class="ap-infobox-title">Each network can now have its own voice</span>
         <span class="ap-infobox-message">On top of your default voice, I add what works on each network: from your posts, or by adapting it.</span>
         <button type="button" class="ap-link" data-vi-open="${esc(data.id || "")}">Show me</button>
       </div>
@@ -2675,17 +2675,17 @@ function voiceSplitBlock(data, index) {
       </div>
     </label>`;
   const later = isLibrary()
-    ? "You can add rules for a network anytime, on its tab."
-    : "You can add rules for a network later, in your Playbook.";
+    ? "You can give a network its own voice anytime, on its tab."
+    : "You can give a network its own voice later, in your Playbook.";
   return pb2Block(
     "Your networks",
     `<div class="pb2-voice-split" role="radiogroup" aria-label="Rules per network">
       ${option("same", "The same voice everywhere", `I write for ${names} in your default voice. ${later}`)}
-      ${option("each", "Rules for each network", `I add what works on ${names} on top of your default voice.`)}
+      ${option("each", "A voice for each network", `I add what works on ${names} on top of your default voice.`)}
     </div>`,
     {
       wide: true,
-      hint: "Each network can follow your default voice as it is, or have rules of its own.",
+      hint: "Each network can follow your default voice as it is, or have a voice of its own.",
       index,
       className: "pb2-voice-split-block",
     },
@@ -2725,7 +2725,7 @@ function networkVoiceCards(data) {
                 : `Your ${label} posts follow your default voice until you add some. I'll ask before your first ${label} post.`,
               later: null,
             });
-      return pb2Block(`Rules for ${label}`, body, {
+      return pb2Block(`Voice for ${label}`, body, {
         wide: true,
         hint: `What your ${label} posts do on top of your default voice.`,
         index: first + 1 + i,
@@ -2945,8 +2945,8 @@ function setVoiceSplit(value) {
   const rules = andList(withRules);
   openConfirmModal({
     title: "Use your default voice everywhere?",
-    body: `The rules for ${rules} are removed, and every network follows your default voice. Drafts already written keep their text.`,
-    confirmLabel: "Remove the rules",
+    body: `I remove the ${rules} ${withRules.length > 1 ? "voices" : "voice"}, and every network follows your default voice. Drafts already written keep their text.`,
+    confirmLabel: withRules.length > 1 ? "Remove the voices" : "Remove the voice",
     danger: true,
     onConfirm: apply,
     // The radio stays where it was.
@@ -2961,8 +2961,8 @@ function resetNetworkVoice(net) {
   const label = networkLabel(net);
   openConfirmModal({
     title: `Use your default voice on ${label}?`,
-    body: `The rules for ${label} are removed, and ${label} follows your default voice. Drafts already written keep their text.`,
-    confirmLabel: "Remove the rules",
+    body: `I remove the ${label} voice, and ${label} follows your default voice. Drafts already written keep their text.`,
+    confirmLabel: "Remove the voice",
     danger: true,
     onConfirm: () => {
       saveNetworkVoice(d.id, net, brandVoiceAsIs(d));
@@ -2992,12 +2992,12 @@ function networkVoiceLead(net, voice, data) {
   const label = networkLabel(net);
   const base = "Your default voice";
   if (voice?.learnedFrom === ADAPTED_FROM)
-    return `${base}, adapted for ${label}: its own rules are tagged « For ${label} ».`;
+    return `${base}, adapted for ${label}: what's specific to ${label} is tagged « For ${label} ».`;
   if (voice?.optimizedBy === "learned")
     return voice.postCount
-      ? `${base}, plus rules for ${label} learned from ${voice.postCount} posts of ${voice.learnedFrom}, tagged « For ${label} ».`
-      : `${base}, plus rules for ${label} learned from ${voice.learnedFrom}, tagged « For ${label} ».`;
-  return `${base}, plus rules for ${label} you wrote, tagged « For ${label} ».`;
+      ? `${base}, plus what I learned from ${voice.postCount} posts of ${voice.learnedFrom}, tagged « For ${label} ».`
+      : `${base}, plus what I learned from ${voice.learnedFrom}, tagged « For ${label} ».`;
+  return `${base}, plus what you wrote for ${label}, tagged « For ${label} ».`;
 }
 
 // A warning infobox on a network's voice tab: its title, its message, an
@@ -3037,7 +3037,7 @@ function renderNetworkVoiceRead(data) {
       ? ""
       : voiceNotice(
           `${label} follows your default voice`,
-          `No rules for ${label} yet (length, format, hashtags), so drafts may miss what works there.`,
+          `No ${label} voice yet, so drafts may miss its length and format.`,
         );
     return `${tabs}${pb2TabHead("voice", actions, {
       noEdit: true,

@@ -152,16 +152,16 @@ export const FLAGS = Object.freeze([
   {
     id: "voicePerNetwork",
     group: "Playbook",
-    tip: "A default voice tied to no network; each network adapts it with rules of its own — learned or adapted by Archie, reviewed before they're saved.",
+    tip: "A default voice tied to no network; each network can have a voice of its own, learned or adapted by Archie and reviewed before it's saved.",
     label: "Voice per network",
     default: false,
     hides:
       "When OFF (default), a Playbook has one voice for every network. When " +
-      "ON, the Voice profile tab has a row of tabs — the default voice (generic, " +
-      "« All networks »), then one per network. A network gets its own rules from its posts, the default voice adapted, " +
+      "ON, the Voice profile tab has a row of tabs: the default voice (generic, " +
+      "« All networks »), then one per network. A network gets its own voice from its posts, the default voice adapted, " +
       "a document, a few questions, or by hand; Archie shows what he'd add and the user " +
       "adds it to the Voice profile or edits it first. Until then it follows " +
-      "the default voice, warned. A draft written before its rules changed " +
+      "the default voice, warned. A draft written before its voice changed " +
       "says so and can be rewritten.",
   },
   {
@@ -274,7 +274,7 @@ export const FLAGS = Object.freeze([
       "files, a short interview or by hand as other ways in. It ends on a " +
       "reveal, then two reviews in cards: the Playbook, then your voice on its " +
       "own (the default voice, where you post, and with " +
-      "voicePerNetwork the networks that get rules of their own), before your " +
+      "voicePerNetwork the networks that get a voice of their own), before your " +
       "first draft.",
   },
   {

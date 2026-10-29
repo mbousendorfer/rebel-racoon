@@ -20,11 +20,11 @@
 //   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2391";
-import { getContextById } from "../contexts-store.js?v=2391";
-import { playbookForNewWork } from "../active-playbook.js?v=2391";
-import { isNewUser } from "../user-mode.js?v=2391";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2391";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2393";
+import { getContextById } from "../contexts-store.js?v=2393";
+import { playbookForNewWork } from "../active-playbook.js?v=2393";
+import { isNewUser } from "../user-mode.js?v=2393";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2393";
 import {
   networkVoiceOn,
   networkVoice,
@@ -34,7 +34,7 @@ import {
   baseValue,
   voiceItemsHtml,
   voiceNetTagHtml,
-} from "../voice-parts.js?v=2391";
+} from "../voice-parts.js?v=2393";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -44,11 +44,11 @@ import {
   INTERVIEW,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2391";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2391";
-import "../archie-pixels.js?v=2391";
-import { navigate } from "../router.js?v=2391";
-import { escapeHtml } from "../utils.js?v=2391";
+} from "../network-voice-flow.js?v=2393";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2393";
+import "../archie-pixels.js?v=2393";
+import { navigate } from "../router.js?v=2393";
+import { escapeHtml } from "../utils.js?v=2393";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -243,7 +243,7 @@ export function voiceAskHtml(
   // What a rule for the network looks like — examples, each one its own chip.
   const examples = traits.length
     ? `<div class="voice-ask__examples">
-        <p class="voice-ask__label">Rules for ${label} would say things like</p>
+        <p class="voice-ask__label">A ${label} voice would say things like</p>
         <ul class="voice-ask__chips">${traits.map((t) => `<li>${escapeHtml(t)}</li>`).join("")}</ul>
       </div>`
     : "";
@@ -252,11 +252,11 @@ export function voiceAskHtml(
   const pick = (value) => `data-voice-ask="${escapeHtml(id)}" data-voice-choice="${value}"`;
   return `
     <div class="voice-edit voice-ask${resolved ? " is-resolved" : ""}">
-      <section class="voice-edit__card" aria-label="Rules for ${label}">
+      <section class="voice-edit__card" aria-label="Voice for ${label}">
         <div class="voice-edit__say">
           <header class="voice-edit__head">
             <span class="voice-edit__net" aria-hidden="true"><i class="${networkIcon(net)}"></i></span>
-            <span class="voice-edit__title"><span class="voice-edit__name">No rules for ${label} yet</span></span>
+            <span class="voice-edit__title"><span class="voice-edit__name">No ${label} voice yet</span></span>
           </header>
           ${
             resolved
@@ -492,13 +492,13 @@ const outcome = new Map(); // net → "added" | "kept" | "later"
 
 function stateText(ctx, net) {
   const { state, voice } = networkVoice(ctx, net);
-  if (outcome.get(net) === "added") return "Its own rules — just added";
+  if (outcome.get(net) === "added") return "Its own voice, just added";
   if (state === "own")
     return voice.optimizedBy === "you"
-      ? "Its own rules, written by you"
+      ? "Its own voice, written by you"
       : voice.postCount
-        ? `Its own rules, from ${voice.postCount} posts of ${voice.learnedFrom}`
-        : `Its own rules, from ${voice.learnedFrom}`;
+        ? `Its own voice, from ${voice.postCount} posts of ${voice.learnedFrom}`
+        : `Its own voice, from ${voice.learnedFrom}`;
   return `Uses your default voice`;
 }
 
@@ -600,7 +600,7 @@ function renderStand() {
   titleEl.textContent = `Here's where ${brandOf(ctx)} stands`;
   subEl.textContent = waiting.length
     ? `Every network starts from your default voice. Check the ones to personalize now — one at a time, about a minute each. You review every change before it's saved.`
-    : `Every network has rules of its own. Check one to personalize it again, or keep them as they are.`;
+    : `Every network has a voice of its own. Check one to personalize it again, or keep them as they are.`;
   leftEl.innerHTML = rowsHtml(ctx, { pick: true });
   renderCard(ctx);
   renderStandActions();
@@ -622,7 +622,7 @@ function renderPersonalize() {
   const hasOwn = networkVoice(ctx, net).state === "own";
   subEl.textContent = `${queue.length > 1 ? `${qi + 1} of ${queue.length} · ` : ""}${
     hasOwn
-      ? `${label} has its own rules — ${stateText(ctx, net).replace(/^Its own rules, /, "")}. How should I update them?`
+      ? `${label} has its own voice, ${stateText(ctx, net).replace(/^Its own voice, /, "")}. How should I update it?`
       : `${label} uses your default voice for now. How should I adapt it to ${label}?`
   }`;
   const ways = voiceChoices(net).items.filter((i) => ["learn", "adapt", "interview", "edit"].includes(i.value));
@@ -697,7 +697,7 @@ function renderForm() {
         </div>`,
       ).join("")}
     </form>`;
-  actionsEl.innerHTML = button("back", "ghost grey", "Back") + button("answers", "primary orange", "Write the rules");
+  actionsEl.innerHTML = button("back", "ghost grey", "Back") + button("answers", "primary orange", "Write the voice");
   setTimeout(() => stageEl.querySelector("textarea")?.focus({ preventScroll: true }), 0);
 }
 
@@ -748,10 +748,10 @@ function renderDone() {
     .filter((n) => networkVoice(ctx, n).state === "default")
     .map((n) => networkLabel(n));
   const rest = still.length
-    ? `${still.join(" and ")} ${still.length === 1 ? "writes" : "write"} in your default voice for now — personalize ${still.length === 1 ? "it" : "them"} anytime from its Voice profile tab.`
-    : "Every network has rules of its own.";
+    ? `${still.join(" and ")} ${still.length === 1 ? "writes" : "write"} in your default voice for now: personalize ${still.length === 1 ? "it" : "them"} anytime from its Voice profile tab.`
+    : "Every network has a voice of its own.";
   subEl.textContent = added.length
-    ? `${added.join(" and ")} ${added.length === 1 ? "has its" : "have their"} own rules now. ${rest}`
+    ? `${added.join(" and ")} ${added.length === 1 ? "has its own voice" : "have their own voices"} now. ${rest}`
     : rest;
   leftEl.innerHTML = rowsHtml(ctx);
   renderCard(ctx);

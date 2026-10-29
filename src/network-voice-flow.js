@@ -33,7 +33,7 @@
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2391";
+import * as inlineQuestion from "./inline-question.js?v=2393";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -43,14 +43,14 @@ import {
   postVoiceTurn,
   resolveTurn,
   getThread,
-} from "./assistant.js?v=2391";
-import { getContextById, updateContext } from "./contexts-store.js?v=2391";
-import { getSessionById } from "./sessions-store.js?v=2391";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2391";
-import { setHandoff } from "./handoff.js?v=2391";
-import { navigate } from "./router.js?v=2391";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2391";
-import { getPosts } from "./posts-store.js?v=2391";
+} from "./assistant.js?v=2393";
+import { getContextById, updateContext } from "./contexts-store.js?v=2393";
+import { getSessionById } from "./sessions-store.js?v=2393";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2393";
+import { setHandoff } from "./handoff.js?v=2393";
+import { navigate } from "./router.js?v=2393";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2393";
+import { getPosts } from "./posts-store.js?v=2393";
 import {
   networkVoiceOn,
   networkVoice,
@@ -61,7 +61,7 @@ import {
   playbookNetworks,
   voiceParts,
   adaptNetworkVoice,
-} from "./voice-parts.js?v=2391";
+} from "./voice-parts.js?v=2393";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;
@@ -72,12 +72,12 @@ export function learnPhases(net, from = null, choice = null) {
   const label = networkLabel(net);
   const account = profileForNetwork(net);
   if (choice === "adapt")
-    return ["Reading your default voice…", `Adding what works on ${label}…`, `Writing the rules for ${label}…`];
-  if (from && typeof from === "object") return ["Reading your answers…", `Writing the rules for ${label}…`];
+    return ["Reading your default voice…", `Adding what works on ${label}…`, `Writing your ${label} voice…`];
+  if (from && typeof from === "object") return ["Reading your answers…", `Writing your ${label} voice…`];
   return [
     from ? `Reading ${from}…` : `Reading ${account.postCount} posts of ${account.handle}…`,
     from ? `Finding how you write on ${label}…` : `Finding what works on ${label}…`,
-    `Writing the rules for ${label}…`,
+    `Writing your ${label} voice…`,
   ];
 }
 
@@ -145,7 +145,7 @@ export function voiceChoices(net, { needed = false, chat = false } = {}) {
       icon: "ap-icon-pen",
       tile: "Write them myself",
       hint: "In your Voice profile",
-      label: "Write the rules myself",
+      label: "Write it myself",
       caption: `I open ${label} in your Voice profile, starting from your default voice.`,
     },
     needed && {
@@ -232,7 +232,7 @@ export function giveNetworkVoice(sessionId, ctxId, net) {
       if (n)
         postAssistantMessage(
           sessionId,
-          `${label} has its own rules now. ${n === 1 ? `Your ${label} draft was` : `Your ${n} ${label} drafts were`} written before them — rewrite ${n === 1 ? "it" : "each one"} from its card.`,
+          `${label} has its own voice now. ${n === 1 ? `Your ${label} draft was` : `Your ${n} ${label} drafts were`} written before it: rewrite ${n === 1 ? "it" : "each one"} from its card.`,
         );
     },
     { giving: true },
@@ -327,7 +327,7 @@ function askVoice(sessionId, ctxId, nets, onReady, { giving = false } = {}) {
     useDefaultVoice(ctxId, net);
     postAssistantMessage(
       sessionId,
-      `I'll write for ${label} in your default voice. You can add rules for ${label} in your Voice profile anytime.`,
+      `I'll write for ${label} in your default voice. You can give ${label} its own voice in your Voice profile anytime.`,
     );
     go();
   };

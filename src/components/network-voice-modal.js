@@ -14,19 +14,19 @@
 //   `giving` (« Give X its own voice » on a draft): asked even for a network on
 //   the default voice, without that answer.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2391";
-import { getContextById } from "../contexts-store.js?v=2391";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2391";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2393";
+import { getContextById } from "../contexts-store.js?v=2393";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2393";
 import {
   missingNetworkVoices,
   voiceChoices,
   useDefaultVoice,
   editNetworkVoiceInPlaybook,
   documentName,
-} from "../network-voice-flow.js?v=2391";
-import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2391";
-import { openVoiceProposal, openVoiceInterview } from "./voice-proposal-modal.js?v=2391";
-import { escapeHtml } from "../utils.js?v=2391";
+} from "../network-voice-flow.js?v=2393";
+import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2393";
+import { openVoiceProposal, openVoiceInterview } from "./voice-proposal-modal.js?v=2393";
+import { escapeHtml } from "../utils.js?v=2393";
 
 const MODAL_ID = "network-voice";
 
@@ -96,7 +96,7 @@ export function requireNetworkVoicesInDialog(contextId, networks, onReady, { giv
       : `How should I write on these ${missing.length} networks?`;
   bodyEl.innerHTML = `<p class="network-voice-modal__lead">${
     giving
-      ? `These drafts use your default voice. Once ${escapeHtml(one)} has its own rules, you can rewrite each one.`
+      ? `These drafts use your default voice. Once ${escapeHtml(one)} has its own voice, you can rewrite each one.`
       : `I don't know how you write on ${missing.length === 1 ? escapeHtml(one) : "these networks"} yet. Pick how I should learn it before I write.`
   }</p>${missing.map((n) => groupHtml(n, giving)).join("")}`;
   backdrop.hidden = false;

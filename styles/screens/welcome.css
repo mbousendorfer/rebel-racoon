@@ -1649,8 +1649,7 @@
 /* Dimming follows the scroll, frame by frame (--focus, 0 → 1, set by the
    JS from the distance to the reading line): no transition, no switch. A card
    out of focus only steps back a little — it stays readable. */
-.welcome-flow__sheet.is-scroll .welcome-review__card,
-.welcome-flow__sheet.is-scroll .welcome-review__cover {
+.welcome-flow__sheet.is-scroll .welcome-review__card {
   scroll-snap-align: center;
   opacity: calc(0.82 + 0.18 * var(--focus, 1));
   transform: scale(calc(0.985 + 0.015 * var(--focus, 1)));
@@ -1667,39 +1666,8 @@
   scroll-snap-type: none;
 }
 
-/* The part's cover, heading its column: the stack's passing cover made a card
-   that stays — its tint as a wash at the top, the tile, the name, the
-   sentence in the cards' subtitle style. No entrance of its own: re-laid after
-   a repaint, it must not replay anything. */
-.welcome-review__cover {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-lg) var(--ref-spacing-md) var(--ref-spacing-md);
-  text-align: center;
-  background: linear-gradient(180deg, var(--part-tint) 0, var(--app-surface) 120px);
-  border-radius: 20px;
-  box-shadow: var(--app-shadow-popover-lg);
-}
-
-.welcome-review__cover .welcome-review__intro-title {
-  margin: var(--ref-spacing-xxs) 0 0;
-}
-
-.welcome-review__cover-lead {
-  max-width: 44ch;
-  margin: 0;
-  font-family: var(--sys-text-style-subtitle-font-family);
-  font-size: var(--sys-text-style-subtitle-size);
-  line-height: var(--sys-text-style-subtitle-line-height);
-  font-weight: var(--sys-text-style-subtitle-weight);
-  color: var(--ref-color-grey-80);
-}
-
 /* A part's cards arrive in a cascade, the nearest first. */
-.welcome-flow__sheet.is-scroll .welcome-review__card.is-dealt,
-.welcome-flow__sheet.is-scroll .welcome-review__cover.is-dealt {
+.welcome-flow__sheet.is-scroll .welcome-review__card.is-dealt {
   animation: welcome-review-cascade 0.55s cubic-bezier(0.22, 1, 0.36, 1) calc(min(var(--deal, 0), 4) * 70ms) both;
 }
 
@@ -1733,7 +1701,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .welcome-flow__sheet.is-scroll .welcome-review__cover.is-dealt,
   .welcome-flow__sheet.is-scroll .welcome-review__card.is-dealt {
     animation: none;
   }

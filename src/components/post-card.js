@@ -19,14 +19,14 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2391";
-import { isPortraitFormat } from "../clip-formats.js?v=2391";
-import { presetById } from "../clip-captions.js?v=2391";
-import { renderFeedbackControl } from "./feedback-control.js?v=2391";
-import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2391";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2391";
-import { REVEAL_MS } from "../archie-pixels.js?v=2391";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2391";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2393";
+import { isPortraitFormat } from "../clip-formats.js?v=2393";
+import { presetById } from "../clip-captions.js?v=2393";
+import { renderFeedbackControl } from "./feedback-control.js?v=2393";
+import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2393";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2393";
+import { REVEAL_MS } from "../archie-pixels.js?v=2393";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2393";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -143,8 +143,8 @@ function renderVoiceStatus(net, opts, post) {
     return `<div class="ap-status-card orange posts__card-voice-status" role="status">
     <div class="upper">
       <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-      <div class="flow"><span>Written in your default voice. No rules for ${label} yet.</span></div>
-      <button type="button" class="ap-link small standalone" data-post-voice="${escapeAttr(opts.playbookId)}" data-post-voice-net="${escapeAttr(net)}">Add rules for ${label}</button>
+      <div class="flow"><span>Written in your default voice. No ${label} voice yet.</span></div>
+      <button type="button" class="ap-link small standalone" data-post-voice="${escapeAttr(opts.playbookId)}" data-post-voice-net="${escapeAttr(net)}">Add a voice for ${label}</button>
     </div>
   </div>`;
   if (opts.voiceStale && post.status !== "scheduled")
