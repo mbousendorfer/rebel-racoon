@@ -9,11 +9,11 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2425";
-import { navigate } from "../router.js?v=2425";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2425";
-import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2425";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2425";
+import { html, raw } from "../utils.js?v=2426";
+import { navigate } from "../router.js?v=2426";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2426";
+import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2426";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2426";
 
 // Where the default voice was read from, said on the reveal.
 const READ_FROM = { website: "your site", documents: "your files", interview: "your answers" };
@@ -106,7 +106,7 @@ export function renderWelcomeAltReady(_params, target) {
             ? "Tell me how your brand sounds and who it speaks to. Every draft I write starts there."
             : getDraft(sid)?.voiceLearnedFrom
               ? `I wrote your Playbook from ${READ_FROM[getDraft(sid)?.sourceType] || "what you gave me"}, and your default voice from the posts of ${getDraft(sid).voiceLearnedFrom.replace(/\.$/, "")}. Review and edit both now, or later from your Playbook.`
-              : `I wrote your Playbook and a default voice from ${READ_FROM[getDraft(sid)?.sourceType] || "what you gave me"}. I use that voice on every network, without tuning it to any of them yet. Review and edit both now, or later from your Playbook.`}
+              : `I wrote your Playbook and a default voice from ${READ_FROM[getDraft(sid)?.sourceType] || "what you gave me"}. I use that voice on every network. Review and edit both now, or later from your Playbook.`}
         </p>
         <ul class="welcome-flow__options">
           ${raw(
@@ -114,7 +114,7 @@ export function renderWelcomeAltReady(_params, target) {
               hook: "data-ready-review",
               icon: "ap-icon-pen",
               title: manual ? "Fill in my Playbook" : "Review my Playbook",
-              desc: manual ? "Part by part, card by card." : "Your Brand and how it looks. Edit any part.",
+              desc: manual ? "Part by part, card by card." : "Your business, who you write for, and your goal.",
             }),
           )}
           ${raw(
@@ -122,7 +122,7 @@ export function renderWelcomeAltReady(_params, target) {
               hook: "data-ready-voice",
               icon: "ap-icon-quote",
               title: "Review my voice",
-              desc: "Your default voice, and a voice of its own for the networks that need one.",
+              desc: "How you sound, on every network.",
             }),
           )}
           ${manual

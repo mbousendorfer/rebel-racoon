@@ -9,11 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2425";
-import { html, raw, escapeHtml } from "../utils.js?v=2425";
-import { navigate } from "../router.js?v=2425";
-import { parseHashParams } from "../url-state.js?v=2425";
-import { isFlagOn } from "../feature-flags.js?v=2425";
+import "../archie-pixels.js?v=2426";
+import { html, raw, escapeHtml } from "../utils.js?v=2426";
+import { navigate } from "../router.js?v=2426";
+import { parseHashParams } from "../url-state.js?v=2426";
+import { isFlagOn } from "../feature-flags.js?v=2426";
 import {
   altSteps,
   createAltDraft,
@@ -21,9 +21,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2425";
-import { getConnectedProfiles, getConnectedProfileById, networkIcon, networkLabel } from "../social-profiles.js?v=2425";
-import { playbookNetworks } from "../voice-parts.js?v=2425";
+} from "../context-builder.js?v=2426";
+import { getConnectedProfiles, getConnectedProfileById, networkIcon, networkLabel } from "../social-profiles.js?v=2426";
+import { playbookNetworks } from "../voice-parts.js?v=2426";
 import {
   readSessionId,
   isIntegrated,
@@ -33,8 +33,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2425";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2425";
+} from "./welcome-alt-recap.js?v=2426";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2426";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -48,7 +48,7 @@ export const STEP_TEXT = {
   voiceFrom: { title: "Pick the account that sounds like you", desc: "I learn your voice from its recent posts." },
   voice: {
     title: "Review your voice",
-    desc: "Your default voice, and a voice of its own for the networks that need one.",
+    desc: "How you sound, on every network.",
   },
   recap: { title: "Review your Playbook", desc: "Everything I learned, before I write a word." },
 };
