@@ -9,11 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2423";
-import { html, raw, escapeHtml } from "../utils.js?v=2423";
-import { navigate } from "../router.js?v=2423";
-import { parseHashParams } from "../url-state.js?v=2423";
-import { isFlagOn } from "../feature-flags.js?v=2423";
+import "../archie-pixels.js?v=2425";
+import { html, raw, escapeHtml } from "../utils.js?v=2425";
+import { navigate } from "../router.js?v=2425";
+import { parseHashParams } from "../url-state.js?v=2425";
+import { isFlagOn } from "../feature-flags.js?v=2425";
 import {
   altSteps,
   createAltDraft,
@@ -21,9 +21,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2423";
-import { networkIcon, networkLabel } from "../social-profiles.js?v=2423";
-import { playbookNetworks } from "../voice-parts.js?v=2423";
+} from "../context-builder.js?v=2425";
+import { getConnectedProfiles, getConnectedProfileById, networkIcon, networkLabel } from "../social-profiles.js?v=2425";
+import { playbookNetworks } from "../voice-parts.js?v=2425";
 import {
   readSessionId,
   isIntegrated,
@@ -33,8 +33,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2423";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2423";
+} from "./welcome-alt-recap.js?v=2425";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2425";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -45,6 +45,7 @@ export const STEP_TEXT = {
   url: { title: "Show me your Brand", desc: "Your website, a few files, or a handful of questions." },
   language: { title: "Pick your language", desc: "The one I'll write your posts in." },
   documents: { title: "Add brand documents", desc: "Optional: a brand book or guidelines." },
+  voiceFrom: { title: "Pick the account that sounds like you", desc: "I learn your voice from its recent posts." },
   voice: {
     title: "Review your voice",
     desc: "Your default voice, and a voice of its own for the networks that need one.",
@@ -56,6 +57,7 @@ const ROUTE = {
   url: "/welcome-alt/brand",
   language: "/welcome-alt/language",
   documents: "/welcome-alt/documents",
+  voiceFrom: "/welcome-alt/voice-from",
   voice: "/welcome-alt/voice",
   recap: "/welcome-alt/ready",
 };
@@ -63,8 +65,19 @@ const ROUTE = {
 // The run, in order, under the flags of the moment: the chat's own steps (no
 // account step: the first draft asks), the reveal and the Playbook's review,
 // then the Voice's own review — where you post is asked there (2026-10-29).
+// The account the voice is learned from is asked after the source, as in prod's
+// wizard (« Which profile to analyze? »), when one can be read (2026-10-29).
 export function flowSteps() {
-  return [...altSteps().filter((id) => ROUTE[id]), "recap", "voice"];
+  return [...altSteps().filter((id) => ROUTE[id]), ...(voiceAccounts().length ? ["voiceFrom"] : []), "recap", "voice"];
+}
+
+// The connected accounts a voice can be learned from: prod reads LinkedIn,
+// Facebook and Instagram (voice-accounts.ts), the ones with posts first.
+const VOICE_NETWORKS = new Set(["linkedin", "facebook", "instagram"]);
+export function voiceAccounts() {
+  return getConnectedProfiles()
+    .filter((p) => VOICE_NETWORKS.has(p.platform))
+    .sort((a, b) => (b.postCount || 0) - (a.postCount || 0));
 }
 
 function goTo(step) {
@@ -126,9 +139,19 @@ export function ensureFlowDraft() {
 // The building stages on /welcome-alt/ready, by source — they tick on the left
 // and say when each analysed line of the card lands (a stage's `lands`).
 export function stagesFor(d) {
-  if (d?.sourceType === "documents") return FILE_LOADING_STAGES;
-  if (d?.sourceType === "interview") return INTERVIEW_LOADING_STAGES;
-  return LOADING_STAGES;
+  const stages =
+    d?.sourceType === "documents"
+      ? FILE_LOADING_STAGES
+      : d?.sourceType === "interview"
+        ? INTERVIEW_LOADING_STAGES
+        : LOADING_STAGES;
+  // The voice stage names the account it reads, when one was picked.
+  const from = getConnectedProfileById(d?.voiceFrom);
+  return from
+    ? stages.map((st) =>
+        st.lands?.includes("voice") ? { ...st, sub: `Reading the recent posts of ${from.handle}.` } : st,
+      )
+    : stages;
 }
 
 // ── The parts' colours ────────────────────────────────────────────────────

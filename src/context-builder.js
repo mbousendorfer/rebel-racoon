@@ -13,36 +13,38 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=2423";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2423";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2423";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2423";
-import { showToast } from "./components/toast.js?v=2423";
-import { recordReasons } from "./feedback-store.js?v=2423";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2423";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2423";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2423";
+import * as inlineQuestion from "./inline-question.js?v=2425";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2425";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2425";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2425";
+import { showToast } from "./components/toast.js?v=2425";
+import { recordReasons } from "./feedback-store.js?v=2425";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2425";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2425";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2425";
 import {
   analyzeWebsite,
+  analyzeSocialProfiles,
   analyzeBrandFiles,
   analyzeInterview,
   nextInterviewQuestion,
   INTERVIEW_OPENING,
-} from "./context-mock-analysis.js?v=2423";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2423";
-import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=2423";
-import { markIntroSeen } from "./components/voice-intro-modal.js?v=2423";
-import { connectors as connectorMocks } from "./mocks.js?v=2423";
+} from "./context-mock-analysis.js?v=2425";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2425";
+import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=2425";
+import { markIntroSeen } from "./components/voice-intro-modal.js?v=2425";
+import { connectors as connectorMocks } from "./mocks.js?v=2425";
 import {
   getConnectedProfiles,
+  getConnectedProfileById,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=2423";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2423";
-import { isFlagOn } from "./feature-flags.js?v=2423";
-import { startDemo } from "./demo-flow.js?v=2423";
-import { navigate } from "./router.js?v=2423";
-import { setHandoff } from "./handoff.js?v=2423";
+} from "./social-profiles.js?v=2425";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2425";
+import { isFlagOn } from "./feature-flags.js?v=2425";
+import { startDemo } from "./demo-flow.js?v=2425";
+import { navigate } from "./router.js?v=2425";
+import { setHandoff } from "./handoff.js?v=2425";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -266,6 +268,36 @@ function applyAnalysisToDraft(d, analysis) {
   d.color = analysis.suggestions.color || "orange";
   Object.assign(d, sectionPatchFromAnalysis(analysis));
   d.imageDefaults = imageDefaultsFromAnalysis(analysis);
+  // The account picked for the voice wins over what the source said of it.
+  if (d.voiceFrom) applyAccountVoice(d);
+}
+
+// The voice, from one connected account's recent posts — prod's
+// playbook-analyzer: the account lane wins over the site, and the Playbook says
+// whose posts it read. Picked before the site's read lands, it waits for it
+// (applyAnalysisToDraft); after, it lands now. `null` = keep the source's voice.
+export function learnAltVoiceFrom(sessionId, profileId) {
+  const d = drafts.get(sessionId);
+  if (!d) return;
+  d.voiceFrom = profileId || null;
+  d.voiceLearnedFrom = "";
+  if (d.voiceFrom && isAnalysisReady(sessionId)) applyAccountVoice(d);
+  notify(sessionId);
+}
+
+function applyAccountVoice(d) {
+  const p = getConnectedProfileById(d.voiceFrom);
+  if (!p) return;
+  const s = analyzeSocialProfiles([p.id]).suggestions;
+  Object.assign(d, {
+    voiceSummary: s.voiceSummary || "",
+    voiceAlways: cloneItems(s.voiceAlways),
+    voiceNever: cloneItems(s.voiceNever),
+    voiceByPost: cloneItems(s.voiceByPost),
+    voiceSometimes: cloneItems(s.voiceSometimes),
+    brandPersonality: s.brandPersonality || d.brandPersonality,
+    voiceLearnedFrom: p.handle,
+  });
 }
 
 // Patch the draft from outside the conversational flow — used by the
