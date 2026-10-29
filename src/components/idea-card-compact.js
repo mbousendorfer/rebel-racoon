@@ -17,9 +17,9 @@
 //     showMention — render the Mention button (default true; false where there
 //                   is no composer, e.g. the standalone Ideas page)
 
-import { iconFor } from "../file-kinds.js?v=2548";
-import { escapeText, escapeAttr } from "../utils.js?v=2548";
-import { isFlagOn } from "../feature-flags.js?v=2548";
+import { iconFor } from "../file-kinds.js?v=2549";
+import { escapeText, escapeAttr } from "../utils.js?v=2549";
+import { isFlagOn } from "../feature-flags.js?v=2549";
 
 // Each idea kind → its DS `.ap-tag` colour variant. The one table: every kind
 // tag (this card, the panel's Overview and Sources, the full idea card, the
@@ -129,6 +129,7 @@ export function renderCompactIdeaCard(
   const cardHead = `
     <div class="rpanel-ideas__card-head">
       <span class="ap-tag ${IDEA_KIND_TAG[kind] || "green"} rpanel-ideas__kind">${kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
+      ${/* Same reading as the Overview: an idea already drafted says so here too. */ idea.used > 0 ? `<span class="ap-status green">Drafted</span>` : ""}
       ${
         sourceTags
           ? `<div class="rpanel-ideas__head-source">
