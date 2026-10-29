@@ -9,13 +9,13 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2474";
-import { navigate } from "../router.js?v=2474";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2474";
-import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2474";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2474";
-import { onlyNetwork } from "../voice-parts.js?v=2474";
-import { networkLabel } from "../social-profiles.js?v=2474";
+import { html, raw } from "../utils.js?v=2475";
+import { navigate } from "../router.js?v=2475";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2475";
+import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2475";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2475";
+import { onlyNetwork } from "../voice-parts.js?v=2475";
+import { networkLabel } from "../social-profiles.js?v=2475";
 
 // Where the default voice was read from, said on the reveal.
 const READ_FROM = { website: "your site", documents: "your files", interview: "your answers" };
@@ -123,9 +123,18 @@ export function renderWelcomeAltReady(_params, target) {
         ${stages.map(
           (st, i) => html`
             <li class="welcome-flow__stage ${i < at ? "is-done" : i === at ? "is-current" : ""}">
-              <span class="welcome-flow__stage-mark" aria-hidden="true">
-                ${i < at ? raw(`<i class="ap-icon-check"></i>`) : ""}
-              </span>
+              ${i === at
+                ? // The one at work: the chat's working mark (Archie's disc, the
+                  // animated mark — thread-render.js), asked « réutiliser ceux
+                  // dans la conversation ».
+                  raw(
+                    `<span class="e-turn__mark"><span class="archie-loader" role="status" aria-label="Working"></span></span>`,
+                  )
+                : raw(
+                    `<span class="welcome-flow__stage-mark" aria-hidden="true">${
+                      i < at ? `<i class="ap-icon-check"></i>` : ""
+                    }</span>`,
+                  )}
               <span class="welcome-intro__text">
                 <span class="welcome-intro__step-title">${st.title}</span>
                 ${i === at ? raw(`<span class="welcome-intro__step-desc">${st.sub}</span>`) : ""}

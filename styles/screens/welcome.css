@@ -864,21 +864,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
   color: var(--ref-color-grey-100);
 }
 
-/* The one at work: an olive dot breathing in a butter disc. */
-.welcome-flow__stage.is-current .welcome-flow__stage-mark {
-  background: var(--app-butter);
-  border-color: var(--app-butter-accent);
-}
-
-.welcome-flow__stage.is-current .welcome-flow__stage-mark::after {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--app-butter-accent);
-  animation: ap-status-working 1.2s ease-in-out infinite;
-}
-
 /* The live card */
 .welcome-flow__card-name {
   display: flex;
