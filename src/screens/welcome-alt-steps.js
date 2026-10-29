@@ -3,8 +3,6 @@
 // is context-builder's (readAltWebsite, readAltFiles, writeAltManually,
 // analyzeAltInterview), the same moves the chat onboarding makes.
 //
-//   /welcome-alt/networks   where the brand posts, and its main network
-//                           (nothing to connect: the first draft asks)
 //   /welcome-alt/brand      the website (prefilled), or files, a short
 //                           interview, or by hand
 //   /welcome-alt/interview  no website: one question at a time
@@ -16,8 +14,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2360";
-import { navigate } from "../router.js?v=2360";
+import { html, raw, escapeHtml } from "../utils.js?v=2362";
+import { navigate } from "../router.js?v=2362";
 import {
   getDraft,
   patchDraft,
@@ -25,13 +23,11 @@ import {
   readAltFiles,
   writeAltManually,
   analyzeAltInterview,
-} from "../context-builder.js?v=2360";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2360";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2360";
-import { connectors as connectorMocks } from "../mocks.js?v=2360";
-import { NETWORKS } from "../social-profiles.js?v=2360";
-import { playbookNetworks } from "../voice-parts.js?v=2360";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=2360";
+} from "../context-builder.js?v=2362";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2362";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2362";
+import { connectors as connectorMocks } from "../mocks.js?v=2362";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=2362";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
@@ -74,59 +70,6 @@ const actions = (primary, { skip = "" } = {}) =>
 
 const continueButton = (label = "Continue", { disabled = false } = {}) =>
   `<button type="submit" class="ap-button primary blue" data-flow-next ${disabled ? "disabled" : ""}><span>${escapeHtml(label)}</span></button>`;
-
-// ── /welcome-alt/networks ────────────────────────────────────────────────
-// Where the brand posts, in `connectedSocials`, in the order picked (the main
-// network is chosen on the Voice review since 2026-10-29). Nothing is connected
-// here, the first draft asks for an account (connect-profiles-flow.js).
-
-const netGlyph = (id) =>
-  `<span class="welcome-flow__glyph"><i class="${NETWORKS[id].icon}" aria-hidden="true"></i></span>`;
-
-export function renderWelcomeAltNetworks(_params, target) {
-  return screen(target, {
-    step: "networks",
-    left: (sid) => {
-      const nets = playbookNetworks(getDraft(sid));
-      return html`
-        <h1 class="welcome-flow__title" id="welcomeFlowTitle">Where do you post?</h1>
-        <p class="welcome-intro__sub">
-          I'll write for each network you pick. Nothing to connect yet: I'll ask for an account when your first post is
-          ready.
-        </p>
-        <form data-choice-form novalidate>
-          <ul class="welcome-flow__options is-grid" aria-label="Networks">
-            ${Object.keys(NETWORKS).map((id) =>
-              optionRow({
-                type: "checkbox",
-                name: "network",
-                value: id,
-                checked: nets.includes(id),
-                lead: netGlyph(id),
-                title: NETWORKS[id].label,
-              }),
-            )}
-          </ul>
-          ${actions(continueButton("Continue", { disabled: !nets.length }))}
-        </form>
-      `;
-    },
-    onChange: (e, sid, shell) => {
-      const picked = new FormData(e.target.form).getAll("network");
-      // The order picked; the Voice review asks again which get rules.
-      const kept = playbookNetworks(getDraft(sid)).filter((n) => picked.includes(n));
-      patchDraft(sid, {
-        connectedSocials: [...kept, ...picked.filter((n) => !kept.includes(n))],
-        voiceRulesFor: undefined,
-      });
-      shell.paint();
-      target.querySelector(`input[name="${e.target.name}"][value="${e.target.value}"]`)?.focus();
-    },
-    onSubmit: (_e, sid) => {
-      if (playbookNetworks(getDraft(sid)).length) goNext("networks");
-    },
-  });
-}
 
 // ── /welcome-alt/brand ───────────────────────────────────────────────────
 

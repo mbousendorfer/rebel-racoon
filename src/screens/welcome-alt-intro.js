@@ -13,19 +13,19 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2360";
-import { startDemo } from "../demo-flow.js?v=2360";
-import { isFlagOn } from "../feature-flags.js?v=2360";
-import { html, raw, escapeHtml } from "../utils.js?v=2360";
+import "../archie-pixels.js?v=2362";
+import { startDemo } from "../demo-flow.js?v=2362";
+import { isFlagOn } from "../feature-flags.js?v=2362";
+import { html, raw, escapeHtml } from "../utils.js?v=2362";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORKS,
   getConnectedProfiles,
   getConnectableNetworks,
-} from "../social-profiles.js?v=2360";
-import { navigate } from "../router.js?v=2360";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2360";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2360";
+} from "../social-profiles.js?v=2362";
+import { navigate } from "../router.js?v=2362";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2362";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2362";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -35,7 +35,7 @@ const PARTS = ["goals", "voice", "brand", "competitors"];
 // gets a line only where its title doesn't say why it's asked; the documents
 // step is marked Optional instead.
 const STEP_HINT = {
-  networks: () =>
+  voice: () =>
     raw(
       `<span class="welcome-intro__nets"><span>Works with</span><span class="welcome-intro__nets" role="list" aria-label="Supported networks">${supportedNetworks()
         .map(
@@ -71,7 +71,7 @@ const line = (t) => `<span class="welcome-flow__line">${t}</span>`;
 // it, and lands when that step lights up (the step names are STEP_TEXT). The
 // Playbook's real parts, filled with an example brand.
 const ROWS = [
-  { step: "networks", label: "Publishes on", value: ["linkedin", "instagram", "facebook", "x"].map(glyph).join("") },
+  { step: "voice", label: "Publishes on", value: ["linkedin", "instagram", "facebook", "x"].map(glyph).join("") },
   {
     step: "url",
     label: "About",
@@ -191,7 +191,7 @@ export function renderWelcomeAltIntro(_params, target) {
     if (event.target.closest("[data-welcome-demo]")) return startDemo();
     if (!event.target.closest("[data-welcome-begin]")) return;
     startFlow();
-    navigate("/welcome-alt/networks");
+    navigate("/welcome-alt/brand");
   };
   target.addEventListener("click", onClick);
   return () => target.removeEventListener("click", onClick);

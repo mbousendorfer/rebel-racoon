@@ -1,5 +1,5 @@
 // The onboarding shell — flag connectFirst. Every screen of the first-time
-// flow (networks → brand → language → documents → ready → the reviews) is the same
+// flow (brand → language → documents → ready → the reviews) is the same
 // split: the step on the left, Archie's stage on the right, where the Playbook
 // card fills in with the user's REAL answers as they go — the networks it
 // posts on, the site's name and voice once it's read, the colours. The intro
@@ -9,10 +9,10 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2360";
-import { html, raw, escapeHtml } from "../utils.js?v=2360";
-import { navigate } from "../router.js?v=2360";
-import { isFlagOn } from "../feature-flags.js?v=2360";
+import "../archie-pixels.js?v=2362";
+import { html, raw, escapeHtml } from "../utils.js?v=2362";
+import { navigate } from "../router.js?v=2362";
+import { isFlagOn } from "../feature-flags.js?v=2362";
 import {
   altSteps,
   createAltDraft,
@@ -20,9 +20,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2360";
-import { networkIcon, networkLabel } from "../social-profiles.js?v=2360";
-import { playbookNetworks } from "../voice-parts.js?v=2360";
+} from "../context-builder.js?v=2362";
+import { networkIcon, networkLabel } from "../social-profiles.js?v=2362";
+import { playbookNetworks } from "../voice-parts.js?v=2362";
 import {
   readSessionId,
   persistDraft,
@@ -30,8 +30,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2360";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2360";
+} from "./welcome-alt-recap.js?v=2362";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2362";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -39,16 +39,14 @@ const SESSION_KEY = "welcomeAltSessionId";
 // What each step is called, everywhere it's named (the intro's list, the
 // progress, each screen's title).
 export const STEP_TEXT = {
-  networks: { title: "Pick your networks", desc: "The networks I write for." },
   url: { title: "Show me your Brand", desc: "Your website, a few files, or a handful of questions." },
   language: { title: "Pick your language", desc: "The one I'll write your posts in." },
   documents: { title: "Add brand documents", desc: "Optional: a brand book or guidelines." },
-  voice: { title: "Set your voice", desc: "Your default voice, then rules for each network." },
+  voice: { title: "Set your voice", desc: "How you sound, and where you post." },
   recap: { title: "Review your Playbook", desc: "Everything I learned, before I write a word." },
 };
 
 const ROUTE = {
-  networks: "/welcome-alt/networks",
   url: "/welcome-alt/brand",
   language: "/welcome-alt/language",
   documents: "/welcome-alt/documents",
@@ -56,11 +54,11 @@ const ROUTE = {
   recap: "/welcome-alt/ready",
 };
 
-// The run, in order, under the flags of the moment: the networks, the chat's
-// own steps (no account step: the first draft asks), the reveal and the
-// Playbook's review, then the Voice's own review (2026-10-29).
+// The run, in order, under the flags of the moment: the chat's own steps (no
+// account step: the first draft asks), the reveal and the Playbook's review,
+// then the Voice's own review — where you post is asked there (2026-10-29).
 export function flowSteps() {
-  return ["networks", ...altSteps().filter((id) => ROUTE[id]), "recap", "voice"];
+  return [...altSteps().filter((id) => ROUTE[id]), "recap", "voice"];
 }
 
 function goTo(step) {

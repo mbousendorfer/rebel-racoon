@@ -228,9 +228,11 @@ implementation and two hosts. Every list of steps (the plan, the progress) comes
 so no screen announces a step the run won't ask.
 
 **No account in the run (flag `connectFirst`, 2026-10-28, asked: « on va enlever la question de connexion des réseaux »).**
-The connect screen is gone from the first-time run: its first screen asks **where you post** and **which
-network matters most** (`/welcome-alt/networks`), written to `connectedSocials` as network slugs, the
-main one first — nothing is connected. This rule is what makes that safe: `requireConnectedProfiles`
+The connect screen is gone from the first-time run. **Where you post** and **which network matters
+most** are asked in the Voice review (`/welcome-alt/voice`, part Your networks; a first-screen
+`/welcome-alt/networks` lived one day and was removed on 2026-10-29, asked: « le "where do you post" est
+toujours au même endroit »), written to `connectedSocials` as network slugs, the main one first —
+nothing is connected. This rule is what makes that safe: `requireConnectedProfiles`
 already wraps every path that produces a draft, so the first draft asks for an account and its grid
 leads with the Playbook's networks, the main one first. The time saved goes to the voice, now a step of
 its own: since 2026-10-29 the run's last review (`/welcome-alt/voice`, see « Une voix par réseau »). The skip dialog and its feedback key stay,
