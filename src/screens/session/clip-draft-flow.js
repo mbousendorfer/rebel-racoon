@@ -15,15 +15,15 @@
 // whole screen. clipContext is exported alongside because the clip-studio
 // finalize path in session.js builds the same generationContext object.
 
-import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2455";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2455";
+import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2459";
+import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2459";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "../../social-profiles.js?v=2455";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2455";
-import { requireNetworkVoices } from "../../network-voice-flow.js?v=2455";
+} from "../../social-profiles.js?v=2459";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2459";
+import { requireNetworkVoices } from "../../network-voice-flow.js?v=2459";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -33,9 +33,11 @@ import {
   startPending,
   finishPending,
   GENERATION_TOOLS,
-} from "../../assistant.js?v=2455";
-import * as inlineQuestion from "../../inline-question.js?v=2455";
-import { addPostDraft } from "../../posts-store.js?v=2455";
+} from "../../assistant.js?v=2459";
+import * as inlineQuestion from "../../inline-question.js?v=2459";
+import { addPostDraft } from "../../posts-store.js?v=2459";
+import { getContexts } from "../../contexts-store.js?v=2459";
+import { openNewPlaybookFlow } from "../../context-builder.js?v=2459";
 
 // The generationContext a clip-derived draft carries — the "why this draft
 // exists" header shown on the post card. Shared with session.js's clip-studio
@@ -55,6 +57,10 @@ export function clipContext(clip, sourceName) {
 export function startClipDraftFlow(sessionId, entries) {
   const list = Array.isArray(entries) ? entries : entries ? [entries] : [];
   if (!list.length) return;
+  // Clips first, Playbook later (the intro's « Start with video clips »): no
+  // Playbook yet, so no voice to write in. The run builds one and comes back
+  // here, with the clips where they were.
+  if (!getContexts().length) return askForPlaybook(sessionId);
   // Echo the picked clip(s) as a selection card before the format question.
   const first = list[0];
   postSelectionEcho(sessionId, {
@@ -63,6 +69,22 @@ export function startClipDraftFlow(sessionId, entries) {
     meta: first.sourceName ? `Clip · ${first.sourceName}` : "Video clip",
   });
   askClipFormat(sessionId, list);
+}
+
+export function askForPlaybook(sessionId) {
+  postAssistantMessage(sessionId, "I need a Playbook to write these drafts in your voice. It takes about 3 minutes.");
+  inlineQuestion.ask(sessionId, {
+    title: null,
+    stepLabel: "Playbook",
+    items: [],
+    actions: [{ value: "build", label: "Build my Playbook", primary: true }],
+    skipLabel: "Not now",
+    onPick: () => {
+      inlineQuestion.exit(sessionId);
+      openNewPlaybookFlow(`/session/${sessionId}`);
+    },
+    onSkip: () => {},
+  });
 }
 
 // Step 1 — which aspect ratio? All export formats are offered as visual

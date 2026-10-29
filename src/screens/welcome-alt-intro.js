@@ -13,14 +13,15 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2455";
-import { startDemo } from "../demo-flow.js?v=2455";
-import { isFlagOn } from "../feature-flags.js?v=2455";
-import { html, raw } from "../utils.js?v=2455";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2455";
-import { navigate } from "../router.js?v=2455";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2455";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2455";
+import "../archie-pixels.js?v=2459";
+import { startDemo } from "../demo-flow.js?v=2459";
+import { isFlagOn } from "../feature-flags.js?v=2459";
+import { html, raw } from "../utils.js?v=2459";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2459";
+import { navigate } from "../router.js?v=2459";
+import { setHandoff } from "../handoff.js?v=2459";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2459";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2459";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -134,6 +135,14 @@ export function renderWelcomeAltIntro(_params, target) {
                 )
               : ""}
           </div>
+          <!-- Clips first (2026-10-29, asked: « proposer de skip pour utiliser la
+               feature de clipping … dire qu'il faudra un playbook pour créer des
+               drafts »): cutting clips needs no Playbook, drafting from them does. -->
+          <div class="welcome-intro__clips">
+            <p class="welcome-intro__clips-ask">Only here for video clips?</p>
+            <button type="button" class="ap-button stroked grey" data-welcome-clips>Start with video clips</button>
+            <p class="welcome-intro__clips-note">Cut clips now. You'll need a Playbook to turn them into drafts.</p>
+          </div>
         </div>
       </section>
 
@@ -160,6 +169,11 @@ export function renderWelcomeAltIntro(_params, target) {
 
   const onClick = (event) => {
     if (event.target.closest("[data-welcome-demo]")) return startDemo();
+    if (event.target.closest("[data-welcome-clips]")) {
+      // The same way in as the « Extract video clips » starter.
+      setHandoff("pendingStartClipStudio", {});
+      return navigate(`/session/clip-studio-${Date.now().toString(36)}`);
+    }
     if (!event.target.closest("[data-welcome-begin]")) return;
     startFlow();
     navigate("/welcome-alt/brand");
