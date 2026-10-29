@@ -4,7 +4,7 @@
 // menu({ trigger, items, align }) → fragment. installMenus(root) → off():
 // one open at a time, closes on outside click, Escape, and after an item click.
 
-import { html, raw } from "../lib/html.js?v=2487";
+import { html, raw } from "../lib/html.js?v=2488";
 
 /**
  * item: { action, label, icon?, description?, attrs?, danger? } | "divider"

@@ -32,17 +32,17 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=2487";
-import { conceptText } from "../concepts.js?v=2487";
-import { navigate, getPath } from "../router.js?v=2487";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2487";
-import { renderTopbar } from "../components/topbar.js?v=2487";
-import { showToast } from "../components/toast.js?v=2487";
-import { renderEmptyState } from "../components/empty-state.js?v=2487";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2487";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2487";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2487";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2487";
+import { html, raw, escapeAttr } from "../utils.js?v=2488";
+import { conceptText } from "../concepts.js?v=2488";
+import { navigate, getPath } from "../router.js?v=2488";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2488";
+import { renderTopbar } from "../components/topbar.js?v=2488";
+import { showToast } from "../components/toast.js?v=2488";
+import { renderEmptyState } from "../components/empty-state.js?v=2488";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2488";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2488";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2488";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2488";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -53,7 +53,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=2487";
+} from "../topics-store.js?v=2488";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -62,13 +62,13 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=2487";
-import { renderTopicCard } from "../components/topic-card.js?v=2487";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=2487";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2487";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=2487";
-import { useTopicInChat } from "../topic-flow.js?v=2487";
-import { canEdit } from "../playbook-access.js?v=2487";
+} from "../topics-catalog.js?v=2488";
+import { renderTopicCard } from "../components/topic-card.js?v=2488";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=2488";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2488";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=2488";
+import { useTopicInChat } from "../topic-flow.js?v=2488";
+import { canEdit } from "../playbook-access.js?v=2488";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -408,6 +408,7 @@ function renderToolbar(pb, feed) {
         class="ap-select-option${raw(on ? " selected" : "")}"
         data-topic-scope-pick="${c.id}"
         role="option"
+        tabindex="0"
         aria-selected="${on ? "true" : "false"}"
       >
         <span class="ap-select-option-text">${c.name}</span>
@@ -1192,6 +1193,14 @@ function bind(target) {
   // teardown can remove it: #app outlives this screen, so a listener left behind
   // stacks up on every remount.
   boundKeydown = (event) => {
+    // The Playbook select's options are focusable divs: Enter / Space pick one
+    // through the delegated click (WCAG 2.1.1).
+    const option = (event.key === "Enter" || event.key === " ") && event.target.closest?.("[data-topic-scope-pick]");
+    if (option) {
+      event.preventDefault();
+      option.click();
+      return;
+    }
     if (event.key !== "Escape" || !view) return;
     // An OVERLAY takes it before any of this. `has-modal` is the class every modal
     // here puts on <body> while it is up, and this catches the modals that do NOT

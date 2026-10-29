@@ -29,22 +29,22 @@
 // now does — and a row cannot without turning the list into a form. No save bar:
 // every control commits immediately through updateFeed.
 
-import { html, raw } from "../utils.js?v=2487";
-import { navigate } from "../router.js?v=2487";
-import { parseHashParams } from "../url-state.js?v=2487";
-import { renderTopbar } from "../components/topbar.js?v=2487";
-import { renderEmptyState } from "../components/empty-state.js?v=2487";
-import { getContextById, getDefaultContext } from "../contexts-store.js?v=2487";
+import { html, raw } from "../utils.js?v=2488";
+import { navigate } from "../router.js?v=2488";
+import { parseHashParams } from "../url-state.js?v=2488";
+import { renderTopbar } from "../components/topbar.js?v=2488";
+import { renderEmptyState } from "../components/empty-state.js?v=2488";
+import { getContextById, getDefaultContext } from "../contexts-store.js?v=2488";
 import {
   getActivePlaybook,
   isWorkspaceMode,
   catalogueRoute,
   subscribe as subscribeScope,
-} from "../active-playbook.js?v=2487";
-import { editableContexts, visibleContexts, canEdit } from "../playbook-access.js?v=2487";
-import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2487";
-import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=2487";
-import { open as openFeedback } from "../components/feedback-modal.js?v=2487";
+} from "../active-playbook.js?v=2488";
+import { editableContexts, visibleContexts, canEdit } from "../playbook-access.js?v=2488";
+import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2488";
+import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=2488";
+import { open as openFeedback } from "../components/feedback-modal.js?v=2488";
 
 // Above this many Playbooks the picker earns a search field. Below it, a search
 // box over four rows is just noise.
@@ -56,6 +56,7 @@ let boundTarget = null;
 let boundClick = null;
 let boundChange = null;
 let boundInput = null;
+let boundKeydown = null;
 
 // Which Playbook this page is scoped to, from `?pb=`. In the URL rather than
 // module state because a per-entity config surface MUST carry its scope:
@@ -107,9 +108,11 @@ function teardown() {
   if (boundTarget && boundClick) boundTarget.removeEventListener("click", boundClick);
   if (boundTarget && boundChange) boundTarget.removeEventListener("change", boundChange);
   if (boundTarget && boundInput) boundTarget.removeEventListener("input", boundInput);
+  if (boundTarget && boundKeydown) boundTarget.removeEventListener("keydown", boundKeydown);
   boundTarget = null;
   boundClick = null;
   boundChange = null;
+  boundKeydown = null;
   boundInput = null;
 }
 
@@ -249,6 +252,7 @@ function renderPlaybookSelect(playbooks, active) {
         data-settings-pb="${c.id}"
         data-settings-pb-name="${c.name.toLowerCase()}"
         role="option"
+        tabindex="0"
         aria-selected="${isActive ? "true" : "false"}"
       >
         <span class="ap-select-option-content">
@@ -301,6 +305,7 @@ function renderCadenceSelect(feed, active) {
       class="ap-select-option${raw(on ? " selected" : "")}"
       data-settings-cadence="${`${feed ? feed.id : ""}::${c.id}`}"
       role="option"
+      tabindex="0"
       aria-selected="${on ? "true" : "false"}"
     >
       <span class="ap-select-option-text">${c.label}</span>
@@ -494,6 +499,17 @@ function bind(target) {
     if (event.target.closest("[data-settings-playbooks]")) navigate(catalogueRoute());
   };
   target.addEventListener("click", boundClick);
+
+  // The Playbook and Refresh selects' options are focusable divs: Enter / Space
+  // pick one through the click handler above (WCAG 2.1.1).
+  boundKeydown = (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const option = event.target.closest("[data-settings-pb], [data-settings-cadence]");
+    if (!option) return;
+    event.preventDefault();
+    option.click();
+  };
+  target.addEventListener("keydown", boundKeydown);
 
   // The switches are checkboxes, so `change` — not `click`. It fires once (a
   // click on the wrapping label forwards to the input, which would double up),
