@@ -9,16 +9,16 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=2461";
-import { openImageLookChat } from "./draft-image-flow.js?v=2461";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=2461";
+import { escapeHtml as esc } from "./utils.js?v=2463";
+import { openImageLookChat } from "./draft-image-flow.js?v=2463";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=2463";
 import {
   handlePlaybookImagesClick,
   renderPresetLookPicker,
   renderImagesGenerate,
   renderImagesReferences,
   renderImagesStyles,
-} from "./modules/image-studio/index.js?v=2461";
+} from "./modules/image-studio/index.js?v=2463";
 
 const ROLE_LABELS = {
   primary: "Primary",

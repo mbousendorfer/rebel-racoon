@@ -1,8 +1,8 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2461";
-import { conceptHint, conceptText } from "../concepts.js?v=2461";
-import { getPath, navigate } from "../router.js?v=2461";
-import { parseHashParams } from "../url-state.js?v=2461";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2461";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2463";
+import { conceptHint, conceptText } from "../concepts.js?v=2463";
+import { getPath, navigate } from "../router.js?v=2463";
+import { parseHashParams } from "../url-state.js?v=2463";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2463";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -18,38 +18,38 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=2461";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2461";
-import { contentCounts } from "./right-panel/overview-view.js?v=2461";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2461";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2461";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2461";
+} from "./right-panel.js?v=2463";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2463";
+import { contentCounts } from "./right-panel/overview-view.js?v=2463";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2463";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2463";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2463";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=2461";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2461";
-import { open as openRenameModal } from "./rename-modal.js?v=2461";
+} from "./conversation-status-card.js?v=2463";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2463";
+import { open as openRenameModal } from "./rename-modal.js?v=2463";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=2461";
-import { isFlagOn } from "../feature-flags.js?v=2461";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=2461";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2461";
-import { findCadence } from "../topics-catalog.js?v=2461";
+} from "../contexts-store.js?v=2463";
+import { isFlagOn } from "../feature-flags.js?v=2463";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=2463";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2463";
+import { findCadence } from "../topics-catalog.js?v=2463";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=2461";
+} from "../top-posts-flow.js?v=2463";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2461";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2463";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -646,6 +646,8 @@ function currentTitle() {
   if (path === "/connectors") return "Connectors";
   if (path === "/topics") return "Topic Feed";
   if (path === "/clips") return "Clips";
+  // « Create a Playbook » runs the onboarding's screens in the chrome.
+  if (path.startsWith("/welcome-alt")) return "New Playbook";
   // The topbar names the SECTION; the brand is named once, by the heading each
   // layout renders — which is also the Playbook switcher (insights/pieces.js).
   if (path.startsWith("/insights")) return "Insights";

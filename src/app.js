@@ -1,66 +1,66 @@
-import { navigate, route, setAfterRender, start } from "./router.js?v=2461";
-import { initArchieLoader } from "./archie-loader.js?v=2461";
-import { renderInsights } from "./screens/insights/shell.js?v=2461";
-import { init as initObjectiveModal } from "./components/objective-modal.js?v=2461";
-import { init as initObjectiveCatalogPanel } from "./components/objective-catalog-panel.js?v=2461";
-import { initTopbar, renderTopbar } from "./components/topbar.js?v=2461";
-import { initSidebar, renderSidebar } from "./components/sidebar.js?v=2461";
-import { isAccountScope } from "./active-playbook.js?v=2461";
-import { isFlagOn } from "./feature-flags.js?v=2461";
-import { init as initRightPanel } from "./components/right-panel.js?v=2461";
-import { init as initScheduleModal } from "./components/schedule-modal.js?v=2461";
-import { init as initLegacyScheduleModal } from "./components/schedule-modal-legacy.js?v=2461";
-import { init as initBugReportModal } from "./components/bug-report-modal.js?v=2461";
-import { init as initFeedbackModal } from "./components/feedback-modal.js?v=2461";
-import { init as initVideoClipsModal } from "./components/video-clips-modal.js?v=2461";
-import { init as initChatPickerModal } from "./components/chat-picker-modal.js?v=2461";
-import { init as initAddSourceModal } from "./components/add-source-modal.js?v=2461";
-import { init as initConnectorsModal } from "./components/connectors-modal.js?v=2461";
-import { init as initTopicIgnoreModal } from "./components/topic-ignore-modal.js?v=2461";
-import { init as initTopicHistoryModal } from "./components/topic-history-modal.js?v=2461";
-import { init as initTopicPickerModal } from "./components/topic-picker-modal.js?v=2461";
-import { init as initConfirmModal } from "./components/confirm-modal.js?v=2461";
-import { init as initRenameModal } from "./components/rename-modal.js?v=2461";
-import { init as initSaveFolderModal } from "./components/save-folder-modal.js?v=2461";
-import { init as initSharePlaybookModal } from "./components/share-playbook-modal.js?v=2461";
-import { init as initAssignModal } from "./components/assign-modal.js?v=2461";
-import { init as initAnalyzeProfilesModal } from "./components/analyze-profiles-modal.js?v=2461";
-import { init as initConnectAccountModal } from "./components/connect-account-modal.js?v=2461";
-import { init as initVoiceIntro, maybeOpenVoiceIntro } from "./components/voice-intro-modal.js?v=2461";
-import { init as initFillDocumentModal } from "./components/fill-document-modal.js?v=2461";
-import { init as initSearchModal } from "./components/search-modal.js?v=2461";
-import { init as initTooltip } from "./components/tooltip.js?v=2461";
-import { init as initRefPreview } from "./components/ref-preview.js?v=2461";
+import { navigate, route, setAfterRender, start } from "./router.js?v=2463";
+import { initArchieLoader } from "./archie-loader.js?v=2463";
+import { renderInsights } from "./screens/insights/shell.js?v=2463";
+import { init as initObjectiveModal } from "./components/objective-modal.js?v=2463";
+import { init as initObjectiveCatalogPanel } from "./components/objective-catalog-panel.js?v=2463";
+import { initTopbar, renderTopbar } from "./components/topbar.js?v=2463";
+import { initSidebar, renderSidebar } from "./components/sidebar.js?v=2463";
+import { isAccountScope } from "./active-playbook.js?v=2463";
+import { isFlagOn } from "./feature-flags.js?v=2463";
+import { init as initRightPanel } from "./components/right-panel.js?v=2463";
+import { init as initScheduleModal } from "./components/schedule-modal.js?v=2463";
+import { init as initLegacyScheduleModal } from "./components/schedule-modal-legacy.js?v=2463";
+import { init as initBugReportModal } from "./components/bug-report-modal.js?v=2463";
+import { init as initFeedbackModal } from "./components/feedback-modal.js?v=2463";
+import { init as initVideoClipsModal } from "./components/video-clips-modal.js?v=2463";
+import { init as initChatPickerModal } from "./components/chat-picker-modal.js?v=2463";
+import { init as initAddSourceModal } from "./components/add-source-modal.js?v=2463";
+import { init as initConnectorsModal } from "./components/connectors-modal.js?v=2463";
+import { init as initTopicIgnoreModal } from "./components/topic-ignore-modal.js?v=2463";
+import { init as initTopicHistoryModal } from "./components/topic-history-modal.js?v=2463";
+import { init as initTopicPickerModal } from "./components/topic-picker-modal.js?v=2463";
+import { init as initConfirmModal } from "./components/confirm-modal.js?v=2463";
+import { init as initRenameModal } from "./components/rename-modal.js?v=2463";
+import { init as initSaveFolderModal } from "./components/save-folder-modal.js?v=2463";
+import { init as initSharePlaybookModal } from "./components/share-playbook-modal.js?v=2463";
+import { init as initAssignModal } from "./components/assign-modal.js?v=2463";
+import { init as initAnalyzeProfilesModal } from "./components/analyze-profiles-modal.js?v=2463";
+import { init as initConnectAccountModal } from "./components/connect-account-modal.js?v=2463";
+import { init as initVoiceIntro, maybeOpenVoiceIntro } from "./components/voice-intro-modal.js?v=2463";
+import { init as initFillDocumentModal } from "./components/fill-document-modal.js?v=2463";
+import { init as initSearchModal } from "./components/search-modal.js?v=2463";
+import { init as initTooltip } from "./components/tooltip.js?v=2463";
+import { init as initRefPreview } from "./components/ref-preview.js?v=2463";
 import {
   init as initConversationStatusCard,
   render as renderConversationStatusCard,
-} from "./components/conversation-status-card.js?v=2461";
-import { renderDashboard } from "./screens/dashboard.js?v=2461";
-import { renderSession } from "./screens/session.js?v=2461";
-import { renderHome, renderContextsRoute } from "./screens/home.js?v=2461";
-import { renderTopics } from "./screens/topics.js?v=2461";
-import { renderTopicsSettings } from "./screens/topics-settings.js?v=2461";
-import { renderClipsLibrary } from "./screens/clips/library.js?v=2461";
-import { renderClipsProject } from "./screens/clips/project.js?v=2461";
-import { renderClipEditor } from "./screens/clips/editor.js?v=2461";
-import { renderConnectors } from "./screens/connectors.js?v=2461";
-import { renderWelcomeAlt } from "./screens/welcome-alt.js?v=2461";
+} from "./components/conversation-status-card.js?v=2463";
+import { renderDashboard } from "./screens/dashboard.js?v=2463";
+import { renderSession } from "./screens/session.js?v=2463";
+import { renderHome, renderContextsRoute } from "./screens/home.js?v=2463";
+import { renderTopics } from "./screens/topics.js?v=2463";
+import { renderTopicsSettings } from "./screens/topics-settings.js?v=2463";
+import { renderClipsLibrary } from "./screens/clips/library.js?v=2463";
+import { renderClipsProject } from "./screens/clips/project.js?v=2463";
+import { renderClipEditor } from "./screens/clips/editor.js?v=2463";
+import { renderConnectors } from "./screens/connectors.js?v=2463";
+import { renderWelcomeAlt } from "./screens/welcome-alt.js?v=2463";
 // Settings route removed — the prototype Admin controls moved to the sidebar
 // cog popover (see admin-menu.js + sidebar.js); Social accounts page dropped.
-import { renderWelcomeAltRecap, renderWelcomeAltVoice } from "./screens/welcome-alt-recap.js?v=2461";
-import { renderWelcomeAltIntro } from "./screens/welcome-alt-intro.js?v=2461";
+import { renderWelcomeAltRecap, renderWelcomeAltVoice } from "./screens/welcome-alt-recap.js?v=2463";
+import { renderWelcomeAltIntro } from "./screens/welcome-alt-intro.js?v=2463";
 import {
   renderWelcomeAltBrand,
   renderWelcomeAltInterview,
   renderWelcomeAltLanguage,
   renderWelcomeAltDocuments,
   renderWelcomeAltVoiceFrom,
-} from "./screens/welcome-alt-steps.js?v=2461";
-import { renderWelcomeAltReady } from "./screens/welcome-alt-ready.js?v=2461";
-import { renderPlaybook } from "./screens/playbook.js?v=2461";
-import { initFigmaCapture } from "./figma-capture.js?v=2461";
-import { initDemoMode } from "./demo-flow.js?v=2461";
-import { ROUTES as IMAGE_GENERATOR_ROUTES } from "./modules/image-studio/index.js?v=2461";
+} from "./screens/welcome-alt-steps.js?v=2463";
+import { renderWelcomeAltReady } from "./screens/welcome-alt-ready.js?v=2463";
+import { renderPlaybook } from "./screens/playbook.js?v=2463";
+import { initFigmaCapture } from "./figma-capture.js?v=2463";
+import { initDemoMode } from "./demo-flow.js?v=2463";
+import { ROUTES as IMAGE_GENERATOR_ROUTES } from "./modules/image-studio/index.js?v=2463";
 
 // Route table.
 // Every screen is responsible for calling renderTopbar() itself so the crumb
@@ -164,12 +164,21 @@ initConversationStatusCard();
 // hides when navigating away from /session/:id.
 //
 // The onboarding class flip is centralized here so the /welcome-alt screens
-// get a full-bleed shell without each screen having to add/remove the class —
-// for everyone, a returning user's new Playbook too.
+// get a full-bleed shell without each screen having to add/remove the class.
 setAfterRender((path) => {
   renderSidebar();
   renderConversationStatusCard();
-  document.body.classList.toggle("onboarding", path.startsWith("/welcome-alt"));
+  // A returning user's « Create a Playbook » runs the same screens inside the
+  // app's chrome — sidebar and topbar kept (2026-10-29, asked: « l'expérience
+  // create a new playbook devrait proposer cette interface, mais dans le chrome
+  // existant »). Only the first time is full-bleed.
+  let integrated = false;
+  try {
+    integrated = window.sessionStorage.getItem("welcomeAltIntegrated") === "1";
+  } catch {
+    /* ignore */
+  }
+  document.body.classList.toggle("onboarding", path.startsWith("/welcome-alt") && !integrated);
   // Account scope — the routes that live ABOVE the workspaces (the Playbooks
   // catalogue, and another brand's fiche opened from it). The shell steps back
   // to a single column with no rail: a page listing eight brands must not wear
