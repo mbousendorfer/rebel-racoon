@@ -2121,9 +2121,9 @@ body.has-modal {
   width: 32px;
   height: 32px;
   border-radius: var(--app-radius-lg);
-  background: var(--ref-color-grey-05);
+  background: var(--ref-color-orange-10);
   font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-100);
+  color: var(--ref-color-orange-100);
 }
 .voice-ask__text {
   display: flex;
@@ -2143,18 +2143,8 @@ body.has-modal {
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
 }
-/* The tile says it goes somewhere; the chevron moves on hover. */
-.voice-ask__go {
-  flex: none;
-  font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-80);
-  transition: transform var(--ref-animation-normal) ease;
-}
-.voice-ask__option:hover .voice-ask__go {
-  color: var(--ref-color-electric-blue-100);
-  transform: translateX(2px);
-}
-/* The how's question: the body's heading, on the card title's rung. */
+/* The how: its question on the card title's rung, what the best way does as
+   the secondary line, then the actions — the others first, the primary last. */
 .voice-ask__ask {
   margin: 0;
   font-size: var(--sys-text-style-body-bold-size);
@@ -2162,12 +2152,52 @@ body.has-modal {
   font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--ref-color-grey-100);
 }
-/* The other ways: stroked buttons that wrap — a contour, lighter than the
-   tile, heavier than the ghost exits. */
-.voice-ask__others {
+.voice-ask__lead {
+  margin: 0 0 var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+  text-wrap: pretty;
+}
+.voice-ask__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ref-spacing-xxs);
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+/* « Other ways »: a DS action dropdown opened by a stroked <summary> (native
+   open state, like the Playbook's « Learn from… »). It opens upward — the
+   step is the thread's last turn — and the card lets it out. */
+.voice-ask .voice-edit__card {
+  overflow: visible;
+}
+.voice-ask .voice-edit__say {
+  border-radius: var(--app-radius-lg) var(--app-radius-lg) 0 0;
+}
+.voice-ask.is-resolved .voice-edit__say {
+  border-radius: var(--app-radius-lg);
+}
+.voice-ask__more {
+  position: relative;
+}
+.voice-ask__more > summary {
+  list-style: none;
+}
+.voice-ask__more > summary::-webkit-details-marker {
+  display: none;
+}
+.voice-ask__caret {
+  transition: transform var(--ref-animation-normal) ease;
+}
+.voice-ask__more[open] .voice-ask__caret {
+  transform: rotate(180deg);
+}
+.voice-ask__menu {
+  position: absolute;
+  bottom: calc(100% + var(--ref-spacing-xxxs));
+  left: 0;
+  z-index: 1000;
+  min-width: 260px;
 }
 /* The run's voice review (playbook-view voiceWaysCard) keeps tiles: the
    best way first on its own row, the others on ONE row, equal columns. */
