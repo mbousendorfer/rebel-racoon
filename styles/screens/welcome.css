@@ -308,26 +308,6 @@
   color: var(--ref-color-grey-100);
 }
 
-/* The accounts step names the networks it offers, each with its logo. */
-.welcome-intro__nets {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  column-gap: var(--ref-spacing-xs);
-  row-gap: var(--ref-spacing-xxxs);
-}
-
-.welcome-intro__net-name {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  color: var(--ref-color-grey-100);
-}
-
-.welcome-intro__net-name i {
-  font-size: var(--sys-icon-css-sm);
-}
-
 .welcome-intro__optional {
   margin-left: var(--ref-spacing-xxs);
   font-size: var(--sys-text-style-caption-size);

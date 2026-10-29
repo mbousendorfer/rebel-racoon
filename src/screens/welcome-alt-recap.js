@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2386";
-import { catalogueRoute } from "../active-playbook.js?v=2386";
+import { navigate } from "../router.js?v=2388";
+import { catalogueRoute } from "../active-playbook.js?v=2388";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,13 +13,13 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2386";
-import { mount, RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2386";
-import { isFlagOn } from "../feature-flags.js?v=2386";
-import { renderReview } from "./welcome-alt-review.js?v=2386";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2386";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2386";
-import { getContextById, updateContext } from "../contexts-store.js?v=2386";
+} from "../context-builder.js?v=2388";
+import { mount, RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2388";
+import { isFlagOn } from "../feature-flags.js?v=2388";
+import { renderReview } from "./welcome-alt-review.js?v=2388";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2388";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2388";
+import { getContextById, updateContext } from "../contexts-store.js?v=2388";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -27,14 +27,14 @@ import {
   networkVoice,
   networkVoiceOn,
   playbookNetworks,
-} from "../voice-parts.js?v=2386";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2386";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2386";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2386";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2386";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2386";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2386";
-import { showToast } from "../components/toast.js?v=2386";
+} from "../voice-parts.js?v=2388";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2388";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2388";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2388";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2388";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2388";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2388";
+import { showToast } from "../components/toast.js?v=2388";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -124,11 +124,11 @@ function startVoiceRules(sid) {
 const playbookReview = () => ({
   step: "recap",
   title: "Review your Playbook",
-  sub: "I've filled in every card. Scroll through and fix anything that's off. Changes save as you type.",
+  sub: "I've filled in every card. Fix anything that's off: changes save as you type.",
   parts: RECAP_SECTIONS.filter((t) => t.id !== "voice"),
-  next: { label: "On to your voice", go: () => navigate("/welcome-alt/voice") },
+  next: { label: "Review my voice", go: () => navigate("/welcome-alt/voice") },
   lastLabel: "Looks good, on to your voice",
-  done: { title: "Your Playbook is all set.", lead: "Every part is confirmed. Now, how you sound." },
+  done: { title: "Your Playbook is all set.", lead: "Next, check how you sound." },
   back: "/welcome-alt/ready",
 });
 
@@ -139,8 +139,8 @@ const playbookReview = () => ({
 // Learn from… for the default voice; posts, a document, questions or the
 // default voice adapted for a network. No account yet: posts connect one first.
 const VOICE_TINT = "voice";
-const NETWORKS_GROUP = "Your networks";
-const NETWORKS_HINT = "Every network uses your default voice, unless you give it a voice of its own.";
+const NETWORKS_GROUP = "Network by network";
+const NETWORKS_HINT = "A network uses your default voice unless you give it a voice of its own.";
 // `withNetworks` false (a Playbook's « Add a voice for X »): the network is
 // already chosen, no question about the others.
 function voiceReview(sid, overrides = {}, { withNetworks = true } = {}) {
@@ -155,11 +155,11 @@ function voiceReview(sid, overrides = {}, { withNetworks = true } = {}) {
         id: "voice-default",
         tab: "voice",
         tint: VOICE_TINT,
-        group: "How you sound",
-        groupHint: "One default voice for every network, written from what you gave me. Edit any part.",
+        group: "Every network",
+        groupHint: "One default voice, written from what you gave me. Edit any part.",
         title: "Default voice",
         icon: voice.icon,
-        lead: "How you sound on every network.",
+        lead: "How you sound everywhere.",
         open: () => editVoiceNetwork(null),
         pick: (all) => all.filter(notNetworks),
       },
@@ -170,9 +170,9 @@ function voiceReview(sid, overrides = {}, { withNetworks = true } = {}) {
           tint: VOICE_TINT,
           group: NETWORKS_GROUP,
           groupHint: NETWORKS_HINT,
-          title: "Default or its own voice",
+          title: "Pick the networks",
           icon: "ap-icon-web",
-          lead: "Pick the networks that get a voice of their own.",
+          lead: "Which networks get a voice of their own.",
           open: () => editVoiceNetwork(null),
           pick: (all) => all.filter((el) => el.matches(".pb2-voice-networks")),
         },
@@ -189,7 +189,7 @@ function voiceReview(sid, overrides = {}, { withNetworks = true } = {}) {
           lead: `How your ${networkLabel(n)} posts sound, on top of your default voice.`,
           // Empty: its card, the ways as tiles. Filled: it opens in edit (the
           // network's own five parts, voiceNet).
-          badge: networkVoiceFilled(getDraft(sid), n) ? null : "To fill",
+          badge: networkVoiceFilled(getDraft(sid), n) ? null : "To fill in",
           open: () => editVoiceNetwork(n),
           pick: (all) => {
             const card = all.filter((el) => el.matches(`.pb2-voice-net--${n}`));
@@ -228,7 +228,7 @@ function voiceReview(sid, overrides = {}, { withNetworks = true } = {}) {
       voiceMode: "guided",
     });
     refresh();
-    showToast(`Default voice learned from ${from}${from.endsWith(".") ? "" : "."}`);
+    showToast(`Default voice rewritten from ${from}${from.endsWith(".") ? "" : "."}`);
   };
   const onWay = (partId, way, refresh) => {
     const net = netOf(partId);
@@ -293,12 +293,12 @@ function voiceReview(sid, overrides = {}, { withNetworks = true } = {}) {
 
   return {
     step: "voice",
-    title: "Set your voice",
-    sub: "How you sound, then which networks get a voice of their own. Changes save as you type.",
+    title: "Review your voice",
+    sub: "Your default voice is how you sound everywhere. Pick the networks that need a voice of their own, then fill each one in. Changes save as you type.",
     parts,
     onWay,
     next: { label: finishLabel(), go: () => finishRun(sid) },
-    done: { title: "Your voice is set.", lead: "Every draft starts from it. Let's write the first one." },
+    done: { title: "Your voice is set.", lead: "Every draft starts from it." },
     back: "/welcome-alt/recap",
     ...overrides,
   };
@@ -346,8 +346,8 @@ export function renderPlaybookVoice({ id, net }, target) {
     voiceReview(
       sid,
       {
-        title: `A voice for ${label}`,
-        sub: `Your ${label} voice, on top of your default voice. Nothing is saved until you save it.`,
+        title: `Voice for ${label}`,
+        sub: `How your ${label} posts sound, on top of your default voice. Nothing changes in your Playbook until you save.`,
         start: `voice-net-${net}`,
         progress: false,
         back,
@@ -361,7 +361,7 @@ export function renderPlaybookVoice({ id, net }, target) {
               ...Object.fromEntries(VOICE_FIELDS.map((f) => [f, d[f]])),
             });
             navigate(`/playbook/${id}?tab=voice&voice=${net}`);
-            showToast(`Voice saved to ${ctx.name || "your Playbook"}.`);
+            showToast(`${label} voice saved to ${ctx.name || "your Playbook"}.`);
           },
         },
         done: { title: `Your ${label} voice is ready.`, lead: "Save it to your Playbook." },

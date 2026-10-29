@@ -13,19 +13,14 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2386";
-import { startDemo } from "../demo-flow.js?v=2386";
-import { isFlagOn } from "../feature-flags.js?v=2386";
-import { html, raw, escapeHtml } from "../utils.js?v=2386";
-import {
-  NETWORK_ICON_BY_PLATFORM,
-  NETWORKS,
-  getConnectedProfiles,
-  getConnectableNetworks,
-} from "../social-profiles.js?v=2386";
-import { navigate } from "../router.js?v=2386";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2386";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2386";
+import "../archie-pixels.js?v=2388";
+import { startDemo } from "../demo-flow.js?v=2388";
+import { isFlagOn } from "../feature-flags.js?v=2388";
+import { html, raw } from "../utils.js?v=2388";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2388";
+import { navigate } from "../router.js?v=2388";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2388";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2388";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -35,30 +30,10 @@ const PARTS = ["goals", "voice", "brand", "competitors"];
 // gets a line only where its title doesn't say why it's asked; the documents
 // step is marked Optional instead.
 const STEP_HINT = {
-  voice: () =>
-    raw(
-      `<span class="welcome-intro__nets"><span>Works with</span><span class="welcome-intro__nets" role="list" aria-label="Supported networks">${supportedNetworks()
-        .map(
-          (n) =>
-            `<span class="welcome-intro__net-name" role="listitem"><i class="${n.icon}" aria-hidden="true"></i>${escapeHtml(n.label)}</span>`,
-        )
-        .join("")}</span></span>`,
-    ),
+  voice: "One voice for every network, and a voice of its own for the ones that need it.",
   url: "Your website is all I need. No website? I'll ask a few questions.",
 };
 const OPTIONAL = new Set(["documents"]);
-
-// The networks Archie writes for, named — so nobody starts the run expecting
-// one that isn't there.
-function supportedNetworks() {
-  const ids = new Set([
-    ...getConnectedProfiles().map((p) => p.platform),
-    ...getConnectableNetworks().map((n) => n.platform),
-  ]);
-  return Object.keys(NETWORKS)
-    .filter((id) => ids.has(id))
-    .map((id) => NETWORKS[id]);
-}
 
 const glyph = (net) =>
   `<span class="welcome-intro__net"><i class="${NETWORK_ICON_BY_PLATFORM[net]}" aria-hidden="true"></i></span>`;
@@ -116,8 +91,8 @@ export function renderWelcomeAltIntro(_params, target) {
         <div class="welcome-intro__copy">
           <h1 class="welcome-intro__title" id="welcomeIntroTitle">Let's build your Playbook together.</h1>
           <p class="welcome-intro__sub">
-            A Playbook is the guide I write from — what your Brand does, how it sounds, and how it looks — so every post
-            feels like yours.
+            A Playbook is the guide I write from: what your Brand does, how it sounds, and how it looks. Every post I
+            draft starts there.
           </p>
           <ul class="welcome-intro__parts" aria-label="What a Playbook holds">
             ${PARTS.map((t) => {
@@ -139,13 +114,7 @@ export function renderWelcomeAltIntro(_params, target) {
                       ${STEP_TEXT[id].title}
                       ${OPTIONAL.has(id) ? raw(`<span class="welcome-intro__optional">Optional</span>`) : ""}
                     </span>
-                    ${STEP_HINT[id]
-                      ? raw(
-                          html`<span class="welcome-intro__step-desc"
-                            >${typeof STEP_HINT[id] === "function" ? STEP_HINT[id]() : STEP_HINT[id]}</span
-                          >`,
-                        )
-                      : ""}
+                    ${STEP_HINT[id] ? raw(html`<span class="welcome-intro__step-desc">${STEP_HINT[id]}</span>`) : ""}
                   </span>
                 </li>
               `,

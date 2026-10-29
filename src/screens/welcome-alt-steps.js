@@ -14,8 +14,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2386";
-import { navigate } from "../router.js?v=2386";
+import { html, raw, escapeHtml } from "../utils.js?v=2388";
+import { navigate } from "../router.js?v=2388";
 import {
   getDraft,
   patchDraft,
@@ -23,11 +23,11 @@ import {
   readAltFiles,
   writeAltManually,
   analyzeAltInterview,
-} from "../context-builder.js?v=2386";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2386";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2386";
-import { connectors as connectorMocks } from "../mocks.js?v=2386";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=2386";
+} from "../context-builder.js?v=2388";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2388";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2388";
+import { connectors as connectorMocks } from "../mocks.js?v=2388";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=2388";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
@@ -342,7 +342,7 @@ export function renderWelcomeAltDocuments(_params, target) {
       return html`
         <h1 class="welcome-flow__title" id="welcomeFlowTitle">Anything else I should read?</h1>
         <p class="welcome-intro__sub">
-          A brand book or guidelines help me get the details right. Optional — you can connect more later.
+          A brand book or guidelines help me get the details right. Optional: you can connect more later.
         </p>
         <form data-choice-form novalidate>
           <ul class="welcome-flow__options">

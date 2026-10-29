@@ -9,11 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2386";
-import { html, raw, escapeHtml } from "../utils.js?v=2386";
-import { navigate } from "../router.js?v=2386";
-import { parseHashParams } from "../url-state.js?v=2386";
-import { isFlagOn } from "../feature-flags.js?v=2386";
+import "../archie-pixels.js?v=2388";
+import { html, raw, escapeHtml } from "../utils.js?v=2388";
+import { navigate } from "../router.js?v=2388";
+import { parseHashParams } from "../url-state.js?v=2388";
+import { isFlagOn } from "../feature-flags.js?v=2388";
 import {
   altSteps,
   createAltDraft,
@@ -21,9 +21,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2386";
-import { networkIcon, networkLabel } from "../social-profiles.js?v=2386";
-import { playbookNetworks } from "../voice-parts.js?v=2386";
+} from "../context-builder.js?v=2388";
+import { networkIcon, networkLabel } from "../social-profiles.js?v=2388";
+import { playbookNetworks } from "../voice-parts.js?v=2388";
 import {
   readSessionId,
   isIntegrated,
@@ -33,8 +33,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2386";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2386";
+} from "./welcome-alt-recap.js?v=2388";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2388";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -45,7 +45,10 @@ export const STEP_TEXT = {
   url: { title: "Show me your Brand", desc: "Your website, a few files, or a handful of questions." },
   language: { title: "Pick your language", desc: "The one I'll write your posts in." },
   documents: { title: "Add brand documents", desc: "Optional: a brand book or guidelines." },
-  voice: { title: "Set your voice", desc: "How you sound, and where you post." },
+  voice: {
+    title: "Review your voice",
+    desc: "Your default voice, and a voice of its own for the networks that need one.",
+  },
   recap: { title: "Review your Playbook", desc: "Everything I learned, before I write a word." },
 };
 

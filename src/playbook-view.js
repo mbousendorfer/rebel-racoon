@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2386";
-import { conceptHint } from "./concepts.js?v=2386";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2388";
+import { conceptHint } from "./concepts.js?v=2388";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2386";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2386";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2386";
-import { isFlagOn } from "./feature-flags.js?v=2386";
-import { clipLookOf } from "./videos-store.js?v=2386";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2386";
-import { parseHashParams } from "./url-state.js?v=2386";
+} from "./playbook-brand-kit.js?v=2388";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2388";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2388";
+import { isFlagOn } from "./feature-flags.js?v=2388";
+import { clipLookOf } from "./videos-store.js?v=2388";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2388";
+import { parseHashParams } from "./url-state.js?v=2388";
 import {
   isListPart,
   voiceParts,
@@ -53,14 +53,14 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2386";
-import { showToast } from "./components/toast.js?v=2386";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2386";
-import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2386";
-import { updateContext } from "./contexts-store.js?v=2386";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2386";
-import { consumeHandoff } from "./handoff.js?v=2386";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2386";
+} from "./voice-parts.js?v=2388";
+import { showToast } from "./components/toast.js?v=2388";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2388";
+import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2388";
+import { updateContext } from "./contexts-store.js?v=2388";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2388";
+import { consumeHandoff } from "./handoff.js?v=2388";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2388";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2386";
+} from "./social-profiles.js?v=2388";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2741,7 +2741,10 @@ function networkVoiceCards(data) {
 // (2026-10-29, asked: in the right column, in edit, for the default voice AND a
 // network's rules). `net` null: the default voice (posts of any account, a
 // document); a network: its posts, a document, a few questions, adapted.
-function voiceWaysCard(net = null, { title = "Learn it from a source", hint = "", className = "pb2-voice-ways" } = {}) {
+function voiceWaysCard(
+  net = null,
+  { title = "Rewrite it from a source", hint = "", className = "pb2-voice-ways" } = {},
+) {
   const account = getConnectedProfiles().find((p) => canLearnFrom(p) && (!net || normalizeNetwork(p.platform) === net));
   const label = net ? networkLabel(net) : "";
   const tiles = [
@@ -2757,8 +2760,18 @@ function voiceWaysCard(net = null, { title = "Learn it from a source", hint = ""
       tile: "A document",
       hint: net ? "A style guide or a brief" : "A brand book or a style guide",
     },
-    net && { value: "interview", icon: "ap-icon-question", tile: "A few questions", hint: "About a minute" },
-    net && { value: "adapt", icon: "ap-icon-sparkles", tile: "Your default voice, adapted", hint: "Nothing to read" },
+    net && {
+      value: "interview",
+      icon: "ap-icon-question",
+      tile: "A few questions",
+      hint: "5 questions, about a minute",
+    },
+    net && {
+      value: "adapt",
+      icon: "ap-icon-sparkles",
+      tile: "Adapt my default voice",
+      hint: `I tune it for ${label}: length, format, hashtags`,
+    },
     net && { value: "write", icon: "ap-icon-pen", tile: "Write it myself", hint: "Start from an empty page" },
   ].filter(Boolean);
   return pb2Block(
@@ -2779,8 +2792,8 @@ function voiceWaysCard(net = null, { title = "Learn it from a source", hint = ""
       hint:
         hint ||
         (net
-          ? `I propose a voice for ${label} from it; you add it, then edit it below.`
-          : "I rewrite your default voice from it. You can edit it below."),
+          ? `I show you what I'd change before anything is saved.`
+          : "I rewrite your default voice from what I read. You can edit it after."),
       className,
       icon: net ? networkIcon(net) : "",
     },
@@ -2828,9 +2841,13 @@ function networkPickerCards(data, nets, first) {
   // tu veux utiliser une voice spécifique pour les networks suivants ou bien
   // utiliser la voice par défaut »).
   const stateOf = (net) =>
-    !picked.includes(net) ? "Uses your default voice" : networkVoiceFilled(data, net) ? "Its own voice" : "To fill";
+    !picked.includes(net)
+      ? "Uses your default voice"
+      : networkVoiceFilled(data, net)
+        ? "Its own voice"
+        : "Its own voice, to fill in";
   const pickBlock = pb2Block(
-    "A voice of its own?",
+    "Which networks get their own voice?",
     `<div class="recap__pick-list">${nets
       .map((net) =>
         row(
@@ -2845,7 +2862,7 @@ function networkPickerCards(data, nets, first) {
       .join("")}</div>`,
     {
       wide: true,
-      hint: "The networks of your connected accounts. Each uses your default voice: tick the ones that need a voice of their own, and each gets an empty voice to fill.",
+      hint: "The networks of your connected accounts. Each uses your default voice. Tick the ones that need their own: each gets an empty voice for you to fill in.",
       index: first,
       className: "pb2-voice-networks",
     },
@@ -2856,7 +2873,7 @@ function networkPickerCards(data, nets, first) {
     .map((net) =>
       voiceWaysCard(net, {
         title: `Voice for ${networkLabel(net)}`,
-        hint: `Empty for now: fill it from a source, or write it yourself. Until then, your ${networkLabel(net)} posts use your default voice.`,
+        hint: `Empty for now. Until you fill it in, your ${networkLabel(net)} posts use your default voice. Start from:`,
         className: `pb2-voice-net pb2-voice-net--${net}`,
       }),
     );

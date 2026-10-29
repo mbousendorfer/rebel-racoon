@@ -9,11 +9,11 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2386";
-import { navigate } from "../router.js?v=2386";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2386";
-import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2386";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2386";
+import { html, raw } from "../utils.js?v=2388";
+import { navigate } from "../router.js?v=2388";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2388";
+import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2388";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2388";
 
 // Where the default voice was read from, said on the reveal.
 const READ_FROM = { website: "your site", documents: "your files", interview: "your answers" };
@@ -82,7 +82,7 @@ export function renderWelcomeAltReady(_params, target) {
               hook: "data-ready-review",
               icon: "ap-icon-pen",
               title: manual ? "Fill in my Playbook" : "Review my Playbook",
-              desc: manual ? "Part by part, card by card." : "Your brand, your audience, your look. Edit any part.",
+              desc: manual ? "Part by part, card by card." : "Your Brand, your audience, your look. Edit any part.",
             }),
           )}
           ${raw(
@@ -90,7 +90,7 @@ export function renderWelcomeAltReady(_params, target) {
               hook: "data-ready-voice",
               icon: "ap-icon-quote",
               title: "Review my voice",
-              desc: "Your default voice, where you post, and rules for the networks that need their own.",
+              desc: "Your default voice, and a voice of its own for the networks that need one.",
             }),
           )}
           ${manual
@@ -103,7 +103,7 @@ export function renderWelcomeAltReady(_params, target) {
                   title: finishLabel(),
                   desc: isIntegrated()
                     ? "Add it to your Playbooks. You can edit it anytime."
-                    : "I'll write it now. You can review all of this later.",
+                    : "I'll write it now. You can review all of this later, from your Playbook.",
                 }),
               )}
         </ul>

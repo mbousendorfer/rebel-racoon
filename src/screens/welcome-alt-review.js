@@ -32,12 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2386";
-import { navigate } from "../router.js?v=2386";
-import { getDraft, patchDraft } from "../context-builder.js?v=2386";
-import { mount } from "../playbook-view.js?v=2386";
-import { parseHashParams } from "../url-state.js?v=2386";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2386";
+import { html, raw } from "../utils.js?v=2388";
+import { navigate } from "../router.js?v=2388";
+import { getDraft, patchDraft } from "../context-builder.js?v=2388";
+import { mount } from "../playbook-view.js?v=2388";
+import { parseHashParams } from "../url-state.js?v=2388";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2388";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
