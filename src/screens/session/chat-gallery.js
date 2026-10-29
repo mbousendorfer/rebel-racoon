@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml } from "../../utils.js?v=2478";
-import { isFlagOn } from "../../feature-flags.js?v=2478";
+import { escapeHtml } from "../../utils.js?v=1";
+import { isFlagOn } from "../../feature-flags.js?v=1";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -34,20 +34,20 @@ import {
   GENERIC_FAILURE,
   getThread,
   refreshThread,
-} from "../../assistant.js?v=2478";
-import { getSources, getIdeas } from "../../library.js?v=2478";
-import { getPosts } from "../../posts-store.js?v=2478";
-import { getTopPosts } from "../../top-posts-store.js?v=2478";
-import { getConnectedProfiles } from "../../social-profiles.js?v=2478";
-import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2478";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2478";
-import { detectUrlService } from "../../url-services.js?v=2478";
-import * as inlineQuestion from "../../inline-question.js?v=2478";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=2478";
-import { startTopicPickerInline } from "../../topic-flow.js?v=2478";
-import { askConnector } from "../../connector-ask.js?v=2478";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2478";
-import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2478";
+} from "../../assistant.js?v=1";
+import { getSources, getIdeas } from "../../library.js?v=1";
+import { getPosts } from "../../posts-store.js?v=1";
+import { getTopPosts } from "../../top-posts-store.js?v=1";
+import { getConnectedProfiles } from "../../social-profiles.js?v=1";
+import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=1";
+import { getConnectedConnectors } from "../../connectors-store.js?v=1";
+import { detectUrlService } from "../../url-services.js?v=1";
+import * as inlineQuestion from "../../inline-question.js?v=1";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=1";
+import { startTopicPickerInline } from "../../topic-flow.js?v=1";
+import { askConnector } from "../../connector-ask.js?v=1";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1";
+import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=1";
 
 // The intake sample plays the real lifecycle — loading, then ready — under a
 // sample id no source owns, so intake-lifecycle leaves it alone.
@@ -373,6 +373,24 @@ const EDITS = [
     hint: "The opening line rewritten",
   },
   { id: "e-cta", label: "Add a CTA", prompt: "Add a CTA to post 1", hint: "A call to action added or replaced" },
+  {
+    id: "e-all-shorter",
+    label: "Make all drafts shorter",
+    prompt: "Make all my drafts shorter",
+    hint: "One card, a row per draft",
+  },
+  {
+    id: "e-translate",
+    label: "Translate into French",
+    prompt: "Translate post 1 into French",
+    hint: "Side by side, the two languages",
+  },
+  {
+    id: "e-translate-all",
+    label: "Translate all into French",
+    prompt: "Translate all my drafts into French",
+    hint: "The grouped card, each row side by side",
+  },
 ].map((p) => ({ ...p, when: needsDrafts }));
 
 const asPrompt = (p) => ({ ...p, icon: "ap-icon-single-chat-bubble", run: (sid, session, send) => send(p.prompt) });

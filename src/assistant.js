@@ -6,13 +6,13 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2478";
-import { findConnector } from "./connectors-store.js?v=2478";
-import { createSessionNotifier } from "./store-utils.js?v=2478";
-import { addPostDraft } from "./posts-store.js?v=2478";
-import { showToast } from "./components/toast.js?v=2478";
-import { isFlagOn } from "./feature-flags.js?v=2478";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2478";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1";
+import { findConnector } from "./connectors-store.js?v=1";
+import { createSessionNotifier } from "./store-utils.js?v=1";
+import { addPostDraft } from "./posts-store.js?v=1";
+import { showToast } from "./components/toast.js?v=1";
+import { isFlagOn } from "./feature-flags.js?v=1";
+import { getSources, subscribeSources } from "./sources-stream.js?v=1";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -850,6 +850,24 @@ export function postRevisionTurn(sessionId, { postId, network, intent, before, a
     intent,
     before,
     after,
+    status: "ready",
+    createdAt: Date.now(),
+  });
+  notify(sessionId);
+}
+
+// "What changed" for one ask that rewrote several drafts: one card, a row per
+// draft. `items` = [{ postId, network, before, after }] in the order asked.
+export function postRevisionGroupTurn(sessionId, { intent, items }) {
+  getThread(sessionId).push({
+    id: newId(),
+    role: "assistant",
+    variant: "revision-group",
+    meta: "Archie",
+    intent,
+    items,
+    openId: items[0]?.postId || null,
+    views: {},
     status: "ready",
     createdAt: Date.now(),
   });

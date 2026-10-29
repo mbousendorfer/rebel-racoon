@@ -19,14 +19,15 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2478";
-import { isPortraitFormat } from "../clip-formats.js?v=2478";
-import { presetById } from "../clip-captions.js?v=2478";
-import { renderFeedbackControl } from "./feedback-control.js?v=2478";
-import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2478";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2478";
-import { REVEAL_MS } from "../archie-pixels.js?v=2478";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2478";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1";
+import { isPortraitFormat } from "../clip-formats.js?v=1";
+import { presetById } from "../clip-captions.js?v=1";
+import { renderFeedbackControl } from "./feedback-control.js?v=1";
+import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=1";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=1";
+import { REVEAL_MS } from "../archie-pixels.js?v=1";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=1";
+import { languageOf } from "../draft-rewrite.js?v=1";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -168,13 +169,20 @@ function changesShown(post, opts) {
   return opts.changes && r && !r.hidden && post.status !== "scheduled" && !post.isRegenerating;
 }
 
+// A translation says where the post went: every word is new, so nothing is marked.
+function updatedLine(post) {
+  return post.revision.intent === "translate"
+    ? `Your post is now in ${languageOf(post)}.`
+    : "Your post has been updated.";
+}
+
 function renderChangesStatus(post, opts) {
   if (!changesShown(post, opts)) return "";
   const undone = post.revision.undone;
   return `<div class="ap-status-card green posts__card-changes" role="status">
     <div class="upper">
       <i class="ap-icon-${undone ? "rotate-left" : "rounded-check_fill"}" aria-hidden="true"></i>
-      <div class="flow"><span>${undone ? "Your post is back to the previous version." : "Your post has been updated."}</span></div>
+      <div class="flow"><span>${undone ? "Your post is back to the previous version." : updatedLine(post)}</span></div>
       <span class="posts__card-changes-actions">
         <button type="button" class="ap-link small standalone" data-post-changes-undo="${escapeAttr(post.id)}"><i class="ap-icon-rotate-${undone ? "right" : "left"}" aria-hidden="true"></i>${undone ? "Redo" : "Undo"}</button>
         <button type="button" class="ap-link small standalone" data-post-changes-accept="${escapeAttr(post.id)}"><i class="ap-icon-check" aria-hidden="true"></i>${undone ? "Done" : "Accept"}</button>
@@ -212,7 +220,8 @@ export function renderPostCard(post, opts = {}) {
   const captionLead =
     net === "instagram" || net === "tiktok" ? `<strong class="posts__card-caption-handle">${handle}</strong> ` : "";
   // The text with my last rewrite's words marked, when they show.
-  const changes = changesShown(post, opts) && !post.revision.undone ? post.revision : null;
+  const changes =
+    changesShown(post, opts) && !post.revision.undone && post.revision.intent !== "translate" ? post.revision : null;
   const runs = changes ? diffWords(changes.before.text, post.text) : null;
   const marked = (inner, isNew) =>
     isNew ? `<ins class="draft-diff__add"><span class="draft-diff__sr">Added: </span>${inner}</ins>` : inner;

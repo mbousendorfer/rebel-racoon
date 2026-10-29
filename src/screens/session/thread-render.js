@@ -13,35 +13,36 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2478";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2478";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2478";
-import { getTopPost } from "../../top-posts-store.js?v=2478";
-import { getTopicById } from "../../topics-store.js?v=2478";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2478";
+} from "./thread-turns.js?v=1";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1";
+import { getTopPost } from "../../top-posts-store.js?v=1";
+import { getTopicById } from "../../topics-store.js?v=1";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1";
 import {
   renderProfileEchoCard,
   networkLabel,
   networkIcon,
   profileForNetwork,
   renderProfileTag,
-} from "../../social-profiles.js?v=2478";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2478";
-import { getIdeas } from "../../library.js?v=2478";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2478";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2478";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2478";
-import { getPlans } from "../../post-plan-store.js?v=2478";
-import { isFlagOn } from "../../feature-flags.js?v=2478";
-import { CURRENT_USER } from "../../org.js?v=2478";
-import { getSessionById } from "../../sessions-store.js?v=2478";
-import { getContextById } from "../../contexts-store.js?v=2478";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2478";
-import { getFocusKey } from "../../components/right-panel.js?v=2478";
-import { getPosts } from "../../posts-store.js?v=2478";
-import { diffWords, diffParagraphs, changeRatio, wordCounts } from "../../word-diff.js?v=2478";
-import { revisionSummary } from "../../draft-rewrite.js?v=2478";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2478";
+  networkMeta,
+} from "../../social-profiles.js?v=1";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=1";
+import { getIdeas } from "../../library.js?v=1";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=1";
+import { getPlans } from "../../post-plan-store.js?v=1";
+import { isFlagOn } from "../../feature-flags.js?v=1";
+import { CURRENT_USER } from "../../org.js?v=1";
+import { getSessionById } from "../../sessions-store.js?v=1";
+import { getContextById } from "../../contexts-store.js?v=1";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=1";
+import { getFocusKey } from "../../components/right-panel.js?v=1";
+import { getPosts } from "../../posts-store.js?v=1";
+import { diffWords, diffParagraphs, changeRatio, wordCounts } from "../../word-diff.js?v=1";
+import { revisionSummary, revisionGroupSummary, revisionState, languageOf } from "../../draft-rewrite.js?v=1";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=1";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -220,6 +221,10 @@ function renderTurn(message, sessionId) {
 
   if (message.role === "assistant" && message.variant === "revision") {
     return renderRevisionTurn(message, sessionId);
+  }
+
+  if (message.role === "assistant" && message.variant === "revision-group") {
+    return renderRevisionGroupTurn(message, sessionId);
   }
 
   if (message.role === "assistant" && message.variant === "image-look-set") {
@@ -604,12 +609,11 @@ function renderDraftsCardTurn(message) {
 // the change, then the change itself — Changes (one column, added marked,
 // removed struck) or Side by side (Before | After). A rewrite that touched
 // most of the words opens on Side by side: a word diff of it is confetti.
+// A translation is all new words, so it only shows side by side, its columns
+// named by language, with its length against the network's limit instead of
+// word counts.
 // Undo / Redo read the draft as it is now; a draft changed since can't be undone
 // from here.
-const sameDraft = (a, b) =>
-  a &&
-  b &&
-  JSON.stringify([a.text, a.hashtags || [], a.cta || ""]) === JSON.stringify([b.text, b.hashtags || [], b.cta || ""]);
 const diffSource = (v) => [
   ...v.text,
   ...(v.hashtags?.length ? [v.hashtags.map((h) => `#${h}`).join(" ")] : []),
@@ -619,15 +623,67 @@ const paragraphsHtml = (runs, view) =>
   diffParagraphs(runs, view)
     .map((p) => `<p class="revision-card__paragraph">${p}</p>`)
     .join("");
+// A translation's columns: the text as it reads, no marks.
+const plainHtml = (v) =>
+  diffSource(v)
+    .map((p) => `<p class="revision-card__paragraph">${escapeHtml(p)}</p>`)
+    .join("");
 
 // The legend under the text: each count wears its own mark, so it reads the
 // marks above as much as it counts them.
-function revisionLegend({ added, removed }) {
+function revisionCounts({ added, removed }) {
   const item = (n, kind, verb) =>
     n
       ? `<span class="revision-card__count"><span class="draft-diff__${kind}">${n} word${n === 1 ? "" : "s"}</span> ${verb}</span>`
       : "";
-  return `<p class="revision-card__legend">${item(added, "add", "added")}${item(removed, "del", "removed")}</p>`;
+  return `${item(added, "add", "added")}${item(removed, "del", "removed")}`;
+}
+
+// "412 → 501 characters, under LinkedIn's 3,000".
+function revisionLength(network, before, after) {
+  const count = (v) => diffSource(v).join(" ").length;
+  const meta = networkMeta(network);
+  const limit = meta?.limit
+    ? `, ${count(after) > meta.limit ? "over" : "under"} ${meta.label}'s ${meta.limit.toLocaleString("en-US")}`
+    : "";
+  return `${count(before)} → ${count(after)} characters${limit}`;
+}
+
+const UNDONE_STATE = `<i class="ap-icon-rotate-left" aria-hidden="true"></i>Back to the version before`;
+
+// The change itself: the tabs (none for a translation) and the text.
+function revisionBody({ id, postId, before, after, intent, view, translated }) {
+  const runs = diffWords(diffSource(before), diffSource(after));
+  const shown = translated ? "side" : view || (changeRatio(runs) > 0.5 ? "side" : "changes");
+  const tab = (key, label) =>
+    `<button type="button" class="ap-tabs-tab${shown === key ? " active" : ""}" role="tab" aria-selected="${shown === key}" data-revision-tab="${key}" data-revision-id="${escapeHtml(id)}"${postId ? ` data-revision-post="${escapeHtml(postId)}"` : ""}>${label}</button>`;
+  const labels = translated ? [languageOf(before), languageOf(after)] : ["Before", "After"];
+  const text =
+    shown === "side"
+      ? `<div class="revision-card__side">
+          <div class="revision-card__col is-before"><p class="revision-card__col-label">${labels[0]}</p>${translated ? plainHtml(before) : paragraphsHtml(runs, "before")}</div>
+          <div class="revision-card__col"${translated ? ` lang="${languageOf(after) === "French" ? "fr" : languageOf(after) === "Spanish" ? "es" : "en"}"` : ""}><p class="revision-card__col-label">${labels[1]}</p>${translated ? plainHtml(after) : paragraphsHtml(runs, "after")}</div>
+        </div>`
+      : `<div class="revision-card__text">${paragraphsHtml(runs, "unified")}</div>`;
+  const tabs = translated
+    ? ""
+    : `<div class="ap-tabs revision-card__tabs"><div class="ap-tabs-nav" role="tablist" aria-label="How to show the changes">${tab("changes", "Changes")}${tab("side", "Side by side")}</div></div>`;
+  return { runs, tabs, text };
+}
+
+// Where a translation's tabs would be: the move it made.
+const languageMove = (before, after) =>
+  `<span class="revision-card__lang"><i class="ap-icon-translate" aria-hidden="true"></i>${languageOf(before)} → ${languageOf(after)}</span>`;
+
+function undoButton(id, post, state, postId) {
+  const target = postId ? ` data-revision-post="${escapeHtml(postId)}"` : "";
+  return state.live
+    ? `<button type="button" class="ap-button stroked grey" data-revision-undo="${escapeHtml(id)}"${target}>${state.undone ? "Redo" : "Undo"}</button>`
+    : `<span data-tooltip="${post ? "This draft changed since" : "This draft was deleted"}"><button type="button" class="ap-button stroked grey" disabled>Undo</button></span>`;
+}
+
+function openDraftButton(key, ids, label) {
+  return `<button type="button" class="ap-button secondary blue${getFocusKey() === key ? " is-active" : ""}" data-content-card="post" data-content-key="${key}" data-content-ids="${escapeHtml(ids.join(","))}">${label}</button>`;
 }
 
 // The marks are drawn once, as the card lands: a highlighter stroke. The thread
@@ -637,48 +693,104 @@ const SWEEP_MS = 1400;
 
 function renderRevisionTurn(message, sessionId) {
   const { id, postId, before, after, intent } = message;
-  const runs = diffWords(diffSource(before), diffSource(after));
-  const view = message.view || (changeRatio(runs) > 0.5 ? "side" : "changes");
+  const translated = intent === "translate";
   const post = getPosts(sessionId).find((p) => p.id === postId);
-  const undone = post && post.revision?.undone && sameDraft(post, before);
-  const live = post && (undone || sameDraft(post, after));
+  const state = revisionState(post, before, after);
   const elapsed = Date.now() - (message.createdAt || 0);
-  const fresh = !undone && elapsed < SWEEP_MS;
-  const tab = (key, label) =>
-    `<button type="button" class="ap-tabs-tab${view === key ? " active" : ""}" role="tab" aria-selected="${view === key}" data-revision-tab="${key}" data-revision-id="${escapeHtml(id)}">${label}</button>`;
-  const body =
-    view === "side"
-      ? `<div class="revision-card__side">
-          <div class="revision-card__col is-before"><p class="revision-card__col-label">Before</p>${paragraphsHtml(runs, "before")}</div>
-          <div class="revision-card__col"><p class="revision-card__col-label">After</p>${paragraphsHtml(runs, "after")}</div>
-        </div>`
-      : `<div class="revision-card__text">${paragraphsHtml(runs, "unified")}</div>`;
-  const undo = live
-    ? `<button type="button" class="ap-button stroked grey" data-revision-undo="${escapeHtml(id)}">${undone ? "Redo" : "Undo"}</button>`
-    : `<span data-tooltip="${post ? "This draft changed since" : "This draft was deleted"}"><button type="button" class="ap-button stroked grey" disabled>Undo</button></span>`;
+  const fresh = !state.undone && elapsed < SWEEP_MS;
+  const { runs, tabs, text } = revisionBody({ id, before, after, intent, view: message.view, translated });
   const key = `revision:${id}`;
   return renderMessageBubble({
     role: "assistant",
     text: `${escapeHtml(revisionSummary(intent, before, after))}
-      <section class="revision-card${undone ? " is-undone" : ""}${fresh ? " is-fresh" : ""}" ${fresh ? `style="--sweep-elapsed: ${elapsed}ms"` : ""} aria-label="What changed">
+      <section class="revision-card${state.undone ? " is-undone" : ""}${fresh ? " is-fresh" : ""}" ${fresh ? `style="--sweep-elapsed: ${elapsed}ms"` : ""} aria-label="What changed">
         <div class="revision-card__head">
           ${renderProfileTag(profileForNetwork(message.network), { network: message.network })}
-          <div class="ap-tabs revision-card__tabs"><div class="ap-tabs-nav" role="tablist" aria-label="How to show the changes">${tab("changes", "Changes")}${tab("side", "Side by side")}</div></div>
+          ${translated ? languageMove(before, after) : tabs}
         </div>
-        ${body}
+        ${text}
         <div class="revision-card__foot">
-          ${
-            undone
-              ? `<p class="revision-card__state"><i class="ap-icon-rotate-left" aria-hidden="true"></i>Back to the version before</p>`
-              : revisionLegend(wordCounts(runs))
-          }
+          <p class="revision-card__${state.undone ? "state" : "legend"}">${
+            state.undone
+              ? UNDONE_STATE
+              : translated
+                ? revisionLength(message.network, before, after)
+                : revisionCounts(wordCounts(runs))
+          }</p>
           <span class="revision-card__actions">
-            ${undo}
-            ${
-              post
-                ? `<button type="button" class="ap-button secondary blue${getFocusKey() === key ? " is-active" : ""}" data-content-card="post" data-content-key="${key}" data-content-ids="${escapeHtml(postId)}">Open draft</button>`
-                : ""
-            }
+            ${undoButton(id, post, state)}
+            ${post ? openDraftButton(key, [postId], "Open draft") : ""}
+          </span>
+        </div>
+      </section>`,
+  });
+}
+
+// One ask, several drafts: one card, a row per draft — its account and what it
+// lost or gained (or its language move); one row open at a time with its
+// change, its Undo and Open draft. Undo all / Redo all and Open N drafts in the foot.
+function renderRevisionGroupTurn(message, sessionId) {
+  const { id, intent, items } = message;
+  const translated = intent === "translate";
+  const posts = getPosts(sessionId);
+  const elapsed = Date.now() - (message.createdAt || 0);
+  const rows = items.map((item) => {
+    const post = posts.find((p) => p.id === item.postId);
+    return { item, post, state: revisionState(post, item.before, item.after) };
+  });
+  const rowHtml = ({ item, post, state }) => {
+    const open = message.openId === item.postId;
+    const { runs, tabs, text } = revisionBody({
+      id,
+      postId: item.postId,
+      before: item.before,
+      after: item.after,
+      intent,
+      view: message.views?.[item.postId],
+      translated,
+    });
+    const sum = state.undone
+      ? UNDONE_STATE
+      : translated
+        ? `<i class="ap-icon-translate" aria-hidden="true"></i>${languageOf(item.before)} → ${languageOf(item.after)}`
+        : revisionCounts(wordCounts(runs));
+    return `
+      <div class="revision-group__row${open ? " is-open" : ""}${state.undone ? " is-undone" : ""}">
+        <button type="button" class="revision-group__head" data-revision-row="${escapeHtml(id)}" data-revision-post="${escapeHtml(item.postId)}" aria-expanded="${open}">
+          ${renderProfileTag(profileForNetwork(item.network), { network: item.network })}
+          <span class="revision-group__sum">${sum}</span>
+          <i class="ap-icon-chevron-down revision-group__chevron" aria-hidden="true"></i>
+        </button>
+        ${
+          open
+            ? `<div class="revision-group__detail">
+                ${tabs}
+                ${text}
+                <div class="revision-group__actions">
+                  ${translated ? `<span class="revision-card__legend">${revisionLength(item.network, item.before, item.after)}</span>` : ""}
+                  ${undoButton(id, post, state, item.postId)}
+                  ${post ? openDraftButton(`revision:${id}:${item.postId}`, [item.postId], "Open draft") : ""}
+                </div>
+              </div>`
+            : ""
+        }
+      </div>`;
+  };
+  const live = rows.filter((r) => r.state.live);
+  const changed = rows.filter((r) => !r.state.undone).length;
+  const allUndone = live.length && live.every((r) => r.state.undone);
+  const openable = rows.filter((r) => r.post).map((r) => r.item.postId);
+  const fresh = !allUndone && elapsed < SWEEP_MS;
+  return renderMessageBubble({
+    role: "assistant",
+    text: `${escapeHtml(revisionGroupSummary(intent, items))}
+      <section class="revision-card revision-group${fresh ? " is-fresh" : ""}" ${fresh ? `style="--sweep-elapsed: ${elapsed}ms"` : ""} aria-label="What changed">
+        ${rows.map(rowHtml).join("")}
+        <div class="revision-card__foot">
+          <p class="revision-card__legend">${changed ? `${changed} draft${changed === 1 ? "" : "s"} changed` : "Back to the versions before"}</p>
+          <span class="revision-card__actions">
+            ${live.length ? `<button type="button" class="ap-button stroked grey" data-revision-undo-all="${escapeHtml(id)}">${allUndone ? "Redo all" : "Undo all"}</button>` : ""}
+            ${openable.length ? openDraftButton(`revision:${id}`, openable, `Open ${openable.length} draft${openable.length === 1 ? "" : "s"}`) : ""}
           </span>
         </div>
       </section>`,
