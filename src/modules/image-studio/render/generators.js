@@ -9,8 +9,8 @@
 //         re-seeds one of the two without moving the other)
 //     id  a unique prefix for gradient / filter ids (four renders share a page)
 
-import { darken, inkOn, lighten, luminance, mix } from "./palette.js?v=2451";
-import { subjectDetail } from "./subjects.js?v=2451";
+import { darken, inkOn, lighten, luminance, mix } from "./palette.js?v=2452";
+import { subjectDetail } from "./subjects.js?v=2452";
 
 const n = (v) => Math.round(v * 10) / 10;
 const pick = (r, list) => list[Math.floor(r() * list.length) % list.length];

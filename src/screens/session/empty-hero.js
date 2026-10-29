@@ -1,20 +1,20 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2451";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2451";
-import { getContextById } from "../../contexts-store.js?v=2451";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2451";
-import { renderTopicCard } from "../../components/topic-card.js?v=2451";
-import { findTopicSource } from "../../topics-catalog.js?v=2451";
-import { html, raw } from "../../utils.js?v=2451";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2451";
-import { renderStarterCards } from "../../components/starter-card.js?v=2451";
-import { isFlagOn } from "../../feature-flags.js?v=2451";
-import { isDemo } from "../../demo-mode.js?v=2451";
-import { voicesToFinish } from "../../voice-parts.js?v=2451";
-import { networkLabel, networkIcon } from "../../social-profiles.js?v=2451";
-import "../../archie-pixels.js?v=2451";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2452";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2452";
+import { getContextById } from "../../contexts-store.js?v=2452";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2452";
+import { renderTopicCard } from "../../components/topic-card.js?v=2452";
+import { findTopicSource } from "../../topics-catalog.js?v=2452";
+import { html, raw } from "../../utils.js?v=2452";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2452";
+import { renderStarterCards } from "../../components/starter-card.js?v=2452";
+import { isFlagOn } from "../../feature-flags.js?v=2452";
+import { isDemo } from "../../demo-mode.js?v=2452";
+import { voicesToFinish } from "../../voice-parts.js?v=2452";
+import { networkLabel, networkIcon } from "../../social-profiles.js?v=2452";
+import "../../archie-pixels.js?v=2452";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
