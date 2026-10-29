@@ -2347,9 +2347,10 @@ button.recap__logotile:hover {
   width: 100%;
 }
 
+/* Recessed by its grey-05 fill alone: a border here made three nested frames
+   (block, tray, dashed card) for one group. */
 .recap__cmpgroup--suggested {
   padding: var(--ref-spacing-sm);
-  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-md);
   background: var(--ref-color-grey-05);
 }
@@ -2388,12 +2389,10 @@ button.recap__logotile:hover {
   color: var(--ref-color-grey-80);
 }
 
+/* The DS button as shipped (36px, no size modifier): at 28px with caption type
+   « Add all », « Add » and « Dismiss » read as tags. */
 .recap__cmpgroup-act {
   flex-shrink: 0;
-  height: 28px;
-  padding: 0 var(--ref-spacing-xs);
-  gap: var(--ref-spacing-xxxs);
-  font-size: var(--sys-text-style-caption-size);
 }
 
 .recap__cmpcard {
@@ -2429,13 +2428,6 @@ button.recap__logotile:hover {
   align-items: center;
   gap: var(--ref-spacing-xxs);
   padding: 0 var(--ref-spacing-sm) var(--ref-spacing-sm);
-}
-
-.recap__cmpcard-act {
-  height: 28px;
-  padding: 0 var(--ref-spacing-xs);
-  gap: var(--ref-spacing-xxxs);
-  font-size: var(--sys-text-style-caption-size);
 }
 
 /* The whole card is the open affordance — a button, so the network badges

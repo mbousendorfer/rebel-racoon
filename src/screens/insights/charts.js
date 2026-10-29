@@ -25,9 +25,9 @@
 // both. The shell calls destroyChartsIn(host) before every paint and on
 // teardown — layouts never destroy on their own.
 
-import Highcharts from "../../../vendor/highcharts/highcharts-12.4.0.esm.js?v=2521";
-import { escapeAttr } from "../../utils.js?v=2521";
-import { MONTHS } from "./model.js?v=2521";
+import Highcharts from "../../../vendor/highcharts/highcharts-12.4.0.esm.js?v=2522";
+import { escapeAttr } from "../../utils.js?v=2522";
+import { MONTHS } from "./model.js?v=2522";
 
 // ── Tokens ────────────────────────────────────────────────────────────────
 
