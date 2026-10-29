@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2379";
-import { conceptHint } from "./concepts.js?v=2379";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2380";
+import { conceptHint } from "./concepts.js?v=2380";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2379";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2379";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2379";
-import { isFlagOn } from "./feature-flags.js?v=2379";
-import { clipLookOf } from "./videos-store.js?v=2379";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2379";
-import { parseHashParams } from "./url-state.js?v=2379";
+} from "./playbook-brand-kit.js?v=2380";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2380";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2380";
+import { isFlagOn } from "./feature-flags.js?v=2380";
+import { clipLookOf } from "./videos-store.js?v=2380";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2380";
+import { parseHashParams } from "./url-state.js?v=2380";
 import {
   isListPart,
   voiceParts,
@@ -53,14 +53,14 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2379";
-import { showToast } from "./components/toast.js?v=2379";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2379";
-import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2379";
-import { updateContext } from "./contexts-store.js?v=2379";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2379";
-import { consumeHandoff } from "./handoff.js?v=2379";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2379";
+} from "./voice-parts.js?v=2380";
+import { showToast } from "./components/toast.js?v=2380";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2380";
+import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2380";
+import { updateContext } from "./contexts-store.js?v=2380";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2380";
+import { consumeHandoff } from "./handoff.js?v=2380";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2380";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -68,7 +68,8 @@ import {
   networkLabel,
   networkIcon,
   getConnectedProfiles,
-} from "./social-profiles.js?v=2379";
+  normalizeNetwork,
+} from "./social-profiles.js?v=2380";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2385,7 +2386,10 @@ function renderVoiceEdit2(data) {
   if (voiceNet && data.voiceByNetwork?.[voiceNet]) {
     const grid = pb2EditGrid(
       "voice",
-      pb2VoiceParts(data.voiceByNetwork[voiceNet], { edit: true, brand: data, net: voiceNet }),
+      [
+        cfg.networkPicker && cfg.onVoiceWay ? voiceWaysCard(voiceNet) : "",
+        ...pb2VoiceParts(data.voiceByNetwork[voiceNet], { edit: true, brand: data, net: voiceNet }),
+      ],
       "",
       {
         lead: networkVoiceLead(voiceNet, data.voiceByNetwork[voiceNet], data),
@@ -2394,8 +2398,8 @@ function renderVoiceEdit2(data) {
     return `${renderVoiceTabs(data)}${grid}`;
   }
   return `${renderVoiceTabs(data)}${pb2EditGrid("voice", [
+    cfg.networkPicker && cfg.onVoiceWay ? voiceWaysCard() : "",
     ...pb2VoiceParts(data, { edit: true, lead: mode }),
-    cfg.networkPicker && cfg.onVoiceWay ? defaultVoiceWays() : "",
     ...networkVoiceCards(data),
   ])}`;
 }
@@ -2731,19 +2735,29 @@ function networkVoiceCards(data) {
   ];
 }
 
-// The run's voice review: rewrite the default voice from a source — the
-// fiche's Learn from…, as tiles in a card (2026-10-29, asked: the ways belong
-// in the right column, not the left).
-function defaultVoiceWays() {
-  const account = getConnectedProfiles().find(canLearnFrom);
+// The run's voice review: the ways to (re)write a voice from a source — the
+// fiche's Learn from…, as tiles in a card at the head of the voice's column
+// (2026-10-29, asked: in the right column, in edit, for the default voice AND a
+// network's rules). `net` null: the default voice (posts of any account, a
+// document); a network: its posts, a document, a few questions, adapted.
+function voiceWaysCard(net = null) {
+  const account = getConnectedProfiles().find((p) => canLearnFrom(p) && (!net || normalizeNetwork(p.platform) === net));
+  const label = net ? networkLabel(net) : "";
   const tiles = [
     account && {
       value: "learn",
       icon: "ap-icon-double-chat-bubbles",
-      tile: "An account's posts",
+      tile: net ? `Your ${label} posts` : "An account's posts",
       hint: `${account.handle} · ${account.postCount} posts`,
     },
-    { value: "document", icon: "ap-icon-file--text", tile: "A document", hint: "A brand book or a style guide" },
+    {
+      value: "document",
+      icon: "ap-icon-file--text",
+      tile: "A document",
+      hint: net ? "A style guide or a brief" : "A brand book or a style guide",
+    },
+    net && { value: "interview", icon: "ap-icon-question", tile: "A few questions", hint: "About a minute" },
+    net && { value: "adapt", icon: "ap-icon-sparkles", tile: "Your default voice, adapted", hint: "Nothing to read" },
   ].filter(Boolean);
   return pb2Block(
     "Learn it from a source",
@@ -2752,13 +2766,19 @@ function defaultVoiceWays() {
         (
           c,
           i,
-        ) => `<button type="button" class="voice-ask__option${i ? "" : " is-best"}" data-voice-ask="" data-voice-choice="${c.value}">
+        ) => `<button type="button" class="voice-ask__option${i ? "" : " is-best"}" data-voice-ask="${esc(net || "")}" data-voice-choice="${c.value}">
           <span class="voice-ask__icon" aria-hidden="true"><i class="${c.icon}"></i></span>
           <span class="voice-ask__text"><span class="voice-ask__name">${esc(c.tile)}</span><span class="voice-ask__hint">${esc(c.hint)}</span></span>
         </button>`,
       )
       .join("")}</div>`,
-    { wide: true, hint: "I rewrite your default voice from it. You can edit it after.", className: "pb2-voice-ways" },
+    {
+      wide: true,
+      hint: net
+        ? `I propose rules for ${label} from it; you add them, then edit them below.`
+        : "I rewrite your default voice from it. You can edit it below.",
+      className: "pb2-voice-ways",
+    },
   );
 }
 
