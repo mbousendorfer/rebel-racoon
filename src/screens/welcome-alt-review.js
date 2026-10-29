@@ -32,12 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2380";
-import { navigate } from "../router.js?v=2380";
-import { getDraft, patchDraft } from "../context-builder.js?v=2380";
-import { mount } from "../playbook-view.js?v=2380";
-import { parseHashParams } from "../url-state.js?v=2380";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2380";
+import { html, raw } from "../utils.js?v=2381";
+import { navigate } from "../router.js?v=2381";
+import { getDraft, patchDraft } from "../context-builder.js?v=2381";
+import { mount } from "../playbook-view.js?v=2381";
+import { parseHashParams } from "../url-state.js?v=2381";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2381";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -47,6 +47,7 @@ const GLIDE_MS = 720; // a card glides to the middle
 
 // `review`: { step, title, sub, parts (a list, or a function for parts that
 // come and go; a part's `open()` opens its tab in edit itself, its `badge` says
+// what's left to do, its `group` / `groupHint` head a run of parts —
 // what's left to do), next: { label, go }, done: { title, lead }, back, onWay?,
 // start? (the part to open first), progress? (false: no step dots) }.
 // `onWay(partId, way, refresh)`: a card's tile was picked (the voice review);
@@ -83,14 +84,24 @@ export function renderReview(target, sid, config, review) {
       <h1 class="welcome-flow__title" id="welcomeFlowTitle">${review.title}</h1>
       <p class="welcome-intro__sub">${review.sub}</p>
       <ul class="welcome-flow__options">
-        ${parts().map((t) => {
+        ${parts().map((t, i, all) => {
           const here = t.id === current();
+          // A group opens with its name and a sentence (the voice review:
+          // the default voice, then the networks).
+          const group =
+            t.group && t.group !== all[i - 1]?.group
+              ? html`<li class="welcome-review__group">
+                  <p class="welcome-flow__kicker">${t.group}</p>
+                  ${t.groupHint ? raw(html`<p class="welcome-review__group-hint">${t.groupHint}</p>`) : ""}
+                </li>`
+              : "";
           const mark = done.has(t.id)
             ? `<span class="welcome-review__check${t.id === justChecked ? " is-new" : ""}" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
             : here && count > 1
               ? `<span class="welcome-review__count">${index + 1} of ${count}</span>`
               : "";
           return html`
+            ${raw(group)}
             <li>
               <button
                 type="button"

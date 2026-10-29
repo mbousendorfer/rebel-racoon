@@ -7,36 +7,36 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2380";
-import { isFlagOn } from "../../feature-flags.js?v=2380";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2380";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2380";
-import { showToast } from "../../components/toast.js?v=2380";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2380";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2380";
-import { startRewrite } from "../../draft-rewrite.js?v=2380";
-import { networkVoice, voiceChangedAt } from "../../voice-parts.js?v=2380";
-import { renderPostCard } from "../../components/post-card.js?v=2380";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2380";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2380";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2380";
+import { navigate } from "../../router.js?v=2381";
+import { isFlagOn } from "../../feature-flags.js?v=2381";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2381";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2381";
+import { showToast } from "../../components/toast.js?v=2381";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2381";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2381";
+import { startRewrite } from "../../draft-rewrite.js?v=2381";
+import { networkVoice, voiceChangedAt } from "../../voice-parts.js?v=2381";
+import { renderPostCard } from "../../components/post-card.js?v=2381";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2381";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2381";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2381";
 import {
   getConnectedProfiles,
   renderProfileTag,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-} from "../../social-profiles.js?v=2380";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2380";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2380";
-import { captionStateFor } from "../../clip-captions.js?v=2380";
+} from "../../social-profiles.js?v=2381";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2381";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2381";
+import { captionStateFor } from "../../clip-captions.js?v=2381";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2380";
-import { escapeHtml } from "../../utils.js?v=2380";
+} from "../../posts-store.js?v=2381";
+import { escapeHtml } from "../../utils.js?v=2381";
 import {
   getVideo,
   draftKey,
@@ -47,7 +47,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2380";
+} from "../../videos-store.js?v=2381";
 import {
   fmtMs,
   formatSelect,
@@ -67,7 +67,7 @@ import {
   bestFor,
   CTA_OPTIONS,
   EDITOR_TOOLS,
-} from "./shared.js?v=2380";
+} from "./shared.js?v=2381";
 
 let target = null;
 let videoId = null;

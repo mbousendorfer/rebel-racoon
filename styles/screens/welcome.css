@@ -1574,6 +1574,24 @@
   display: none;
 }
 
+/* The voice review's left list in two runs — the default voice, then the
+   networks — each under its name and a sentence. */
+.welcome-review__group {
+  margin-top: var(--ref-spacing-md);
+}
+.welcome-review__group:first-child {
+  margin-top: 0;
+}
+.welcome-review__group .welcome-flow__kicker {
+  margin: 0;
+}
+.welcome-review__group-hint {
+  margin: var(--ref-spacing-xxxs) 0 var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
 .welcome-review__count {
   flex-shrink: 0;
   font-size: var(--sys-text-style-caption-bold-size);
