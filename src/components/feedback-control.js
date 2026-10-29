@@ -20,13 +20,13 @@
 // list scroll position survives — same rationale as the clip/idea thumbs it
 // replaces.
 
-import { escapeAttr, escapeText } from "../utils.js?v=2500";
-import { showToast } from "./toast.js?v=2500";
-import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2500";
-import { getContextById } from "../contexts-store.js?v=2500";
-import { networkLabel } from "../social-profiles.js?v=2500";
-import { feedbackNetworkVoice } from "../voice-parts.js?v=2500";
-import { openVoiceProposal } from "./voice-proposal-modal.js?v=2500";
+import { escapeAttr, escapeText } from "../utils.js?v=2501";
+import { showToast } from "./toast.js?v=2501";
+import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2501";
+import { getContextById } from "../contexts-store.js?v=2501";
+import { networkLabel } from "../social-profiles.js?v=2501";
+import { feedbackNetworkVoice } from "../voice-parts.js?v=2501";
+import { openVoiceProposal } from "./voice-proposal-modal.js?v=2501";
 
 // "What was off?" reasons per element kind. value = stable key, label = UI.
 const REASONS = {
@@ -108,14 +108,16 @@ export function renderFeedbackPanel(targetId, { kind, voice = null } = {}) {
     .join("");
   return `
     <div class="fb__panel" data-fb-panel="${tid}" ${open ? "" : "hidden"}>
-      <p class="fb__panel-label">What was off?</p>
-      <div class="fb__reasons">${chips}</div>
-      <textarea
-        class="fb__comment"
-        data-fb-comment
-        rows="2"
-        placeholder="Anything else? (optional)"
-      >${escapeText(rec?.comment || "")}</textarea>
+      <p class="fb__panel-label" id="fb-off-${tid}">What was off?</p>
+      <div class="fb__reasons" role="group" aria-labelledby="fb-off-${tid}">${chips}</div>
+      <div class="ap-textarea-field">
+        <textarea
+          data-fb-comment
+          rows="2"
+          aria-label="Anything else about this draft? Optional"
+          placeholder="Anything else? (optional)"
+        >${escapeText(rec?.comment || "")}</textarea>
+      </div>
       <div class="fb__panel-actions">
         <button type="button" class="ap-button primary blue fb__send" data-fb-send="${tid}"${
           voice

@@ -47,7 +47,10 @@
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-xs);
-  background: var(--ref-color-grey-05);
+  /* A quiet white card: grey-05 vanished on the Drafts canvas (grey-05 too),
+     leaving only an offset padding. A border, never a shadow. */
+  background: var(--ref-color-white);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-sm);
 }
 
@@ -62,25 +65,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--ref-spacing-xxs);
-}
-
-.fb__comment {
-  width: 100%;
-  resize: vertical;
-  padding: var(--ref-spacing-xxs);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-sm);
-  background: var(--ref-color-white);
-  color: var(--ref-color-grey-100);
-  font-family: inherit;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-}
-
-.fb__comment:focus-visible {
-  outline: none;
-  border-color: var(--ref-color-electric-blue-100);
-  box-shadow: 0 0 0 1px var(--ref-color-electric-blue-100);
 }
 
 .fb__panel-actions {
