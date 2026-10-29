@@ -3,16 +3,20 @@
 // Two beats on one screen. Building: the stages of the analysis tick on the
 // left (the recap's own stage lists, by source) while the card on the right
 // fills with what's learned. Then the reveal: "Your Playbook is ready." and the
-// way out — Go through my Playbook (the review, /welcome-alt/recap) or Start
+// way out — Review my Playbook (the review, /welcome-alt/recap), Review my voice
+// (/welcome-alt/voice) or Start
 // writing (saves and enters Archie, the recap's enterArchie). Back, always.
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2376";
-import { navigate } from "../router.js?v=2376";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2376";
-import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2376";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2376";
+import { html, raw } from "../utils.js?v=2377";
+import { navigate } from "../router.js?v=2377";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2377";
+import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2377";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2377";
+
+// Where the default voice was read from, said on the reveal.
+const READ_FROM = { website: "your site", documents: "your files", interview: "your answers" };
 
 const STAGE_MS = 1300; // each stage holds at least this long, so the work reads as work
 const started = new Map(); // sid → when this screen first showed it (a re-render doesn't restart it)
@@ -70,23 +74,23 @@ export function renderWelcomeAltReady(_params, target) {
         <p class="welcome-intro__sub">
           ${manual
             ? "Tell me how your brand sounds and who it speaks to. Every draft I write starts there."
-            : "Every draft I write starts from it. Go through it, set your voice, or draft your first post now."}
+            : `I wrote your Playbook and a default voice from ${READ_FROM[getDraft(sid)?.sourceType] || "what you gave me"}. That voice works on every network, but it isn't tuned to any of them yet. Review and edit both now, or later from your Playbook.`}
         </p>
         <ul class="welcome-flow__options">
           ${raw(
             choice({
               hook: "data-ready-review",
               icon: "ap-icon-pen",
-              title: manual ? "Fill in my Playbook" : "Go through my Playbook",
-              desc: manual ? "Part by part, card by card." : "Check and edit every part before your first post.",
+              title: manual ? "Fill in my Playbook" : "Review my Playbook",
+              desc: manual ? "Part by part, card by card." : "Your brand, your audience, your look. Edit any part.",
             }),
           )}
           ${raw(
             choice({
               hook: "data-ready-voice",
               icon: "ap-icon-quote",
-              title: "Set my voice",
-              desc: "How you sound, where you post, and rules for each network.",
+              title: "Review my voice",
+              desc: "Your default voice, where you post, and rules for the networks that need their own.",
             }),
           )}
           ${manual
@@ -99,7 +103,7 @@ export function renderWelcomeAltReady(_params, target) {
                   title: finishLabel(),
                   desc: isIntegrated()
                     ? "Add it to your Playbooks. You can edit it anytime."
-                    : "I'll write it now. You can edit the Playbook anytime.",
+                    : "I'll write it now. You can review all of this later.",
                 }),
               )}
         </ul>

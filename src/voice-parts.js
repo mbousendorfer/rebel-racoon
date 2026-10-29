@@ -10,9 +10,9 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2376";
-import { isFlagOn } from "./feature-flags.js?v=2376";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2376";
+import { escapeHtml } from "./utils.js?v=2377";
+import { isFlagOn } from "./feature-flags.js?v=2377";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2377";
 import {
   networkMeta,
   networkLabel,
@@ -20,7 +20,7 @@ import {
   normalizeNetwork,
   getConnectedProfileById,
   profileForNetwork,
-} from "./social-profiles.js?v=2376";
+} from "./social-profiles.js?v=2377";
 
 // `hint`: what the part holds, said under its title — on the Playbook's tab
 // and in a voice proposal (one source for both).

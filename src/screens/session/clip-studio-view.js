@@ -6,26 +6,26 @@
 // binding and the refreshAssistantAside node-swap keep working; state lives in
 // clip-studio.js.
 
-import { isDemo } from "../../demo-mode.js?v=2376";
-import { renderDemoSample } from "../../demo-flow.js?v=2376";
-import * as clipStudio from "../../clip-studio.js?v=2376";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2376";
-import { usableContexts } from "../../playbook-access.js?v=2376";
-import { escapeHtml, html, raw } from "../../utils.js?v=2376";
-import { getContextById } from "../../contexts-store.js?v=2376";
-import { dropzoneHTML } from "../../components/dropzone.js?v=2376";
-import { renderClipCard } from "../../components/clip-card.js?v=2376";
-import { connectableNetworkCards } from "../../connect-profiles-flow.js?v=2376";
-import { getConnectedProfiles, PROFILE_SEARCH_THRESHOLD, renderProfileTag } from "../../social-profiles.js?v=2376";
-import { defaultFormatFor, formatsForNetwork } from "../../clip-formats.js?v=2376";
+import { isDemo } from "../../demo-mode.js?v=2377";
+import { renderDemoSample } from "../../demo-flow.js?v=2377";
+import * as clipStudio from "../../clip-studio.js?v=2377";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2377";
+import { usableContexts } from "../../playbook-access.js?v=2377";
+import { escapeHtml, html, raw } from "../../utils.js?v=2377";
+import { getContextById } from "../../contexts-store.js?v=2377";
+import { dropzoneHTML } from "../../components/dropzone.js?v=2377";
+import { renderClipCard } from "../../components/clip-card.js?v=2377";
+import { connectableNetworkCards } from "../../connect-profiles-flow.js?v=2377";
+import { getConnectedProfiles, PROFILE_SEARCH_THRESHOLD, renderProfileTag } from "../../social-profiles.js?v=2377";
+import { defaultFormatFor, formatsForNetwork } from "../../clip-formats.js?v=2377";
 import {
   classifyFile,
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
-} from "../../sources-stream.js?v=2376";
-import { showToast } from "../../components/toast.js?v=2376";
-import { open as openVideoClipsModal } from "../../components/video-clips-modal.js?v=2376";
+} from "../../sources-stream.js?v=2377";
+import { showToast } from "../../components/toast.js?v=2377";
+import { open as openVideoClipsModal } from "../../components/video-clips-modal.js?v=2377";
 import {
   postAssistantMessage,
   postClipExtractionTurn,
@@ -33,12 +33,12 @@ import {
   finishPending,
   GENERATION_TOOLS,
   postDraftResult,
-} from "../../assistant.js?v=2376";
-import { addPostDraft } from "../../posts-store.js?v=2376";
-import { requireNetworkVoices } from "../../network-voice-flow.js?v=2376";
-import { clipContext } from "./clip-draft-flow.js?v=2376";
-import { dotColorVar } from "../session.js?v=2376";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=2376";
+} from "../../assistant.js?v=2377";
+import { addPostDraft } from "../../posts-store.js?v=2377";
+import { requireNetworkVoices } from "../../network-voice-flow.js?v=2377";
+import { clipContext } from "./clip-draft-flow.js?v=2377";
+import { dotColorVar } from "../session.js?v=2377";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=2377";
 
 // Config catalogs for the upload/config screen.
 const CLIP_CAPTION_STYLES = [
