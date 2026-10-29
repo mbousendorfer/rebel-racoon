@@ -9,11 +9,11 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2428";
-import { navigate } from "../router.js?v=2428";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2428";
-import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2428";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2428";
+import { html, raw } from "../utils.js?v=2429";
+import { navigate } from "../router.js?v=2429";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2429";
+import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2429";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2429";
 
 // Where the default voice was read from, said on the reveal.
 const READ_FROM = { website: "your site", documents: "your files", interview: "your answers" };
@@ -104,9 +104,7 @@ export function renderWelcomeAltReady(_params, target) {
         <p class="welcome-intro__sub">
           ${manual
             ? "Tell me how your brand sounds and who it speaks to. Every draft I write starts there."
-            : getDraft(sid)?.voiceLearnedFrom
-              ? `I wrote your Playbook from ${READ_FROM[getDraft(sid)?.sourceType] || "what you gave me"}, and your default voice from the posts of ${getDraft(sid).voiceLearnedFrom.replace(/\.$/, "")}. Review and edit both now, or later from your Playbook.`
-              : `I wrote your Playbook and a default voice from ${READ_FROM[getDraft(sid)?.sourceType] || "what you gave me"}. I use that voice on every network. Review and edit both now, or later from your Playbook.`}
+            : `I wrote your Playbook and a default voice from ${READ_FROM[getDraft(sid)?.sourceType] || "what you gave me"}. I use that voice on every network. Review and edit both now, or later from your Playbook.`}
         </p>
         <ul class="welcome-flow__options">
           ${raw(

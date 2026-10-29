@@ -13,14 +13,14 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2428";
-import { startDemo } from "../demo-flow.js?v=2428";
-import { isFlagOn } from "../feature-flags.js?v=2428";
-import { html, raw } from "../utils.js?v=2428";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2428";
-import { navigate } from "../router.js?v=2428";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2428";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2428";
+import "../archie-pixels.js?v=2429";
+import { startDemo } from "../demo-flow.js?v=2429";
+import { isFlagOn } from "../feature-flags.js?v=2429";
+import { html, raw } from "../utils.js?v=2429";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2429";
+import { navigate } from "../router.js?v=2429";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2429";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2429";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -32,7 +32,6 @@ const PARTS = ["goals", "voice", "brand", "competitors"];
 const STEP_HINT = {
   voice: "How you sound, on every network.",
   url: "Your website is all I need. Without one, I ask a few questions.",
-  voiceFrom: "I learn your voice from its recent posts.",
 };
 const OPTIONAL = new Set(["documents"]);
 

@@ -12,19 +12,14 @@
 // objective, contentAction, ctaLinks, language, color, suggestions, editingId,
 // onComplete }.
 
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2428";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2428";
-import {
-  analyzeWebsite,
-  analyzeSocialProfiles,
-  analyzeBrandFiles,
-  analyzeInterview,
-} from "./context-mock-analysis.js?v=2428";
-import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=2428";
-import { markIntroSeen } from "./components/voice-intro-modal.js?v=2428";
-import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2428";
-import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2428";
-import { isFlagOn } from "./feature-flags.js?v=2428";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2429";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2429";
+import { analyzeWebsite, analyzeBrandFiles, analyzeInterview } from "./context-mock-analysis.js?v=2429";
+import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=2429";
+import { markIntroSeen } from "./components/voice-intro-modal.js?v=2429";
+import { getConnectedProfiles } from "./social-profiles.js?v=2429";
+import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2429";
+import { isFlagOn } from "./feature-flags.js?v=2429";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -248,36 +243,6 @@ function applyAnalysisToDraft(d, analysis) {
   d.color = analysis.suggestions.color || "orange";
   Object.assign(d, sectionPatchFromAnalysis(analysis));
   d.imageDefaults = imageDefaultsFromAnalysis(analysis);
-  // The account picked for the voice wins over what the source said of it.
-  if (d.voiceFrom) applyAccountVoice(d);
-}
-
-// The voice, from one connected account's recent posts — prod's
-// playbook-analyzer: the account lane wins over the site, and the Playbook says
-// whose posts it read. Picked before the site's read lands, it waits for it
-// (applyAnalysisToDraft); after, it lands now. `null` = keep the source's voice.
-export function learnAltVoiceFrom(sessionId, profileId) {
-  const d = drafts.get(sessionId);
-  if (!d) return;
-  d.voiceFrom = profileId || null;
-  d.voiceLearnedFrom = "";
-  if (d.voiceFrom && isAnalysisReady(sessionId)) applyAccountVoice(d);
-  notify(sessionId);
-}
-
-function applyAccountVoice(d) {
-  const p = getConnectedProfileById(d.voiceFrom);
-  if (!p) return;
-  const s = analyzeSocialProfiles([p.id]).suggestions;
-  Object.assign(d, {
-    voiceSummary: s.voiceSummary || "",
-    voiceAlways: cloneItems(s.voiceAlways),
-    voiceNever: cloneItems(s.voiceNever),
-    voiceByPost: cloneItems(s.voiceByPost),
-    voiceSometimes: cloneItems(s.voiceSometimes),
-    brandPersonality: s.brandPersonality || d.brandPersonality,
-    voiceLearnedFrom: p.handle,
-  });
 }
 
 // Patch the draft from outside the conversational flow — used by the

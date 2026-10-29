@@ -14,8 +14,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2428";
-import { navigate } from "../router.js?v=2428";
+import { html, raw, escapeHtml } from "../utils.js?v=2429";
+import { navigate } from "../router.js?v=2429";
 import {
   getDraft,
   patchDraft,
@@ -23,13 +23,11 @@ import {
   readAltFiles,
   writeAltManually,
   analyzeAltInterview,
-  learnAltVoiceFrom,
-} from "../context-builder.js?v=2428";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2428";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2428";
-import { connectors as connectorMocks } from "../mocks.js?v=2428";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2428";
-import { networkIcon } from "../social-profiles.js?v=2428";
+} from "../context-builder.js?v=2429";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2429";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2429";
+import { connectors as connectorMocks } from "../mocks.js?v=2429";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=2429";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
@@ -270,10 +268,10 @@ export function renderWelcomeAltInterview(_params, target) {
 
 const LANGUAGE_IN_ENGLISH = { Français: "French", Español: "Spanish" };
 
-function optionRow({ name, value, checked, disabled = false, type = "radio", lead, title, desc = "", badge = "" }) {
+function optionRow({ name, value, checked, type = "radio", lead, title, desc = "", badge = "" }) {
   const control =
     type === "radio"
-      ? `<span class="ap-radio-container"><input type="radio" name="${name}" value="${escapeHtml(value)}" ${checked ? "checked" : ""} ${disabled ? "disabled" : ""} /></span>`
+      ? `<span class="ap-radio-container"><input type="radio" name="${name}" value="${escapeHtml(value)}" ${checked ? "checked" : ""} /></span>`
       : `<span class="ap-checkbox-container"><input type="checkbox" name="${name}" value="${escapeHtml(value)}" ${checked ? "checked" : ""} /><i></i></span>`;
   return html`
     <li>
@@ -319,55 +317,6 @@ export function renderWelcomeAltLanguage(_params, target) {
       const lang = new FormData(e.target).get("language") || DEFAULT_LANGUAGE;
       patchDraft(sid, { languages: [lang], primaryLanguage: lang, language: lang });
       goNext("language");
-    },
-  });
-}
-
-// ── /welcome-alt/voice-from ──────────────────────────────────────────────
-
-// Prod's second question (« Which profile to analyze? »): the connected account
-// whose posts the default voice is learned from. The one with the most posts is
-// ticked, an account without posts can't be read, and Skip keeps the voice the
-// source gave (2026-10-29).
-export function renderWelcomeAltVoiceFrom(_params, target) {
-  return screen(target, {
-    step: "voiceFrom",
-    left: (sid) => {
-      const accounts = voiceAccounts();
-      const current = getDraft(sid)?.voiceFrom || accounts.find((p) => p.postCount > 0)?.id;
-      return html`
-        <h1 class="welcome-flow__title" id="welcomeFlowTitle">Which account sounds most like you?</h1>
-        <p class="welcome-intro__sub">
-          I learn your default voice from its recent posts, so your drafts sound like you.
-        </p>
-        <form data-choice-form novalidate>
-          <ul class="welcome-flow__options">
-            ${accounts.map((p) =>
-              optionRow({
-                name: "account",
-                value: p.id,
-                checked: p.id === current,
-                disabled: !p.postCount,
-                lead: `<span class="welcome-flow__glyph is-icon"><i class="${networkIcon(p.platform)}" aria-hidden="true"></i></span>`,
-                title: p.handle,
-                desc: p.postCount
-                  ? `${p.platformLabel} · ${p.postCount} posts`
-                  : `${p.platformLabel} · No posts to read yet`,
-              }),
-            )}
-          </ul>
-          ${actions(continueButton(), { skip: "Skip, use my website" })}
-        </form>
-      `;
-    },
-    onSubmit: (e, sid) => {
-      learnAltVoiceFrom(sid, new FormData(e.target).get("account"));
-      goNext("voiceFrom");
-    },
-    onClick: (e, sid) => {
-      if (!e.target.closest("[data-flow-skip]")) return;
-      learnAltVoiceFrom(sid, null);
-      goNext("voiceFrom");
     },
   });
 }
