@@ -72,6 +72,8 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--ref-spacing-sm);
+  /* The tabs' height, kept when a translation shows its language move instead. */
+  min-height: 48px;
   padding: 0 var(--ref-spacing-xs) 0 var(--ref-spacing-md);
   border-bottom: 1px solid var(--ref-color-grey-20);
 }
@@ -197,4 +199,99 @@
   .posts__card.has-fresh-changes .draft-diff__add {
     animation: none;
   }
+}
+
+/* A translation: where the tabs were, the language move it made. */
+.revision-card__lang,
+.revision-group__sum {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  white-space: nowrap;
+}
+.revision-card__lang {
+  padding-right: var(--ref-spacing-xs);
+}
+.revision-card__lang > i,
+.revision-group__sum > i {
+  font-size: var(--sys-icon-css-sm);
+}
+
+/* ── One ask, several drafts: a row per draft, one open at a time ── */
+
+.revision-group__row {
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+
+.revision-group__head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-xs) var(--ref-spacing-md);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+button.revision-group__head {
+  cursor: pointer;
+}
+button.revision-group__head:hover {
+  background: var(--ref-color-grey-05);
+}
+button.revision-group__head:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: -2px;
+}
+.revision-group__head .profile-tag {
+  flex: none;
+  color: var(--ref-color-grey-100);
+}
+
+.revision-group__sum {
+  gap: var(--ref-spacing-xxs) var(--ref-spacing-md);
+  margin-left: auto;
+}
+
+.revision-group__chevron {
+  font-size: var(--sys-icon-css-sm);
+  transition: transform 0.2s;
+}
+.revision-group__row.is-open .revision-group__chevron {
+  transform: rotate(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .revision-group__chevron {
+    transition: none;
+  }
+}
+
+.revision-group__detail .revision-card__tabs {
+  padding-left: var(--ref-spacing-xs);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+
+.revision-group__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xxs);
+  padding: 0 var(--ref-spacing-xs) var(--ref-spacing-xs) var(--ref-spacing-md);
+}
+.revision-group__actions .revision-card__legend {
+  margin-right: auto;
+}
+
+/* A row put back: its change is still the receipt, read as the past. */
+.revision-group__row.is-undone .draft-diff__add,
+.revision-group__row.is-undone .draft-diff__del {
+  color: inherit;
+  background: none;
 }

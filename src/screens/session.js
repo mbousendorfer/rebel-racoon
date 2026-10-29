@@ -1,22 +1,23 @@
-import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr, formatTimeOfDay } from "../utils.js?v=2477";
-import { conceptHint } from "../concepts.js?v=2477";
-import { navigate } from "../router.js?v=2477";
-import { setImageLook } from "../modules/image-studio/index.js?v=2477";
-import { IMAGE_LOOK_CHAT_HANDOFF, startImageLookChat } from "../draft-image-flow.js?v=2477";
-import { answerLearnedVoice, answerVoiceAsk } from "../network-voice-flow.js?v=2477";
-import { renderTopbar } from "../components/topbar.js?v=2477";
-import { connectorDocs } from "../mocks.js?v=2477";
-import { getConnectedProfiles, networkLabel, networkIcon } from "../social-profiles.js?v=2477";
-import { getSessionById, getSessions } from "../sessions-store.js?v=2477";
-import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=2477";
-import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=2477";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=2477";
-import { isNewUser } from "../user-mode.js?v=2477";
+import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr, formatTimeOfDay } from "../utils.js?v=2481";
+import { conceptHint } from "../concepts.js?v=2481";
+import { navigate } from "../router.js?v=2481";
+import { setImageLook } from "../modules/image-studio/index.js?v=2481";
+import { IMAGE_LOOK_CHAT_HANDOFF, startImageLookChat } from "../draft-image-flow.js?v=2481";
+import { answerLearnedVoice, answerVoiceAsk } from "../network-voice-flow.js?v=2481";
+import { renderTopbar } from "../components/topbar.js?v=2481";
+import { connectorDocs } from "../mocks.js?v=2481";
+import { getConnectedProfiles, networkLabel, networkIcon } from "../social-profiles.js?v=2481";
+import { getSessionById, getSessions } from "../sessions-store.js?v=2481";
+import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=2481";
+import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=2481";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=2481";
+import { isNewUser } from "../user-mode.js?v=2481";
 import {
   getThread,
   sendMessage,
   postAssistantMessage,
   postRevisionTurn,
+  postRevisionGroupTurn,
   postUserTurn,
   postSelectionEcho,
   postSchedulePlan,
@@ -34,24 +35,24 @@ import {
   startPending,
   finishPending,
   postActivity,
-} from "../assistant.js?v=2477";
-import { startRewrite } from "../draft-rewrite.js?v=2477";
-import { startPostPlan } from "../post-plan-flow.js?v=2477";
+} from "../assistant.js?v=2481";
+import { startRewrite, languageOf, revisionState, TRANSLATE_LANGUAGES } from "../draft-rewrite.js?v=2481";
+import { startPostPlan } from "../post-plan-flow.js?v=2481";
 import {
   getPlans as getPostPlans,
   getActivePlan as getActivePostPlan,
   setActivePlan as setActivePostPlan,
   subscribe as subscribePostPlans,
-} from "../post-plan-store.js?v=2477";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=2477";
-import { getSources, getIdeas } from "../library.js?v=2477";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=2477";
+} from "../post-plan-store.js?v=2481";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=2481";
+import { getSources, getIdeas } from "../library.js?v=2481";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=2481";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=2477";
+} from "../composer-mentions.js?v=2481";
 import {
   setSubtitleStyle,
   getPosts,
@@ -60,44 +61,44 @@ import {
   updatePostContent,
   undoRevision,
   subscribe as subscribePosts,
-} from "../posts-store.js?v=2477";
-import { executeDraft } from "../draft-flow.js?v=2477";
-import * as topPostsFlow from "../top-posts-flow.js?v=2477";
-import { renderTopPostsBoard } from "../components/top-post-card.js?v=2477";
-import * as sidebarWizard from "../sidebar-wizard.js?v=2477";
-import * as inlineQuestion from "../inline-question.js?v=2477";
-import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../schedule-engine.js?v=2477";
-import { addToQueue } from "../schedule-store.js?v=2477";
-import { refLabel } from "../chat-refs.js?v=2477";
+} from "../posts-store.js?v=2481";
+import { executeDraft } from "../draft-flow.js?v=2481";
+import * as topPostsFlow from "../top-posts-flow.js?v=2481";
+import { renderTopPostsBoard } from "../components/top-post-card.js?v=2481";
+import * as sidebarWizard from "../sidebar-wizard.js?v=2481";
+import * as inlineQuestion from "../inline-question.js?v=2481";
+import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../schedule-engine.js?v=2481";
+import { addToQueue } from "../schedule-store.js?v=2481";
+import { refLabel } from "../chat-refs.js?v=2481";
 import {
   openScheduleForPosts,
   onPostImage,
   openAssignForPosts,
   commitAssigned,
-} from "../components/right-panel/drafts-view.js?v=2477";
-import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER } from "../org.js?v=2477";
-import { isPostValid } from "../post-validation.js?v=2477";
-import { reviewBlock } from "../components/assign-modal.js?v=2477";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2477";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2477";
-import * as clipStudio from "../clip-studio.js?v=2477";
-import * as batchStudio from "../batch-studio.js?v=2477";
-import { askConnector } from "../connector-ask.js?v=2477";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=2477";
-import { renderConnectorLogo } from "../connectors-view.js?v=2477";
+} from "../components/right-panel/drafts-view.js?v=2481";
+import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER } from "../org.js?v=2481";
+import { isPostValid } from "../post-validation.js?v=2481";
+import { reviewBlock } from "../components/assign-modal.js?v=2481";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2481";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2481";
+import * as clipStudio from "../clip-studio.js?v=2481";
+import * as batchStudio from "../batch-studio.js?v=2481";
+import { askConnector } from "../connector-ask.js?v=2481";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=2481";
+import { renderConnectorLogo } from "../connectors-view.js?v=2481";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=2477";
-import { isFlagOn } from "../feature-flags.js?v=2477";
-import { onChatGalleryClick } from "./session/chat-gallery.js?v=2477";
-import * as contextBuilder from "../context-builder.js?v=2477";
-import { renderPicker } from "./_analyse-common.js?v=2477";
-import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=2477";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=2477";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=2477";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=2477";
+} from "../composer-connector.js?v=2481";
+import { isFlagOn } from "../feature-flags.js?v=2481";
+import { onChatGalleryClick } from "./session/chat-gallery.js?v=2481";
+import * as contextBuilder from "../context-builder.js?v=2481";
+import { renderPicker } from "./_analyse-common.js?v=2481";
+import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=2481";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=2481";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=2481";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=2481";
 import {
   classifyFile,
   startFileUpload,
@@ -107,9 +108,9 @@ import {
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
-} from "../sources-stream.js?v=2477";
-import { onFeedbackClick } from "../components/feedback-control.js?v=2477";
-import { showToast } from "../components/toast.js?v=2477";
+} from "../sources-stream.js?v=2481";
+import { onFeedbackClick } from "../components/feedback-control.js?v=2481";
+import { showToast } from "../components/toast.js?v=2481";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -119,19 +120,19 @@ import {
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
   renderPanel as renderRightPanel,
-} from "../components/right-panel.js?v=2477";
-import { setHandoff, consumeHandoff } from "../handoff.js?v=2477";
-import { isDemo, isDemoDone } from "../demo-mode.js?v=2477";
-import { blockInDemo, answerAfterDemo, trackDemoSession, demoSampleFile, addDemoSource } from "../demo-flow.js?v=2477";
-import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=2477";
-import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=2477";
-import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=2477";
-import { openTopicArticle } from "../components/topic-picker-modal.js?v=2477";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2477";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=2477";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=2477";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=2477";
-import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=2477";
+} from "../components/right-panel.js?v=2481";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=2481";
+import { isDemo, isDemoDone } from "../demo-mode.js?v=2481";
+import { blockInDemo, answerAfterDemo, trackDemoSession, demoSampleFile, addDemoSource } from "../demo-flow.js?v=2481";
+import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=2481";
+import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=2481";
+import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=2481";
+import { openTopicArticle } from "../components/topic-picker-modal.js?v=2481";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2481";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=2481";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=2481";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=2481";
+import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=2481";
 import {
   clipsToChat,
   finalizeClipStudio,
@@ -139,20 +140,20 @@ import {
   handleClipStudioUrl,
   openClipStudioEditor,
   renderClipStudio,
-} from "./session/clip-studio-view.js?v=2477";
+} from "./session/clip-studio-view.js?v=2481";
 import {
   handleBatchFiles,
   renderBatchStudio,
   repaintBatchRest,
   replayBatchSources,
   startBatchChat,
-} from "./session/batch-studio-view.js?v=2477";
+} from "./session/batch-studio-view.js?v=2481";
 import {
   askRepurposeProfiles,
   askSourceUse,
   startIdeaDraft,
   startRepurposeFlow,
-} from "./session/draft-questions.js?v=2477";
+} from "./session/draft-questions.js?v=2481";
 import {
   extractionVerdict,
   extractionWhyOpen,
@@ -160,7 +161,7 @@ import {
   renderThread,
   repaintExtractionCard,
   watchTurnAvatars,
-} from "./session/thread-render.js?v=2477";
+} from "./session/thread-render.js?v=2481";
 import {
   animateBannerIn,
   animateBannerOut,
@@ -172,9 +173,9 @@ import {
   renderComposer,
   renderComposerConnector,
   renderComposerStatus,
-} from "./session/composer.js?v=2477";
-import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=2477";
-import { renderEmptyHero } from "./session/empty-hero.js?v=2477";
+} from "./session/composer.js?v=2481";
+import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=2481";
+import { renderEmptyHero } from "./session/empty-hero.js?v=2481";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
@@ -940,6 +941,9 @@ const ALL_OF_THEM = /\b(all|every|each)\b/i;
 // asked for. Only when the sentence talks about existing drafts — "write a
 // longer post about X" is a new post, not an edit.
 const REWRITE_INTENTS = [
+  // "Translate post 1 into French", "rewrite them in Spanish": a rewrite whose
+  // direction is a language (the draft is replaced, Undo brings it back).
+  ["translate", /\btranslat\w*\b|\b(?:rewrite|put|write)\b.*\bin (?:french|spanish|english)\b/i],
   // Word-level asks first: "tighten the hook" is punchier, not shorter.
   ["punchier", /\b(punchier|punchy|snappier|sharper|stronger hook|tighten the hook|better hook)\b/i],
   ["emoji", /\bemojis?\b/i],
@@ -967,11 +971,18 @@ const REWRITE_DONE = {
   cta: "with a call to action",
 };
 // These three only ever edit a draft: "add emojis" needs no "it" to be about one.
-const WORD_LEVEL = new Set(["punchier", "emoji", "cta"]);
+const WORD_LEVEL = new Set(["punchier", "emoji", "cta", "translate"]);
 const ORDINALS = { first: 1, second: 2, third: 3, fourth: 4, fifth: 5, last: -1 };
 
 // Which drafts a sentence points at, or null when it doesn't say. `drafts` is
 // the panel order (newest first), so "post 2" is the second card.
+// "into French": the language named, else the first one the draft isn't in.
+function translateTarget(text, draft) {
+  const named = text.match(/\b(french|spanish|english)\b/i)?.[1];
+  if (named) return named.charAt(0).toUpperCase() + named.slice(1).toLowerCase();
+  return TRANSLATE_LANGUAGES.find((l) => l !== languageOf(draft));
+}
+
 function draftsNamedIn(text, drafts) {
   if (ALL_OF_THEM.test(text) || /\bthem\b|\bthese\b/i.test(text)) return drafts;
   const num = text.match(/\b(?:post|draft)\s*#?(\d+)\b/i)?.[1];
@@ -992,20 +1003,44 @@ function draftsNamedIn(text, drafts) {
   return null;
 }
 
-function rewriteDrafts(sessionId, targets, intent) {
+// `language`: a translation's target.
+function rewriteDrafts(sessionId, targets, intent, { language } = {}) {
+  if (intent === "translate") {
+    // A draft already in that language has nothing to translate.
+    const asked = targets.length;
+    targets = targets.filter((d) => languageOf(d) !== language);
+    if (!targets.length) {
+      postAssistantMessage(sessionId, `${asked === 1 ? "It's" : "They're"} already in ${language}.`);
+      return;
+    }
+  }
+  const done = intent === "translate" ? `in ${language}` : REWRITE_DONE[intent];
   postActivity(sessionId, ["modify_post"]);
   postAssistantMessage(
     sessionId,
     targets.length === 1
-      ? `Rewriting [[post:${targets[0].id}]] ${REWRITE_DONE[intent]}.`
-      : `Rewriting these ${targets.length} drafts ${REWRITE_DONE[intent]}:${targets.map((d) => `\n- [[post:${d.id}]]`).join("")}`,
+      ? `Rewriting [[post:${targets[0].id}]] ${done}.`
+      : `Rewriting these ${targets.length} drafts ${done}:${targets.map((d) => `\n- [[post:${d.id}]]`).join("")}`,
   );
-  // Each draft, once rewritten, gets its "what changed" card (flag draftChanges).
-  const onCommit = (d) =>
-    isFlagOn("draftChanges")
-      ? (before, after) => postRevisionTurn(sessionId, { postId: d.id, network: d.network, intent, before, after })
-      : undefined;
-  for (const d of targets) startRewrite(sessionId, d.id, intent, { onCommit: onCommit(d) });
+  // Each rewritten draft gets its "what changed" card (flag draftChanges) — or,
+  // when the ask touched several, one card for all of them once the last lands.
+  const grouped = targets.length > 1;
+  const items = [];
+  let expected = 0;
+  const onCommit = (d) => {
+    if (!isFlagOn("draftChanges")) return undefined;
+    if (!grouped)
+      return (before, after) =>
+        postRevisionTurn(sessionId, { postId: d.id, network: d.network, intent, before, after });
+    return (before, after) => {
+      items.push({ postId: d.id, network: d.network, before, after });
+      if (items.length < expected) return;
+      const order = targets.map((t) => t.id);
+      items.sort((a, b) => order.indexOf(a.postId) - order.indexOf(b.postId));
+      postRevisionGroupTurn(sessionId, { intent, items });
+    };
+  };
+  for (const d of targets) if (startRewrite(sessionId, d.id, intent, { onCommit: onCommit(d), language })) expected++;
   // After the rewrite's first repaint of the panel: focusing before it, the
   // repaint put the scroll back where it was and the draft stayed out of sight.
   focusInPanel("post", targets[0].id);
@@ -1238,7 +1273,9 @@ function routeDraftsAsk(session, text) {
   if (EDITS.includes(intent)) {
     const run = (picked) =>
       intent === "modify"
-        ? rewriteDrafts(sessionId, picked, rewrite)
+        ? rewriteDrafts(sessionId, picked, rewrite, {
+            language: rewrite === "translate" ? translateTarget(text, picked[0]) : undefined,
+          })
         : intent === "regenerate"
           ? regenerateDrafts(sessionId, picked)
           : intent === "review"
@@ -1936,7 +1973,8 @@ function wireAssistantPanel(root, session, attachedContext) {
   // the thread repaints when a draft moves — only once it holds such a card.
   // The right-panel Drafts surface listens to the store on its own.
   const offPosts = subscribePosts(session.id, () => {
-    if (getThread(session.id).some((m) => m.variant === "revision")) repaintThreadFromSources();
+    if (getThread(session.id).some((m) => m.variant === "revision" || m.variant === "revision-group"))
+      repaintThreadFromSources();
   });
 
   // Thread re-paints on source changes so inline clip-extraction cards
@@ -2617,7 +2655,9 @@ function bindSession(root, session) {
       if (revisionTab) {
         event.preventDefault();
         const msg = getThread(session.id).find((m) => m.id === revisionTab.dataset.revisionId);
-        if (msg) msg.view = revisionTab.dataset.revisionTab;
+        const post = revisionTab.dataset.revisionPost;
+        if (msg && post) msg.views[post] = revisionTab.dataset.revisionTab;
+        else if (msg) msg.view = revisionTab.dataset.revisionTab;
         refreshThread(session.id);
         return;
       }
@@ -2625,7 +2665,36 @@ function bindSession(root, session) {
       if (revisionUndo) {
         event.preventDefault();
         const msg = getThread(session.id).find((m) => m.id === revisionUndo.dataset.revisionUndo);
-        if (msg) undoRevision(session.id, msg.postId);
+        if (msg) undoRevision(session.id, revisionUndo.dataset.revisionPost || msg.postId);
+        return;
+      }
+      // The grouped card: open one draft's row (one at a time), or Undo / Redo
+      // every draft that can still be.
+      const revisionRow = event.target.closest("[data-revision-row]");
+      if (revisionRow) {
+        event.preventDefault();
+        const msg = getThread(session.id).find((m) => m.id === revisionRow.dataset.revisionRow);
+        if (msg) msg.openId = msg.openId === revisionRow.dataset.revisionPost ? null : revisionRow.dataset.revisionPost;
+        refreshThread(session.id);
+        return;
+      }
+      const revisionUndoAll = event.target.closest("[data-revision-undo-all]");
+      if (revisionUndoAll) {
+        event.preventDefault();
+        const msg = getThread(session.id).find((m) => m.id === revisionUndoAll.dataset.revisionUndoAll);
+        const posts = getPosts(session.id);
+        const rows = (msg?.items || [])
+          .map((i) => ({
+            i,
+            ...revisionState(
+              posts.find((p) => p.id === i.postId),
+              i.before,
+              i.after,
+            ),
+          }))
+          .filter((r) => r.live);
+        const redo = rows.every((r) => r.undone);
+        for (const r of rows) if (r.undone === redo) undoRevision(session.id, r.i.postId);
         return;
       }
       const lookUndo = event.target.closest("[data-image-look-undo]");
@@ -3225,7 +3294,7 @@ function bindSession(root, session) {
           ? getSources(session.id).find((s) => s.id === openClipsBtn.dataset.clipCardOpen)
           : null;
         if (src) {
-          import("./clips/open-in-clips.js?v=2477").then(({ openInClips }) => openInClips(session.id, src));
+          import("./clips/open-in-clips.js?v=2481").then(({ openInClips }) => openInClips(session.id, src));
           return;
         }
         openClipsPanel();

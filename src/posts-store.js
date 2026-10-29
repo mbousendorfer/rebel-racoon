@@ -11,9 +11,9 @@
 //     Archie's last rewrite; called again, it redoes it
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2477";
-import { isNewUser } from "./user-mode.js?v=2477";
-import { createSessionNotifier } from "./store-utils.js?v=2477";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2481";
+import { isNewUser } from "./user-mode.js?v=2481";
+import { createSessionNotifier } from "./store-utils.js?v=2481";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).
@@ -182,9 +182,10 @@ export function updatePostContent(sessionId, postId, partial) {
   if (partial.writtenAt !== undefined) post.writtenAt = partial.writtenAt;
   if (partial.hashtags !== undefined) post.hashtags = partial.hashtags;
   if (partial.cta !== undefined) post.cta = partial.cta;
+  if (partial.language !== undefined) post.language = partial.language;
   if (partial.firstComment !== undefined) post.firstComment = partial.firstComment;
   // What Archie's last rewrite changed (flag draftChanges): { before, intent,
-  // at, undone?, hidden? }, `before` = { text, hashtags, cta }; `hidden` once
+  // at, undone?, hidden? }, `before` = { text, hashtags, cta, language }; `hidden` once
   // accepted on the draft. Cleared (null) by a hand edit.
   if (partial.revision !== undefined) post.revision = partial.revision;
   // Scheduled from a host that keeps its drafts listed (the Clips space).
@@ -205,7 +206,8 @@ export function undoRevision(sessionId, postId) {
   const post = getPosts(sessionId).find((p) => p.id === postId);
   if (!post?.revision) return;
   const { before, ...rest } = post.revision;
-  const now = { text: post.text, hashtags: post.hashtags, cta: post.cta || "" };
+  // A translation's undo puts the language back too.
+  const now = { text: post.text, hashtags: post.hashtags, cta: post.cta || "", language: post.language || null };
   updatePostContent(sessionId, postId, {
     ...before,
     // An undo is a change of its own: the draft says it again, even once accepted.

@@ -18,9 +18,10 @@
 // the stream is handled by re-looking up the target selector each tick
 // — when it disappears the stream stops and the content commits at once.
 
-import { getPosts, updatePostContent } from "./posts-store.js?v=2477";
-import { isFlagOn } from "./feature-flags.js?v=2477";
-import { escapeText } from "./utils.js?v=2477";
+import { getPosts, updatePostContent } from "./posts-store.js?v=2481";
+import { isFlagOn } from "./feature-flags.js?v=2481";
+import { escapeText } from "./utils.js?v=2481";
+import { DRAFT_TRANSLATIONS, DRAFT_TRANSLATION_FALLBACK } from "./mocks.js?v=2481";
 
 const inFlight = new Map(); // postId → AbortController
 
@@ -34,23 +35,30 @@ const TOKEN_MS_MIN = 8;
 const TOKEN_MS_MAX = 18;
 
 // `onCommit(before, after)` fires once the new text is in — the chat posts its
-// "what changed" card from it (flag draftChanges). Both are { text, hashtags, cta }.
-export function startRewrite(sessionId, postId, intent = "fresh", { onCommit } = {}) {
-  if (!sessionId || !postId) return;
-  if (inFlight.has(postId)) return;
+// "what changed" card from it (flag draftChanges). Both are { text, hashtags,
+// cta, language }. `language` is the target of a "translate" rewrite. Returns
+// true when the rewrite started (a draft already rewriting, or locked, is left).
+export function startRewrite(sessionId, postId, intent = "fresh", { onCommit, language } = {}) {
+  if (!sessionId || !postId) return false;
+  if (inFlight.has(postId)) return false;
 
   const post = getPosts(sessionId).find((p) => p.id === postId);
-  if (!post) return;
+  if (!post) return false;
   // Scheduled posts are locked — rewriting one would invalidate the
   // queue. The card-level UI already greys the action ; this is the
   // guard for direct API calls.
-  if (post.status === "scheduled") return;
+  if (post.status === "scheduled") return false;
 
   const controller = new AbortController();
   inFlight.set(postId, controller);
 
-  const before = { text: [...post.text], hashtags: [...(post.hashtags || [])], cta: post.cta || "" };
-  const final = fakeRewrite(post, intent);
+  const before = {
+    text: [...post.text],
+    hashtags: [...(post.hashtags || [])],
+    cta: post.cta || "",
+    language: post.language || null,
+  };
+  const final = fakeRewrite(post, intent, language);
 
   // Phase 1 — thinking. Single notify ; the card subscriber paints the
   // skeleton + Rewriting pill on its own.
@@ -80,6 +88,7 @@ export function startRewrite(sessionId, postId, intent = "fresh", { onCommit } =
         text: final.text,
         hashtags: final.hashtags,
         cta: final.cta,
+        language: final.language,
         // Rewritten now, in the network's voice as it is now.
         writtenAt: Date.now(),
         isRegenerating: false,
@@ -88,9 +97,10 @@ export function startRewrite(sessionId, postId, intent = "fresh", { onCommit } =
         revision: isFlagOn("draftChanges") ? { before, intent, at: Date.now() } : null,
       });
       inFlight.delete(postId);
-      onCommit?.(before, { text: final.text, hashtags: final.hashtags, cta: final.cta });
+      onCommit?.(before, { text: final.text, hashtags: final.hashtags, cta: final.cta, language: final.language });
     });
   }, THINKING_MS);
+  return true;
 }
 
 function pick(list) {
@@ -105,10 +115,24 @@ function pick(list) {
 //   warmer   → prepend a warm, human opener
 //   formal   → prepend a measured, professional opener
 //   fresh    → swap the hook + reorder (the original regenerate behaviour)
-function fakeRewrite(post, intent = "fresh") {
+function fakeRewrite(post, intent = "fresh", language) {
   const paras = Array.isArray(post.text) ? post.text.filter(Boolean) : [];
-  const base = { hashtags: post.hashtags || [], cta: post.cta || "" };
+  const base = { hashtags: post.hashtags || [], cta: post.cta || "", language: post.language || null };
   const network = (post.network || "linkedin").toLowerCase();
+
+  // The same post in another language, hashtags kept. Its paragraphs found in
+  // the seeded table, else a stock post (mocks/translations.js).
+  if (intent === "translate") {
+    // A paragraph cut short ("shorter" keeps the first sentence) takes as many
+    // sentences of its row.
+    const sentences = (t) => t.match(/[^.!?]+[.!?]*/g) || [t];
+    const translated = paras.map((p) => {
+      const row = DRAFT_TRANSLATIONS.find((r) => Object.values(r).some((t) => t.startsWith(p)));
+      return row && sentences(row[language]).slice(0, sentences(p).length).join("").trim();
+    });
+    const text = translated.every(Boolean) ? translated : DRAFT_TRANSLATION_FALLBACK[language];
+    return { ...base, text, language: LANGUAGE_VALUE[language] };
+  }
 
   if (intent === "shorter") {
     const joined = paras.join(" ").trim();
@@ -225,11 +249,24 @@ function revisionLead(intent, before) {
   return LEADS[intent] || "I rewrote it";
 }
 
+// A translation's target, named in English in the chat ("into French"), kept on
+// the draft as the Playbook's language label (languages.js).
+export const TRANSLATE_LANGUAGES = ["English", "French", "Spanish"];
+const LANGUAGE_VALUE = { English: "English", French: "Français", Spanish: "Español" };
+
+// The language a draft is written in, named in English. A draft with none is
+// in the Playbook's default, English.
+export function languageOf(post) {
+  return TRANSLATE_LANGUAGES.find((l) => LANGUAGE_VALUE[l] === post?.language) || "English";
+}
+
 const chars = (v) => [...v.text, v.cta || "", ...(v.hashtags || []).map((h) => `#${h}`)].join(" ").length;
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
 // "I made it shorter: 2 paragraphs → 1, 140 fewer characters."
 export function revisionSummary(intent, before, after) {
+  if (intent === "translate")
+    return `I rewrote it in ${languageOf(after)}.${before.hashtags?.length ? " I kept your hashtags." : ""}`;
   const details = [];
   const pb = before.text.length;
   const pa = after.text.length;
@@ -367,4 +404,42 @@ function cssEscape(value) {
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// One ask that rewrote several drafts: "I made your 3 drafts shorter, 203
+// fewer characters in all."
+const GROUP_LEADS = {
+  shorter: (n) => `I made ${n} shorter`,
+  longer: (n) => `I made ${n} longer`,
+  warmer: (n) => `I made ${n} warmer`,
+  formal: (n) => `I made ${n} more formal`,
+  fresh: (n) => `I gave ${n} a fresh take`,
+  punchier: (n) => `I tightened the hook of ${n}`,
+  emoji: (n) => `I added emojis to ${n}`,
+  cta: (n) => `I added a call to action to ${n}`,
+};
+
+export function revisionGroupSummary(intent, items) {
+  const n = `your ${items.length} drafts`;
+  let lead =
+    intent === "translate"
+      ? `I rewrote ${n} in ${languageOf(items[0].after)}`
+      : (GROUP_LEADS[intent] || ((x) => `I rewrote ${x}`))(n);
+  if (intent === "shorter" || intent === "longer") {
+    const delta = items.reduce((sum, i) => sum + chars(i.after) - chars(i.before), 0);
+    if (Math.abs(delta) >= 10) lead += `, ${Math.abs(delta)} ${delta < 0 ? "fewer" : "more"} characters in all`;
+  }
+  return `${lead}.`;
+}
+
+// Whether a "what changed" receipt still holds for its draft: the draft reads
+// as the receipt's after (or, undone, as its before). Changed since, it can't
+// be undone from the receipt.
+export function revisionState(post, before, after) {
+  const same = (a, b) =>
+    a &&
+    b &&
+    JSON.stringify([a.text, a.hashtags || [], a.cta || ""]) === JSON.stringify([b.text, b.hashtags || [], b.cta || ""]);
+  const undone = !!(post && post.revision?.undone && same(post, before));
+  return { undone, live: !!post && (undone || same(post, after)) };
 }
