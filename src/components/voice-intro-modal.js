@@ -20,11 +20,11 @@
 //   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2358";
-import { getContextById } from "../contexts-store.js?v=2358";
-import { playbookForNewWork } from "../active-playbook.js?v=2358";
-import { isNewUser } from "../user-mode.js?v=2358";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2358";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2360";
+import { getContextById } from "../contexts-store.js?v=2360";
+import { playbookForNewWork } from "../active-playbook.js?v=2360";
+import { isNewUser } from "../user-mode.js?v=2360";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2360";
 import {
   networkVoiceOn,
   networkVoice,
@@ -34,7 +34,7 @@ import {
   baseValue,
   voiceItemsHtml,
   voiceNetTagHtml,
-} from "../voice-parts.js?v=2358";
+} from "../voice-parts.js?v=2360";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -44,11 +44,11 @@ import {
   INTERVIEW,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2358";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2358";
-import "../archie-pixels.js?v=2358";
-import { navigate } from "../router.js?v=2358";
-import { escapeHtml } from "../utils.js?v=2358";
+} from "../network-voice-flow.js?v=2360";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2360";
+import "../archie-pixels.js?v=2360";
+import { navigate } from "../router.js?v=2360";
+import { escapeHtml } from "../utils.js?v=2360";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -275,7 +275,9 @@ export function voiceAskHtml(
             ? ""
             : `<div class="voice-ask__body">
           ${examples}
-          <p class="voice-ask__label">How should I add them?</p>
+          ${
+            tiles.length
+              ? `<p class="voice-ask__label">How should I add them?</p>
           <div class="voice-ask__options" style="--others:${Math.max(tiles.length - 1, 1)}">${tiles
             .map(
               (c, i) => `<button type="button" class="voice-ask__option${i ? "" : " is-best"}" ${pick(c.value)}>
@@ -287,7 +289,9 @@ export function voiceAskHtml(
                 ${i ? "" : `<span class="ap-tag green mini voice-ask__best">Recommended</span>`}
               </button>`,
             )
-            .join("")}</div>
+            .join("")}</div>`
+              : ""
+          }
           <div class="voice-ask__foot">
             ${hasDefault ? `<button type="button" class="ap-button ghost grey" ${pick("default")}>Use my default voice</button>` : ""}
             ${later ? `<button type="button" class="ap-button ghost grey" ${pick("cancel")}>${escapeHtml(later)}</button>` : ""}

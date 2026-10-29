@@ -32,12 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2358";
-import { navigate } from "../router.js?v=2358";
-import { getDraft, patchDraft } from "../context-builder.js?v=2358";
-import { mount } from "../playbook-view.js?v=2358";
-import { parseHashParams } from "../url-state.js?v=2358";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2358";
+import { html, raw } from "../utils.js?v=2360";
+import { navigate } from "../router.js?v=2360";
+import { getDraft, patchDraft } from "../context-builder.js?v=2360";
+import { mount } from "../playbook-view.js?v=2360";
+import { parseHashParams } from "../url-state.js?v=2360";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2360";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -45,19 +45,23 @@ import { mountShell, tint } from "./welcome-alt-shell.js?v=2358";
 const OUT_MS = 240; // the part's column leaves
 const GLIDE_MS = 720; // a card glides to the middle
 
-// `review`: { step, title, sub, parts, next: { label, go }, done: { title, lead }, back }.
+// `review`: { step, title, sub, parts (a list, or a function for parts that
+// come and go), next: { label, go }, done: { title, lead }, back, ways? }.
+// `ways(partId)`: the ways to fill the part on screen, listed on the left
+// ({ label, items: [{ id, icon, title, desc }] }); `onWay(partId, id, refresh)`
+// runs one, `refresh()` repaints the part with what it changed.
 export function renderReview(target, sid, config, review) {
-  const { parts } = review;
+  const parts = () => (typeof review.parts === "function" ? review.parts() : review.parts);
   const reviewed = () => new Set(getDraft(sid)?.reviewedParts || []);
   // The part on screen: the URL's tab when it names one (a reload), else the first.
-  let currentId = parts.find((t) => t.id === parseHashParams().get("tab"))?.id || parts[0].id;
+  let currentId = parts().find((t) => t.id === parseHashParams().get("tab"))?.id || parts()[0].id;
   const current = () => currentId;
-  const partOf = (id) => parts.find((t) => t.id === id) || parts[0];
+  const partOf = (id) => parts().find((t) => t.id === id) || parts()[0];
   const tintOf = (id) => tint(partOf(id).tint || id);
   // The part's yes says where it leads — the next part, or the end
   // (2026-10-20: "Confirm Brief" read as admin).
   const looksGood = (id) => {
-    const next = parts[parts.findIndex((t) => t.id === id) + 1];
+    const next = parts()[parts().findIndex((t) => t.id === id) + 1];
     return next ? `Looks good, on to ${next.title}` : "Looks good, finish";
   };
 
@@ -69,13 +73,39 @@ export function renderReview(target, sid, config, review) {
   // so a check that always animated replayed on every click (2026-10-20).
   let justChecked = null;
 
+  // The ways to fill the part on screen, under the parts: the brand step's
+  // « Or start another way » rows.
+  const waysHtml = () => {
+    const ways = review.ways?.(current());
+    if (!ways?.items.length) return "";
+    return html`
+      <p class="welcome-flow__or">${ways.label}</p>
+      <ul class="welcome-flow__options">
+        ${ways.items.map(
+          (w) => html`
+            <li>
+              <button type="button" class="welcome-flow__option" data-review-way="${w.id}">
+                <span class="welcome-flow__glyph is-icon"><i class="${w.icon}" aria-hidden="true"></i></span>
+                <span class="welcome-flow__option-text">
+                  <span class="welcome-flow__option-title">${w.title}</span>
+                  <span class="welcome-flow__option-desc">${w.desc}</span>
+                </span>
+                <i class="ap-icon-arrow-right welcome-flow__option-add" aria-hidden="true"></i>
+              </button>
+            </li>
+          `,
+        )}
+      </ul>
+    `;
+  };
+
   const left = () => {
     const done = reviewed();
     return html`
       <h1 class="welcome-flow__title" id="welcomeFlowTitle">${review.title}</h1>
       <p class="welcome-intro__sub">${review.sub}</p>
       <ul class="welcome-flow__options">
-        ${parts.map((t) => {
+        ${parts().map((t) => {
           const here = t.id === current();
           const mark = done.has(t.id)
             ? `<span class="welcome-review__check${t.id === justChecked ? " is-new" : ""}" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
@@ -103,6 +133,7 @@ export function renderReview(target, sid, config, review) {
           `;
         })}
       </ul>
+      ${raw(waysHtml())}
       <div class="welcome-flow__actions">
         <button type="button" class="ap-button ghost grey" data-flow-back>
           <i class="ap-icon-arrow-left"></i><span>Back</span>
@@ -186,7 +217,7 @@ export function renderReview(target, sid, config, review) {
   // the one indicator) · ↓. ↓ goes dark on the part's last card: the confirm,
   // below, is the way on.
   const nav = (list) => {
-    const at = parts.findIndex((t) => t.id === current());
+    const at = parts().findIndex((t) => t.id === current());
     const upNext = index < count - 1 ? cardTitle(list[index + 1]) : "";
     const atStart = index === 0 && at === 0;
     return html`
@@ -381,7 +412,9 @@ export function renderReview(target, sid, config, review) {
       <span class="welcome-review__intro-title">${review.done.title}</span>
       <span class="welcome-review__intro-lead">${review.done.lead}</span>
       <span class="welcome-review__intro-actions">
-        <button type="button" class="ap-button stroked grey" data-review-again="${parts[0].id}">Review it again</button>
+        <button type="button" class="ap-button stroked grey" data-review-again="${parts()[0].id}">
+          Review it again
+        </button>
         <button type="button" class="ap-button primary orange" data-review-start>
           <span>${review.next.label}</span><i class="ap-icon-arrow-right"></i>
         </button>
@@ -412,7 +445,7 @@ export function renderReview(target, sid, config, review) {
       window.setTimeout(() => (justChecked = null), 400);
     }
     patchDraft(sid, { reviewedParts: [...new Set([...reviewed(), from])] });
-    const to = parts[parts.findIndex((t) => t.id === from) + 1];
+    const to = parts()[parts().findIndex((t) => t.id === from) + 1];
     if (!to) return showDone();
     switchPart(to.id);
   };
@@ -422,9 +455,9 @@ export function renderReview(target, sid, config, review) {
   // the way on.
   const move = (step) => {
     if (moving) return;
-    const at = parts.findIndex((t) => t.id === current());
+    const at = parts().findIndex((t) => t.id === current());
     if (step < 0 && index === 0) {
-      if (at > 0) switchPart(parts[at - 1].id, { fromEnd: true });
+      if (at > 0) switchPart(parts()[at - 1].id, { fromEnd: true });
       return;
     }
     if (step > 0 && index >= count - 1) return;
@@ -434,6 +467,8 @@ export function renderReview(target, sid, config, review) {
   };
 
   const onClick = (e) => {
+    const way = e.target.closest("[data-review-way]")?.dataset.reviewWay;
+    if (way) return review.onWay(current(), way, () => openPart(current()));
     const part = e.target.closest("[data-review-part]")?.dataset.reviewPart;
     if (part) {
       const asking = shell.sheet.classList.contains("is-asking");
