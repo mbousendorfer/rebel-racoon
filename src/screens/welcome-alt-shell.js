@@ -9,11 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2545";
-import { html, raw, escapeHtml } from "../utils.js?v=2545";
-import { navigate } from "../router.js?v=2545";
-import { parseHashParams } from "../url-state.js?v=2545";
-import { isFlagOn } from "../feature-flags.js?v=2545";
+import "../archie-pixels.js?v=2546";
+import { html, raw, escapeHtml } from "../utils.js?v=2546";
+import { navigate } from "../router.js?v=2546";
+import { parseHashParams } from "../url-state.js?v=2546";
+import { isFlagOn } from "../feature-flags.js?v=2546";
 import {
   altSteps,
   createAltDraft,
@@ -21,9 +21,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2545";
-import { getConnectedProfiles, networkIcon, networkLabel } from "../social-profiles.js?v=2545";
-import { playbookNetworks } from "../voice-parts.js?v=2545";
+} from "../context-builder.js?v=2546";
+import { getConnectedProfiles, networkIcon, networkLabel } from "../social-profiles.js?v=2546";
+import { playbookNetworks, networkVoiceOn } from "../voice-parts.js?v=2546";
 import {
   readSessionId,
   isIntegrated,
@@ -33,8 +33,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2545";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2545";
+} from "./welcome-alt-recap.js?v=2546";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2546";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -48,7 +48,9 @@ export const STEP_TEXT = {
   voiceFrom: { title: "Choose how I learn your voice", desc: "Your posts, a document, or your own words." },
   voice: {
     title: "Check your voice",
-    desc: "How you sound, on every network.",
+    // Flag OFF there is one voice, not one per network: say it the review's way.
+    // (Flags change with a reload, so reading it at load is enough.)
+    desc: networkVoiceOn() ? "How you sound, on every network." : "How you sound, everywhere.",
   },
   recap: { title: "Check what I learned", desc: "Fix anything that's off before I write." },
 };
