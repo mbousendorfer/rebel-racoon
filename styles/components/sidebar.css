@@ -271,18 +271,19 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--ref-spacing-xxs);
-  padding: 0 var(--ref-spacing-xs);
+  /* Left: the group labels' edge (list padding + their own margin), one
+     column instead of three. */
+  padding: 0 var(--ref-spacing-xs) 0 calc(var(--ref-spacing-xs) + var(--ref-spacing-xxs));
   margin-bottom: var(--ref-spacing-xxxs);
 }
 
-/* Region title. One tier above the group labels below it (grey-80 vs the
-   grey-60 uppercase group headings), so the hierarchy reads Chats > group
-   label > chat title without competing with the dark titles themselves. */
+/* Region title, one tier above the group labels (caption bold grey-80) by size,
+   weight and ink: Chats > group label > chat title. */
 .app-sidebar__list-header-label {
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
 }
 
 .app-sidebar__organize-toggle {
@@ -614,17 +615,12 @@
   flex-shrink: 0;
 }
 
-/* Visible toolbar wrapper around the two footer icons (Feedback +
-   More options) in expanded mode — anchors them next to the user meta
-   as a single mini-bar instead of two free-floating icons. */
+/* The two footer icons (Feedback + More options), bare: the boxed grey
+   mini-bar around them was custom chrome that took the user's name's room. */
 .app-sidebar__foot-tools {
   display: inline-flex;
   align-items: center;
   gap: var(--app-spacing-micro);
-  padding: var(--app-spacing-micro);
-  background: var(--app-surface-subtle);
-  border: 1px solid var(--app-border);
-  border-radius: var(--app-radius-button-sm);
   flex-shrink: 0;
 }
 
