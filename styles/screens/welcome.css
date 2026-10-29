@@ -3075,32 +3075,6 @@ button.recap__logotile:hover {
   gap: var(--ref-spacing-sm);
 }
 
-.recap__cta-remove {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--app-border);
-  border-radius: var(--app-radius-lg);
-  background: var(--app-surface);
-  color: var(--ref-color-grey-80);
-  cursor: pointer;
-  transition:
-    background 160ms var(--app-ease-out),
-    color 160ms var(--app-ease-out),
-    border-color 160ms var(--app-ease-out);
-}
-
-.recap__cta-remove i {
-  font-size: var(--sys-icon-css-sm);
-}
-
-.recap__cta-remove:hover {
-  border-color: var(--ref-color-red-100);
-  color: var(--ref-color-red-100);
-}
-
 /* "Add link" / "Add line" — DS button (.ap-button transparent blue),
    left-aligned under its row, matching the "Add colour" affordance. */
 .recap__add-row {

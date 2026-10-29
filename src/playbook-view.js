@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2465";
-import { conceptHint } from "./concepts.js?v=2465";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2466";
+import { conceptHint } from "./concepts.js?v=2466";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2465";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2465";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2465";
-import { isFlagOn } from "./feature-flags.js?v=2465";
-import { clipLookOf } from "./videos-store.js?v=2465";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2465";
-import { parseHashParams } from "./url-state.js?v=2465";
+} from "./playbook-brand-kit.js?v=2466";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2466";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2466";
+import { isFlagOn } from "./feature-flags.js?v=2466";
+import { clipLookOf } from "./videos-store.js?v=2466";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2466";
+import { parseHashParams } from "./url-state.js?v=2466";
 import {
   isListPart,
   voiceParts,
@@ -54,13 +54,13 @@ import {
   canLearnFrom,
   ADAPTED_FROM,
   voiceHasRules,
-} from "./voice-parts.js?v=2465";
-import { showToast } from "./components/toast.js?v=2465";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2465";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2465";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2465";
-import { consumeHandoff } from "./handoff.js?v=2465";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2465";
+} from "./voice-parts.js?v=2466";
+import { showToast } from "./components/toast.js?v=2466";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2466";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2466";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2466";
+import { consumeHandoff } from "./handoff.js?v=2466";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2466";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2465";
+} from "./social-profiles.js?v=2466";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -834,7 +834,7 @@ function renderCtaEditor(data) {
         <div class="ap-input-group recap__cta-edit-url">
           <input type="text" data-recap-cta-field="url" data-recap-cta-index="${c._i}" value="${esc(c.url || "")}" placeholder="https://…" aria-label="CTA URL" />
         </div>
-        <button type="button" class="recap__cta-remove" data-recap-cta-remove="${c._i}" aria-label="Remove link">
+        <button type="button" class="ap-icon-button transparent grey recap__cta-remove" data-recap-cta-remove="${c._i}" aria-label="Remove link">
           <i class="ap-icon-close"></i>
         </button>
       </div>
@@ -1685,7 +1685,7 @@ function renderRosterModal(data) {
                    s.url || "",
                  )}" placeholder="https://…" aria-label="Profile URL" spellcheck="false" />
                </div>
-               <button type="button" class="recap__cta-remove" data-recap-cmp-social-remove data-recap-cmp-index="${i}" data-recap-cmp-social-index="${si}" aria-label="Remove profile">
+               <button type="button" class="ap-icon-button transparent grey recap__cta-remove" data-recap-cmp-social-remove data-recap-cmp-index="${i}" data-recap-cmp-social-index="${si}" aria-label="Remove profile">
                  <i class="ap-icon-close"></i>
                </button>
              </div>`;
@@ -2618,7 +2618,7 @@ function renderRuleEditor(field, items) {
               : ""
           }
         </div>
-        <button type="button" class="recap__cta-remove" data-vr-remove="${field}" data-vr-index="${i}" aria-label="Remove"><i class="ap-icon-close"></i></button>
+        <button type="button" class="ap-icon-button transparent grey recap__cta-remove" data-vr-remove="${field}" data-vr-index="${i}" aria-label="Remove"><i class="ap-icon-close"></i></button>
       </div>`,
     )
     .join("");
