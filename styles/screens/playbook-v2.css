@@ -1205,6 +1205,48 @@
 
 /* The voice review's network rows: the connected accounts on the network,
    as profile tags under its state. */
+/* « Which networks get their own voice? » — one compact row per network
+   (2026-10-29): icon, name over its account, the DS toggle at the end. */
+.pb2-netpick {
+  display: flex;
+  flex-direction: column;
+}
+
+.pb2-netpick__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs) 0;
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.pb2-netpick__row:first-child {
+  border-top: 0;
+}
+
+.pb2-netpick__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pb2-netpick__name {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.pb2-netpick__account {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .pb2-voice-accounts {
   display: flex;
   flex-wrap: wrap;

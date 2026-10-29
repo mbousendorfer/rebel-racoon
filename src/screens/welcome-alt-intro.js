@@ -13,14 +13,14 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2434";
-import { startDemo } from "../demo-flow.js?v=2434";
-import { isFlagOn } from "../feature-flags.js?v=2434";
-import { html, raw } from "../utils.js?v=2434";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2434";
-import { navigate } from "../router.js?v=2434";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2434";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2434";
+import "../archie-pixels.js?v=2435";
+import { startDemo } from "../demo-flow.js?v=2435";
+import { isFlagOn } from "../feature-flags.js?v=2435";
+import { html, raw } from "../utils.js?v=2435";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2435";
+import { navigate } from "../router.js?v=2435";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2435";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2435";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
