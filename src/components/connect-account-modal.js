@@ -20,15 +20,15 @@
 //     connectAccounts(ids) then fires onConfirm with the accounts that flipped.
 //   - Cancel / Esc / backdrop / close-X dismiss without connecting anything.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2513";
-import { escapeHtml as esc } from "../utils.js?v=2513";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2514";
+import { escapeHtml as esc } from "../utils.js?v=2514";
 import {
   getConnectableAccounts,
   connectAccounts,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=2513";
+} from "../social-profiles.js?v=2514";
 
 const MODAL_ID = "connect-account";
 
@@ -49,14 +49,12 @@ const HTML = `
 >
   <div class="ap-dialog-header">
     <span class="ap-dialog-title" id="connectAccountTitle">Connect a social account</span>
+    <span class="ap-dialog-subtitle connect-account-modal__lead">I write each draft for the network it publishes on, which sets its format and length.</span>
   </div>
   <button class="ap-dialog-close" type="button" id="connectAccountClose" aria-label="Close">
     <i class="ap-icon-close"></i>
   </button>
   <div class="ap-dialog-content">
-    <p class="connect-account-modal__lead">
-      I write each draft for the network it publishes on, which sets its format and length.
-    </p>
     <div class="connect-account-modal__list" id="connectAccountList" role="group" aria-label="Accounts to connect"></div>
     <div class="ap-infobox info connect-account-modal__note">
       <i class="ap-icon-info_fill" aria-hidden="true"></i>

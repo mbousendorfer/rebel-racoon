@@ -15,15 +15,15 @@
 //     it fires onConfirm(ids) then closes. A warning notes the overwrite.
 //   - Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2513";
-import { escapeHtml as esc } from "../utils.js?v=2513";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2514";
+import { escapeHtml as esc } from "../utils.js?v=2514";
 import {
   getConnectedProfiles,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   BRAND_INITIALS,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=2513";
+} from "../social-profiles.js?v=2514";
 
 const MODAL_ID = "analyze-profiles";
 
@@ -45,14 +45,12 @@ const HTML = `
 >
   <div class="ap-dialog-header">
     <span class="ap-dialog-title" id="analyzeProfilesTitle">Learn your voice from your posts</span>
+    <span class="ap-dialog-subtitle analyze-profiles-modal__lead" id="analyzeProfilesLead">Pick the accounts to learn from — I read their recent posts and rewrite your Voice profile.</span>
   </div>
   <button class="ap-dialog-close" type="button" id="analyzeProfilesClose" aria-label="Close">
     <i class="ap-icon-close"></i>
   </button>
   <div class="ap-dialog-content">
-    <p class="analyze-profiles-modal__lead" id="analyzeProfilesLead">
-      Pick the accounts to learn from — I read their recent posts and rewrite your Voice profile.
-    </p>
     <div class="ap-input-group analyze-profiles-modal__search" id="analyzeProfilesSearchGroup" hidden>
       <i class="ap-icon-search" aria-hidden="true"></i>
       <input

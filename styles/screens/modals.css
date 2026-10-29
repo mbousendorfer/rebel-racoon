@@ -166,16 +166,8 @@ body.has-modal {
 
 /* ── Analyze social profiles modal ─────────────────────────── */
 .analyze-profiles-modal {
-  width: min(calc(100% - 32px), 480px);
+  width: min(calc(100% - 32px), 560px);
   flex-direction: column;
-}
-
-.analyze-profiles-modal__lead,
-.connect-account-modal__lead {
-  margin: 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-80);
 }
 
 /* Live search — shown only when the connected list is long. Sits between the
@@ -277,7 +269,7 @@ body.has-modal {
 /* Shares the analyze modal's row visuals (grouped above); only what differs
    lives here. No disabled rows: every unconnected account is connectable. */
 .connect-account-modal {
-  width: min(calc(100% - 32px), 480px);
+  width: min(calc(100% - 32px), 560px);
   flex-direction: column;
 }
 
@@ -292,15 +284,8 @@ body.has-modal {
 
 /* ── Fill from document modal ──────────────────────────────── */
 .fill-document-modal {
-  width: min(calc(100% - 32px), 480px);
+  width: min(calc(100% - 32px), 560px);
   flex-direction: column;
-}
-
-.fill-document-modal__lead {
-  margin: 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-80);
 }
 
 .fill-document-modal__file {
@@ -545,7 +530,7 @@ body.has-modal {
 }
 
 .shortcut-legend {
-  width: min(calc(100% - 32px), 480px);
+  width: min(calc(100% - 32px), 560px);
 }
 
 .bug-report-modal.open,
@@ -726,14 +711,6 @@ body.has-modal {
 }
 
 /* ── Feedback modal: intro + outro copy ──────────────────── */
-
-.feedback-modal__intro {
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  font-weight: var(--sys-text-style-body-weight);
-  color: var(--sys-text-color-light);
-  margin: 0;
-}
 
 .feedback-modal__intro a {
   color: var(--ref-color-electric-blue-100);
@@ -930,8 +907,7 @@ body.has-modal {
    reveals the DS Selection Dropdown (.ap-selection-dropdown) — search +
    folder list + a "create new" footer — embedded inline in the dialog. */
 .save-folder-modal {
-  width: 440px;
-  max-width: calc(100vw - 2 * var(--ref-spacing-lg));
+  width: min(calc(100% - 32px), 560px);
   /* Let the folder dropdown's popover escape the dialog (.ap-dialog clips by
      default); the modal content is short so nothing else needs clipping. */
   overflow: visible;

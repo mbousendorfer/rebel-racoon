@@ -13,9 +13,9 @@
 //     it fires onConfirm({ file, url }) then closes. A warning notes the
 //     overwrite. Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2513";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2513";
-import { detectUrlService } from "../url-services.js?v=2513";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2514";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2514";
+import { detectUrlService } from "../url-services.js?v=2514";
 
 const MODAL_ID = "fill-document";
 const ACCEPT = ".pdf,.doc,.docx,.txt,.md,.rtf,.pptx,.csv";
@@ -41,14 +41,12 @@ const HTML = `
 >
   <div class="ap-dialog-header">
     <span class="ap-dialog-title" id="fillDocTitle">Learn your voice from a document</span>
+    <span class="ap-dialog-subtitle fill-document-modal__lead">Drop a Brand doc or paste a link — I'll read it and rewrite your Voice profile.</span>
   </div>
   <button class="ap-dialog-close" type="button" id="fillDocClose" aria-label="Close">
     <i class="ap-icon-close"></i>
   </button>
   <div class="ap-dialog-content">
-    <p class="fill-document-modal__lead">
-      Drop a Brand doc or paste a link — I'll read it and rewrite your Voice profile.
-    </p>
     ${dropzoneHTML({
       id: "fillDocDrop",
       lead: "Drag a file here, or",
