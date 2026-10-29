@@ -1621,7 +1621,8 @@
   height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scroll-snap-type: y proximity;
+  /* No scroll snap (2026-10-29): it chased the cards' scale, which follows
+     the scroll, and pulled tall cards back — the scroll fought the hand. */
   scrollbar-width: none;
   /* The column is the stack's width. The scroll is a size container: the
      column's room above and below is half ITS height (50cqh, on the grid) —
@@ -1650,20 +1651,12 @@
    JS from the distance to the reading line): no transition, no switch. A card
    out of focus only steps back a little — it stays readable. */
 .welcome-flow__sheet.is-scroll .welcome-review__card {
-  scroll-snap-align: center;
   opacity: calc(0.82 + 0.18 * var(--focus, 1));
   transform: scale(calc(0.985 + 0.015 * var(--focus, 1)));
 }
 
 .welcome-flow__sheet.is-scroll .welcome-review__card:not(.is-active) {
   cursor: pointer;
-}
-
-/* Our glide runs the scroll, and a new part's cascade lands: the snap would
-   catch both on the way. */
-.welcome-flow__sheet.is-scroll .welcome-flow__sheet-body.is-gliding,
-.welcome-flow__sheet.is-scroll .welcome-flow__sheet-body.is-settling {
-  scroll-snap-type: none;
 }
 
 /* A part's cards arrive in a cascade, the nearest first. */
