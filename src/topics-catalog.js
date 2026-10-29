@@ -107,7 +107,7 @@ export const TOPIC_SOURCES = Object.freeze([
     id: "competitor-monitoring",
     name: "Competitor monitoring",
     icon: "ap-icon-antenna",
-    accent: "electric-blue",
+    accent: "purple", // its sibling Competitors' family; blue is the interactive colour
     live: false,
     playbookAnchor: "competitors",
     defaultEnabled: false,
@@ -133,7 +133,7 @@ export const TOPIC_SOURCES = Object.freeze([
     id: "global-trends",
     name: "Global trends",
     icon: "ap-icon-web",
-    accent: "orange",
+    accent: "green", // its sibling Industry trends' family; orange is the AI action
     live: false,
     playbookAnchor: null,
     defaultEnabled: false,

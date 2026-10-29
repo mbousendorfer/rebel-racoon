@@ -86,10 +86,10 @@
 // was flagged, and it could only ever show two clamped lines of an explanation
 // whose whole value is the detail.
 
-import { html, raw } from "./utils.js?v=2520";
-import { topicTitle, topicStates } from "./topics-store.js?v=2520";
-import { findTopicState } from "./topics-catalog.js?v=2520";
-import { renderSocialPostCard } from "./components/social-post-card.js?v=2520";
+import { html, raw } from "./utils.js?v=2521";
+import { topicTitle, topicStates } from "./topics-store.js?v=2521";
+import { findTopicState } from "./topics-catalog.js?v=2521";
+import { renderSocialPostCard } from "./components/social-post-card.js?v=2521";
 
 /**
  * The object's identity: where it came from, then the claim as an h2 under it —
@@ -232,7 +232,7 @@ function renderLaterCallout() {
     <h3 class="topic-article__later-title">Not enough to draft from yet</h3>
     <p class="topic-article__later-body">
       This Topic is worth keeping, but there isn't enough around it for a draft yet. Use it in chat with your own
-      sources, or leave it here — my next scan may add more.
+      sources, or leave it here. My next scan may add more.
     </p>
   </div>`;
 }
@@ -592,7 +592,7 @@ export function renderTopicActions(topic, { close = "Close" } = {}) {
             <i class="ap-icon-eye-on"></i><span>Restore</span>
           </button>`
         : html`<button type="button" class="ap-button stroked grey" data-topic-ignore="${topic.id}">
-            <i class="ap-icon-eye-off"></i><span>Ignore Topic</span>
+            <i class="ap-icon-eye-off"></i><span>Ignore</span>
           </button>`,
     )}
     <button
