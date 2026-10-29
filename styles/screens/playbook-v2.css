@@ -1090,6 +1090,43 @@
   margin-top: var(--ref-spacing-xs);
 }
 
+/* Your networks, at the head of the default voice on a saved Playbook: one row
+   per network (icon · name · its state · the way to its voice), grey-20
+   hairlines between rows, the action right-aligned in its own column. */
+.pb2-voice-nets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pb2-voice-nets__row {
+  display: grid;
+  grid-template-columns: auto minmax(96px, 160px) 1fr auto;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs) 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-100);
+}
+
+.pb2-voice-nets__row + .pb2-voice-nets__row {
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.pb2-voice-nets__name {
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.pb2-voice-nets__state {
+  color: var(--ref-color-grey-80);
+}
+
+.pb2-voice-nets__foot {
+  display: flex;
+  margin-top: var(--ref-spacing-xs);
+}
+
 /* How your clips look (flag clipsSpace) — four settings, saved as they change. */
 .pb2-cliplook {
   display: flex;
