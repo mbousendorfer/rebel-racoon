@@ -4,14 +4,28 @@
    DS error red, its ink kept at grey-80 so it stays readable. */
 
 .draft-diff__add {
+  color: var(--ref-color-grey-100);
   text-decoration: none;
-  background: var(--app-butter);
-  box-shadow: inset 0 -2px 0 var(--app-butter-accent);
+  /* A highlighter stroke: the butter fill and its olive underline are two
+     backgrounds, so the stroke can be drawn (background-size) as it lands. */
+  background:
+    linear-gradient(var(--app-butter-accent), var(--app-butter-accent)) left bottom / 100% 2px no-repeat,
+    linear-gradient(var(--app-butter), var(--app-butter)) left top / 100% 100% no-repeat;
   border-radius: 2px;
   padding: 0 2px;
   /* A mark broken over two lines keeps its padding and underline on each. */
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
+}
+
+/* The stroke, drawn left to right. Both surfaces (the chat's card, the draft in
+   the panel) play it once, as the change lands. */
+@keyframes draft-diff-sweep {
+  from {
+    background-size:
+      0% 2px,
+      0% 100%;
+  }
 }
 
 .draft-diff__del {
@@ -36,7 +50,11 @@
   white-space: nowrap;
 }
 
-/* ── The chat's card: my sentence, then the change ─────────────────────── */
+/* ── The chat's card: my sentence, then the post with its changes marked ──
+   One quiet surface: the account it posts as, the view switch, the text, then a
+   legend whose counts wear their own mark. The unchanged
+   words sit at grey-80, what moved at grey-100 on butter, so the eye lands on
+   the change without the rest fading out of the ink range. */
 
 .revision-card {
   container-type: inline-size;
@@ -53,20 +71,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm) 0;
+  gap: var(--ref-spacing-sm);
+  padding: 0 var(--ref-spacing-xs) 0 var(--ref-spacing-md);
   border-bottom: 1px solid var(--ref-color-grey-20);
 }
 
-.revision-card__net {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  min-width: 0;
+.revision-card__head .profile-tag {
+  flex: none;
   color: var(--ref-color-grey-100);
-  font-size: var(--sys-text-style-caption-bold-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  white-space: nowrap;
 }
 
 .revision-card__tabs .ap-tabs-nav {
@@ -75,8 +87,8 @@
 
 .revision-card__text,
 .revision-card__side {
-  padding: var(--ref-spacing-sm);
-  color: var(--ref-color-grey-100);
+  padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-sm);
+  color: var(--ref-color-grey-80);
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
 }
@@ -86,58 +98,87 @@
   overflow-wrap: anywhere;
 }
 .revision-card__paragraph + .revision-card__paragraph {
-  margin-top: var(--ref-spacing-xxs);
+  margin-top: var(--ref-spacing-xs);
 }
 
-/* Before | After, the seam a grey-20 hairline; stacked when the card is narrow. */
+/* Before | After: the old text on the conversation's grey, the new one on the
+   card's white, so the two read as then and now; stacked when narrow. */
 .revision-card__side {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--ref-spacing-sm);
+  gap: var(--ref-spacing-xs);
+  padding-inline: var(--ref-spacing-xs);
 }
-.revision-card__col + .revision-card__col {
-  padding-left: var(--ref-spacing-sm);
-  border-left: 1px solid var(--ref-color-grey-20);
+.revision-card__col {
+  padding: var(--ref-spacing-sm);
+  border-radius: var(--app-radius-md);
+}
+.revision-card__col.is-before {
+  background: var(--ref-color-grey-05);
 }
 .revision-card__col-label {
   margin: 0 0 var(--ref-spacing-xxs);
-  color: var(--ref-color-grey-80);
+  color: var(--ref-color-grey-100);
   font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
 }
 @container (max-width: 440px) {
   .revision-card__side {
     grid-template-columns: 1fr;
   }
-  .revision-card__col + .revision-card__col {
-    padding: var(--ref-spacing-sm) 0 0;
-    border-left: 0;
-    border-top: 1px solid var(--ref-color-grey-20);
-  }
 }
 
 /* Undone: the change is still the receipt, read as the past. */
 .revision-card.is-undone .draft-diff__add,
 .revision-card.is-undone .draft-diff__del {
+  color: inherit;
   background: none;
-  box-shadow: none;
 }
 
 .revision-card__foot {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border-top: 1px solid var(--ref-color-grey-20);
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-xs) var(--ref-spacing-xs) var(--ref-spacing-md);
 }
+
+.revision-card__legend,
 .revision-card__state {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  margin-right: auto;
+  gap: var(--ref-spacing-xxs) var(--ref-spacing-md);
+  margin: 0;
   color: var(--ref-color-grey-80);
   font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+.revision-card__state {
+  gap: var(--ref-spacing-xxs);
+}
+.revision-card__count {
+  white-space: nowrap;
+}
+
+.revision-card__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin-left: auto;
+}
+
+/* The stroke, as the card lands — resumed, not restarted, by a repaint. */
+.revision-card.is-fresh .draft-diff__add {
+  animation: draft-diff-sweep 700ms cubic-bezier(0.25, 0.7, 0.2, 1) both;
+  animation-delay: calc(300ms - var(--sweep-elapsed, 0ms));
+}
+@media (prefers-reduced-motion: reduce) {
+  .revision-card.is-fresh .draft-diff__add {
+    animation: none;
+  }
 }
 
 /* ── The draft in the panel: the DS green status card on top (its glue lives
@@ -148,15 +189,9 @@
   gap: var(--ref-spacing-xs);
 }
 
-/* Just rewritten: the marks fade in once, then stay. */
+/* Just rewritten: the same stroke, once. */
 .posts__card.has-fresh-changes .draft-diff__add {
-  animation: draft-diff-in 600ms ease-out both;
-}
-@keyframes draft-diff-in {
-  from {
-    background-color: transparent;
-    box-shadow: inset 0 0 0 var(--app-butter-accent);
-  }
+  animation: draft-diff-sweep 700ms cubic-bezier(0.25, 0.7, 0.2, 1) 200ms both;
 }
 @media (prefers-reduced-motion: reduce) {
   .posts__card.has-fresh-changes .draft-diff__add {

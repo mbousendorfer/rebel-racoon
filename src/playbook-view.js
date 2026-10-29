@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2402";
-import { conceptHint } from "./concepts.js?v=2402";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2409";
+import { conceptHint } from "./concepts.js?v=2409";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2402";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2402";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2402";
-import { isFlagOn } from "./feature-flags.js?v=2402";
-import { clipLookOf } from "./videos-store.js?v=2402";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2402";
-import { parseHashParams } from "./url-state.js?v=2402";
+} from "./playbook-brand-kit.js?v=2409";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2409";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2409";
+import { isFlagOn } from "./feature-flags.js?v=2409";
+import { clipLookOf } from "./videos-store.js?v=2409";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2409";
+import { parseHashParams } from "./url-state.js?v=2409";
 import {
   isListPart,
   voiceParts,
@@ -53,13 +53,13 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2402";
-import { showToast } from "./components/toast.js?v=2402";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2402";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2402";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2402";
-import { consumeHandoff } from "./handoff.js?v=2402";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2402";
+} from "./voice-parts.js?v=2409";
+import { showToast } from "./components/toast.js?v=2409";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2409";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2409";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2409";
+import { consumeHandoff } from "./handoff.js?v=2409";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2409";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -69,7 +69,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2402";
+} from "./social-profiles.js?v=2409";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2690,13 +2690,13 @@ const andList = (items) => new Intl.ListFormat("en", { type: "conjunction" }).fo
 
 // Whether the networks get rules of their own (2026-10-28, asked: « il faut
 // pouvoir choisir de spécifier (ou non) des voices pour chaque network »).
-// Creation only: the draft's `voiceSplit`, never saved.
-function voiceSplitIsEach(data) {
-  return data.voiceSplit !== "same";
-}
+// Creation only: the draft's `voiceSplit`, never saved. The saved Playbook
+// dropped it (2026-10-29): Your networks at the head of its Default voice
+// tab says each network's state instead (voiceNetworksBlock).
+const voiceSplitIsEach = (data) => data.voiceSplit !== "same";
 
 // The choice itself: two DS radio cards, before the networks' cards in the
-// creation review. The saved Playbook shows Your networks instead (voiceNetworksBlock).
+// creation review.
 function voiceSplitBlock(data, index) {
   const each = voiceSplitIsEach(data);
   const names = andList(voiceNets(data).map(networkLabel));
@@ -2972,11 +2972,10 @@ function setNetworkRules(net, on) {
 function setVoiceSplit(value) {
   const d = cfg.getData();
   if (voiceSplitIsEach(d) === (value === "each")) return;
-  const nets = voiceNets(d);
   d.voiceSplit = value;
   d.voiceByNetwork =
     value === "same"
-      ? Object.fromEntries(nets.map((n) => [n, brandVoiceAsIs(d)]))
+      ? Object.fromEntries(voiceNets(d).map((n) => [n, brandVoiceAsIs(d)]))
       : Object.fromEntries(Object.entries(d.voiceByNetwork || {}).filter(([, v]) => v.optimizedBy !== "brand"));
   repaint();
 }
