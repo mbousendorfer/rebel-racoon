@@ -7,36 +7,37 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2477";
-import { isFlagOn } from "../../feature-flags.js?v=2477";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2477";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2477";
-import { showToast } from "../../components/toast.js?v=2477";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2477";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2477";
-import { startRewrite } from "../../draft-rewrite.js?v=2477";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2477";
-import { renderPostCard } from "../../components/post-card.js?v=2477";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2477";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2477";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2477";
+import { navigate } from "../../router.js?v=2478";
+import { isFlagOn } from "../../feature-flags.js?v=2478";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2478";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2478";
+import { showToast } from "../../components/toast.js?v=2478";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2478";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2478";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2478";
+import { startRewrite } from "../../draft-rewrite.js?v=2478";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2478";
+import { renderPostCard } from "../../components/post-card.js?v=2478";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2478";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2478";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2478";
 import {
   getConnectedProfiles,
   renderProfileTag,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-} from "../../social-profiles.js?v=2477";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2477";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2477";
-import { captionStateFor } from "../../clip-captions.js?v=2477";
+} from "../../social-profiles.js?v=2478";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2478";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2478";
+import { captionStateFor } from "../../clip-captions.js?v=2478";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2477";
-import { escapeHtml } from "../../utils.js?v=2477";
+} from "../../posts-store.js?v=2478";
+import { escapeHtml } from "../../utils.js?v=2478";
 import {
   getVideo,
   draftKey,
@@ -47,7 +48,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2477";
+} from "../../videos-store.js?v=2478";
 import {
   fmtMs,
   formatSelect,
@@ -67,7 +68,7 @@ import {
   bestFor,
   CTA_OPTIONS,
   EDITOR_TOOLS,
-} from "./shared.js?v=2477";
+} from "./shared.js?v=2478";
 
 let target = null;
 let videoId = null;
@@ -348,7 +349,7 @@ const focused = (v) => v.clips.find((c) => c.id === ws.focusId) || v.clips[0] ||
 function renderWorkspace(v) {
   if (!v.clips.length) {
     return `<div class="clips-view__page"><div class="clips-list__none"><p>No clips left.</p>
-      <button type="button" class="ap-button primary blue" data-clips-add-clip><i class="ap-icon-plus" aria-hidden="true"></i><span>Add a clip</span></button></div></div>`;
+      <button type="button" class="ap-button ghost blue" data-clips-add-clip><i class="ap-icon-plus" aria-hidden="true"></i><span>Add a clip</span></button></div></div>`;
   }
   const n = v.clips.filter((c) => c.selected).length;
   const all = n === v.clips.length;
@@ -378,7 +379,7 @@ function renderWorkspace(v) {
           <label class="ap-checkbox-container" aria-label="Post every clip">
             <input type="checkbox" data-clips-select-all ${all ? "checked" : ""} /><i></i><span>Clips</span>
           </label>
-          <button type="button" class="ap-button ghost grey" data-clips-add-clip data-tooltip="A new 30-second clip after this one — set its range in the editor">
+          <button type="button" class="ap-button ghost blue" data-clips-add-clip data-tooltip="A new clip: you pick where it starts and ends">
             <i class="ap-icon-plus" aria-hidden="true"></i><span>Add a clip</span>
           </button>
         </header>
@@ -420,6 +421,7 @@ function paintFocus(v) {
     info.innerHTML = `
       <div class="clips-inspector__actions clips-inspector__head">
         <h2 class="clips-inspector__title">${escapeHtml(c.title)}</h2>
+        <a class="ap-button stroked grey" href="#/clips/${v.id}/edit/${c.id}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit clip</span></a>
         <details class="clips-more">
           <summary class="ap-icon-button transparent" aria-label="More actions for this clip" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
           <div class="ap-action-dropdown clips-more__menu" role="menu">
@@ -1091,11 +1093,19 @@ function onClick(e) {
   if (watch) return focusClip(v, watch.dataset.clipsWatch);
 
   if (t.closest("[data-clips-add-clip]")) {
-    // A 30 s range right after the open clip, opened in the editor to set it.
+    // The range is asked here, once: a clip's start and end are fixed after.
+    // The suggestion: 30 s right after the open clip.
     const at = focused(v)?.endMs || 0;
-    const startMs = Math.min(v.durationMs - 30000, at);
-    const clip = addClip(v.id, { startMs: Math.max(0, startMs), endMs: Math.max(0, startMs) + 30000 });
-    return navigate(`/clips/${v.id}/edit/${clip.id}`);
+    const startMs = Math.max(0, Math.min(v.durationMs - 30000, at));
+    return openClipRange({
+      durationMs: v.durationMs,
+      startMs,
+      endMs: Math.min(v.durationMs, startMs + 30000),
+      onSubmit: (range) => {
+        const clip = addClip(v.id, range);
+        navigate(`/clips/${v.id}/edit/${clip.id}`);
+      },
+    });
   }
 
   if (t.closest("[data-clips-to-drafts]")) {

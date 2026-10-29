@@ -2,10 +2,10 @@
 // editor share: time formatting, the video-wide options (format, subtitles),
 // and the live reframed previews.
 
-import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2477";
-import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2477";
-import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2477";
-import { escapeHtml } from "../../utils.js?v=2477";
+import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2478";
+import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2478";
+import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2478";
+import { escapeHtml } from "../../utils.js?v=2478";
 
 // m:ss for a duration or a playhead, from ms.
 export function fmtMs(ms) {
@@ -20,6 +20,19 @@ export function fmtMs(ms) {
 export function fmtPrecise(ms) {
   const t = Math.max(0, ms || 0) / 1000;
   return `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, "0")}`;
+}
+
+// A clip runs 5 s to 5 min — the rule « Add a clip » checks its range against.
+export const MIN_CLIP_MS = 5000;
+export const MAX_CLIP_MS = 300000;
+
+// A time typed as m:ss.d (or plain seconds), in ms — null when it isn't one.
+export function parseTime(str) {
+  const m = String(str)
+    .trim()
+    .match(/^(?:(\d+):)?(\d+(?:\.\d+)?)$/);
+  if (!m) return null;
+  return (Number(m[1] || 0) * 60 + Number(m[2])) * 1000;
 }
 
 // The five ratios prod renders (set_clip_options), in the order creators read them.

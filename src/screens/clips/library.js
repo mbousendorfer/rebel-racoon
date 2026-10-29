@@ -2,14 +2,14 @@
 // videos, and the one way in, adding a video. The flow starts with the video;
 // the posts come last (screens/clips/project.js).
 
-import { navigate } from "../../router.js?v=2477";
-import { isFlagOn } from "../../feature-flags.js?v=2477";
-import { renderTopbar } from "../../components/topbar.js?v=2477";
-import { showToast } from "../../components/toast.js?v=2477";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2477";
-import { isDemo } from "../../demo-mode.js?v=2477";
-import { getPosts } from "../../posts-store.js?v=2477";
-import { escapeHtml } from "../../utils.js?v=2477";
+import { navigate } from "../../router.js?v=2478";
+import { isFlagOn } from "../../feature-flags.js?v=2478";
+import { renderTopbar } from "../../components/topbar.js?v=2478";
+import { showToast } from "../../components/toast.js?v=2478";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2478";
+import { isDemo } from "../../demo-mode.js?v=2478";
+import { getPosts } from "../../posts-store.js?v=2478";
+import { escapeHtml } from "../../utils.js?v=2478";
 import {
   getVideos,
   exampleVideo,
@@ -18,9 +18,9 @@ import {
   lengthProblem,
   standInForUrl,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2477";
-import { fmtMs, previewMarkup, mountPreviews } from "./shared.js?v=2477";
-import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2477";
+} from "../../videos-store.js?v=2478";
+import { fmtMs, previewMarkup, mountPreviews } from "./shared.js?v=2478";
+import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2478";
 
 let target = null;
 let disposeShowcase = null;
@@ -197,7 +197,7 @@ const STEPS = [
     tone: "out",
     icon: "ap-icon-calendar",
     title: "You refine, then post",
-    text: "Trim, reframe, restyle. Then one draft per clip and account.",
+    text: "Reframe, restyle. Then one draft per clip and account.",
   },
 ];
 

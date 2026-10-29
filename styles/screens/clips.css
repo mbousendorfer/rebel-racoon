@@ -2000,7 +2000,8 @@ body.clips-editing .app-content {
   display: none;
 }
 
-/* The clip's start and end, on its edges in the ruler — a click to type. */
+/* The clip's start and end, on its edges in the ruler — read only: the range
+   is fixed once the clip exists. */
 .clips-tl__edge {
   position: absolute;
   top: 0;
@@ -2011,36 +2012,18 @@ body.clips-editing .app-content {
   transform: translateX(-100%);
 }
 
-.clips-tl__edge-time,
-.clips-tl__edge-input {
+.clips-tl__edge-time {
+  display: inline-flex;
+  align-items: center;
   height: 18px;
   padding: 0 var(--ref-spacing-xxs);
-  border: 1px solid var(--ref-color-electric-blue-100);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-white);
   color: var(--ref-color-grey-100);
   font: inherit;
   font-size: var(--sys-text-style-caption-size);
   font-variant-numeric: tabular-nums;
-}
-
-.clips-tl__edge-time {
-  cursor: text;
-}
-
-.clips-tl__edge-time:hover {
-  background: var(--ref-color-electric-blue-05);
-}
-
-.clips-tl__edge-time.is-error {
-  border-color: var(--ref-color-red-100);
-  color: var(--ref-color-red-100);
-}
-
-.clips-tl__edge-input {
-  width: 64px;
-  color: var(--ref-color-grey-100);
-  outline: none;
 }
 
 .clips-tl__tracks {
@@ -2051,8 +2034,8 @@ body.clips-editing .app-content {
 }
 
 /* Each thing on the timeline says what it does under the cursor: a click on
-   a track moves the playhead (default arrow), the clip's body slides (grab),
-   its edges and the parts' boundaries resize (ew-resize), parts and texts are
+   a track moves the playhead (default arrow), the parts' boundaries resize
+   (ew-resize), parts and texts are
    picked (pointer). Never a resize cursor on what doesn't resize. */
 .clips-tl__ruler,
 .clips-tl__trim,
@@ -2063,13 +2046,6 @@ body.clips-editing .app-content {
 }
 
 /* While a drag runs, its cursor holds everywhere, even off the element. */
-.clips-ed__timeline[data-drag="slide"],
-.clips-ed__timeline[data-drag="slide"] * {
-  cursor: grabbing;
-}
-
-.clips-ed__timeline[data-drag="trim"],
-.clips-ed__timeline[data-drag="trim"] *,
 .clips-ed__timeline[data-drag="bound"],
 .clips-ed__timeline[data-drag="bound"] * {
   cursor: ew-resize;
@@ -2127,59 +2103,10 @@ body.clips-editing .app-content {
   background: transparent;
   border: 2px solid var(--ref-color-electric-blue-100);
   border-radius: var(--app-radius-sm);
-  cursor: grab;
-  transition: background-color 120ms ease;
-}
-
-.clips-tl__window:hover {
-  background: color-mix(in srgb, var(--ref-color-electric-blue-100) 8%, transparent);
-}
-
-.clips-ed__timeline[data-drag="slide"] .clips-tl__window {
-  background: color-mix(in srgb, var(--ref-color-electric-blue-100) 12%, transparent);
-}
-
-/* The edges: a solid tab with a grip, wider under the pointer. */
-.clips-tl__handle {
-  position: absolute;
-  top: -2px;
-  bottom: -2px;
-  z-index: 1;
-  width: 12px;
-  background: var(--ref-color-electric-blue-100);
-  cursor: ew-resize;
-  transition: width 120ms ease;
-}
-
-.clips-tl__handle::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 4px;
-  height: 14px;
-  border-inline: 1px solid var(--ref-color-white);
-  transform: translate(-50%, -50%);
-  opacity: 0.85;
-}
-
-.clips-tl__handle:hover,
-.clips-ed__timeline[data-drag="trim"] .clips-tl__handle {
-  width: 16px;
 }
 
 .clips-tl__card {
   pointer-events: none;
-}
-
-.clips-tl__handle--l {
-  left: -8px;
-  border-radius: var(--app-radius-sm) 0 0 var(--app-radius-sm);
-}
-
-.clips-tl__handle--r {
-  right: -8px;
-  border-radius: 0 var(--app-radius-sm) var(--app-radius-sm) 0;
 }
 
 .clips-tl__card {

@@ -41,6 +41,7 @@ body.has-modal {
 .topic-picker,
 .confirm-modal,
 .rename-modal,
+.clip-range-modal,
 .save-folder-modal,
 .share-playbook-modal,
 .assign-modal,
@@ -88,6 +89,26 @@ body.has-modal {
 
 .rename-modal {
   width: min(calc(100% - 32px), 440px);
+}
+
+.clip-range-modal {
+  width: min(calc(100% - 32px), 440px);
+}
+
+.clip-range-modal__sub {
+  margin: 0 0 var(--ref-spacing-md);
+  color: var(--sys-text-color-default);
+}
+
+.clip-range-modal__fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ref-spacing-sm);
+}
+
+.clip-range-modal__len {
+  margin: var(--ref-spacing-xs) 0 0;
+  color: var(--sys-text-color-default);
 }
 
 /* ── Topic history ─────────────────────────────────────────────────────────
@@ -537,6 +558,7 @@ body.has-modal {
 .topic-picker.open,
 .confirm-modal.open,
 .rename-modal.open,
+.clip-range-modal.open,
 .save-folder-modal.open,
 .share-playbook-modal.open,
 .assign-modal.open,
