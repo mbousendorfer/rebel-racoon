@@ -19,13 +19,15 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2354";
-import { isPortraitFormat } from "../clip-formats.js?v=2354";
-import { presetById } from "../clip-captions.js?v=2354";
-import { renderFeedbackControl } from "./feedback-control.js?v=2354";
-import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2354";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2354";
-import { REVEAL_MS } from "../archie-pixels.js?v=2354";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2361";
+import { isPortraitFormat } from "../clip-formats.js?v=2361";
+import { presetById } from "../clip-captions.js?v=2361";
+import { renderFeedbackControl } from "./feedback-control.js?v=2361";
+import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2361";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2361";
+import { REVEAL_MS } from "../archie-pixels.js?v=2361";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2361";
+import { revisionLead } from "../draft-rewrite.js?v=2361";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -157,6 +159,39 @@ function renderVoiceStatus(net, opts, post) {
   return "";
 }
 
+// What my last rewrite changed (flag draftChanges, resolved by the host into
+// `opts.changes`): a strip glued on top, in my words, and the new words marked
+// in the text — the post still reads as it will publish. « Show removed text »
+// adds the struck words back (`opts.showRemoved`). Gone on Hide, a hand edit,
+// the next rewrite; an Undo keeps the strip, with Redo.
+function changesShown(post, opts) {
+  const r = post.revision;
+  return opts.changes && r && !r.hidden && post.status !== "scheduled" && !post.isRegenerating;
+}
+
+// Whether the rewrite took anything out of the text — else nothing to show.
+function removedAny(post) {
+  const r = post.revision;
+  return !r.undone && diffWords(r.before.text, post.text).some((run) => run.type === "del");
+}
+
+function renderChangesStrip(post, opts) {
+  if (!changesShown(post, opts)) return "";
+  const r = post.revision;
+  const id = escapeAttr(post.id);
+  const link = (action, label) =>
+    `<button type="button" class="ap-link small standalone" data-post-changes="${action}" data-post-changes-id="${id}">${label}</button>`;
+  return `<div class="posts__card-changes" role="status">
+    <i class="ap-icon-${r.undone ? "rotate-left" : "sparkles"} posts__card-changes-icon" aria-hidden="true"></i>
+    <span class="posts__card-changes-text">${r.undone ? "Back to the version before." : `${escapeText(revisionLead(r.intent, r.before))}.`}</span>
+    <span class="posts__card-changes-actions">
+      ${removedAny(post) ? link("removed", opts.showRemoved ? "Hide removed text" : "Show removed text") : ""}
+      ${link("undo", r.undone ? "Redo" : "Undo")}
+      ${link("hide", "Hide changes")}
+    </span>
+  </div>`;
+}
+
 export function renderPostCard(post, opts = {}) {
   const inlineEdit = opts.inlineEdit === true;
   const editing = inlineEdit && opts.editing === true;
@@ -185,15 +220,26 @@ export function renderPostCard(post, opts = {}) {
   // Instagram and TikTok open the caption with the account's handle, in bold.
   const captionLead =
     net === "instagram" || net === "tiktok" ? `<strong class="posts__card-caption-handle">${handle}</strong> ` : "";
-  const bodyParagraphs = post.text
+  // The text with my last rewrite's words marked, when they show.
+  const changes = changesShown(post, opts) && !post.revision.undone ? post.revision : null;
+  const runs = changes ? diffWords(changes.before.text, post.text) : null;
+  const marked = (inner, isNew) =>
+    isNew ? `<ins class="draft-diff__add"><span class="draft-diff__sr">Added: </span>${inner}</ins>` : inner;
+  const bodyParagraphs = (
+    runs && hasChanges(runs) ? diffParagraphs(runs, opts.showRemoved ? "unified" : "after") : post.text
+  )
     .map((p, i) => `<p class="posts__card-paragraph">${i === 0 ? captionLead : ""}${p}</p>`)
     .join("");
 
   const hashtags = post.hashtags.length
-    ? `<p class="posts__card-hashtags">${post.hashtags.map((h) => `<a>#${h}</a>`).join(" ")}</p>`
+    ? `<p class="posts__card-hashtags">${post.hashtags
+        .map((h) => `<a>${marked(`#${h}`, changes && !changes.before.hashtags.includes(h))}</a>`)
+        .join(" ")}</p>`
     : "";
 
-  const cta = post.cta ? `<p class="posts__card-cta">${post.cta}</p>` : "";
+  const cta = post.cta
+    ? `<p class="posts__card-cta">${marked(post.cta, changes && changes.before.cta !== post.cta)}</p>`
+    : "";
 
   // Regenerate state (sparkles click → draft-rewrite.js). Two stages :
   //   - thinking  : show a 3-bar shimmer skeleton, hashtags + CTA hidden.
@@ -233,7 +279,8 @@ export function renderPostCard(post, opts = {}) {
     // `.is-expanded` on the card (right-panel.js, data-post-readmore).
     // ponytail: shown on a length heuristic, not a measured overflow — a short
     // post never clamps, a borderline one may show a toggle that reveals little.
-    const clamps = usedCharacters(post) > 180 || post.text.length > 2;
+    // Never folded while my changes show: a marked word must not hide below the fold.
+    const clamps = !changes && (usedCharacters(post) > 180 || post.text.length > 2);
     // The text itself is the way into the editor (right-panel.js,
     // data-post-edit-body): it reads as a field on hover, says so in a tooltip.
     const editable = inlineEdit
@@ -378,7 +425,13 @@ export function renderPostCard(post, opts = {}) {
       ${raw(checkbox)}
       <div class="posts__card-wrap">
         ${raw(renderPostIssues(post, opts))} ${raw(renderVoiceStatus(net, opts, post))}
-        <article class="ap-card posts__card posts__card--${net} ${editing ? "is-editing" : ""}">
+        ${raw(editing ? "" : renderChangesStrip(post, opts))}
+        <article
+          class="ap-card posts__card posts__card--${net} ${editing ? "is-editing" : ""} ${changes &&
+          Date.now() - changes.at < 1500
+            ? "has-fresh-changes"
+            : ""}"
+        >
           ${raw(
             renderNetworkLayout(net, {
               header: renderNetworkHeader(post, net, handle),

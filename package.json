@@ -21,7 +21,8 @@
     "check:versions": "node scripts/cache-version.mjs check",
     "check:dead": "node scripts/find-dead-code.mjs",
     "check:ds": "node scripts/check-ds.mjs",
-    "check:framing": "node --no-warnings scripts/check-clip-framing.mjs"
+    "check:framing": "node --no-warnings scripts/check-clip-framing.mjs",
+    "check:diff": "node --no-warnings scripts/check-word-diff.mjs"
   },
   "devDependencies": {
     "husky": "^9.1.7",

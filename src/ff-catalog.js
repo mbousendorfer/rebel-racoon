@@ -185,6 +185,24 @@ export const FLAGS = Object.freeze([
       "month calendar beside the list.",
   },
   {
+    id: "draftChanges",
+    group: "Chat & drafts",
+    tip: "When Archie rewrites a draft, you see what changed: a card in the chat (Changes or Side by side, Undo) and the new words marked on the draft.",
+    label: "Draft changes (what changed)",
+    // ON: a rewrite keeps the version it replaced. OFF: the rewrite as before,
+    // no card, no marks, no undo.
+    default: true,
+    hides:
+      "What a rewrite asked in the chat changed. When ON (default), each " +
+      "rewritten draft gets a card in the thread: one sentence naming the " +
+      "change with its counts, then the text with the added words marked and " +
+      "the removed ones struck through (Changes), or Before and After side by " +
+      "side, the view it opens on when most of the words changed. Undo puts " +
+      "the version before back, Redo the rewrite. On the draft itself, a strip " +
+      "says what I did, the new words stay marked until Hide changes, a hand " +
+      "edit or the next rewrite, and Show removed text adds the struck words.",
+  },
+  {
     id: "newConversationStyles",
     group: "Chat & drafts",
     tip: "The thread mirrored: Archie on the left, you on the right, one avatar column per side and white object chips. Off: the thread as of Oct 5.",
