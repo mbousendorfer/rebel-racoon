@@ -13,26 +13,29 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2362";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2362";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2362";
-import { getTopPost } from "../../top-posts-store.js?v=2362";
-import { getTopicById } from "../../topics-store.js?v=2362";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2362";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2362";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2362";
-import { getIdeas } from "../../library.js?v=2362";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2362";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2362";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2362";
-import { getPlans } from "../../post-plan-store.js?v=2362";
-import { isFlagOn } from "../../feature-flags.js?v=2362";
-import { CURRENT_USER } from "../../org.js?v=2362";
-import { getSessionById } from "../../sessions-store.js?v=2362";
-import { getContextById } from "../../contexts-store.js?v=2362";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2362";
-import { getFocusKey } from "../../components/right-panel.js?v=2362";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2362";
+} from "./thread-turns.js?v=2367";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2367";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2367";
+import { getTopPost } from "../../top-posts-store.js?v=2367";
+import { getTopicById } from "../../topics-store.js?v=2367";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2367";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2367";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2367";
+import { getIdeas } from "../../library.js?v=2367";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2367";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2367";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2367";
+import { getPlans } from "../../post-plan-store.js?v=2367";
+import { isFlagOn } from "../../feature-flags.js?v=2367";
+import { CURRENT_USER } from "../../org.js?v=2367";
+import { getSessionById } from "../../sessions-store.js?v=2367";
+import { getContextById } from "../../contexts-store.js?v=2367";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2367";
+import { getFocusKey } from "../../components/right-panel.js?v=2367";
+import { getPosts } from "../../posts-store.js?v=2367";
+import { diffWords, diffParagraphs, changeRatio } from "../../word-diff.js?v=2367";
+import { revisionSummary } from "../../draft-rewrite.js?v=2367";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2367";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -207,6 +210,10 @@ function renderTurn(message, sessionId) {
   // moment a look exists, from here or from the Playbook.
   if (message.role === "assistant" && message.variant === "draft") {
     return (contentCards() ? renderDraftsCardTurn(message) : "") + renderImageLookNudge(message, sessionId);
+  }
+
+  if (message.role === "assistant" && message.variant === "revision") {
+    return renderRevisionTurn(message, sessionId);
   }
 
   if (message.role === "assistant" && message.variant === "image-look-set") {
@@ -585,6 +592,68 @@ function renderDraftsCardTurn(message) {
       })}
     </div>
   `;
+}
+
+// "What changed" (flag draftChanges): one rewritten draft, my sentence naming
+// the change, then the change itself — Changes (one column, added marked,
+// removed struck) or Side by side (Before | After). A rewrite that touched
+// most of the words opens on Side by side: a word diff of it is confetti.
+// Undo / Redo read the draft as it is now; a draft changed since can't be undone
+// from here.
+const sameDraft = (a, b) =>
+  a &&
+  b &&
+  JSON.stringify([a.text, a.hashtags || [], a.cta || ""]) === JSON.stringify([b.text, b.hashtags || [], b.cta || ""]);
+const diffSource = (v) => [
+  ...v.text,
+  ...(v.hashtags?.length ? [v.hashtags.map((h) => `#${h}`).join(" ")] : []),
+  ...(v.cta ? [v.cta] : []),
+];
+const paragraphsHtml = (runs, view) =>
+  diffParagraphs(runs, view)
+    .map((p) => `<p class="revision-card__paragraph">${p}</p>`)
+    .join("");
+
+function renderRevisionTurn(message, sessionId) {
+  const { id, postId, before, after, intent } = message;
+  const runs = diffWords(diffSource(before), diffSource(after));
+  const view = message.view || (changeRatio(runs) > 0.5 ? "side" : "changes");
+  const post = getPosts(sessionId).find((p) => p.id === postId);
+  const undone = post && post.revision?.undone && sameDraft(post, before);
+  const live = post && (undone || sameDraft(post, after));
+  const tab = (key, label) =>
+    `<button type="button" class="ap-tabs-tab${view === key ? " active" : ""}" role="tab" aria-selected="${view === key}" data-revision-tab="${key}" data-revision-id="${escapeHtml(id)}">${label}</button>`;
+  const body =
+    view === "side"
+      ? `<div class="revision-card__side">
+          <div class="revision-card__col"><p class="revision-card__col-label">Before</p>${paragraphsHtml(runs, "before")}</div>
+          <div class="revision-card__col"><p class="revision-card__col-label">After</p>${paragraphsHtml(runs, "after")}</div>
+        </div>`
+      : `<div class="revision-card__text">${paragraphsHtml(runs, "unified")}</div>`;
+  const undo = live
+    ? `<button type="button" class="ap-button ghost grey" data-revision-undo="${escapeHtml(id)}">${undone ? "Redo" : "Undo"}</button>`
+    : `<span data-tooltip="${post ? "This draft changed since" : "This draft was deleted"}"><button type="button" class="ap-button ghost grey" disabled>Undo</button></span>`;
+  const key = `revision:${id}`;
+  return renderMessageBubble({
+    role: "assistant",
+    text: `${escapeHtml(revisionSummary(intent, before, after))}
+      <section class="revision-card${undone ? " is-undone" : ""}" aria-label="What changed">
+        <div class="revision-card__head">
+          <span class="revision-card__net"><i class="${networkIcon(message.network)}" aria-hidden="true"></i>${escapeHtml(networkLabel(message.network))} draft</span>
+          <div class="ap-tabs revision-card__tabs"><div class="ap-tabs-nav" role="tablist" aria-label="How to show the changes">${tab("changes", "Changes")}${tab("side", "Side by side")}</div></div>
+        </div>
+        ${body}
+        <div class="revision-card__foot">
+          ${undone ? `<span class="revision-card__state"><i class="ap-icon-rotate-left" aria-hidden="true"></i>Back to the version before</span>` : ""}
+          ${undo}
+          ${
+            post
+              ? `<button type="button" class="ap-button stroked grey${getFocusKey() === key ? " is-active" : ""}" data-content-card="post" data-content-key="${key}" data-content-ids="${escapeHtml(postId)}">Open draft</button>`
+              : ""
+          }
+        </div>
+      </section>`,
+  });
 }
 
 function renderExtractionTurn(message, sessionId) {

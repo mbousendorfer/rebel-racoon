@@ -4,7 +4,7 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta } from "../../social-profiles.js?v=2362";
+import { networkMeta } from "../../social-profiles.js?v=2367";
 import {
   getPosts,
   removePost,
@@ -12,24 +12,24 @@ import {
   updatePostContent,
   attachImageToDraft,
   attachCarouselToDraft,
-} from "../../posts-store.js?v=2362";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2362";
-import { getSessionById } from "../../sessions-store.js?v=2362";
-import { renderPostCard } from "../post-card.js?v=2362";
-import { isPostValid } from "../../post-validation.js?v=2362";
-import { networkVoice, voiceChangedAt } from "../../voice-parts.js?v=2362";
-import { html, raw } from "../../utils.js?v=2362";
-import { isFlagOn } from "../../feature-flags.js?v=2362";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2362";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2362";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2362";
-import { open as openAssignModal } from "../assign-modal.js?v=2362";
-import { showToast } from "../toast.js?v=2362";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2362";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2362";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2362";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2362";
-import { blockInDemo } from "../../demo-flow.js?v=2362";
+} from "../../posts-store.js?v=2367";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2367";
+import { getSessionById } from "../../sessions-store.js?v=2367";
+import { renderPostCard } from "../post-card.js?v=2367";
+import { isPostValid } from "../../post-validation.js?v=2367";
+import { networkVoice, voiceChangedAt } from "../../voice-parts.js?v=2367";
+import { html, raw } from "../../utils.js?v=2367";
+import { isFlagOn } from "../../feature-flags.js?v=2367";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2367";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2367";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2367";
+import { open as openAssignModal } from "../assign-modal.js?v=2367";
+import { showToast } from "../toast.js?v=2367";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2367";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2367";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2367";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2367";
+import { blockInDemo } from "../../demo-flow.js?v=2367";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -259,6 +259,8 @@ export function renderDraftsView() {
           // per card, from the Playbook already in hand.
           voice: ctx ? networkVoice(ctx, p.network) : null,
           voiceStale: !!ctx && voiceChangedAt(ctx, p.network) > (p.writtenAt || 0),
+          // What my last rewrite changed, marked in the text.
+          changes: isFlagOn("draftChanges"),
           // What Generate an image will use: the Playbook's look and this
           // network's shape, shown before the click.
           imagePreset: playbookId && !p.imageUrl ? quickImagePreset({ brandId: playbookId, network: p.network }) : null,
@@ -551,7 +553,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2362"), import("../../folders-store.js?v=2362")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2367"), import("../../folders-store.js?v=2367")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -794,7 +796,8 @@ export function commitEdit(postId) {
   editingPostId = null;
   editingOriginal = null;
   if (changed) {
-    updatePostContent(sid, postId, parsed); // notify → posts-store subscriber re-renders
+    // A hand edit: the marks of my last rewrite would no longer be true.
+    updatePostContent(sid, postId, { ...parsed, revision: null }); // notify → posts-store subscriber re-renders
   } else {
     renderPanel(); // no notify path → render manually
   }

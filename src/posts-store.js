@@ -7,11 +7,13 @@
 //   attachImageToDraft(sessionId, postId, imageUrl)        — one image; drops any carousel
 //   attachCarouselToDraft(sessionId, postId, urls[])       — the slides, urls[0] as the poster
 //     (the Image Generator's "Use in draft" on a run of several slides)
+//   undoRevision(sessionId, postId)                        — back to the version before
+//     Archie's last rewrite; called again, it redoes it
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2362";
-import { isNewUser } from "./user-mode.js?v=2362";
-import { createSessionNotifier } from "./store-utils.js?v=2362";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2367";
+import { isNewUser } from "./user-mode.js?v=2367";
+import { createSessionNotifier } from "./store-utils.js?v=2367";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).
@@ -181,6 +183,9 @@ export function updatePostContent(sessionId, postId, partial) {
   if (partial.hashtags !== undefined) post.hashtags = partial.hashtags;
   if (partial.cta !== undefined) post.cta = partial.cta;
   if (partial.firstComment !== undefined) post.firstComment = partial.firstComment;
+  // What Archie's last rewrite changed (flag draftChanges): { before, intent,
+  // at }, `before` = { text, hashtags, cta }. Cleared (null) by a gesture.
+  if (partial.revision !== undefined) post.revision = partial.revision;
   // Scheduled from a host that keeps its drafts listed (the Clips space).
   if (partial.status !== undefined) post.status = partial.status;
   if (partial.scheduledFor !== undefined) post.scheduledFor = partial.scheduledFor;
@@ -190,6 +195,20 @@ export function updatePostContent(sessionId, postId, partial) {
   if (partial.imageGeneratingSince !== undefined) post.imageGeneratingSince = partial.imageGeneratingSince;
   if (partial.imageRevealAt !== undefined) post.imageRevealAt = partial.imageRevealAt;
   notify(sessionId);
+}
+
+// Undo Archie's last rewrite: the draft goes back to `revision.before` and
+// keeps what it replaced as the new `before`, so the same call is the Redo.
+// `undone` says which way it now stands.
+export function undoRevision(sessionId, postId) {
+  const post = getPosts(sessionId).find((p) => p.id === postId);
+  if (!post?.revision) return;
+  const { before, ...rest } = post.revision;
+  const now = { text: post.text, hashtags: post.hashtags, cta: post.cta || "" };
+  updatePostContent(sessionId, postId, {
+    ...before,
+    revision: { ...rest, before: now, undone: !rest.undone },
+  });
 }
 
 // Remove a post from the session's drafts list. Returns the removed post

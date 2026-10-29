@@ -18,8 +18,9 @@
 // the stream is handled by re-looking up the target selector each tick
 // — when it disappears the stream stops and the content commits at once.
 
-import { getPosts, updatePostContent } from "./posts-store.js?v=2362";
-import { escapeText } from "./utils.js?v=2362";
+import { getPosts, updatePostContent } from "./posts-store.js?v=2367";
+import { isFlagOn } from "./feature-flags.js?v=2367";
+import { escapeText } from "./utils.js?v=2367";
 
 const inFlight = new Map(); // postId → AbortController
 
@@ -32,7 +33,9 @@ const THINKING_MS = 400;
 const TOKEN_MS_MIN = 8;
 const TOKEN_MS_MAX = 18;
 
-export function startRewrite(sessionId, postId, intent = "fresh") {
+// `onCommit(before, after)` fires once the new text is in — the chat posts its
+// "what changed" card from it (flag draftChanges). Both are { text, hashtags, cta }.
+export function startRewrite(sessionId, postId, intent = "fresh", { onCommit } = {}) {
   if (!sessionId || !postId) return;
   if (inFlight.has(postId)) return;
 
@@ -46,6 +49,7 @@ export function startRewrite(sessionId, postId, intent = "fresh") {
   const controller = new AbortController();
   inFlight.set(postId, controller);
 
+  const before = { text: [...post.text], hashtags: [...(post.hashtags || [])], cta: post.cta || "" };
   const final = fakeRewrite(post, intent);
 
   // Phase 1 — thinking. Single notify ; the card subscriber paints the
@@ -80,8 +84,11 @@ export function startRewrite(sessionId, postId, intent = "fresh") {
         writtenAt: Date.now(),
         isRegenerating: false,
         regenerateStage: null,
+        // The draft keeps what it replaced, so it can show and undo the change.
+        revision: isFlagOn("draftChanges") ? { before, intent, at: Date.now() } : null,
       });
       inFlight.delete(postId);
+      onCommit?.(before, { text: final.text, hashtags: final.hashtags, cta: final.cta });
     });
   }, THINKING_MS);
 }
@@ -119,6 +126,44 @@ function fakeRewrite(post, intent = "fresh") {
     return { ...base, text: [pick(FORMAL_HOOKS), ...paras] };
   }
 
+  // Word-level asks: the text stays, a few words move (what the "what changed"
+  // marks are for). ponytail: rules of thumb, the product asks the model.
+  if (intent === "punchier") {
+    // Each of the first two sentences loses its filler, its set-up ("Short
+    // version of today's offsite: we stopped…" → "We stopped…") or, when long,
+    // its trailing clause.
+    let left = 2;
+    const tight = paras.map((p) =>
+      p.replace(/[^.!?]+[.!?]*/g, (sentence) => {
+        if (left-- <= 0) return sentence;
+        const lead = sentence.match(/^\s*/)[0];
+        let t = sentence
+          .trim()
+          .replace(FILLER, "")
+          .replace(/\s{2,}/g, " ");
+        const payoff = t.split(/:\s/)[1];
+        if (payoff && payoff.split(" ").length >= 3) t = payoff;
+        else if (t.split(" ").length > 10) t = t.split(/\s[—–-]\s|,\s/)[0].replace(/[.!?]*$/, ".");
+        return lead + t.charAt(0).toUpperCase() + t.slice(1);
+      }),
+    );
+    if (tight.join() !== paras.join()) return { ...base, text: tight };
+    // Nothing to cut: a new opener in place of the first sentence only.
+    const [p0 = "", ...rest] = paras;
+    return { ...base, text: [p0.replace(/^[^.!?]+[.!?]*/, pick(HOOK_POOL[network] || HOOK_POOL.linkedin)), ...rest] };
+  }
+  if (intent === "emoji") {
+    const [first, second] = EMOJIS[network] || EMOJIS.linkedin;
+    const text = [...paras];
+    if (text.length) text[0] = text[0].replace(/([.!?])(\s|$)/, `$1 ${first}$2`);
+    if (text.length > 1) text[text.length - 1] = `${second} ${text[text.length - 1]}`;
+    return { ...base, text };
+  }
+  if (intent === "cta") {
+    const options = (CTAS[network] || CTAS.linkedin).filter((c) => c !== post.cta);
+    return { ...base, text: paras, cta: pick(options) };
+  }
+
   // The network's voice, changed since the draft was written (« Rewrite it »
   // on its card). ponytail: a rule of thumb per network; in the
   // product the draft is rewritten from the voice itself.
@@ -141,6 +186,57 @@ function fakeRewrite(post, intent = "fresh") {
     nextParagraphs = [hook, ...rest, intro];
   }
   return { ...base, text: nextParagraphs };
+}
+
+const FILLER = /\b(just|really|very|actually|basically|simply|truly|single|entire|itself)\s/gi;
+
+const EMOJIS = {
+  linkedin: ["🚀", "👉"],
+  twitter: ["⚡", "👇"],
+  instagram: ["✨", "📌"],
+  tiktok: ["🔥", "👀"],
+  facebook: ["🙌", "👉"],
+};
+
+const CTAS = {
+  linkedin: ["What would you add? Tell me in the comments.", "Read the full story →", "Follow for the next one."],
+  twitter: ["Reply with yours.", "Repost if this helped."],
+  instagram: ["Save this for your next draft 📌", "Tag someone who needs this."],
+  tiktok: ["Follow for part two.", "Comment your take."],
+  facebook: ["Share this with your team.", "Tell us in the comments."],
+};
+
+// What I did, said in the first person by the chat's "what changed" card and
+// the draft's own strip. Counts are named in text, never an icon beside a number.
+const LEADS = {
+  shorter: "I made it shorter",
+  longer: "I made it longer",
+  warmer: "I made it warmer",
+  formal: "I made it more formal",
+  fresh: "I gave it a fresh take",
+  voice: "I rewrote it with your new rules",
+  punchier: "I tightened the hook",
+  emoji: "I added emojis",
+  cta: "I added a call to action",
+};
+
+function revisionLead(intent, before) {
+  if (intent === "cta" && before?.cta) return "I changed the call to action";
+  return LEADS[intent] || "I rewrote it";
+}
+
+const chars = (v) => [...v.text, v.cta || "", ...(v.hashtags || []).map((h) => `#${h}`)].join(" ").length;
+const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+// "I made it shorter: 2 paragraphs → 1, 140 fewer characters."
+export function revisionSummary(intent, before, after) {
+  const details = [];
+  const pb = before.text.length;
+  const pa = after.text.length;
+  if (pb !== pa) details.push(`${plural(pb, "paragraph")} → ${pa}`);
+  const delta = chars(after) - chars(before);
+  if (Math.abs(delta) >= 10) details.push(`${Math.abs(delta)} ${delta < 0 ? "fewer" : "more"} characters`);
+  return `${revisionLead(intent, before)}${details.length ? `: ${details.join(", ")}` : ""}.`;
 }
 
 const WARMER_HOOKS = [

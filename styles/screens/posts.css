@@ -80,18 +80,25 @@
    one composite surface. The status card keeps its own bottom-border
    from the DS (acting as the seam) and rounds only its top corners;
    the article below loses its top border + top radius so the two
-   meet seamlessly. Gap collapses to 0 only when a status card is
-   actually present so the regular `Draft ready` cards keep their
-   normal spacing. */
-.posts__card-wrap:has(> .ap-status-card) {
-  gap: 0;
-}
-
+   meet seamlessly. */
 .posts__card-wrap > .ap-status-card {
   border-top-left-radius: var(--app-radius-card);
   border-top-right-radius: var(--app-radius-card);
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+}
+
+/* Glued by pulling the card up over the wrap's gap (not gap: 0 on the wrap),
+   so an infobox above the status card keeps its space. */
+.posts__card-wrap > .ap-status-card + .ap-card,
+.posts__card-wrap > .ap-status-card + .ap-status-card {
+  margin-top: calc(-1 * var(--ref-spacing-xxs));
+}
+/* Two status cards (the voice's, then "Your post has been updated."): one
+   rounded top for the stack, the first card's bottom border as the seam. */
+.posts__card-wrap > .ap-status-card + .ap-status-card {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .posts__card-wrap > .ap-status-card + .ap-card {

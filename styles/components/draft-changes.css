@@ -1,0 +1,160 @@
+/* What a rewrite changed in a draft (flag draftChanges, src/word-diff.js).
+   One vocabulary on both surfaces: what I added sits on butter (Archie's
+   colour) with an olive underline; what I removed is struck through in the
+   DS error red, its ink kept at grey-80 so it stays readable. */
+
+.draft-diff__add {
+  text-decoration: none;
+  background: var(--app-butter);
+  box-shadow: inset 0 -2px 0 var(--app-butter-accent);
+  border-radius: 2px;
+  padding: 0 2px;
+  /* A mark broken over two lines keeps its padding and underline on each. */
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.draft-diff__del {
+  color: var(--ref-color-grey-80);
+  background: var(--sys-color-error-light-bg);
+  text-decoration: line-through;
+  text-decoration-color: var(--sys-color-error-text);
+  text-decoration-thickness: 1.5px;
+  border-radius: 2px;
+  padding: 0 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Said to a screen reader, which reads <ins> / <del> as plain text. */
+.draft-diff__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── The chat's card: my sentence, then the change ─────────────────────── */
+
+.revision-card {
+  container-type: inline-size;
+  width: var(--app-chat-card);
+  max-width: 100%;
+  margin-top: var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface);
+  overflow: hidden;
+}
+
+.revision-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm) 0;
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+
+.revision-card__net {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-caption-bold-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  white-space: nowrap;
+}
+
+.revision-card__tabs .ap-tabs-nav {
+  border-bottom: 0;
+}
+
+.revision-card__text,
+.revision-card__side {
+  padding: var(--ref-spacing-sm);
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+}
+
+.revision-card__paragraph {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.revision-card__paragraph + .revision-card__paragraph {
+  margin-top: var(--ref-spacing-xxs);
+}
+
+/* Before | After, the seam a grey-20 hairline; stacked when the card is narrow. */
+.revision-card__side {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ref-spacing-sm);
+}
+.revision-card__col + .revision-card__col {
+  padding-left: var(--ref-spacing-sm);
+  border-left: 1px solid var(--ref-color-grey-20);
+}
+.revision-card__col-label {
+  margin: 0 0 var(--ref-spacing-xxs);
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-bold-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+}
+@container (max-width: 440px) {
+  .revision-card__side {
+    grid-template-columns: 1fr;
+  }
+  .revision-card__col + .revision-card__col {
+    padding: var(--ref-spacing-sm) 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--ref-color-grey-20);
+  }
+}
+
+/* Undone: the change is still the receipt, read as the past. */
+.revision-card.is-undone .draft-diff__add,
+.revision-card.is-undone .draft-diff__del {
+  background: none;
+  box-shadow: none;
+}
+
+.revision-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+.revision-card__state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  margin-right: auto;
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+}
+
+/* ── The draft in the panel: the DS green status card on top (its glue lives
+   with the other status cards in posts.css), the new words marked ──────── */
+
+/* Just rewritten: the marks fade in once, then stay. */
+.posts__card.has-fresh-changes .draft-diff__add {
+  animation: draft-diff-in 600ms ease-out both;
+}
+@keyframes draft-diff-in {
+  from {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 var(--app-butter-accent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .posts__card.has-fresh-changes .draft-diff__add {
+    animation: none;
+  }
+}

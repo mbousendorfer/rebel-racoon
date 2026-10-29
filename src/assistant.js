@@ -6,13 +6,13 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2362";
-import { findConnector } from "./connectors-store.js?v=2362";
-import { createSessionNotifier } from "./store-utils.js?v=2362";
-import { addPostDraft } from "./posts-store.js?v=2362";
-import { showToast } from "./components/toast.js?v=2362";
-import { isFlagOn } from "./feature-flags.js?v=2362";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2362";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2367";
+import { findConnector } from "./connectors-store.js?v=2367";
+import { createSessionNotifier } from "./store-utils.js?v=2367";
+import { addPostDraft } from "./posts-store.js?v=2367";
+import { showToast } from "./components/toast.js?v=2367";
+import { isFlagOn } from "./feature-flags.js?v=2367";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2367";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -830,6 +830,26 @@ export function postImageLookSet(sessionId, { contextId, styleId, label }) {
     contextId,
     styleId,
     label,
+    status: "ready",
+    createdAt: Date.now(),
+  });
+  notify(sessionId);
+}
+
+// "What changed" — one draft, rewritten from the chat (flag draftChanges). The
+// turn keeps its own before / after, so an old receipt never shifts when the
+// draft changes again; whether it can still be undone is read off the draft.
+export function postRevisionTurn(sessionId, { postId, network, intent, before, after }) {
+  getThread(sessionId).push({
+    id: newId(),
+    role: "assistant",
+    variant: "revision",
+    meta: "Archie",
+    postId,
+    network,
+    intent,
+    before,
+    after,
     status: "ready",
     createdAt: Date.now(),
   });
