@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml } from "../../utils.js?v=2539";
-import { isFlagOn } from "../../feature-flags.js?v=2539";
+import { escapeHtml } from "../../utils.js?v=2540";
+import { isFlagOn } from "../../feature-flags.js?v=2540";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -34,20 +34,20 @@ import {
   GENERIC_FAILURE,
   getThread,
   refreshThread,
-} from "../../assistant.js?v=2539";
-import { getSources, getIdeas } from "../../library.js?v=2539";
-import { getPosts } from "../../posts-store.js?v=2539";
-import { getTopPosts } from "../../top-posts-store.js?v=2539";
-import { getConnectedProfiles } from "../../social-profiles.js?v=2539";
-import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2539";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2539";
-import { detectUrlService } from "../../url-services.js?v=2539";
-import * as inlineQuestion from "../../inline-question.js?v=2539";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=2539";
-import { startTopicPickerInline } from "../../topic-flow.js?v=2539";
-import { askConnector } from "../../connector-ask.js?v=2539";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2539";
-import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2539";
+} from "../../assistant.js?v=2540";
+import { getSources, getIdeas } from "../../library.js?v=2540";
+import { getPosts } from "../../posts-store.js?v=2540";
+import { getTopPosts } from "../../top-posts-store.js?v=2540";
+import { getConnectedProfiles } from "../../social-profiles.js?v=2540";
+import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2540";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2540";
+import { detectUrlService } from "../../url-services.js?v=2540";
+import * as inlineQuestion from "../../inline-question.js?v=2540";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=2540";
+import { startTopicPickerInline } from "../../topic-flow.js?v=2540";
+import { askConnector } from "../../connector-ask.js?v=2540";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2540";
+import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2540";
 
 // The intake sample plays the real lifecycle — loading, then ready — under a
 // sample id no source owns, so intake-lifecycle leaves it alone.

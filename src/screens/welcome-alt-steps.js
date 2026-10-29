@@ -14,8 +14,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2539";
-import { navigate } from "../router.js?v=2539";
+import { html, raw, escapeHtml } from "../utils.js?v=2540";
+import { navigate } from "../router.js?v=2540";
 import {
   getDraft,
   patchDraft,
@@ -24,12 +24,12 @@ import {
   writeAltManually,
   analyzeAltInterview,
   setAltVoiceSource,
-} from "../context-builder.js?v=2539";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2539";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2539";
-import { connectors as connectorMocks } from "../mocks.js?v=2539";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2539";
-import { networkIcon } from "../social-profiles.js?v=2539";
+} from "../context-builder.js?v=2540";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2540";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2540";
+import { connectors as connectorMocks } from "../mocks.js?v=2540";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2540";
+import { networkIcon } from "../social-profiles.js?v=2540";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
@@ -141,7 +141,6 @@ export function renderWelcomeAltBrand(_params, target) {
               value="${url}"
               placeholder="your-brand.com"
               aria-label="Your website"
-              aria-describedby="brandUrlError"
               autocomplete="url"
               data-flow-autofocus
             />
@@ -178,6 +177,8 @@ export function renderWelcomeAltBrand(_params, target) {
       if (!url) {
         // Seen, not only set: the DS invalid field, and the line that says what to do.
         field?.setAttribute("aria-invalid", "true");
+        // Described by the error only while it shows: a hidden description is still read.
+        field?.setAttribute("aria-describedby", "brandUrlError");
         field?.closest(".ap-input-group")?.classList.add("invalid");
         e.target.parentElement?.querySelector("#brandUrlError")?.removeAttribute("hidden");
         field?.focus();
@@ -188,6 +189,7 @@ export function renderWelcomeAltBrand(_params, target) {
     },
     onInput: (e) => {
       e.target.removeAttribute?.("aria-invalid");
+      e.target.removeAttribute?.("aria-describedby");
       e.target.closest?.(".ap-input-group")?.classList.remove("invalid");
       e.target.closest?.("[data-flow-left]")?.querySelector("#brandUrlError")?.setAttribute("hidden", "");
     },
