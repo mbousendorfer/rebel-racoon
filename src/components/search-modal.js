@@ -19,11 +19,11 @@
 //   - Subscribes to the sessions-store so the result list refreshes if a session
 //     is renamed / deleted from elsewhere while the modal is open.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2482";
-import { escapeHtml } from "../utils.js?v=2482";
-import { navigate } from "../router.js?v=2482";
-import { getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=2482";
-import { getContextById } from "../contexts-store.js?v=2482";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2484";
+import { escapeHtml } from "../utils.js?v=2484";
+import { navigate } from "../router.js?v=2484";
+import { getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=2484";
+import { getContextById } from "../contexts-store.js?v=2484";
 
 const MODAL_ID = "search";
 
@@ -52,6 +52,9 @@ const HTML = `
         id="searchModalInput"
         placeholder="Search chats…"
         aria-label="Search chats"
+        role="combobox"
+        aria-expanded="true"
+        aria-autocomplete="list"
         aria-controls="searchModalResults"
         autocomplete="off"
       />
@@ -78,7 +81,8 @@ function injectOnce() {
   inputEl = document.getElementById("searchModalInput");
   resultsEl = document.getElementById("searchModalResults");
 
-  backdrop.addEventListener("click", close);
+  // Esc from anywhere in the dialog (a result row can hold focus), not only the input.
+  bindOverlayDismissal({ modal, backdrop, close, isOpen: () => isOpen });
 
   inputEl.addEventListener("input", () => {
     highlightIndex = 0;
@@ -87,11 +91,6 @@ function injectOnce() {
 
   inputEl.addEventListener("keydown", (event) => {
     const results = currentResultButtons();
-    if (event.key === "Escape") {
-      event.preventDefault();
-      close();
-      return;
-    }
     if (results.length === 0) return;
     if (event.key === "ArrowDown") {
       event.preventDefault();
@@ -175,6 +174,10 @@ function syncHighlight() {
     btn.setAttribute("aria-selected", String(active));
     if (active) btn.scrollIntoView({ block: "nearest" });
   });
+  // Focus stays in the input: name the highlighted option for screen readers.
+  const current = buttons[highlightIndex];
+  if (current) inputEl?.setAttribute("aria-activedescendant", current.id);
+  else inputEl?.removeAttribute("aria-activedescendant");
 }
 
 function renderResults() {
@@ -188,6 +191,7 @@ function renderResults() {
         <span class="search-modal__empty-text">${msg}</span>
       </div>
     `;
+    inputEl?.removeAttribute("aria-activedescendant");
     return;
   }
   const pinned = filtered.filter((s) => s.pinned);
@@ -220,6 +224,7 @@ function renderResultRow(session, index) {
       type="button"
       class="search-modal__result ${isHighlighted ? "is-highlighted" : ""}"
       role="option"
+      id="searchResult-${index}"
       aria-selected="${isHighlighted}"
       data-search-result="${session.id}"
       data-index="${index}"

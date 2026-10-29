@@ -20,15 +20,15 @@
 //     connectAccounts(ids) then fires onConfirm with the accounts that flipped.
 //   - Cancel / Esc / backdrop / close-X dismiss without connecting anything.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2482";
-import { escapeHtml as esc } from "../utils.js?v=2482";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2484";
+import { escapeHtml as esc } from "../utils.js?v=2484";
 import {
   getConnectableAccounts,
   connectAccounts,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=2482";
+} from "../social-profiles.js?v=2484";
 
 const MODAL_ID = "connect-account";
 
@@ -128,17 +128,12 @@ function injectOnce() {
 
   cancelBtn.addEventListener("click", close);
   closeBtn.addEventListener("click", close);
-  backdrop.addEventListener("click", close);
   confirmBtn.addEventListener("click", submit);
   listEl.addEventListener("change", (e) => {
     if (e.target.matches("[data-connect-check]")) syncConfirm();
   });
-  modal.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      e.preventDefault();
-      close();
-    }
-  });
+  // Esc from anywhere while open, like every other dialog (focus may sit outside it).
+  bindOverlayDismissal({ modal, backdrop, close });
 
   initialized = true;
 }

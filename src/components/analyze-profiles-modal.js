@@ -15,15 +15,15 @@
 //     it fires onConfirm(ids) then closes. A warning notes the overwrite.
 //   - Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2482";
-import { escapeHtml as esc } from "../utils.js?v=2482";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2484";
+import { escapeHtml as esc } from "../utils.js?v=2484";
 import {
   getConnectedProfiles,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   BRAND_INITIALS,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=2482";
+} from "../social-profiles.js?v=2484";
 
 const MODAL_ID = "analyze-profiles";
 
@@ -160,7 +160,6 @@ function injectOnce() {
 
   cancelBtn.addEventListener("click", close);
   closeBtn.addEventListener("click", close);
-  backdrop.addEventListener("click", close);
   confirmBtn.addEventListener("click", submit);
   listEl.addEventListener("change", (e) => {
     if (e.target.matches("[data-profile-check]")) syncConfirm();
@@ -168,12 +167,8 @@ function injectOnce() {
   // Live search — filter rows in place (the list isn't re-rendered on toggle,
   // so a simple show/hide keeps checkbox state and focus intact).
   searchInput.addEventListener("input", filterList);
-  modal.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      e.preventDefault();
-      close();
-    }
-  });
+  // Esc from anywhere while open, like every other dialog (focus may sit outside it).
+  bindOverlayDismissal({ modal, backdrop, close });
 
   initialized = true;
 }

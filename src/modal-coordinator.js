@@ -5,7 +5,7 @@
 // two modals (with z-index races and Esc behaviour undefined).
 //
 // Usage:
-//   import { requestOpen, notifyClose } from "./modal-coordinator.js?v=2482";
+//   import { requestOpen, notifyClose } from "./modal-coordinator.js?v=2484";
 //
 //   export function open() {
 //     requestOpen("bugReport", close);   // closes the active overlay first
@@ -28,9 +28,50 @@
 let activeId = null;
 let activeClose = null;
 let lastFocus = null;
+let inertNodes = [];
+
+// Focus in + containment, once for every overlay (WCAG 2.4.3): after the
+// overlay's open() has shown it, the topmost open aria-modal dialog gets
+// focus (its [autofocus], else its first control) unless the overlay already
+// placed it inside, and every other top-level node of <body> goes inert so
+// Tab can't walk the page under the scrim. Overlays without an aria-modal
+// dialog (drawers) are left alone.
+const FOCUSABLE =
+  'button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function releaseInert() {
+  for (const node of inertNodes) node.inert = false;
+  inertNodes = [];
+}
+
+function engage(id) {
+  if (activeId !== id) return;
+  const dialog = [...document.querySelectorAll('[aria-modal="true"].open')]
+    .filter((el) => el.getClientRects().length)
+    .pop();
+  if (!dialog) return;
+  let top = dialog;
+  while (top.parentElement && top.parentElement !== document.body) top = top.parentElement;
+  inertNodes = [...document.body.children].filter(
+    (node) => node !== top && node.id !== "toastRegion" && node.tagName !== "SCRIPT" && !node.inert,
+  );
+  for (const node of inertNodes) node.inert = true;
+  if (dialog.contains(document.activeElement)) return;
+  const target =
+    dialog.querySelector("[autofocus]") ||
+    [...dialog.querySelectorAll(FOCUSABLE)].find((el) => el.getClientRects().length);
+  if (target) target.focus({ preventScroll: true });
+  else {
+    dialog.setAttribute("tabindex", "-1");
+    dialog.focus({ preventScroll: true });
+  }
+}
 
 export function requestOpen(id, closeFn) {
   if (activeId === id) return;
+  releaseInert();
+  // The overlay shows itself after this call returns; look for it then.
+  setTimeout(() => engage(id), 0);
   if (activeId && typeof activeClose === "function") {
     const prevId = activeId;
     const prevClose = activeClose;
@@ -58,6 +99,8 @@ export function notifyClose(id) {
   if (activeId === id) {
     activeId = null;
     activeClose = null;
+    // Before the focus restore: an inert trigger can't take focus.
+    releaseInert();
     const target = lastFocus;
     lastFocus = null;
     if (target && typeof target.focus === "function" && document.body.contains(target)) {
