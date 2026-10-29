@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml } from "../../utils.js?v=2399";
-import { isFlagOn } from "../../feature-flags.js?v=2399";
+import { escapeHtml } from "../../utils.js?v=2400";
+import { isFlagOn } from "../../feature-flags.js?v=2400";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -34,20 +34,20 @@ import {
   GENERIC_FAILURE,
   getThread,
   refreshThread,
-} from "../../assistant.js?v=2399";
-import { getSources, getIdeas } from "../../library.js?v=2399";
-import { getPosts } from "../../posts-store.js?v=2399";
-import { getTopPosts } from "../../top-posts-store.js?v=2399";
-import { getConnectedProfiles } from "../../social-profiles.js?v=2399";
-import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2399";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2399";
-import { detectUrlService } from "../../url-services.js?v=2399";
-import * as inlineQuestion from "../../inline-question.js?v=2399";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=2399";
-import { startTopicPickerInline } from "../../topic-flow.js?v=2399";
-import { askConnector } from "../../connector-ask.js?v=2399";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2399";
-import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2399";
+} from "../../assistant.js?v=2400";
+import { getSources, getIdeas } from "../../library.js?v=2400";
+import { getPosts } from "../../posts-store.js?v=2400";
+import { getTopPosts } from "../../top-posts-store.js?v=2400";
+import { getConnectedProfiles } from "../../social-profiles.js?v=2400";
+import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2400";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2400";
+import { detectUrlService } from "../../url-services.js?v=2400";
+import * as inlineQuestion from "../../inline-question.js?v=2400";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=2400";
+import { startTopicPickerInline } from "../../topic-flow.js?v=2400";
+import { askConnector } from "../../connector-ask.js?v=2400";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2400";
+import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2400";
 
 // The intake sample plays the real lifecycle — loading, then ready — under a
 // sample id no source owns, so intake-lifecycle leaves it alone.
@@ -248,6 +248,7 @@ const COMPONENTS = [
 
 const needsDrafts = (sid) => (getPosts(sid).some((p) => p.status !== "scheduled") ? null : "Needs drafts in this chat");
 const needsIdeas = (sid) => (getIdeas(sid).length ? null : "Needs ideas in this chat");
+const flagOff = (id) => (isFlagOn(id) ? null : `Needs the ${id} flag`);
 
 // Typed asks — sent through the composer, so the real routing answers them.
 const PROMPTS = [
@@ -315,13 +316,6 @@ const PROMPTS = [
     when: needsDrafts,
   },
   {
-    id: "p-shorter",
-    label: "Edit a draft",
-    prompt: "Make post 2 shorter",
-    hint: "Rewrites the draft it names",
-    when: needsDrafts,
-  },
-  {
     id: "p-regenerate",
     label: "Regenerate drafts",
     prompt: "Regenerate the drafts",
@@ -349,7 +343,39 @@ const PROMPTS = [
     hint: "Only in a chat with no source",
     when: (sid) => (getSources(sid).length ? "Only in a chat with no source" : null),
   },
-].map((p) => ({ ...p, icon: "ap-icon-single-chat-bubble", run: (sid, session, send) => send(p.prompt) }));
+];
+
+// Asks that rewrite a draft. With draftChanges ON, each one shows what changed:
+// the card in the chat and the green status card on the draft.
+const EDITS = [
+  {
+    id: "e-shorter",
+    label: "Make it shorter",
+    prompt: "Make post 1 shorter",
+    hint: "Most words change: the card opens on Side by side",
+  },
+  {
+    id: "e-warmer",
+    label: "Make it warmer",
+    prompt: "Make post 1 warmer",
+    hint: "One sentence changes: the card opens on Changes",
+  },
+  {
+    id: "e-emoji",
+    label: "Add emojis",
+    prompt: "Add emojis to post 1",
+    hint: "A few words added, marked on the draft",
+  },
+  {
+    id: "e-punchier",
+    label: "Punchier hook",
+    prompt: "Make the hook of post 1 punchier",
+    hint: "The opening line rewritten",
+  },
+  { id: "e-cta", label: "Add a CTA", prompt: "Add a CTA to post 1", hint: "A call to action added or replaced" },
+].map((p) => ({ ...p, when: needsDrafts }));
+
+const asPrompt = (p) => ({ ...p, icon: "ap-icon-single-chat-bubble", run: (sid, session, send) => send(p.prompt) });
 
 const FLOWS = [
   {
@@ -403,7 +429,8 @@ const FLOWS = [
 
 const GROUPS = [
   { title: "Components", items: COMPONENTS },
-  { title: "Typed asks", items: PROMPTS },
+  { title: "Typed asks", items: PROMPTS.map(asPrompt) },
+  { title: "Edit a draft", items: EDITS.map((p) => ({ ...asPrompt(p), icon: "ap-icon-pen" })) },
   { title: "Flows", items: FLOWS },
 ];
 const ALL = GROUPS.flatMap((g) => g.items);
