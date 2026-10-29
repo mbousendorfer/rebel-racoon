@@ -991,7 +991,9 @@ button.ap-link {
 /* ── Keycap ───────────────────────────────────────────────────────────────
    The DS ships no keycap; four hand-made ones disagreed (grey-05, white, white
    with a 2px bottom edge). One look for every <kbd> the app draws: ⌘K's Esc,
-   its ↵ row hint, the shortcut legend, the composer hint. */
+   its ↵ row hint, the shortcut legend, the composer hint, the sidebar's hints. */
+.app-sidebar__nav-kbd,
+.app-sidebar__foot-kbd,
 .search-modal__kbd,
 .search-modal__result-kbd,
 .shortcut-legend__row kbd,
