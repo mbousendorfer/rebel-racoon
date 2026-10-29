@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2531";
-import { conceptHint } from "./concepts.js?v=2531";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2532";
+import { conceptHint } from "./concepts.js?v=2532";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2531";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2531";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2531";
-import { isFlagOn } from "./feature-flags.js?v=2531";
-import { clipLookOf } from "./videos-store.js?v=2531";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2531";
-import { parseHashParams } from "./url-state.js?v=2531";
+} from "./playbook-brand-kit.js?v=2532";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2532";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2532";
+import { isFlagOn } from "./feature-flags.js?v=2532";
+import { clipLookOf } from "./videos-store.js?v=2532";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2532";
+import { parseHashParams } from "./url-state.js?v=2532";
 import {
   isListPart,
   voiceParts,
@@ -55,13 +55,13 @@ import {
   canLearnFrom,
   ADAPTED_FROM,
   voiceHasRules,
-} from "./voice-parts.js?v=2531";
-import { showToast } from "./components/toast.js?v=2531";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2531";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2531";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2531";
-import { consumeHandoff } from "./handoff.js?v=2531";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2531";
+} from "./voice-parts.js?v=2532";
+import { showToast } from "./components/toast.js?v=2532";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2532";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2532";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2532";
+import { consumeHandoff } from "./handoff.js?v=2532";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2532";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2531";
+} from "./social-profiles.js?v=2532";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1097,13 +1097,16 @@ function renderLanguagePicker(data) {
   return `<div class="recap__lang-picker" data-recap-langs>${chips}</div>${primaryPicker}`;
 }
 
-// Guided ⇄ Free-form switch for the Voice profile section (edit mode).
+// Guided ⇄ Free-form switch for the Voice profile section (edit mode): one of
+// two views, so DS tabs (filter chips read as independent filters).
 function renderVoiceModeToggle(mode) {
   const manual = mode === "manual";
   return `
-    <div class="recap__voice-mode" role="group" aria-label="Voice format">
-      <button type="button" class="ap-filter-chip" aria-pressed="${!manual}" data-recap-voice-mode="guided">Part by part</button>
-      <button type="button" class="ap-filter-chip" aria-pressed="${manual}" data-recap-voice-mode="manual">In my own words</button>
+    <div class="ap-tabs recap__voice-mode">
+      <div class="ap-tabs-nav" role="tablist" aria-label="Voice format">
+        <button type="button" class="ap-tabs-tab${manual ? "" : " active"}" role="tab" aria-selected="${!manual}" data-recap-voice-mode="guided">Part by part</button>
+        <button type="button" class="ap-tabs-tab${manual ? " active" : ""}" role="tab" aria-selected="${manual}" data-recap-voice-mode="manual">In my own words</button>
+      </div>
     </div>`;
 }
 

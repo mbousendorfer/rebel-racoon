@@ -1849,10 +1849,8 @@ body:not(.onboarding) .welcome-intro__wordmark {
   color: var(--ref-color-grey-80);
 }
 
-/* Voice & style: Guided ⇄ Free-form segmented toggle + the free-form editor. */
+/* Voice & style: Guided ⇄ Free-form tabs (DS .ap-tabs) + the free-form editor. */
 .recap__voice-mode {
-  display: flex;
-  gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-sm) var(--ref-spacing-lg);
   border-bottom: 1px solid var(--app-border);
 }
