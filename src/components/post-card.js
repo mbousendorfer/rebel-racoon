@@ -19,14 +19,14 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2365";
-import { isPortraitFormat } from "../clip-formats.js?v=2365";
-import { presetById } from "../clip-captions.js?v=2365";
-import { renderFeedbackControl } from "./feedback-control.js?v=2365";
-import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2365";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2365";
-import { REVEAL_MS } from "../archie-pixels.js?v=2365";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2365";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2367";
+import { isPortraitFormat } from "../clip-formats.js?v=2367";
+import { presetById } from "../clip-captions.js?v=2367";
+import { renderFeedbackControl } from "./feedback-control.js?v=2367";
+import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2367";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2367";
+import { REVEAL_MS } from "../archie-pixels.js?v=2367";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2367";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -160,11 +160,12 @@ function renderVoiceStatus(net, opts, post) {
 
 // What my last rewrite changed (flag draftChanges, resolved by the host into
 // `opts.changes`): the DS green status card glued on top, « Your post has been
-// updated. » + Undo (then Redo), and the new words marked in the text, which
-// still reads as it will publish. Gone on a hand edit or the next rewrite.
+// updated. » + Undo (then Redo) + Accept, and the new words marked in the text,
+// which still reads as it will publish. Accept puts both away (`hidden`), as do
+// a hand edit and the next rewrite; the chat's card can still undo.
 function changesShown(post, opts) {
   const r = post.revision;
-  return opts.changes && r && post.status !== "scheduled" && !post.isRegenerating;
+  return opts.changes && r && !r.hidden && post.status !== "scheduled" && !post.isRegenerating;
 }
 
 function renderChangesStatus(post, opts) {
@@ -174,7 +175,10 @@ function renderChangesStatus(post, opts) {
     <div class="upper">
       <i class="ap-icon-${undone ? "rotate-left" : "rounded-check_fill"}" aria-hidden="true"></i>
       <div class="flow"><span>${undone ? "Your post is back to the previous version." : "Your post has been updated."}</span></div>
-      <button type="button" class="ap-link small standalone" data-post-changes-undo="${escapeAttr(post.id)}">${undone ? "Redo" : "Undo"}</button>
+      <span class="posts__card-changes-actions">
+        <button type="button" class="ap-link small standalone" data-post-changes-undo="${escapeAttr(post.id)}">${undone ? "Redo" : "Undo"}</button>
+        <button type="button" class="ap-link small standalone" data-post-changes-accept="${escapeAttr(post.id)}">${undone ? "Done" : "Accept"}</button>
+      </span>
     </div>
   </div>`;
 }

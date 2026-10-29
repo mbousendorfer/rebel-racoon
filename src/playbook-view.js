@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2365";
-import { conceptHint } from "./concepts.js?v=2365";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2367";
+import { conceptHint } from "./concepts.js?v=2367";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2365";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2365";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2365";
-import { isFlagOn } from "./feature-flags.js?v=2365";
-import { clipLookOf } from "./videos-store.js?v=2365";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2365";
-import { parseHashParams } from "./url-state.js?v=2365";
+} from "./playbook-brand-kit.js?v=2367";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2367";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2367";
+import { isFlagOn } from "./feature-flags.js?v=2367";
+import { clipLookOf } from "./videos-store.js?v=2367";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2367";
+import { parseHashParams } from "./url-state.js?v=2367";
 import {
   isListPart,
   voiceParts,
@@ -52,15 +52,15 @@ import {
   markAdapted,
   withNetworkVoices,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2365";
-import { showToast } from "./components/toast.js?v=2365";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2365";
-import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2365";
-import { updateContext } from "./contexts-store.js?v=2365";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2365";
-import { consumeHandoff } from "./handoff.js?v=2365";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2365";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2365";
+} from "./voice-parts.js?v=2367";
+import { showToast } from "./components/toast.js?v=2367";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2367";
+import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2367";
+import { updateContext } from "./contexts-store.js?v=2367";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2367";
+import { consumeHandoff } from "./handoff.js?v=2367";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2367";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2367";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
