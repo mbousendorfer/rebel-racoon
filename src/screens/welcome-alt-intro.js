@@ -13,15 +13,15 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2460";
-import { startDemo } from "../demo-flow.js?v=2460";
-import { isFlagOn } from "../feature-flags.js?v=2460";
-import { html, raw } from "../utils.js?v=2460";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2460";
-import { navigate } from "../router.js?v=2460";
-import { setHandoff } from "../handoff.js?v=2460";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2460";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2460";
+import "../archie-pixels.js?v=2461";
+import { startDemo } from "../demo-flow.js?v=2461";
+import { isFlagOn } from "../feature-flags.js?v=2461";
+import { html, raw } from "../utils.js?v=2461";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2461";
+import { navigate } from "../router.js?v=2461";
+import { setHandoff } from "../handoff.js?v=2461";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2461";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2461";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -30,11 +30,11 @@ const PARTS = ["goals", "voice", "brand", "competitors"];
 // The rail stays quiet — the colour lives once, in the parts above. A step
 // gets a line only where its title doesn't say why it's asked; the documents
 // step is marked Optional instead.
+// Short (2026-10-29, asked: « TROP verbeuse … alléger »): only where the title
+// leaves a question open.
 const STEP_HINT = {
-  voice: "How your posts sound, on every network.",
-  recap: "Fix anything that's off before I write.",
-  voiceFrom: "Your posts, a document you wrote, or your own words. Skip it and I read it from your website.",
-  url: "I read it to learn your business, audience and look. No website? I ask a few questions instead.",
+  url: "No website? I'll ask a few questions.",
+  voiceFrom: "Your posts, a document, or your own words.",
 };
 const OPTIONAL = new Set(["documents"]);
 
@@ -93,10 +93,7 @@ export function renderWelcomeAltIntro(_params, target) {
         <img class="welcome-intro__wordmark" src="assets/logos/archie-wordmark.svg" alt="Archie" />
         <div class="welcome-intro__copy">
           <h1 class="welcome-intro__title" id="welcomeIntroTitle">Let's build your Playbook together.</h1>
-          <p class="welcome-intro__sub">
-            Your Playbook tells me what you do, who you write for and how you sound. Every draft I write starts from it,
-            so your posts sound like you.
-          </p>
+          <p class="welcome-intro__sub">It tells me what you do and how you sound, so every draft sounds like you.</p>
           <ul class="welcome-intro__parts" aria-label="What a Playbook holds">
             ${PARTS.map((t) => {
               const part = RECAP_SECTIONS.find((sec) => sec.id === t);
@@ -148,9 +145,7 @@ export function renderWelcomeAltIntro(_params, target) {
               ></span>
               <span class="welcome-flow__option-text">
                 <span class="welcome-flow__option-title">Start with video clips</span>
-                <span class="welcome-flow__option-desc"
-                  >Cut the best moments of a video now. Build your Playbook later, so the drafts sound like you.</span
-                >
+                <span class="welcome-flow__option-desc">Cut clips now, build your Playbook later.</span>
               </span>
               <i class="ap-icon-arrow-right welcome-flow__option-add" aria-hidden="true"></i>
             </button>
