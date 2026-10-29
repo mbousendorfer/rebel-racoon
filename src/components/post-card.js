@@ -19,15 +19,15 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2499";
-import { isPortraitFormat } from "../clip-formats.js?v=2499";
-import { presetById } from "../clip-captions.js?v=2499";
-import { renderFeedbackControl } from "./feedback-control.js?v=2499";
-import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2499";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2499";
-import { REVEAL_MS } from "../archie-pixels.js?v=2499";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2499";
-import { languageOf } from "../draft-rewrite.js?v=2499";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2500";
+import { isPortraitFormat } from "../clip-formats.js?v=2500";
+import { presetById } from "../clip-captions.js?v=2500";
+import { renderFeedbackControl } from "./feedback-control.js?v=2500";
+import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2500";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2500";
+import { REVEAL_MS } from "../archie-pixels.js?v=2500";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2500";
+import { languageOf } from "../draft-rewrite.js?v=2500";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -207,7 +207,7 @@ export function renderPostCard(post, opts = {}) {
   // selectable rows fill the gutter with an actual checkbox.
   const checkbox = `<div class="posts__row-check"${selectable ? "" : ' aria-hidden="true"'}>${
     selectable
-      ? `<label class="ap-checkbox-container" aria-label="Select draft">
+      ? `<label class="ap-checkbox-container" aria-label="${escapeAttr(selectLabel(post))}">
           <input type="checkbox" data-post-select="${post.id}" ${selected ? "checked" : ""} />
           <i></i>
         </label>`
@@ -448,13 +448,13 @@ export function renderPostCard(post, opts = {}) {
       <!-- The rail is prod's (studio-mfe post-card-actions), in its order:
            Reference · Schedule · Edit · Save as draft · Assign · Delete.
            Rewriting is asked in the chat; images live in the media block. -->
-      <div class="posts__row-actions" aria-label="Draft actions">
+      <div class="posts__row-actions" role="group" aria-label="Draft actions">
         ${raw(
           rail(
             "mention",
             `<button
               type="button"
-              class="ap-icon-button stroked blue"
+              class="ap-icon-button stroked"
               aria-label="Reference in chat"
               title="Reference"
               data-post-mention="${post.id}"
@@ -611,6 +611,14 @@ function infobox(tone, icon, body, role = "") {
 // A rail action that can't run on a draft that won't publish (Assign, Schedule).
 // The tooltip sits on a wrapper: a disabled button gets no pointer events, so it
 // could never show its own.
+// Each card's checkbox names its draft — « Select draft » on every card said
+// nothing about which one.
+function selectLabel(post) {
+  const text = (Array.isArray(post.text) ? post.text.join(" ") : post.text || "").trim();
+  const words = text.split(/\s+/).slice(0, 6).join(" ");
+  return `Select ${networkLabel(normalizeNetwork(post.network))} draft${words ? `: ${words}` : ""}`;
+}
+
 function renderBlockedAction(post, regenerating, { label, icon, attr }) {
   const blocker = validatePost(post).errors[0];
   const button = `<button type="button" class="ap-icon-button stroked" aria-label="${label}" ${
