@@ -1,20 +1,21 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2454";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2454";
-import { getContextById } from "../../contexts-store.js?v=2454";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2454";
-import { renderTopicCard } from "../../components/topic-card.js?v=2454";
-import { findTopicSource } from "../../topics-catalog.js?v=2454";
-import { html, raw } from "../../utils.js?v=2454";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2454";
-import { renderStarterCards } from "../../components/starter-card.js?v=2454";
-import { isFlagOn } from "../../feature-flags.js?v=2454";
-import { isDemo } from "../../demo-mode.js?v=2454";
-import { voicesToFinish } from "../../voice-parts.js?v=2454";
-import { networkLabel, networkIcon } from "../../social-profiles.js?v=2454";
-import "../../archie-pixels.js?v=2454";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2455";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2455";
+import { getContextById } from "../../contexts-store.js?v=2455";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2455";
+import { renderTopicCard } from "../../components/topic-card.js?v=2455";
+import { findTopicSource } from "../../topics-catalog.js?v=2455";
+import { html, raw } from "../../utils.js?v=2455";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2455";
+import { renderStarterCards } from "../../components/starter-card.js?v=2455";
+import { isFlagOn } from "../../feature-flags.js?v=2455";
+import { isDemo } from "../../demo-mode.js?v=2455";
+import { voicesToFinish } from "../../voice-parts.js?v=2455";
+import { networkLabel, networkIcon } from "../../social-profiles.js?v=2455";
+import { parseHashParams } from "../../url-state.js?v=2455";
+import "../../archie-pixels.js?v=2455";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -156,6 +157,7 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
   if (isFlagOn("newChatHero")) {
     return html`
       <div class="empty-chat empty-chat--rows" data-empty-chat>
+        ${raw(playbookReadyBlock(session))}
         <span class="empty-chat__logo" role="img" aria-label="Archie">
           <img class="empty-chat__logo-word empty-chat__logo-word--a" src="assets/logos/archie-wordmark.svg" alt="" />
           <img class="empty-chat__logo-mono" src="assets/logos/archie-mono.svg" alt="" />
@@ -233,6 +235,27 @@ function finishVoicesRow(session) {
         .join("")}</span>
       <button type="button" class="ap-button secondary blue" data-finish-voices="${ctx.id}" data-finish-voices-net="${nets[0]}">
         <span>${nets.length === 1 ? "Add its voice" : "Add their voices"}</span>
+      </button>
+    </section>`;
+}
+
+// The first chat after the run (`?welcome=1`, set by its « Draft my first
+// post »): at the very top, the Playbook is ready and the first step (2026-10-29,
+// asked: « un genre de bloc d'onboarding … tout en haut de la conversation »).
+// The hero goes with the first message, the block with it.
+function playbookReadyBlock(session) {
+  if (parseHashParams().get("welcome") !== "1") return "";
+  const ctx = session?.contextId ? getContextById(session.contextId) : null;
+  if (!ctx) return "";
+  return `
+    <section class="voice-nudge voice-nudge--welcome" aria-label="Your Playbook is ready">
+      <span class="voice-nudge__icon" aria-hidden="true"><i class="ap-icon-sparkles"></i></span>
+      <span class="voice-nudge__text">
+        <span class="voice-nudge__title">Your Playbook is ready</span>
+        <span class="voice-nudge__desc">Tell me what to post, or drop a link or a file. I'll draft it in your voice.</span>
+      </span>
+      <button type="button" class="ap-button secondary blue" data-open-playbook="${ctx.id}">
+        <span>Open my Playbook</span>
       </button>
     </section>`;
 }

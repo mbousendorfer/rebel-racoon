@@ -829,6 +829,12 @@ body.playbook-revoked .session__composer-card {
   text-align: left;
 }
 
+/* The same card at the top of the first chat after the run. */
+.voice-nudge--welcome {
+  margin-top: 0;
+  margin-bottom: var(--ref-spacing-lg);
+}
+
 .voice-nudge__icon {
   display: inline-flex;
   flex: none;

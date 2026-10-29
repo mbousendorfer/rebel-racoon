@@ -23,9 +23,9 @@
 // destroyed and red would flag a danger that is not there. The primary slot is
 // deliberately empty — there is no action here worth spotlighting.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2454";
-import { escapeHtml } from "../utils.js?v=2454";
-import { getTopicById, topicTitle } from "../topics-store.js?v=2454";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2455";
+import { escapeHtml } from "../utils.js?v=2455";
+import { getTopicById, topicTitle } from "../topics-store.js?v=2455";
 
 const MODAL_ID = "topic-ignore";
 
