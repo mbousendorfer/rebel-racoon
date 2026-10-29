@@ -4,7 +4,7 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta } from "../../social-profiles.js?v=2519";
+import { networkMeta } from "../../social-profiles.js?v=2520";
 import {
   getPosts,
   removePost,
@@ -12,24 +12,24 @@ import {
   updatePostContent,
   attachImageToDraft,
   attachCarouselToDraft,
-} from "../../posts-store.js?v=2519";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2519";
-import { getSessionById } from "../../sessions-store.js?v=2519";
-import { renderPostCard } from "../post-card.js?v=2519";
-import { isPostValid } from "../../post-validation.js?v=2519";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2519";
-import { html, raw } from "../../utils.js?v=2519";
-import { isFlagOn } from "../../feature-flags.js?v=2519";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2519";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2519";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2519";
-import { open as openAssignModal } from "../assign-modal.js?v=2519";
-import { showToast } from "../toast.js?v=2519";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2519";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2519";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2519";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2519";
-import { blockInDemo } from "../../demo-flow.js?v=2519";
+} from "../../posts-store.js?v=2520";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2520";
+import { getSessionById } from "../../sessions-store.js?v=2520";
+import { renderPostCard } from "../post-card.js?v=2520";
+import { isPostValid } from "../../post-validation.js?v=2520";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2520";
+import { html, raw } from "../../utils.js?v=2520";
+import { isFlagOn } from "../../feature-flags.js?v=2520";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2520";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2520";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2520";
+import { open as openAssignModal } from "../assign-modal.js?v=2520";
+import { showToast } from "../toast.js?v=2520";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2520";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2520";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2520";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2520";
+import { blockInDemo } from "../../demo-flow.js?v=2520";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -554,7 +554,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2519"), import("../../folders-store.js?v=2519")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2520"), import("../../folders-store.js?v=2520")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
