@@ -6,3 +6,6 @@ node_modules/
 
 # Local demo footage for video-clip previews (not committed — too heavy)
 video/
+
+# UI polish loop captures (scripts/ui-capture.mjs)
+.ui-review/

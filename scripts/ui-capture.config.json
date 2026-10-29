@@ -1,0 +1,169 @@
+{
+  "fixedTime": "2026-10-29T10:00:00Z",
+  "viewports": [
+    [1440, 900],
+    [1280, 800]
+  ],
+  "shots": [
+    {
+      "id": "chat",
+      "surface": "chat",
+      "url": "#/session/s-acme-launch",
+      "wait": "#app .composer, #app textarea",
+      "viewports": [
+        [1440, 900],
+        [1280, 800],
+        [1024, 768]
+      ]
+    },
+    {
+      "id": "new-chat",
+      "surface": "new-chat",
+      "url": "#/session/s-acme-launch",
+      "actions": [{ "click": "[data-sidebar-new]" }],
+      "wait": "#app textarea"
+    },
+    {
+      "id": "panel-sources",
+      "surface": "panel",
+      "url": "?openPanel=sources#/session/s-acme-launch",
+      "wait": "#app textarea",
+      "viewports": [
+        [1440, 900],
+        [1280, 800],
+        [1024, 768]
+      ]
+    },
+    {
+      "id": "panel-ideas",
+      "surface": "panel",
+      "url": "?openPanel=ideas#/session/s-acme-launch",
+      "wait": "#app textarea"
+    },
+    {
+      "id": "panel-drafts",
+      "surface": "panel",
+      "url": "?openPanel=drafts#/session/s-acme-launch",
+      "wait": "#app textarea"
+    },
+    { "id": "playbooks", "surface": "playbooks", "url": "#/contexts", "wait": "#app h1, #app h2" },
+    {
+      "id": "playbook-goals",
+      "surface": "playbook",
+      "url": "#/playbook/ctx-acme?tab=goals",
+      "wait": "#app h1, #app h2"
+    },
+    {
+      "id": "playbook-voice",
+      "surface": "playbook",
+      "url": "#/playbook/ctx-acme?tab=voice",
+      "wait": "#app h1, #app h2"
+    },
+    {
+      "id": "playbook-brand",
+      "surface": "playbook",
+      "url": "#/playbook/ctx-acme?tab=brand",
+      "wait": "#app h1, #app h2"
+    },
+    {
+      "id": "playbook-images",
+      "surface": "playbook",
+      "url": "#/playbook/ctx-acme?tab=images",
+      "wait": "#app h1, #app h2"
+    },
+    {
+      "id": "playbook-competitors",
+      "surface": "playbook",
+      "url": "#/playbook/ctx-acme?tab=competitors",
+      "wait": "#app h1, #app h2"
+    },
+    {
+      "id": "playbook-influencers",
+      "surface": "playbook",
+      "url": "#/playbook/ctx-acme?tab=influencers",
+      "wait": "#app h1, #app h2"
+    },
+    { "id": "topics", "surface": "topics", "url": "#/topics", "wait": "#app h1, #app h2" },
+    {
+      "id": "topics-settings",
+      "surface": "topics",
+      "url": "#/topics/settings?pb=ctx-acme",
+      "wait": "#app h1, #app h2"
+    },
+    { "id": "image-studio", "surface": "image-studio", "url": "#/playbook/ctx-acme/styles/new", "wait": "body" },
+    {
+      "id": "welcome-intro",
+      "surface": "onboarding",
+      "mode": "new-alt",
+      "url": "#/welcome-alt/intro",
+      "wait": "#app h1, #app h2"
+    },
+    {
+      "id": "welcome-brand",
+      "surface": "onboarding",
+      "mode": "new-alt",
+      "url": "#/welcome-alt/brand",
+      "wait": "#app h1, #app h2"
+    },
+    {
+      "id": "modal-add-source",
+      "surface": "overlays",
+      "url": "?openModal=add-source#/session/s-acme-launch",
+      "wait": ".app-modal-backdrop:not([hidden])"
+    },
+    {
+      "id": "modal-connect-account",
+      "surface": "overlays",
+      "url": "?openModal=connect-account#/session/s-acme-launch",
+      "wait": ".app-modal-backdrop:not([hidden])"
+    },
+    {
+      "id": "modal-analyze-profiles",
+      "surface": "overlays",
+      "url": "?openModal=analyze-profiles#/session/s-acme-launch",
+      "wait": ".app-modal-backdrop:not([hidden])"
+    },
+    {
+      "id": "modal-fill-document",
+      "surface": "overlays",
+      "url": "?openModal=fill-document#/session/s-acme-launch",
+      "wait": ".app-modal-backdrop:not([hidden])"
+    },
+    {
+      "id": "modal-save-folder",
+      "surface": "overlays",
+      "url": "?openModal=save-folder#/session/s-acme-launch",
+      "wait": ".app-modal-backdrop:not([hidden])"
+    },
+    {
+      "id": "modal-chat-picker",
+      "surface": "overlays",
+      "url": "?openModal=chat-picker#/session/s-acme-launch",
+      "wait": ".app-modal-backdrop:not([hidden])"
+    },
+    {
+      "id": "modal-search",
+      "surface": "overlays",
+      "url": "?openModal=search#/session/s-acme-launch",
+      "wait": ".app-modal-backdrop:not([hidden])"
+    },
+    {
+      "id": "modal-shortcuts",
+      "surface": "overlays",
+      "url": "?openModal=shortcuts#/session/s-acme-launch",
+      "wait": ".app-modal-backdrop:not([hidden])"
+    },
+    {
+      "id": "modal-feedback",
+      "surface": "overlays",
+      "url": "?openModal=feedback#/session/s-acme-launch",
+      "wait": ".app-modal-backdrop:not([hidden])"
+    },
+    {
+      "id": "modal-bug",
+      "surface": "overlays",
+      "url": "?openModal=bug#/session/s-acme-launch",
+      "wait": ".app-modal-backdrop:not([hidden])"
+    }
+  ]
+}
