@@ -14,8 +14,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2468";
-import { navigate } from "../router.js?v=2468";
+import { html, raw, escapeHtml } from "../utils.js?v=2469";
+import { navigate } from "../router.js?v=2469";
 import {
   getDraft,
   patchDraft,
@@ -24,12 +24,12 @@ import {
   writeAltManually,
   analyzeAltInterview,
   setAltVoiceSource,
-} from "../context-builder.js?v=2468";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2468";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2468";
-import { connectors as connectorMocks } from "../mocks.js?v=2468";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2468";
-import { networkIcon } from "../social-profiles.js?v=2468";
+} from "../context-builder.js?v=2469";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2469";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2469";
+import { connectors as connectorMocks } from "../mocks.js?v=2469";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2469";
+import { networkIcon } from "../social-profiles.js?v=2469";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
@@ -57,14 +57,14 @@ function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKe
 }
 
 // Raw: it is interpolated into the screens' html templates as markup.
-const actions = (primary, { skip = "" } = {}) =>
+const actions = (primary, { skip = "", skipClass = "ghost grey" } = {}) =>
   raw(html`
     <div class="welcome-flow__actions">
       <button type="button" class="ap-button ghost grey" data-flow-back>
         <i class="ap-icon-arrow-left"></i><span>Back</span>
       </button>
       ${skip
-        ? raw(`<button type="button" class="ap-button ghost grey" data-flow-skip>${escapeHtml(skip)}</button>`)
+        ? raw(`<button type="button" class="ap-button ${skipClass}" data-flow-skip>${escapeHtml(skip)}</button>`)
         : ""}
       ${raw(primary)}
     </div>
@@ -432,7 +432,10 @@ export function renderWelcomeAltVoiceFrom(_params, target) {
       }
       return html`
         <h1 class="welcome-flow__title" id="welcomeFlowTitle">How should I learn your voice?</h1>
-        <p class="welcome-intro__sub">Pick one, or ${fallbackFor(sid).sub}.</p>
+        <p class="welcome-intro__sub">
+          Your voice is how your posts sound: the tone, the words, the length. Every draft I write follows it. Pick one,
+          or ${fallbackFor(sid).sub}.
+        </p>
         <ul class="welcome-flow__options">
           ${VOICE_WAYS.filter((w) => w.value !== "profile" || voiceAccounts().length).map(
             (w) => html`
@@ -449,7 +452,7 @@ export function renderWelcomeAltVoiceFrom(_params, target) {
             `,
           )}
         </ul>
-        ${actions("", { skip: fallbackFor(sid).label })}
+        ${actions("", { skip: fallbackFor(sid).label, skipClass: "secondary blue" })}
       `;
     },
     onInput: (e) => {
