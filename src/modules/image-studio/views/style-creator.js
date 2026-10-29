@@ -9,21 +9,21 @@
 // active Playbook. (A three-subject "Test run" column was removed at the user's
 // request, 2026-10-06: "ça n'a pas de sens".)
 
-import { html, toString } from "../lib/html.js?v=2522";
-import { delegate } from "../lib/delegate.js?v=2522";
-import { getPath } from "../../../router.js?v=2522";
-import { setTopbarActions } from "../../../components/topbar.js?v=2522";
-import { renderFrame } from "./frame.js?v=2522";
-import { renderEmpty } from "../ui/empty.js?v=2522";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=2522";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2522";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=2522";
-import { toast } from "../ui/toast.js?v=2522";
-import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2522";
-import { copyService } from "../services/index.js?v=2522";
-import { lookFromColors } from "../render/visual.js?v=2522";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2522";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2522";
+import { html, toString } from "../lib/html.js?v=2524";
+import { delegate } from "../lib/delegate.js?v=2524";
+import { getPath } from "../../../router.js?v=2524";
+import { setTopbarActions } from "../../../components/topbar.js?v=2524";
+import { renderFrame } from "./frame.js?v=2524";
+import { renderEmpty } from "../ui/empty.js?v=2524";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=2524";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2524";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=2524";
+import { toast } from "../ui/toast.js?v=2524";
+import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2524";
+import { copyService } from "../services/index.js?v=2524";
+import { lookFromColors } from "../render/visual.js?v=2524";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2524";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2524";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -175,6 +175,7 @@ export function mount(target, params, ctx, { embed = null } = {}) {
             class="ap-link standalone imst-prompt-field__gen${!images.length || state.promptBusy ? " disabled" : ""}"
             data-imst-action="generate-prompt"
             aria-disabled="${!images.length || state.promptBusy}"
+            ${!images.length ? 'title="Add an image first"' : ""}
           >
             <i class="ap-icon-sparkles" aria-hidden="true"></i
             ><span
@@ -206,7 +207,8 @@ ${d.stylePrompt}</textarea
             </header>`}
         <div class="imst-creator${embed ? " imst-creator--embed" : ""}">
           <div class="imst-creator__form${embed ? "" : " ap-card imst-creator__card"}">
-            ${embed ? html`${refs}${identity}` : html`${identity}${refs}`}
+            <!-- The images ARE the style: they come first in both hosts, the name once the look is set. -->
+            ${refs}${identity}
           </div>
         </div>
         ${otherErrors.length
