@@ -1446,7 +1446,6 @@ archie-pixels.empty-chat__pixels {
   width: var(--comp-button-height);
   min-width: var(--comp-button-height);
   padding: 0;
-  border-radius: var(--sys-border-radius-lg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1765,6 +1764,35 @@ archie-pixels.empty-chat__pixels {
 .composer-playbook {
   position: relative;
   display: inline-flex;
+}
+
+/* A started chat's Playbook is information, not a disabled control (its
+   grey-60 value was 2.32:1): the « Playbook » caption and the name as text,
+   centred on the toolbar's button height. */
+.composer-playbook--static {
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  min-height: var(--comp-button-height);
+  min-width: 0;
+}
+
+.composer-playbook__label {
+  flex-shrink: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  font-weight: var(--sys-text-style-caption-weight);
+  color: var(--ref-color-grey-80);
+}
+
+.composer-playbook__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  font-weight: var(--sys-text-style-body-weight);
+  color: var(--ref-color-grey-100);
 }
 
 /* The DS .ap-select-trigger ships full-width — clamp it to its content
