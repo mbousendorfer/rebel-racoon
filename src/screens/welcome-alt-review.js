@@ -32,12 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2438";
-import { navigate } from "../router.js?v=2438";
-import { getDraft, patchDraft } from "../context-builder.js?v=2438";
-import { mount } from "../playbook-view.js?v=2438";
-import { parseHashParams } from "../url-state.js?v=2438";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2438";
+import { html, raw } from "../utils.js?v=2439";
+import { navigate } from "../router.js?v=2439";
+import { getDraft, patchDraft } from "../context-builder.js?v=2439";
+import { mount } from "../playbook-view.js?v=2439";
+import { parseHashParams } from "../url-state.js?v=2439";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2439";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -106,7 +106,7 @@ export function renderReview(target, sid, config, review) {
               <li>
                 <button
                   type="button"
-                  class="ap-button ghost blue welcome-review__add"
+                  class="ap-button secondary blue welcome-review__add"
                   data-review-part="${t.id}"
                   aria-current="${here ? "true" : "false"}"
                 >
