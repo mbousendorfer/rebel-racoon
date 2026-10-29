@@ -1068,6 +1068,15 @@
   gap: var(--ref-spacing-xs);
 }
 
+/* The voice review's network rows: the connected accounts on the network,
+   as profile tags under its state. */
+.pb2-voice-accounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+  margin-top: var(--ref-spacing-xxs);
+}
+
 .pb2-voice-net__foot {
   display: flex;
   justify-content: flex-end;

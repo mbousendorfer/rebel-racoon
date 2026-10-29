@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2384";
-import { conceptHint } from "./concepts.js?v=2384";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2385";
+import { conceptHint } from "./concepts.js?v=2385";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2384";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2384";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2384";
-import { isFlagOn } from "./feature-flags.js?v=2384";
-import { clipLookOf } from "./videos-store.js?v=2384";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2384";
-import { parseHashParams } from "./url-state.js?v=2384";
+} from "./playbook-brand-kit.js?v=2385";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2385";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2385";
+import { isFlagOn } from "./feature-flags.js?v=2385";
+import { clipLookOf } from "./videos-store.js?v=2385";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2385";
+import { parseHashParams } from "./url-state.js?v=2385";
 import {
   isListPart,
   voiceParts,
@@ -53,14 +53,14 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2384";
-import { showToast } from "./components/toast.js?v=2384";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2384";
-import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2384";
-import { updateContext } from "./contexts-store.js?v=2384";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2384";
-import { consumeHandoff } from "./handoff.js?v=2384";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2384";
+} from "./voice-parts.js?v=2385";
+import { showToast } from "./components/toast.js?v=2385";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2385";
+import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2385";
+import { updateContext } from "./contexts-store.js?v=2385";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2385";
+import { consumeHandoff } from "./handoff.js?v=2385";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2385";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -69,7 +69,8 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2384";
+  renderProfileTag,
+} from "./social-profiles.js?v=2385";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2799,26 +2800,23 @@ function voiceWaysCard(net = null, { title = "Learn it from a source", hint = ""
 function networkPickerCards(data, nets, first) {
   if (!nets.length || !networkVoiceOn()) return [];
   const picked = data.voiceRulesFor || [];
-  // Each network as its connected account — its avatar with the network's badge,
-  // its handle — a reminder of what I write for (2026-10-29, asked).
-  const accountOn = (net) => getConnectedProfiles().find((p) => normalizeNetwork(p.platform) === net);
-  const glyph = (net) => {
-    const a = accountOn(net);
-    if (!a) return `<span class="welcome-flow__glyph"><i class="${networkIcon(net)}" aria-hidden="true"></i></span>`;
-    const inner = a.photo
-      ? `<img src="${esc(a.photo)}" alt="" />`
-      : `<span class="ap-avatar-initials">${esc(a.initials || "")}</span>`;
-    return `<span class="ap-avatar size-32" aria-hidden="true">${inner}<span class="ap-avatar-network"><i class="${networkIcon(net)}"></i></span></span>`;
-  };
-  const row = (net, on, desc, control) => `
+  // One row per network — a voice is a network's, not an account's — with the
+  // connected accounts on it underneath, as a reminder of what I write for
+  // (2026-10-29, asked: « groupe ça par network »).
+  const accountsOn = (net) => getConnectedProfiles().filter((p) => normalizeNetwork(p.platform) === net);
+  const row = (net, on, desc, control) => {
+    const accounts = accountsOn(net);
+    return `
     <label class="recap__pick${on ? " is-picked" : ""}">
-      ${glyph(net)}
+      <span class="welcome-flow__glyph"><i class="${networkIcon(net)}" aria-hidden="true"></i></span>
       <span class="recap__pick-text">
         <span class="recap__pick-name">${esc(networkLabel(net))}</span>
         ${desc ? `<span class="recap__pick-desc">${esc(desc)}</span>` : ""}
+        ${accounts.length ? `<span class="pb2-voice-accounts">${accounts.map((a) => renderProfileTag(a)).join("")}</span>` : ""}
       </span>
       ${control}
     </label>`;
+  };
   // The one question, on the networks of the connected accounts (where the
   // brand posts is known — 2026-10-29, asked: « la question, c'est est-ce que
   // tu veux utiliser une voice spécifique pour les networks suivants ou bien
@@ -2832,7 +2830,7 @@ function networkPickerCards(data, nets, first) {
         row(
           net,
           picked.includes(net),
-          [accountOn(net)?.handle || accountOn(net)?.name, stateOf(net)].filter(Boolean).join(" · "),
+          stateOf(net),
           `<span class="ap-checkbox-container" data-pb2-voice-rules="${esc(net)}"><input type="checkbox" ${
             picked.includes(net) ? "checked" : ""
           } aria-label="A voice of its own for ${esc(networkLabel(net))}" /><i></i></span>`,
@@ -2841,7 +2839,7 @@ function networkPickerCards(data, nets, first) {
       .join("")}</div>`,
     {
       wide: true,
-      hint: "Your connected accounts, below. Each uses your default voice: tick the ones that need a voice of their own, and each gets an empty voice to fill.",
+      hint: "The networks of your connected accounts. Each uses your default voice: tick the ones that need a voice of their own, and each gets an empty voice to fill.",
       index: first,
       className: "pb2-voice-networks",
     },
