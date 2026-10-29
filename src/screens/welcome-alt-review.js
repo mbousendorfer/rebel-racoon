@@ -311,8 +311,7 @@ export function renderReview(target, sid, config, review) {
   // Bring the current card to the reading line — the middle of the stage,
   // where the nav stands (2026-10-20: at 45% the nav read as off-centre). A
   // card taller than the scroll starts at its top. The glide is ours, not the
-  // browser's smooth scroll (too short, too abrupt): a slow ease-in-out, the
-  // snap off while it runs (it would catch the scroll on the way). While it
+  // browser's smooth scroll (too short, too abrupt): a slow ease-in-out. While it
   // glides, the scroll doesn't pick the index.
   const easeInOut = (p) => (p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2);
   let gliding = false;
@@ -328,21 +327,18 @@ export function renderReview(target, sid, config, review) {
     window.cancelAnimationFrame(glideFrame);
     if (instant || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       gliding = false;
-      body.classList.remove("is-gliding");
       body.scrollTop = to;
       return focus();
     }
     const from = body.scrollTop;
     const t0 = performance.now();
     gliding = true;
-    body.classList.add("is-gliding");
     const step = (now) => {
       const p = Math.min(1, (now - t0) / GLIDE_MS);
       body.scrollTop = from + (to - from) * easeInOut(p);
       if (p < 1) glideFrame = window.requestAnimationFrame(step);
       else {
         gliding = false;
-        body.classList.remove("is-gliding");
       }
     };
     glideFrame = window.requestAnimationFrame(step);
@@ -388,9 +384,7 @@ export function renderReview(target, sid, config, review) {
     });
   };
 
-  // Changing part: the column leaves, the new one cascades in. The snap stays
-  // off while the cascade lands: it follows a card's transform, so it chased
-  // each rising card and the column slid back under them (2026-10-20).
+  // Changing part: the column leaves, the new one cascades in.
   let moving = false;
   const switchPart = (id, opts = {}) => {
     if (moving) return;
@@ -399,8 +393,6 @@ export function renderReview(target, sid, config, review) {
     window.setTimeout(() => {
       openPart(id, opts);
       shell.sheet.classList.remove("is-part-out");
-      body.classList.add("is-settling");
-      window.setTimeout(() => body.classList.remove("is-settling"), 950);
       deal();
       navEl.classList.add("is-dealt");
       window.setTimeout(() => navEl.classList.remove("is-dealt"), 500);
