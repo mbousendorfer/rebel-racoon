@@ -2199,10 +2199,55 @@ body.has-modal {
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
 }
+/* In the thread (and on the fiche): the best way leads — roomier, its icon on
+   Archie's orange — and the others step back into a two-column list, no
+   borders, each with its hint; a row lights grey-05 on hover. The run's
+   review (voiceWaysCard, outside .voice-ask) keeps its tiles. */
+.voice-ask .voice-ask__option.is-best {
+  padding: var(--ref-spacing-sm);
+}
+.voice-ask .is-best .voice-ask__icon {
+  width: 40px;
+  height: 40px;
+  background: var(--ref-color-orange-10);
+  color: var(--ref-color-orange-100);
+}
+.voice-ask .voice-ask__options {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--ref-spacing-xs);
+}
+.voice-ask .voice-ask__option:not(.is-best) {
+  flex-direction: row;
+  align-items: center;
+  border-color: transparent;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+}
+.voice-ask .voice-ask__option:not(.is-best):hover {
+  border-color: transparent;
+  background: var(--ref-color-grey-05);
+}
+.voice-ask .voice-ask__option:not(.is-best) .voice-ask__icon {
+  width: 24px;
+  height: 24px;
+  background: none;
+}
+.voice-ask .voice-ask__option:not(.is-best) .voice-ask__name {
+  font-weight: var(--ref-font-weight-regular);
+}
+.voice-ask .voice-ask__option:not(.is-best) .voice-ask__hint {
+  white-space: nowrap;
+}
+@container (max-width: 420px) {
+  .voice-ask .voice-ask__options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* The way out: Not now, then the default voice — the default answer — last,
+   at the far right, as the secondary (stroked blue). */
 .voice-ask__foot {
   display: flex;
   justify-content: flex-end;
-  gap: var(--ref-spacing-xxxs);
+  gap: var(--ref-spacing-xs);
 }
 
 /* The chat's answer: edit first, or use it — the primary last. */

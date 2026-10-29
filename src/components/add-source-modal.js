@@ -9,25 +9,25 @@
 // upload state machines live outside in sources-stream.js so they
 // continue running even after the modal closes.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2417";
-import { iconFor } from "../file-kinds.js?v=2417";
-import { connectorDocs } from "../mocks.js?v=2417";
+import { html, raw, escapeHtml } from "../utils.js?v=2418";
+import { iconFor } from "../file-kinds.js?v=2418";
+import { connectorDocs } from "../mocks.js?v=2418";
 import {
   getConnectors,
   findConnector,
   setConnectorStatus,
   subscribe as subscribeConnectors,
-} from "../connectors-store.js?v=2417";
-import { postConnectPrompt } from "../assistant.js?v=2417";
-import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2417";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2417";
-import { navigate } from "../router.js?v=2417";
-import { renderConnectorLogo } from "../connectors-view.js?v=2417";
-import { isFlagOn } from "../feature-flags.js?v=2417";
-import { showToast } from "./toast.js?v=2417";
-import { dropzoneHTML } from "./dropzone.js?v=2417";
-import { isDemo } from "../demo-mode.js?v=2417";
-import { addDemoSource } from "../demo-flow.js?v=2417";
+} from "../connectors-store.js?v=2418";
+import { postConnectPrompt } from "../assistant.js?v=2418";
+import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2418";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2418";
+import { navigate } from "../router.js?v=2418";
+import { renderConnectorLogo } from "../connectors-view.js?v=2418";
+import { isFlagOn } from "../feature-flags.js?v=2418";
+import { showToast } from "./toast.js?v=2418";
+import { dropzoneHTML } from "./dropzone.js?v=2418";
+import { isDemo } from "../demo-mode.js?v=2418";
+import { addDemoSource } from "../demo-flow.js?v=2418";
 
 const MODAL_ID = "addSource";
 import {
@@ -39,7 +39,7 @@ import {
   cancelUpload,
   getUploads,
   subscribeUploads,
-} from "../sources-stream.js?v=2417";
+} from "../sources-stream.js?v=2418";
 
 let backdrop, modal, contentEl, footerEl, fileInput;
 let initialized = false;

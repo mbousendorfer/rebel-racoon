@@ -20,11 +20,11 @@
 //   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2417";
-import { getContextById } from "../contexts-store.js?v=2417";
-import { playbookForNewWork } from "../active-playbook.js?v=2417";
-import { isNewUser } from "../user-mode.js?v=2417";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2417";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2418";
+import { getContextById } from "../contexts-store.js?v=2418";
+import { playbookForNewWork } from "../active-playbook.js?v=2418";
+import { isNewUser } from "../user-mode.js?v=2418";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2418";
 import {
   networkVoiceOn,
   networkVoice,
@@ -34,7 +34,7 @@ import {
   baseValue,
   voiceItemsHtml,
   voiceNetTagHtml,
-} from "../voice-parts.js?v=2417";
+} from "../voice-parts.js?v=2418";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -44,11 +44,11 @@ import {
   INTERVIEW,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2417";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2417";
-import "../archie-pixels.js?v=2417";
-import { navigate } from "../router.js?v=2417";
-import { escapeHtml } from "../utils.js?v=2417";
+} from "../network-voice-flow.js?v=2418";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2418";
+import "../archie-pixels.js?v=2418";
+import { navigate } from "../router.js?v=2418";
+import { escapeHtml } from "../utils.js?v=2418";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -228,9 +228,10 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
 // A network with no rules of its own, before a draft for it (or « Add rules
 // for X » on one): a sibling of the voice edit — on butter, Archie says what's
 // missing and what rules for the network cover; on white, the ways to add
-// them as tiles — the best one first, full width, recommended; the others
-// in a row below — then the way out. Once answered, it folds to its title
-// line (the answer is the user's turn below it).
+// them — the best one first, a full-width tile, recommended; the others as a
+// quiet two-column list below — then the way out, the default voice (the
+// default answer) last, at the far right. Once answered, it folds to its
+// title line (the answer is the user's turn below it).
 // `line` replaces Archie's sentence; `later` names the way out (null: none —
 // the creation review, where leaving it is the answer).
 export function voiceAskHtml(
@@ -293,8 +294,8 @@ export function voiceAskHtml(
               : ""
           }
           <div class="voice-ask__foot">
-            ${hasDefault ? `<button type="button" class="ap-button ghost grey" ${pick("default")}>Use my default voice</button>` : ""}
             ${later ? `<button type="button" class="ap-button ghost grey" ${pick("cancel")}>${escapeHtml(later)}</button>` : ""}
+            ${hasDefault ? `<button type="button" class="ap-button stroked blue" ${pick("default")}>Use my default voice</button>` : ""}
           </div>
         </div>`
         }
