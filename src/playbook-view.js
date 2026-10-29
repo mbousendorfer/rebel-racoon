@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2416";
-import { conceptHint } from "./concepts.js?v=2416";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2417";
+import { conceptHint } from "./concepts.js?v=2417";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2416";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2416";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2416";
-import { isFlagOn } from "./feature-flags.js?v=2416";
-import { clipLookOf } from "./videos-store.js?v=2416";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2416";
-import { parseHashParams } from "./url-state.js?v=2416";
+} from "./playbook-brand-kit.js?v=2417";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2417";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2417";
+import { isFlagOn } from "./feature-flags.js?v=2417";
+import { clipLookOf } from "./videos-store.js?v=2417";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2417";
+import { parseHashParams } from "./url-state.js?v=2417";
 import {
   isListPart,
   voiceParts,
@@ -53,13 +53,13 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2416";
-import { showToast } from "./components/toast.js?v=2416";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2416";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2416";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2416";
-import { consumeHandoff } from "./handoff.js?v=2416";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2416";
+} from "./voice-parts.js?v=2417";
+import { showToast } from "./components/toast.js?v=2417";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2417";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2417";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2417";
+import { consumeHandoff } from "./handoff.js?v=2417";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2417";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -69,7 +69,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2416";
+} from "./social-profiles.js?v=2417";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1137,8 +1137,8 @@ function learnMenu(net = null) {
 
 // « Another network… » at the foot of Your networks (flag voicePerNetwork, a
 // saved Playbook, cfg.onAddNetworkVoice): the networks the Playbook doesn't
-// publish on yet; picking one opens the voice review on it (welcome-alt-recap.js
-// renderPlaybookVoice). The Playbook's own get their row's button.
+// publish on yet; picking one opens a chat on its Voice step
+// (openNetworkVoiceChat). The Playbook's own get their row's button.
 function addVoiceMenu(data) {
   if (!isLibrary() || !canEditView() || !networkVoiceOn() || !cfg.onAddNetworkVoice) return "";
   const mine = playbookNetworks(data);
@@ -3065,7 +3065,7 @@ function renderNetworkVoiceRead(data) {
   const label = networkLabel(net);
   const { state, chosen, voice } = networkVoice(data, net);
   if (state === "default") {
-    // One action: Add a voice for X opens the voice review, where posts, a
+    // One action: Add a voice for X opens a chat on its Voice step, where posts, a
     // document, questions, the default voice adapted and writing it by hand
     // are all tiles. Learn from… and Edit here read as editing the default
     // voice (2026-10-29, ux-heuristics audit), so they're gone from this tab.

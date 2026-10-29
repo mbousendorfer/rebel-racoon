@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2416";
-import { catalogueRoute } from "../active-playbook.js?v=2416";
+import { navigate } from "../router.js?v=2417";
+import { catalogueRoute } from "../active-playbook.js?v=2417";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,13 +13,12 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2416";
-import { mount, RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2416";
-import { isFlagOn } from "../feature-flags.js?v=2416";
-import { renderReview } from "./welcome-alt-review.js?v=2416";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2416";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2416";
-import { getContextById, updateContext } from "../contexts-store.js?v=2416";
+} from "../context-builder.js?v=2417";
+import { mount, RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2417";
+import { isFlagOn } from "../feature-flags.js?v=2417";
+import { renderReview } from "./welcome-alt-review.js?v=2417";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2417";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2417";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -27,14 +26,14 @@ import {
   networkVoice,
   networkVoiceOn,
   playbookNetworks,
-} from "../voice-parts.js?v=2416";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2416";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2416";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2416";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2416";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2416";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2416";
-import { showToast } from "../components/toast.js?v=2416";
+} from "../voice-parts.js?v=2417";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2417";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2417";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2417";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2417";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2417";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2417";
+import { showToast } from "../components/toast.js?v=2417";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -142,9 +141,7 @@ const VOICE_TINT = "voice";
 const NETWORKS_GROUP = "Network by network";
 const NETWORKS_HINT =
   "I write for each network in your default voice, unless you give it its own. I start from your connected accounts.";
-// `withNetworks` false (a Playbook's « Add a voice for X »): the network is
-// already chosen, no question about the others.
-function voiceReview(sid, overrides = {}, { withNetworks = true } = {}) {
+function voiceReview(sid, overrides = {}) {
   const voice = RECAP_SECTIONS.find((t) => t.id === "voice");
   const nets = () => (networkVoiceOn() ? playbookNetworks(getDraft(sid)) : []);
   const netOf = (partId) => partId.startsWith("voice-net-") && partId.slice("voice-net-".length);
@@ -164,19 +161,18 @@ function voiceReview(sid, overrides = {}, { withNetworks = true } = {}) {
         open: () => editVoiceNetwork(null),
         pick: (all) => all.filter(notNetworks),
       },
-      withNetworks &&
-        networkVoiceOn() && {
-          id: "voice-networks",
-          tab: "voice",
-          tint: VOICE_TINT,
-          group: NETWORKS_GROUP,
-          groupHint: NETWORKS_HINT,
-          title: "Pick the networks",
-          icon: "ap-icon-web",
-          lead: "Which networks get a voice of their own.",
-          open: () => editVoiceNetwork(null),
-          pick: (all) => all.filter((el) => el.matches(".pb2-voice-networks")),
-        },
+      networkVoiceOn() && {
+        id: "voice-networks",
+        tab: "voice",
+        tint: VOICE_TINT,
+        group: NETWORKS_GROUP,
+        groupHint: NETWORKS_HINT,
+        title: "Pick the networks",
+        icon: "ap-icon-web",
+        lead: "Which networks get a voice of their own.",
+        open: () => editVoiceNetwork(null),
+        pick: (all) => all.filter((el) => el.matches(".pb2-voice-networks")),
+      },
       ...nets()
         .filter((n) => (getDraft(sid).voiceRulesFor || []).includes(n))
         .map((n) => ({
@@ -184,7 +180,6 @@ function voiceReview(sid, overrides = {}, { withNetworks = true } = {}) {
           tab: "voice",
           tint: VOICE_TINT,
           group: NETWORKS_GROUP,
-          ...(!withNetworks && { groupHint: NETWORKS_HINT }),
           title: `Voice for ${networkLabel(n)}`,
           icon: networkIcon(n),
           lead: `How your ${networkLabel(n)} posts sound, on top of your default voice.`,
@@ -303,73 +298,6 @@ function voiceReview(sid, overrides = {}, { withNetworks = true } = {}) {
     back: "/welcome-alt/recap",
     ...overrides,
   };
-}
-
-// /playbook/:id/voice/:net — « Add a voice for X » on a saved Playbook's Voice
-// tab (2026-10-29, asked: « la même expérience de création / review »). The
-// same review on a working copy of the Playbook, opened on X's rules (X joins
-// the networks if it wasn't one); « Save to Playbook » writes the voice back,
-// Back drops the copy. Other networks keep what they had: none is moved to the
-// default voice behind the user's back.
-const VOICE_FIELDS = ["voiceSummary", "voiceAlways", "voiceNever", "voiceByPost", "voiceSometimes", "voiceMode"];
-export function renderPlaybookVoice({ id, net }, target) {
-  const ctx = getContextById(id);
-  if (!ctx || !networkVoiceOn()) {
-    navigate(`/playbook/${id}`);
-    return () => {};
-  }
-  const sid = `playbook-voice-${id}-${net}`;
-  const copy = JSON.parse(JSON.stringify(ctx));
-  const nets = playbookNetworks(copy);
-  const own = nets.filter((n) => networkVoice(copy, n).state === "own");
-  restoreDraft(sid, {
-    ...copy,
-    connectedSocials: nets.includes(net) ? copy.connectedSocials : [...(copy.connectedSocials || []), net],
-    voiceRulesFor: [...new Set([...own, net])],
-    revealed: true,
-  });
-  const back = `/playbook/${id}?tab=voice`;
-  const label = networkLabel(net);
-  const config = {
-    mode: "onboarding",
-    getData: () => getDraft(sid),
-    isReady: () => true,
-    commit: () => {},
-    revert: (snapshot) => patchDraft(sid, snapshot),
-    skipLoader: true,
-    showTop: false,
-    networkPicker: true,
-  };
-  return renderReview(
-    target,
-    sid,
-    config,
-    voiceReview(
-      sid,
-      {
-        title: `Voice for ${label}`,
-        sub: `How your ${label} posts sound, on top of your default voice. I change nothing in your Playbook until you save.`,
-        start: `voice-net-${net}`,
-        progress: false,
-        back,
-        next: {
-          label: "Save to Playbook",
-          go: () => {
-            const d = getDraft(sid);
-            updateContext(id, {
-              connectedSocials: d.connectedSocials,
-              voiceByNetwork: d.voiceByNetwork,
-              ...Object.fromEntries(VOICE_FIELDS.map((f) => [f, d[f]])),
-            });
-            navigate(`/playbook/${id}?tab=voice&voice=${net}`);
-            showToast(`${label} voice saved to ${ctx.name || "your Playbook"}.`);
-          },
-        },
-        done: { title: `Your ${label} voice is ready.`, lead: "Save it to your Playbook." },
-      },
-      { withNetworks: false },
-    ),
-  );
 }
 
 // The draft behind both hosts, rehydrated on a reload, and the view's config.

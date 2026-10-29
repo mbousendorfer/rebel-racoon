@@ -9,11 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2416";
-import { html, raw, escapeHtml } from "../utils.js?v=2416";
-import { navigate } from "../router.js?v=2416";
-import { parseHashParams } from "../url-state.js?v=2416";
-import { isFlagOn } from "../feature-flags.js?v=2416";
+import "../archie-pixels.js?v=2417";
+import { html, raw, escapeHtml } from "../utils.js?v=2417";
+import { navigate } from "../router.js?v=2417";
+import { parseHashParams } from "../url-state.js?v=2417";
+import { isFlagOn } from "../feature-flags.js?v=2417";
 import {
   altSteps,
   createAltDraft,
@@ -21,9 +21,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2416";
-import { networkIcon, networkLabel } from "../social-profiles.js?v=2416";
-import { playbookNetworks } from "../voice-parts.js?v=2416";
+} from "../context-builder.js?v=2417";
+import { networkIcon, networkLabel } from "../social-profiles.js?v=2417";
+import { playbookNetworks } from "../voice-parts.js?v=2417";
 import {
   readSessionId,
   isIntegrated,
@@ -33,8 +33,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2416";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2416";
+} from "./welcome-alt-recap.js?v=2417";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2417";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -399,13 +399,13 @@ function renderProgress(step) {
 // the part's blocks, dealt as a stack, floating on the pixels.
 // `build`: /welcome-alt/ready's stages ({ at, done }), which gate the card.
 // Returns { paint, sheet, cleanup }.
-export function mountShell(target, { step, sid, left, sheet = false, build, progress = true }) {
+export function mountShell(target, { step, sid, left, sheet = false, build }) {
   target.innerHTML = html`
     <div class="welcome-intro welcome-flow ${sheet ? "is-review" : ""}">
       <section class="welcome-intro__lede" aria-labelledby="welcomeFlowTitle">
         <img class="welcome-intro__wordmark" src="assets/logos/archie-wordmark.svg" alt="Archie" />
         <div class="welcome-intro__copy welcome-flow__copy">
-          ${progress ? raw(renderProgress(step)) : ""}
+          ${raw(renderProgress(step))}
           <div data-flow-left></div>
         </div>
       </section>

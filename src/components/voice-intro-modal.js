@@ -20,11 +20,11 @@
 //   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2416";
-import { getContextById } from "../contexts-store.js?v=2416";
-import { playbookForNewWork } from "../active-playbook.js?v=2416";
-import { isNewUser } from "../user-mode.js?v=2416";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2416";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2417";
+import { getContextById } from "../contexts-store.js?v=2417";
+import { playbookForNewWork } from "../active-playbook.js?v=2417";
+import { isNewUser } from "../user-mode.js?v=2417";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2417";
 import {
   networkVoiceOn,
   networkVoice,
@@ -34,7 +34,7 @@ import {
   baseValue,
   voiceItemsHtml,
   voiceNetTagHtml,
-} from "../voice-parts.js?v=2416";
+} from "../voice-parts.js?v=2417";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -44,11 +44,11 @@ import {
   INTERVIEW,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2416";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2416";
-import "../archie-pixels.js?v=2416";
-import { navigate } from "../router.js?v=2416";
-import { escapeHtml } from "../utils.js?v=2416";
+} from "../network-voice-flow.js?v=2417";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2417";
+import "../archie-pixels.js?v=2417";
+import { navigate } from "../router.js?v=2417";
+import { escapeHtml } from "../utils.js?v=2417";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -403,8 +403,6 @@ function injectOnce() {
 export function maybeOpenVoiceIntro(path) {
   if (!networkVoiceOn() || introSeen() || isNewUser() || document.body.classList.contains("has-modal")) return;
   if (path.startsWith("/welcome-alt") || path.startsWith("/session/welcome-alt-")) return;
-  // Nor over a voice review (a Playbook's « Add a voice for X »): it is already that.
-  if (/^\/playbook\/[^/]+\/voice\//.test(path)) return;
   const ctx = playbookForNewWork();
   if (!ctx || !playbookNetworks(ctx).some((n) => networkVoice(ctx, n).state !== "own")) return;
   openVoiceIntro(ctx.id);

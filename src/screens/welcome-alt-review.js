@@ -32,12 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2416";
-import { navigate } from "../router.js?v=2416";
-import { getDraft, patchDraft } from "../context-builder.js?v=2416";
-import { mount } from "../playbook-view.js?v=2416";
-import { parseHashParams } from "../url-state.js?v=2416";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2416";
+import { html, raw } from "../utils.js?v=2417";
+import { navigate } from "../router.js?v=2417";
+import { getDraft, patchDraft } from "../context-builder.js?v=2417";
+import { mount } from "../playbook-view.js?v=2417";
+import { parseHashParams } from "../url-state.js?v=2417";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2417";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -56,10 +56,7 @@ export function renderReview(target, sid, config, review) {
   const parts = () => (typeof review.parts === "function" ? review.parts() : review.parts);
   const reviewed = () => new Set(getDraft(sid)?.reviewedParts || []);
   // The part on screen: the URL's tab when it names one (a reload), else the first.
-  let currentId =
-    parts().find((t) => t.id === parseHashParams().get("tab"))?.id ||
-    parts().find((t) => t.id === review.start)?.id ||
-    parts()[0].id;
+  let currentId = parts().find((t) => t.id === parseHashParams().get("tab"))?.id || parts()[0].id;
   const current = () => currentId;
   const partOf = (id) => parts().find((t) => t.id === id) || parts()[0];
   const tintOf = (id) => tint(partOf(id).tint || id);
@@ -136,7 +133,7 @@ export function renderReview(target, sid, config, review) {
     `;
   };
 
-  const shell = mountShell(target, { step: review.step, sid, left, sheet: true, progress: review.progress !== false });
+  const shell = mountShell(target, { step: review.step, sid, left, sheet: true });
   shell.sheet.classList.add("is-scroll");
   const body = shell.sheet.querySelector("[data-flow-sheet-body]");
   // The end of the run: "all set", over the stage.
