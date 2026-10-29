@@ -1,7 +1,13 @@
-// /welcome-alt/recap under flag connectFirst — the review, the run's last screen.
+// The run's two reviews, under flag connectFirst — one screen, two hosts
+// (2026-10-29, asked: « séparer + fortement la Voice et le Playbook », the
+// same cards for both):
+//   /welcome-alt/recap  the Playbook — Brief, Branding, Competitors, Influencers;
+//   /welcome-alt/voice  the Voice — the default voice, then the networks.
+// Each review is a list of PARTS ({ id, tab, title, icon, lead, tint?, pick? }):
+// a part opens a playbook-view tab, and `pick` keeps the blocks that are its
+// own (the Voice's two parts share the voice tab).
 //
-// The WHOLE Playbook, every block, part by part (Brief, Voice profile,
-// Branding, Competitors, Influencers). Each part opens straight in edit — the
+// Every block, part by part. Each part opens straight in edit — the
 // real Playbook view, playbook-view, its hero, tabs, tab head and panel
 // Cancel / Save hidden — and its blocks line up one under the other in a
 // column that scrolls over the stage. Everything is already filled in by me,
@@ -17,7 +23,8 @@
 //   - one button at the bottom confirms the part ("Looks good — on to …"): it
 //     checks it in the list and the next part's column cascades in. The last
 //     one ends on "all set".
-// Draft my first post lives on the left, the whole time — never on a card.
+// The way on lives on the left, the whole time — never on a card: on to the
+// Voice from the Playbook, Draft my first post from the Voice.
 // (2026-10-20: this replaced the stack — one card at a time, a passing cover
 // and a confirm interstitial between parts — deleted with its flag.)
 //
@@ -25,13 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2354";
-import { navigate } from "../router.js?v=2354";
-import { getDraft, patchDraft } from "../context-builder.js?v=2354";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2354";
-import { parseHashParams } from "../url-state.js?v=2354";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2354";
-import { enterArchie } from "./welcome-alt-recap.js?v=2354";
+import { html, raw } from "../utils.js?v=2357";
+import { navigate } from "../router.js?v=2357";
+import { getDraft, patchDraft } from "../context-builder.js?v=2357";
+import { mount } from "../playbook-view.js?v=2357";
+import { parseHashParams } from "../url-state.js?v=2357";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2357";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -39,14 +45,19 @@ import { enterArchie } from "./welcome-alt-recap.js?v=2354";
 const OUT_MS = 240; // the part's column leaves
 const GLIDE_MS = 720; // a card glides to the middle
 
-export function renderReview(target, sid, config) {
+// `review`: { step, title, sub, parts, next: { label, go }, done: { title, lead }, back }.
+export function renderReview(target, sid, config, review) {
+  const { parts } = review;
   const reviewed = () => new Set(getDraft(sid)?.reviewedParts || []);
-  const current = () => parseHashParams().get("tab") || RECAP_SECTIONS[0].id;
-  const partOf = (id) => RECAP_SECTIONS.find((t) => t.id === id) || RECAP_SECTIONS[0];
+  // The part on screen: the URL's tab when it names one (a reload), else the first.
+  let currentId = parts.find((t) => t.id === parseHashParams().get("tab"))?.id || parts[0].id;
+  const current = () => currentId;
+  const partOf = (id) => parts.find((t) => t.id === id) || parts[0];
+  const tintOf = (id) => tint(partOf(id).tint || id);
   // The part's yes says where it leads — the next part, or the end
   // (2026-10-20: "Confirm Brief" read as admin).
   const looksGood = (id) => {
-    const next = RECAP_SECTIONS[RECAP_SECTIONS.findIndex((t) => t.id === id) + 1];
+    const next = parts[parts.findIndex((t) => t.id === id) + 1];
     return next ? `Looks good, on to ${next.title}` : "Looks good, finish";
   };
 
@@ -61,12 +72,10 @@ export function renderReview(target, sid, config) {
   const left = () => {
     const done = reviewed();
     return html`
-      <h1 class="welcome-flow__title" id="welcomeFlowTitle">Review your Playbook</h1>
-      <p class="welcome-intro__sub">
-        I've filled in every card. Scroll through and fix anything that's off. Changes save as you type.
-      </p>
+      <h1 class="welcome-flow__title" id="welcomeFlowTitle">${review.title}</h1>
+      <p class="welcome-intro__sub">${review.sub}</p>
       <ul class="welcome-flow__options">
-        ${RECAP_SECTIONS.map((t) => {
+        ${parts.map((t) => {
           const here = t.id === current();
           const mark = done.has(t.id)
             ? `<span class="welcome-review__check${t.id === justChecked ? " is-new" : ""}" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
@@ -81,7 +90,7 @@ export function renderReview(target, sid, config) {
                 data-review-part="${t.id}"
                 aria-current="${here ? "true" : "false"}"
               >
-                <span class="welcome-flow__glyph is-icon is-tinted" style="${tint(t.id)}"
+                <span class="welcome-flow__glyph is-icon is-tinted" style="${tintOf(t.id)}"
                   ><i class="${t.icon}" aria-hidden="true"></i
                 ></span>
                 <span class="welcome-flow__option-text">
@@ -101,13 +110,13 @@ export function renderReview(target, sid, config) {
         ${allSet /* the "all set" card offers it — once is enough */
           ? ""
           : raw(`<button type="button" class="ap-button primary orange" data-review-start>
-              <span>Draft my first post</span><i class="ap-icon-arrow-right"></i>
+              <span>${review.next.label}</span><i class="ap-icon-arrow-right"></i>
             </button>`)}
       </div>
     `;
   };
 
-  const shell = mountShell(target, { step: "recap", sid, left, sheet: true });
+  const shell = mountShell(target, { step: review.step, sid, left, sheet: true });
   shell.sheet.classList.add("is-scroll");
   const body = shell.sheet.querySelector("[data-flow-sheet-body]");
   // The end of the run: "all set", over the stage.
@@ -132,10 +141,14 @@ export function renderReview(target, sid, config) {
     rosterPicker: true,
   });
 
-  // The part's cards: its blocks in edit, else the edited panel (a roster), else
-  // whatever the part shows when it has nothing to edit.
+  // The part's cards: its blocks in edit (the ones it picks; the tab's others
+  // hide), else the edited panel (a roster), else whatever the part shows when
+  // it has nothing to edit.
   const cards = () => {
-    const blocks = [...body.querySelectorAll(".pb2-grid[data-recap-editing-card] > .pb2-block")];
+    const all = [...body.querySelectorAll(".pb2-grid[data-recap-editing-card] > .pb2-block")];
+    const pick = partOf(current()).pick;
+    const blocks = pick ? pick(all) : all;
+    all.forEach((el) => (el.hidden = !blocks.includes(el)));
     if (blocks.length) return blocks;
     const panel = body.querySelector("[data-recap-editing-card]") || body.querySelector(".pb2__panel");
     return panel ? [panel] : [];
@@ -149,7 +162,7 @@ export function renderReview(target, sid, config) {
   const kicker = () => {
     const part = partOf(current());
     return html`
-      <div class="welcome-review__kicker" style="${tint(current())}">
+      <div class="welcome-review__kicker" style="${tintOf(current())}">
         <span class="welcome-flow__glyph is-icon"><i class="${part.icon}" aria-hidden="true"></i></span>
         <span class="welcome-review__kicker-name">${part.title}</span>
       </div>
@@ -161,7 +174,7 @@ export function renderReview(target, sid, config) {
   const cover = () => {
     const part = partOf(current());
     return html`
-      <section class="welcome-review__cover" data-part="${part.id}" style="${tint(part.id)}">
+      <section class="welcome-review__cover" data-part="${part.id}" style="${tintOf(part.id)}">
         <span class="welcome-review__intro-tile"><i class="${part.icon}" aria-hidden="true"></i></span>
         <h2 class="welcome-review__intro-title">${part.title}</h2>
         <p class="welcome-review__cover-lead">${part.lead}</p>
@@ -173,7 +186,7 @@ export function renderReview(target, sid, config) {
   // the one indicator) · ↓. ↓ goes dark on the part's last card: the confirm,
   // below, is the way on.
   const nav = (list) => {
-    const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
+    const at = parts.findIndex((t) => t.id === current());
     const upNext = index < count - 1 ? cardTitle(list[index + 1]) : "";
     const atStart = index === 0 && at === 0;
     return html`
@@ -249,8 +262,9 @@ export function renderReview(target, sid, config) {
 
   // Open a part: its tab, in edit, from its first card (or its last, going back).
   const openPart = (id, { fromEnd = false } = {}) => {
+    currentId = partOf(id).id;
     if (body.querySelector(".pb2.is-editing")) body.querySelector("[data-recap-save]")?.click();
-    body.querySelector(`[data-pb2-tab="${id}"]`)?.click();
+    body.querySelector(`[data-pb2-tab="${partOf(id).tab || currentId}"]`)?.click();
     body.querySelector("[data-recap-edit-card]")?.click();
     index = fromEnd ? Number.MAX_SAFE_INTEGER : 0;
     applyColumn();
@@ -364,14 +378,12 @@ export function renderReview(target, sid, config) {
   const doneCard = () => html`
     <div class="welcome-review__intro-card is-done">
       <span class="welcome-review__intro-tile is-all"><i class="ap-icon-check" aria-hidden="true"></i></span>
-      <span class="welcome-review__intro-title">Your Playbook is all set.</span>
-      <span class="welcome-review__intro-lead">Every part is confirmed. I'll write every draft from it.</span>
+      <span class="welcome-review__intro-title">${review.done.title}</span>
+      <span class="welcome-review__intro-lead">${review.done.lead}</span>
       <span class="welcome-review__intro-actions">
-        <button type="button" class="ap-button stroked grey" data-review-again="${RECAP_SECTIONS[0].id}">
-          Review it again
-        </button>
+        <button type="button" class="ap-button stroked grey" data-review-again="${parts[0].id}">Review it again</button>
         <button type="button" class="ap-button primary orange" data-review-start>
-          <span>Draft my first post</span><i class="ap-icon-arrow-right"></i>
+          <span>${review.next.label}</span><i class="ap-icon-arrow-right"></i>
         </button>
       </span>
     </div>
@@ -400,7 +412,7 @@ export function renderReview(target, sid, config) {
       window.setTimeout(() => (justChecked = null), 400);
     }
     patchDraft(sid, { reviewedParts: [...new Set([...reviewed(), from])] });
-    const to = RECAP_SECTIONS[RECAP_SECTIONS.findIndex((t) => t.id === from) + 1];
+    const to = parts[parts.findIndex((t) => t.id === from) + 1];
     if (!to) return showDone();
     switchPart(to.id);
   };
@@ -410,9 +422,9 @@ export function renderReview(target, sid, config) {
   // the way on.
   const move = (step) => {
     if (moving) return;
-    const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
+    const at = parts.findIndex((t) => t.id === current());
     if (step < 0 && index === 0) {
-      if (at > 0) switchPart(RECAP_SECTIONS[at - 1].id, { fromEnd: true });
+      if (at > 0) switchPart(parts[at - 1].id, { fromEnd: true });
       return;
     }
     if (step > 0 && index >= count - 1) return;
@@ -446,8 +458,8 @@ export function renderReview(target, sid, config) {
     }
     if (e.target.closest("[data-review-next]")) return move(1);
     if (e.target.closest("[data-review-prev]")) return move(-1);
-    if (e.target.closest("[data-review-start]")) return enterArchie(sid);
-    if (e.target.closest("[data-flow-back]")) return navigate("/welcome-alt/ready");
+    if (e.target.closest("[data-review-start]")) return review.next.go();
+    if (e.target.closest("[data-flow-back]")) return navigate(review.back);
   };
   target.addEventListener("click", onClick);
   // The keyboard's ↑ / ↓ browse too — unless you're typing in a field.

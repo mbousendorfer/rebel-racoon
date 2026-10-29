@@ -1,5 +1,5 @@
 // The onboarding shell — flag connectFirst. Every screen of the first-time
-// flow (networks → brand → language → documents → voice → ready) is the same
+// flow (networks → brand → language → documents → ready → the reviews) is the same
 // split: the step on the left, Archie's stage on the right, where the Playbook
 // card fills in with the user's REAL answers as they go — the networks it
 // posts on, the site's name and voice once it's read, the colours. The intro
@@ -9,10 +9,10 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2354";
-import { html, raw, escapeHtml } from "../utils.js?v=2354";
-import { navigate } from "../router.js?v=2354";
-import { isFlagOn } from "../feature-flags.js?v=2354";
+import "../archie-pixels.js?v=2357";
+import { html, raw, escapeHtml } from "../utils.js?v=2357";
+import { navigate } from "../router.js?v=2357";
+import { isFlagOn } from "../feature-flags.js?v=2357";
 import {
   altSteps,
   createAltDraft,
@@ -20,9 +20,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2354";
-import { networkIcon, networkLabel } from "../social-profiles.js?v=2354";
-import { playbookNetworks } from "../voice-parts.js?v=2354";
+} from "../context-builder.js?v=2357";
+import { networkIcon, networkLabel } from "../social-profiles.js?v=2357";
+import { playbookNetworks } from "../voice-parts.js?v=2357";
 import {
   readSessionId,
   persistDraft,
@@ -30,8 +30,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2354";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2354";
+} from "./welcome-alt-recap.js?v=2357";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2357";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -43,7 +43,7 @@ export const STEP_TEXT = {
   url: { title: "Show me your Brand", desc: "Your website, a few files, or a handful of questions." },
   language: { title: "Pick your language", desc: "The one I'll write your posts in." },
   documents: { title: "Add brand documents", desc: "Optional: a brand book or guidelines." },
-  voice: { title: "Set your voice", desc: "One default voice, and rules for each network." },
+  voice: { title: "Set your voice", desc: "Your default voice, then rules for each network." },
   recap: { title: "Review your Playbook", desc: "Everything I learned, before I write a word." },
 };
 
@@ -57,11 +57,10 @@ const ROUTE = {
 };
 
 // The run, in order, under the flags of the moment: the networks, the chat's
-// own steps (no account step: the first draft asks), the voice, the reveal. A
-// Playbook filled by hand has no voice to read yet: no voice step.
+// own steps (no account step: the first draft asks), the reveal and the
+// Playbook's review, then the Voice's own review (2026-10-29).
 export function flowSteps() {
-  const manual = getDraft(readSessionId())?.sourceType === "manual";
-  return ["networks", ...altSteps().filter((id) => ROUTE[id]), ...(manual ? [] : ["voice"]), "recap"];
+  return ["networks", ...altSteps().filter((id) => ROUTE[id]), "recap", "voice"];
 }
 
 function goTo(step) {
@@ -203,7 +202,7 @@ export function playbookCard({ mark, name, sub = "", status = "", rows }) {
 // ── The live card ─────────────────────────────────────────────────────────
 
 // The default voice in a few words: the headline's traits, else its tones.
-export function voiceTraits(d) {
+function voiceTraits(d) {
   const traits = (d?.voiceProfile?.headline || "")
     .split(/\s*·\s*/)
     .filter(Boolean)
@@ -232,16 +231,15 @@ const text = (t) => (t ? `<span class="welcome-flow__line">${escapeHtml(t)}</spa
 // by then. The voice, the audience, the goal and the About wait for their
 // stage of "Building your Playbook" (the stage's `lands`), and land one stage
 // at a time; before it they stay quiet. `build`: where that screen is
-// ({ at, done }) — none on the steps before it. `early`: rows a step before it
-// already shows (the voice, from its own step on).
-function cardRows(d, sid, build, early = new Set()) {
+// ({ at, done }) — none on the steps before it.
+function cardRows(d, sid, build) {
   const analysing = Boolean(d?.analysisStartedAt) && !isAnalysisReady(sid);
   const at = d?.revealed || build?.done ? Infinity : (build?.at ?? -1);
   const stageOf = new Map();
   stagesFor(d).forEach((st, i) => (st.lands || []).forEach((k) => stageOf.set(k, i)));
   const rows = [];
   const push = (row, known) => {
-    const i = early.has(row.key) ? undefined : stageOf.get(row.key);
+    const i = stageOf.get(row.key);
     const due = i === undefined || i < at;
     const working = i === undefined ? analysing : i <= at;
     rows.push({ ...row, state: known && due ? "filled" : working && (analysing || known) ? "pending" : "empty" });
@@ -313,11 +311,9 @@ function cardRows(d, sid, build, early = new Set()) {
   return { rows };
 }
 
-function renderCard(sid, build, step) {
+function renderCard(sid, build) {
   const d = getDraft(sid);
-  const steps = flowSteps();
-  const early = new Set(steps.includes("voice") && steps.indexOf(step) >= steps.indexOf("voice") ? ["voice"] : []);
-  const { rows } = cardRows(d, sid, build, early);
+  const { rows } = cardRows(d, sid, build);
   // "Ready" belongs to the reveal (/welcome-alt/ready sets `revealed`); until
   // then a read source is still being learned, whatever has landed already.
   const ready = d?.revealed === true;
@@ -408,7 +404,7 @@ export function mountShell(target, { step, sid, left, sheet = false, build }) {
   const leftEl = target.querySelector("[data-flow-left]");
   const cardEl = target.querySelector("[data-flow-card]");
   const paintCard = () => {
-    if (cardEl) cardEl.innerHTML = renderCard(sid, build?.(), step);
+    if (cardEl) cardEl.innerHTML = renderCard(sid, build?.());
   };
   const paint = () => {
     leftEl.innerHTML = left();

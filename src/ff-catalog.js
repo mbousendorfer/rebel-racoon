@@ -241,7 +241,7 @@ export const FLAGS = Object.freeze([
   {
     id: "connectFirst",
     group: "Onboarding",
-    tip: "The first-time run as screens: your networks first, then the brand, then your voice, with the Playbook card filling in on the right, then a reveal.",
+    tip: "The first-time run as screens: your networks first, then the brand, a reveal, then a review of the Playbook and one of your voice.",
     label: "UP-Onboarding: networks & voice first",
     // OFF: a new user lands straight in the onboarding chat, where connecting
     // an account is the step after the website URL.
@@ -255,10 +255,10 @@ export const FLAGS = Object.freeze([
       "the networks you post on and the one that matters most (nothing to " +
       "connect: the first draft asks for an account); the website is a " +
       "field, prefilled, with files, a short interview or by hand as other " +
-      "ways in; then your voice: the default voice read from your source, " +
-      "and (with voicePerNetwork) the same voice everywhere or rules for each " +
-      "network, the main one first. It ends on a reveal: Start writing, or " +
-      "review the details.",
+      "ways in. It ends on a reveal, then two reviews in cards: the Playbook, " +
+      "then your voice on its own (the default voice, and with " +
+      "voicePerNetwork the same voice everywhere or rules for each network, " +
+      "the main one first), before your first draft.",
   },
   {
     id: "demoMode",

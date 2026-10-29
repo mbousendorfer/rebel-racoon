@@ -735,12 +735,6 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-/* The open network on the Voice step: its card, among the rows. */
-.welcome-flow__voice-net .voice-edit {
-  width: 100%;
-  margin: 0;
-}
-
 .welcome-flow__option {
   display: flex;
   align-items: center;
