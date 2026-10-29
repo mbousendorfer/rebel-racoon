@@ -9,11 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2448";
-import { html, raw, escapeHtml } from "../utils.js?v=2448";
-import { navigate } from "../router.js?v=2448";
-import { parseHashParams } from "../url-state.js?v=2448";
-import { isFlagOn } from "../feature-flags.js?v=2448";
+import "../archie-pixels.js?v=2449";
+import { html, raw, escapeHtml } from "../utils.js?v=2449";
+import { navigate } from "../router.js?v=2449";
+import { parseHashParams } from "../url-state.js?v=2449";
+import { isFlagOn } from "../feature-flags.js?v=2449";
 import {
   altSteps,
   createAltDraft,
@@ -21,9 +21,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2448";
-import { networkIcon, networkLabel } from "../social-profiles.js?v=2448";
-import { playbookNetworks } from "../voice-parts.js?v=2448";
+} from "../context-builder.js?v=2449";
+import { networkIcon, networkLabel } from "../social-profiles.js?v=2449";
+import { playbookNetworks } from "../voice-parts.js?v=2449";
 import {
   readSessionId,
   isIntegrated,
@@ -33,8 +33,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2448";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2448";
+} from "./welcome-alt-recap.js?v=2449";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2449";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -42,14 +42,14 @@ const SESSION_KEY = "welcomeAltSessionId";
 // What each step is called, everywhere it's named (the intro's list, the
 // progress, each screen's title).
 export const STEP_TEXT = {
-  url: { title: "Show me your Brand", desc: "Your website, a few files, or a handful of questions." },
+  url: { title: "Share your website", desc: "Your website, a few files, or a handful of questions." },
   language: { title: "Pick your language", desc: "The one I'll write your posts in." },
   documents: { title: "Add brand documents", desc: "Optional: a brand book or guidelines." },
   voice: {
-    title: "Review your voice",
+    title: "Check your voice",
     desc: "How you sound, on every network.",
   },
-  recap: { title: "Review your Playbook", desc: "Everything I learned, before I write a word." },
+  recap: { title: "Check what I learned", desc: "Fix anything that's off before I write." },
 };
 
 const ROUTE = {

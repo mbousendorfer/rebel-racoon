@@ -13,14 +13,14 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2448";
-import { startDemo } from "../demo-flow.js?v=2448";
-import { isFlagOn } from "../feature-flags.js?v=2448";
-import { html, raw } from "../utils.js?v=2448";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2448";
-import { navigate } from "../router.js?v=2448";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2448";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2448";
+import "../archie-pixels.js?v=2449";
+import { startDemo } from "../demo-flow.js?v=2449";
+import { isFlagOn } from "../feature-flags.js?v=2449";
+import { html, raw } from "../utils.js?v=2449";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2449";
+import { navigate } from "../router.js?v=2449";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2449";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2449";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -30,8 +30,9 @@ const PARTS = ["goals", "voice", "brand", "competitors"];
 // gets a line only where its title doesn't say why it's asked; the documents
 // step is marked Optional instead.
 const STEP_HINT = {
-  voice: "How you sound, on every network.",
-  url: "Your website is all I need. Without one, I ask a few questions.",
+  voice: "How your posts sound, on every network.",
+  recap: "Fix anything that's off before I write.",
+  url: "I read it to learn your business, audience and look. No website? I ask a few questions instead.",
 };
 const OPTIONAL = new Set(["documents"]);
 
@@ -91,8 +92,8 @@ export function renderWelcomeAltIntro(_params, target) {
         <div class="welcome-intro__copy">
           <h1 class="welcome-intro__title" id="welcomeIntroTitle">Let's build your Playbook together.</h1>
           <p class="welcome-intro__sub">
-            A Playbook is the guide I write from: what your Brand does, and how it sounds and looks. Every post I draft
-            starts there.
+            Your Playbook tells me what you do, who you write for and how you sound. Every draft I write starts from it,
+            so your posts sound like you.
           </p>
           <ul class="welcome-intro__parts" aria-label="What a Playbook holds">
             ${PARTS.map((t) => {
