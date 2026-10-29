@@ -363,13 +363,6 @@
       "mode": "new-alt",
       "url": "#/topics",
       "wait": "#app"
-    },
-    {
-      "id": "empty-chat",
-      "surface": "new-chat",
-      "mode": "new-alt",
-      "url": "#/",
-      "wait": "#app"
     }
   ]
 }
