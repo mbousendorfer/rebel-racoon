@@ -11,9 +11,9 @@
 //     Archie's last rewrite; called again, it redoes it
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2372";
-import { isNewUser } from "./user-mode.js?v=2372";
-import { createSessionNotifier } from "./store-utils.js?v=2372";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2374";
+import { isNewUser } from "./user-mode.js?v=2374";
+import { createSessionNotifier } from "./store-utils.js?v=2374";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).
@@ -184,7 +184,8 @@ export function updatePostContent(sessionId, postId, partial) {
   if (partial.cta !== undefined) post.cta = partial.cta;
   if (partial.firstComment !== undefined) post.firstComment = partial.firstComment;
   // What Archie's last rewrite changed (flag draftChanges): { before, intent,
-  // at }, `before` = { text, hashtags, cta }. Cleared (null) by a gesture.
+  // at, undone?, hidden? }, `before` = { text, hashtags, cta }; `hidden` once
+  // accepted on the draft. Cleared (null) by a hand edit.
   if (partial.revision !== undefined) post.revision = partial.revision;
   // Scheduled from a host that keeps its drafts listed (the Clips space).
   if (partial.status !== undefined) post.status = partial.status;
@@ -207,7 +208,8 @@ export function undoRevision(sessionId, postId) {
   const now = { text: post.text, hashtags: post.hashtags, cta: post.cta || "" };
   updatePostContent(sessionId, postId, {
     ...before,
-    revision: { ...rest, before: now, undone: !rest.undone },
+    // An undo is a change of its own: the draft says it again, even once accepted.
+    revision: { ...rest, before: now, undone: !rest.undone, hidden: false },
   });
 }
 

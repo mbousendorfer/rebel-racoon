@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2372";
-import { catalogueRoute } from "../active-playbook.js?v=2372";
+import { navigate } from "../router.js?v=2374";
+import { catalogueRoute } from "../active-playbook.js?v=2374";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,13 +13,13 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2372";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2372";
-import { isFlagOn } from "../feature-flags.js?v=2372";
-import { renderReview } from "./welcome-alt-review.js?v=2372";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2372";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2372";
-import { getContextById, updateContext } from "../contexts-store.js?v=2372";
+} from "../context-builder.js?v=2374";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2374";
+import { isFlagOn } from "../feature-flags.js?v=2374";
+import { renderReview } from "./welcome-alt-review.js?v=2374";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2374";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2374";
+import { getContextById, updateContext } from "../contexts-store.js?v=2374";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -27,14 +27,14 @@ import {
   networkVoice,
   networkVoiceOn,
   playbookNetworks,
-} from "../voice-parts.js?v=2372";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2372";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2372";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2372";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2372";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2372";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2372";
-import { showToast } from "../components/toast.js?v=2372";
+} from "../voice-parts.js?v=2374";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2374";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2374";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2374";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2374";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2374";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2374";
+import { showToast } from "../components/toast.js?v=2374";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
