@@ -11,18 +11,18 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=2496";
-import { isFlagOn } from "../../feature-flags.js?v=2496";
-import { escapeAttr, escapeText } from "../../utils.js?v=2496";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2496";
-import { getSessions } from "../../sessions-store.js?v=2496";
-import { renderEmptyState } from "../../components/empty-state.js?v=2496";
-import { getSources, getIdeas } from "../../library.js?v=2496";
-import { getPosts } from "../../posts-store.js?v=2496";
-import { getContextById } from "../../contexts-store.js?v=2496";
-import { voicesToFinish } from "../../voice-parts.js?v=2496";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2496";
-import { pageState } from "../home.js?v=2496";
+} from "../../playbook-access.js?v=2498";
+import { isFlagOn } from "../../feature-flags.js?v=2498";
+import { escapeAttr, escapeText } from "../../utils.js?v=2498";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2498";
+import { getSessions } from "../../sessions-store.js?v=2498";
+import { renderEmptyState } from "../../components/empty-state.js?v=2498";
+import { getSources, getIdeas } from "../../library.js?v=2498";
+import { getPosts } from "../../posts-store.js?v=2498";
+import { getContextById } from "../../contexts-store.js?v=2498";
+import { voicesToFinish } from "../../voice-parts.js?v=2498";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2498";
+import { pageState } from "../home.js?v=2498";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -318,7 +318,7 @@ export function renderContextsEmpty(allContexts, pageState) {
   if (allContexts.length === 0) {
     return renderEmptyState({
       icon: "ap-icon-target",
-      title: "No Playbooks yet",
+      title: "Teach me your Brand once",
       body: "A Playbook holds your Brand's voice, audience, and look. I write every draft from it.",
       actionHtml: `<button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create your first Playbook</span></button>`,
       wrapperClass: "contexts-view__empty contexts-view__empty--rich",

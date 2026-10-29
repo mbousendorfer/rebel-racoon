@@ -1855,14 +1855,12 @@ archie-pixels.empty-chat__pixels {
   gap: var(--ref-spacing-sm);
 }
 
+/* A bare icon, no medallion behind it (house rule, 2026-10-05) — the panel's
+   .app-right-panel__empty-icon. grey-80: grey-60 is the disabled ink. */
 .session__empty-icon {
-  width: 64px;
-  height: 64px;
   display: grid;
   place-items: center;
-  background: var(--ref-color-grey-10);
-  color: var(--ref-color-grey-60);
-  border-radius: var(--app-radius-lg);
+  color: var(--ref-color-grey-80);
 }
 
 /* Optional CTA underneath the body copy — used by the dashboard's empty

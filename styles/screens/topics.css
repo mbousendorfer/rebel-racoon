@@ -893,17 +893,10 @@
   border-radius: var(--app-radius-card);
 }
 
-/* The medallion: a soft grey square with the glyph centred — the app's
-   empty-state icon treatment. */
+/* A bare glyph, no medallion — the app's empty-state icon (house rule). */
 .topic-article__later-icon {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: calc(var(--ref-spacing-lg) + var(--ref-spacing-sm));
-  height: calc(var(--ref-spacing-lg) + var(--ref-spacing-sm));
-  border-radius: var(--app-radius-sm);
-  background: var(--ref-color-grey-10);
-  color: var(--ref-color-grey-100);
+  color: var(--ref-color-grey-80);
   margin-bottom: var(--ref-spacing-xxs);
 }
 

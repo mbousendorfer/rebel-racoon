@@ -13,7 +13,7 @@
 // chrome (the wrapping class), but the inner layout is shared.
 //
 // Usage:
-//   import { renderEmptyState } from "../components/empty-state.js?v=2496";
+//   import { renderEmptyState } from "../components/empty-state.js?v=2498";
 //   const html = renderEmptyState({
 //     icon: "ap-icon-feature-library",
 //     title: "No sources yet",
@@ -33,7 +33,7 @@ export function renderEmptyState({ icon, title, body, actionHtml = "", wrapperCl
   return `
     <div class="${wrapperClass}">
       <div class="session__empty-icon">
-        <i class="${icon} lg"></i>
+        <i class="${icon} ap-icon-xl" aria-hidden="true"></i>
       </div>
       <h${level} class="text-subtitle">${title}</h${level}>
       <p class="muted">${body}</p>

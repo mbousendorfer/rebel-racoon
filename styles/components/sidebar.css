@@ -511,15 +511,12 @@
   padding: var(--ref-spacing-lg) var(--ref-spacing-sm);
 }
 
+/* Bare icon, no medallion (house rule) — as .session__empty-icon. */
 .app-sidebar__empty-icon {
-  width: 40px;
-  height: 40px;
   display: grid;
   place-items: center;
   margin-bottom: var(--ref-spacing-xxs);
-  background: var(--ref-color-grey-10);
-  color: var(--ref-color-grey-60);
-  border-radius: var(--app-radius-lg);
+  color: var(--ref-color-grey-80);
 }
 
 .app-sidebar__empty-icon i {
