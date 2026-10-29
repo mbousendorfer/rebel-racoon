@@ -728,13 +728,6 @@
   list-style: none;
 }
 
-/* The networks, two by two (2026-10-28, asked: a column of six made the first
-   screen scroll) — the one exception to « one row under another ». */
-.welcome-flow__options.is-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 .welcome-flow__option {
   display: flex;
   align-items: center;

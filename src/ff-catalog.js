@@ -259,8 +259,8 @@ export const FLAGS = Object.freeze([
   {
     id: "connectFirst",
     group: "Onboarding",
-    tip: "The first-time run as screens: your networks first, then the brand, a reveal, then a review of the Playbook and one of your voice.",
-    label: "UP-Onboarding: networks & voice first",
+    tip: "The first-time run as screens: the brand, a reveal, then a review of the Playbook and one of your voice, where you also pick your networks.",
+    label: "UP-Onboarding: voice & networks",
     // OFF: a new user lands straight in the onboarding chat, where connecting
     // an account is the step after the website URL.
     default: false,
@@ -269,14 +269,13 @@ export const FLAGS = Object.freeze([
       "First the plan (the steps ahead, in order), then one screen per step, " +
       "all in the same split: the step on the left, and on the right Archie's " +
       "stage where the Playbook card fills in with the real answers (the " +
-      "networks, the site's name, voice, audience, colours). It starts with " +
-      "the networks you post on and the one that matters most (nothing to " +
-      "connect: the first draft asks for an account); the website is a " +
-      "field, prefilled, with files, a short interview or by hand as other " +
-      "ways in. It ends on a reveal, then two reviews in cards: the Playbook, " +
-      "then your voice on its own (the default voice, and with " +
-      "voicePerNetwork the same voice everywhere or rules for each network, " +
-      "the main one first), before your first draft.",
+      "site's name, voice, audience, colours). Nothing to connect: the first " +
+      "draft asks for an account. The website is a field, prefilled, with " +
+      "files, a short interview or by hand as other ways in. It ends on a " +
+      "reveal, then two reviews in cards: the Playbook, then your voice on its " +
+      "own (the default voice, where you post and your main network, and with " +
+      "voicePerNetwork the networks that get rules of their own), before your " +
+      "first draft.",
   },
   {
     id: "demoMode",

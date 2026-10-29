@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2367";
-import { conceptHint } from "./concepts.js?v=2367";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2368";
+import { conceptHint } from "./concepts.js?v=2368";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2367";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2367";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2367";
-import { isFlagOn } from "./feature-flags.js?v=2367";
-import { clipLookOf } from "./videos-store.js?v=2367";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2367";
-import { parseHashParams } from "./url-state.js?v=2367";
+} from "./playbook-brand-kit.js?v=2368";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2368";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2368";
+import { isFlagOn } from "./feature-flags.js?v=2368";
+import { clipLookOf } from "./videos-store.js?v=2368";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2368";
+import { parseHashParams } from "./url-state.js?v=2368";
 import {
   isListPart,
   voiceParts,
@@ -52,15 +52,21 @@ import {
   markAdapted,
   withNetworkVoices,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2367";
-import { showToast } from "./components/toast.js?v=2367";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2367";
-import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2367";
-import { updateContext } from "./contexts-store.js?v=2367";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2367";
-import { consumeHandoff } from "./handoff.js?v=2367";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2367";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2367";
+} from "./voice-parts.js?v=2368";
+import { showToast } from "./components/toast.js?v=2368";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2368";
+import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2368";
+import { updateContext } from "./contexts-store.js?v=2368";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2368";
+import { consumeHandoff } from "./handoff.js?v=2368";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2368";
+import {
+  NETWORKS,
+  NETWORK_ICON_BY_PLATFORM,
+  NETWORK_LABEL,
+  networkLabel,
+  networkIcon,
+} from "./social-profiles.js?v=2368";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2650,10 +2656,11 @@ function voiceSplitBlock(data, index) {
 // Voice step's choices (the chat's, as tiles); left unanswered, its first draft
 // asks. The document and « Write them myself » stay on the saved Playbook's tab.
 function networkVoiceCards(data) {
+  if (cfg.networkPicker && !isLibrary() && data.voiceMode !== "manual")
+    return networkPickerCards(data, playbookNetworks(data), voiceParts().length);
   const nets = isLibrary() ? [] : voiceNets(data);
   if (!nets.length) return [];
   const first = voiceParts().length;
-  if (cfg.networkPicker) return networkPickerCards(data, nets, first);
   const split = voiceSplitBlock(data, first);
   if (!voiceSplitIsEach(data)) return [split];
   return [
@@ -2708,6 +2715,31 @@ function networkPickerCards(data, nets, first) {
       </span>
       ${control}
     </label>`;
+  // Where the brand posts — asked here, not at the start of the run (2026-10-29,
+  // asked: « le "where do you post" est toujours au même endroit »).
+  const postBlock = pb2Block(
+    "Where do you post?",
+    `<div class="recap__pick-list">${Object.keys(NETWORKS)
+      .map((net) =>
+        row(
+          net,
+          nets.includes(net),
+          "",
+          `<span class="ap-checkbox-container" data-pb2-post-on="${esc(net)}"><input type="checkbox" ${
+            nets.includes(net) ? "checked" : ""
+          } aria-label="I post on ${esc(networkLabel(net))}" /><i></i></span>`,
+        ),
+      )
+      .join("")}</div>`,
+    {
+      wide: true,
+      hint: "I write for each network you pick. Nothing to connect yet: I'll ask for an account when your first post is ready.",
+      index: first,
+      className: "pb2-voice-networks",
+    },
+  );
+  if (!nets.length || !networkVoiceOn()) return [postBlock];
+  first += 1;
   const main = nets.length > 1 ? nets[0] : null;
   const mainBlock = main
     ? pb2Block(
@@ -2779,12 +2811,22 @@ function networkPickerCards(data, nets, first) {
         className: `pb2-voice-net pb2-voice-net--${net}`,
       });
     });
-  return [mainBlock, pickBlock, ...cards].filter(Boolean);
+  return [postBlock, mainBlock, pickBlock, ...cards].filter(Boolean);
 }
 
 // Picking: the main network leads `connectedSocials` (voice-parts.js
 // mainNetwork); a network out of `voiceRulesFor` keeps the default voice,
 // chosen (its rules, if any, go), one in it waits for rules.
+function setPostOn(net, on) {
+  const d = cfg.getData();
+  const nets = playbookNetworks(d).filter((n) => n !== net);
+  d.connectedSocials = on ? [...nets, net] : nets;
+  // A network added follows the default voice, chosen; one removed loses its rules.
+  const rest = Object.fromEntries(Object.entries(d.voiceByNetwork || {}).filter(([n]) => n !== net));
+  d.voiceByNetwork = on && networkVoiceOn() ? { ...rest, [net]: brandVoiceAsIs(d) } : rest;
+  d.voiceRulesFor = (d.voiceRulesFor || []).filter((n) => n !== net);
+  repaint();
+}
 function setMainNetwork(net) {
   const d = cfg.getData();
   d.connectedSocials = [net, ...(d.connectedSocials || []).filter((n) => n !== net)];
@@ -3535,6 +3577,8 @@ function onClick(event) {
   // the saved Playbook's confirm would open twice.
   const voiceSplit = event.target.closest("[data-pb2-voice-split]");
   if (voiceSplit) return event.target.matches("input") && setVoiceSplit(voiceSplit.dataset.pb2VoiceSplit);
+  const postOn = event.target.closest("[data-pb2-post-on]");
+  if (postOn) return event.target.matches("input") && setPostOn(postOn.dataset.pb2PostOn, event.target.checked);
   const mainNet = event.target.closest("[data-pb2-main-net]");
   if (mainNet) return event.target.matches("input") && setMainNetwork(mainNet.dataset.pb2MainNet);
   const rulesFor = event.target.closest("[data-pb2-voice-rules]");
