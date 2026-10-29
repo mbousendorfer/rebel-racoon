@@ -1309,8 +1309,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
 }
 
 /* The block's sentence is its subtitle — the DS subtitle style (16/20). */
-.welcome-flow__sheet .welcome-review__card .pb2-block__hint,
-.welcome-review__card .pb2-panel-lead {
+.welcome-flow__sheet .welcome-review__card .pb2-block__hint {
   max-width: 52ch;
   margin: 0 0 var(--ref-spacing-sm);
   font-family: var(--sys-text-style-subtitle-font-family);
@@ -1356,7 +1355,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
    it. The panel's own head (its sentence repeats the band and the list), the
    explainer banner, the counts and the suggestions' tray go; each suggestion is a row — logo, name, one line of
    description, Add / Dismiss on the right — between hairlines. */
-.welcome-review__card .recap__panel-head,
 .welcome-review__card .recap__panel-hint,
 .welcome-review__card .recap__cmpgroup-count {
   display: none;
@@ -1487,11 +1485,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
 
 .welcome-review__card .recap__add-row {
   margin-top: 0; /* the body's gap is the air */
-}
-
-/* A pen to "edit" a card that is already editable says nothing. */
-.welcome-flow__sheet .recap__panel-edit {
-  display: none;
 }
 
 .welcome-review__card .pb2-block__icon {
@@ -1740,41 +1733,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
   border: 1px solid var(--app-border);
   border-radius: var(--ref-border-radius-md);
   scroll-margin-top: var(--ref-spacing-md);
-}
-
-.recap__panel-head {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-md) var(--ref-spacing-lg);
-  border-bottom: 1px solid var(--app-border);
-}
-
-.recap__panel-icon {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--app-radius-lg);
-  background: var(--app-surface-subtle);
-  color: var(--ref-color-grey-100);
-}
-
-.recap__panel-icon i {
-  font-size: var(--sys-icon-css-md);
-}
-
-.recap__panel-title {
-  margin: 0;
-  flex: 1;
-  min-width: 0;
-  font-family: var(--sys-text-style-h4-font-family);
-  font-size: var(--sys-text-style-h3-size);
-  line-height: var(--sys-text-style-h3-line-height);
-  font-weight: var(--sys-text-style-h3-weight);
-  color: var(--ref-color-grey-100);
 }
 
 /* Section-level action in the panel head (e.g. Voice & style → Analyze
@@ -3056,34 +3014,6 @@ button.recap__logotile:hover {
    left-aligned under its row, matching the "Add colour" affordance. */
 .recap__add-row {
   align-self: flex-start;
-}
-
-/* ── Per-section edit affordance ──────────────────────────────────────── */
-/* Each panel carries an always-visible pencil in its head; while editing it
-   swaps for Cancel (×) / Save (✓), and every other panel's pencil hides so
-   the user finishes one edit before starting another. */
-.recap__panel-edit {
-  flex-shrink: 0;
-}
-
-.recap__panel-edit {
-  width: 28px;
-  height: 28px;
-}
-
-.recap__panel-actions {
-  flex-shrink: 0;
-  display: flex;
-  gap: var(--ref-spacing-xxs);
-}
-
-.recap__panel-actions .ap-icon-button {
-  width: 28px;
-  height: 28px;
-}
-
-.welcome-screen--reveal.is-editing .recap__panel-edit {
-  display: none;
 }
 
 /* The panel being edited stays flat (no elevation) — a slightly stronger

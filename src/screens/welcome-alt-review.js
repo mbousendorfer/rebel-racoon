@@ -32,12 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2552";
-import { navigate } from "../router.js?v=2552";
-import { getDraft, patchDraft } from "../context-builder.js?v=2552";
-import { mount } from "../playbook-view.js?v=2552";
-import { parseHashParams } from "../url-state.js?v=2552";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2552";
+import { html, raw } from "../utils.js?v=2554";
+import { navigate } from "../router.js?v=2554";
+import { getDraft, patchDraft } from "../context-builder.js?v=2554";
+import { mount } from "../playbook-view.js?v=2554";
+import { parseHashParams } from "../url-state.js?v=2554";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2554";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -224,8 +224,7 @@ export function renderReview(target, sid, config, review) {
   };
 
   // A card's own name: its block title, else (a roster panel) its part's.
-  const cardTitle = (el) =>
-    el?.querySelector(".pb2-block__title, .recap__panel-title")?.textContent.trim() || partOf(current()).title;
+  const cardTitle = (el) => el?.querySelector(".pb2-block__title")?.textContent.trim() || partOf(current()).title;
 
   // The card's head: its part — icon + name, the list's tile.
   const kicker = () => {

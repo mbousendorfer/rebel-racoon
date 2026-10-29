@@ -145,34 +145,6 @@
   background: var(--app-bg);
 }
 
-/* ── A section in its tab: its lead sentence instead of a repeated title ── */
-
-.pb2-panel-head {
-  justify-content: space-between;
-}
-
-/* In edit, the head carrying Cancel / Save sticks right under the tabs: a long
- * section (Brand) no longer scrolls its only way out of sight. --pb2-tabs-h is
- * measured on paint (playbook-view.js). */
-.pb2 .recap__panel.is-editing > .pb2-panel-head {
-  position: sticky;
-  top: var(--pb2-tabs-h, 0px);
-  z-index: 1;
-  background: var(--app-surface);
-  border-top-left-radius: var(--ref-border-radius-md);
-  border-top-right-radius: var(--ref-border-radius-md);
-}
-
-/* The same sentence, the same weight, as the read-mode tab head above it. */
-.pb2-panel-lead {
-  margin: 0;
-  flex: 1;
-  min-width: 0;
-  color: var(--ref-color-grey-100);
-  font-size: var(--ref-font-size-lg);
-  line-height: var(--sys-text-style-h2-line-height);
-}
-
 .pb2__panel {
   display: flex;
   flex-direction: column;
@@ -829,6 +801,12 @@
    plain block — its padding is the section's, not the block's. */
 .pb2-block--bare {
   padding: var(--ref-spacing-xs) 0;
+}
+
+/* In edit, a roster's butter banner sits flush on the card's top edge (c-15
+   reused the bare block in edit; its top padding left a 12px white strip). */
+.recap__panel.is-editing.pb2-block--bare {
+  padding-top: 0;
 }
 
 /* The audience as a list (cfg.audienceList — the onboarding review): one row
