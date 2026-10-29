@@ -20,11 +20,11 @@
 //   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2408";
-import { getContextById } from "../contexts-store.js?v=2408";
-import { playbookForNewWork } from "../active-playbook.js?v=2408";
-import { isNewUser } from "../user-mode.js?v=2408";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2408";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2410";
+import { getContextById } from "../contexts-store.js?v=2410";
+import { playbookForNewWork } from "../active-playbook.js?v=2410";
+import { isNewUser } from "../user-mode.js?v=2410";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2410";
 import {
   networkVoiceOn,
   networkVoice,
@@ -34,7 +34,7 @@ import {
   baseValue,
   voiceItemsHtml,
   voiceNetTagHtml,
-} from "../voice-parts.js?v=2408";
+} from "../voice-parts.js?v=2410";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -44,11 +44,11 @@ import {
   INTERVIEW,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2408";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2408";
-import "../archie-pixels.js?v=2408";
-import { navigate } from "../router.js?v=2408";
-import { escapeHtml } from "../utils.js?v=2408";
+} from "../network-voice-flow.js?v=2410";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2410";
+import "../archie-pixels.js?v=2410";
+import { navigate } from "../router.js?v=2410";
+import { escapeHtml } from "../utils.js?v=2410";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -226,14 +226,16 @@ export function learnedVoiceHtml(ctx, net, voice = null, { only = null, pending 
 
 // ── The Voice step, in the thread ──────────────────────────────────────────
 // A network with no rules of its own, before a draft for it (or « Add rules
-// for X » on one): a sibling of the voice edit, three levels and no more —
-// on butter, the WHY: what's missing, and what a voice for the network would
-// say; on white, the HOW: its question as the body's heading, the best way
-// as the one tile, the others as stroked buttons (a contour, lighter than the
-// tile); under a hairline, the way out, ghost. Once
-// answered, it folds to its title line (the answer is the user's turn below).
+// for X » on one): a sibling of the voice edit — on butter, the WHY: what's
+// missing, and what a voice for the network would say; on white, the HOW: its
+// question, what the best way does, then ONE primary — the best way, orange
+// (Archie learns) — and the others in one stroked « Other ways » menu, each
+// with its hint (a lone other way is its own stroked button); under a
+// hairline, the way out, ghost. Once answered, it folds to its title line.
 // `line` replaces Archie's sentence; `later` names the way out (null: none —
 // the creation review, where leaving it is the answer).
+// The best way, said as the verb on its primary button.
+const PRIMARY = { learn: "Learn from my posts", adapt: "Adapt my default voice", interview: "Answer 5 questions" };
 export function voiceAskHtml(
   ctx,
   net,
@@ -280,26 +282,33 @@ export function voiceAskHtml(
             ? ""
             : `<div class="voice-ask__body">
           <h4 class="voice-ask__ask">How should I learn your ${label} voice?</h4>
-          <button type="button" class="voice-ask__option" ${pick(best.value)}>
-            <span class="voice-ask__icon" aria-hidden="true"><i class="${best.icon}"></i></span>
-            <span class="voice-ask__text">
-              <span class="voice-ask__name">${escapeHtml(best.tile)}</span>
-              <span class="voice-ask__hint">${escapeHtml(best.hint)}</span>
-            </span>
-            <i class="ap-icon-chevron-right voice-ask__go" aria-hidden="true"></i>
-          </button>
-          ${
-            others.length
-              ? `<div class="voice-ask__others" role="group" aria-label="Other ways">
-            ${others
-              .map(
-                (c) =>
-                  `<button type="button" class="ap-button stroked grey" title="${escapeHtml(c.hint)}" ${pick(c.value)}><i class="${c.icon}" aria-hidden="true"></i><span>${escapeHtml(c.tile)}</span></button>`,
-              )
-              .join("")}
-          </div>`
-              : ""
-          }
+          <p class="voice-ask__lead">${escapeHtml(best.caption)}</p>
+          <div class="voice-ask__actions">
+            ${
+              others.length > 1
+                ? `<details class="voice-ask__more" data-voice-ask-more>
+              <summary class="ap-button stroked grey"><span>Other ways</span><i class="ap-icon-chevron-down voice-ask__caret" aria-hidden="true"></i></summary>
+              <div class="ap-action-dropdown voice-ask__menu" role="menu" aria-label="Other ways">${others
+                .map(
+                  (c) => `<button type="button" class="ap-action-dropdown-item" role="menuitem" ${pick(c.value)}>
+                <i class="${c.icon}" aria-hidden="true"></i>
+                <div class="ap-action-dropdown-item-text">
+                  <div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">${escapeHtml(c.tile)}</span></div>
+                  <span class="ap-action-dropdown-item-description">${escapeHtml(c.hint)}</span>
+                </div>
+              </button>`,
+                )
+                .join("")}</div>
+            </details>`
+                : others
+                    .map(
+                      (c) =>
+                        `<button type="button" class="ap-button stroked grey" ${pick(c.value)}><i class="${c.icon}" aria-hidden="true"></i><span>${escapeHtml(c.tile)}</span></button>`,
+                    )
+                    .join("")
+            }
+            <button type="button" class="ap-button primary orange" ${pick(best.value)}><i class="${best.icon}" aria-hidden="true"></i><span>${escapeHtml(PRIMARY[best.value] || best.tile)}</span></button>
+          </div>
         </div>`
         }${resolved || !foot.length ? "" : `<div class="voice-ask__foot">${foot.join("")}</div>`}
       </section>
