@@ -1,20 +1,20 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2447";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2447";
-import { getContextById } from "../../contexts-store.js?v=2447";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2447";
-import { renderTopicCard } from "../../components/topic-card.js?v=2447";
-import { findTopicSource } from "../../topics-catalog.js?v=2447";
-import { html, raw } from "../../utils.js?v=2447";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2447";
-import { renderStarterCards } from "../../components/starter-card.js?v=2447";
-import { isFlagOn } from "../../feature-flags.js?v=2447";
-import { isDemo } from "../../demo-mode.js?v=2447";
-import { voicesToFinish } from "../../voice-parts.js?v=2447";
-import { networkLabel, networkIcon } from "../../social-profiles.js?v=2447";
-import "../../archie-pixels.js?v=2447";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2448";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2448";
+import { getContextById } from "../../contexts-store.js?v=2448";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2448";
+import { renderTopicCard } from "../../components/topic-card.js?v=2448";
+import { findTopicSource } from "../../topics-catalog.js?v=2448";
+import { html, raw } from "../../utils.js?v=2448";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2448";
+import { renderStarterCards } from "../../components/starter-card.js?v=2448";
+import { isFlagOn } from "../../feature-flags.js?v=2448";
+import { isDemo } from "../../demo-mode.js?v=2448";
+import { voicesToFinish } from "../../voice-parts.js?v=2448";
+import { networkLabel, networkIcon } from "../../social-profiles.js?v=2448";
+import "../../archie-pixels.js?v=2448";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -212,10 +212,12 @@ function finishVoicesRow(session) {
   const ctx = session?.contextId ? getContextById(session.contextId) : null;
   const nets = voicesToFinish(ctx);
   if (!nets.length) return "";
+  // Says what it costs (asked: « expliquer que la qualité de génération des
+  // drafts pour ce network ne sera pas terrible du coup »).
   const desc =
     nets.length === 1
-      ? `${networkLabel(nets[0])} still uses your default voice.`
-      : `${nets.length} networks still use your default voice.`;
+      ? `${networkLabel(nets[0])} still uses your default voice, so its drafts may miss what works on ${networkLabel(nets[0])}.`
+      : `${nets.length} networks still use your default voice, so their drafts may miss what works on each.`;
   // Set apart from the starters (asked: « trop proche visuellement des autres
   // starters ») — a card of its own under them, the networks it's about, and
   // its action as a button, not a row to click.

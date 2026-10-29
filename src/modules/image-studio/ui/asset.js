@@ -2,9 +2,9 @@
 // IndexedDB blobs resolve after render, so they go out with data-imst-asset and
 // hydrateAssets(root) fills their src.
 
-import { html } from "../lib/html.js?v=2447";
-import { storageService as storage } from "../services/index.js?v=2447";
-import { getAsset } from "../state/store.js?v=2447";
+import { html } from "../lib/html.js?v=2448";
+import { storageService as storage } from "../services/index.js?v=2448";
+import { getAsset } from "../state/store.js?v=2448";
 
 export function assetImg(assetOrId, { alt = "", className = "" } = {}) {
   const asset = typeof assetOrId === "string" ? getAsset(assetOrId) : assetOrId;
