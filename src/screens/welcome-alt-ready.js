@@ -9,13 +9,13 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2489";
-import { navigate } from "../router.js?v=2489";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2489";
-import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2489";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2489";
-import { onlyNetwork } from "../voice-parts.js?v=2489";
-import { networkLabel } from "../social-profiles.js?v=2489";
+import { html, raw } from "../utils.js?v=2490";
+import { navigate } from "../router.js?v=2490";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2490";
+import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2490";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2490";
+import { onlyNetwork } from "../voice-parts.js?v=2490";
+import { networkLabel } from "../social-profiles.js?v=2490";
 
 // Where the default voice was read from, said on the reveal.
 const READ_FROM = { website: "your site", documents: "your files", interview: "your answers" };
@@ -45,6 +45,15 @@ const back = raw(`<div class="welcome-flow__actions">
     <i class="ap-icon-arrow-left"></i><span>Back</span>
   </button>
 </div>`);
+
+// What the review will show, named only when the read found it: a weak read
+// leaves the business and the competitors empty (FEATURES § La lecture faible).
+function learnedParts(d) {
+  const parts = [d?.businessSummary && "business", "audience", "look", d?.competitors?.length && "competitors"].filter(
+    Boolean,
+  );
+  return `Your ${parts.slice(0, -1).join(", ")} and ${parts.at(-1)}.`;
+}
 
 export function renderWelcomeAltReady(_params, target) {
   const sid = ensureFlowDraft();
@@ -86,7 +95,7 @@ export function renderWelcomeAltReady(_params, target) {
               hook: "data-ready-review",
               icon: "ap-icon-pen",
               title: manual ? "Fill in my Playbook" : "Check what I learned",
-              desc: manual ? "Part by part, card by card." : "Your business, audience, look and competitors.",
+              desc: manual ? "Part by part, card by card." : learnedParts(getDraft(sid)),
             }),
           )}
           ${raw(

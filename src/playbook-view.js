@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2489";
-import { conceptHint } from "./concepts.js?v=2489";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2490";
+import { conceptHint } from "./concepts.js?v=2490";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2489";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2489";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2489";
-import { isFlagOn } from "./feature-flags.js?v=2489";
-import { clipLookOf } from "./videos-store.js?v=2489";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2489";
-import { parseHashParams } from "./url-state.js?v=2489";
+} from "./playbook-brand-kit.js?v=2490";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2490";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2490";
+import { isFlagOn } from "./feature-flags.js?v=2490";
+import { clipLookOf } from "./videos-store.js?v=2490";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2490";
+import { parseHashParams } from "./url-state.js?v=2490";
 import {
   isListPart,
   voiceParts,
@@ -55,13 +55,13 @@ import {
   canLearnFrom,
   ADAPTED_FROM,
   voiceHasRules,
-} from "./voice-parts.js?v=2489";
-import { showToast } from "./components/toast.js?v=2489";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2489";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2489";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2489";
-import { consumeHandoff } from "./handoff.js?v=2489";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2489";
+} from "./voice-parts.js?v=2490";
+import { showToast } from "./components/toast.js?v=2490";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2490";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2490";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2490";
+import { consumeHandoff } from "./handoff.js?v=2490";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2490";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2489";
+} from "./social-profiles.js?v=2490";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -111,6 +111,12 @@ const FIELD_HINTS = {
   businessSummary: {
     q: "Does this describe your business correctly?",
     a: "I wrote this from what I read about your business. Fix anything that's off.",
+  },
+  // A weak read leaves the summary empty on purpose (FEATURES § La lecture
+  // faible): the hint asks instead of claiming a text that isn't there.
+  businessSummaryEmpty: {
+    q: "What does your business do?",
+    a: "I couldn't tell from what I read. Say it in a few sentences, and every post starts from it.",
   },
   audience: {
     q: "Who is your primary audience?",
@@ -2357,7 +2363,7 @@ function renderGoalsEdit2(data) {
   return pb2EditGrid("goals", [
     pb2Block(
       "Your business",
-      `${pb2Hint(FIELD_HINTS.businessSummary)}<div class="ap-textarea-field resizable">
+      `${pb2Hint(data.businessSummary ? FIELD_HINTS.businessSummary : FIELD_HINTS.businessSummaryEmpty)}<div class="ap-textarea-field resizable">
          <textarea data-recap-summary rows="4" placeholder="Describe your business in a few sentences…">${esc(data.businessSummary || "")}</textarea>
        </div>
        <div><span class="pb2-sub">Written in</span>${multilingualOn() ? pb2Hint(FIELD_HINTS.languages) : ""}${renderLanguagePicker(data)}</div>`,
