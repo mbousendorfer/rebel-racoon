@@ -13,29 +13,35 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2401";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2401";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2401";
-import { getTopPost } from "../../top-posts-store.js?v=2401";
-import { getTopicById } from "../../topics-store.js?v=2401";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2401";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2401";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2401";
-import { getIdeas } from "../../library.js?v=2401";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2401";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2401";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2401";
-import { getPlans } from "../../post-plan-store.js?v=2401";
-import { isFlagOn } from "../../feature-flags.js?v=2401";
-import { CURRENT_USER } from "../../org.js?v=2401";
-import { getSessionById } from "../../sessions-store.js?v=2401";
-import { getContextById } from "../../contexts-store.js?v=2401";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2401";
-import { getFocusKey } from "../../components/right-panel.js?v=2401";
-import { getPosts } from "../../posts-store.js?v=2401";
-import { diffWords, diffParagraphs, changeRatio } from "../../word-diff.js?v=2401";
-import { revisionSummary } from "../../draft-rewrite.js?v=2401";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2401";
+} from "./thread-turns.js?v=2405";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2405";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2405";
+import { getTopPost } from "../../top-posts-store.js?v=2405";
+import { getTopicById } from "../../topics-store.js?v=2405";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2405";
+import {
+  renderProfileEchoCard,
+  networkLabel,
+  networkIcon,
+  profileForNetwork,
+  renderProfileTag,
+} from "../../social-profiles.js?v=2405";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2405";
+import { getIdeas } from "../../library.js?v=2405";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2405";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2405";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2405";
+import { getPlans } from "../../post-plan-store.js?v=2405";
+import { isFlagOn } from "../../feature-flags.js?v=2405";
+import { CURRENT_USER } from "../../org.js?v=2405";
+import { getSessionById } from "../../sessions-store.js?v=2405";
+import { getContextById } from "../../contexts-store.js?v=2405";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2405";
+import { getFocusKey } from "../../components/right-panel.js?v=2405";
+import { getPosts } from "../../posts-store.js?v=2405";
+import { diffWords, diffParagraphs, changeRatio, wordCounts } from "../../word-diff.js?v=2405";
+import { revisionSummary } from "../../draft-rewrite.js?v=2405";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2405";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -614,6 +620,21 @@ const paragraphsHtml = (runs, view) =>
     .map((p) => `<p class="revision-card__paragraph">${p}</p>`)
     .join("");
 
+// The legend under the text: each count wears its own mark, so it reads the
+// marks above as much as it counts them.
+function revisionLegend({ added, removed }) {
+  const item = (n, kind, verb) =>
+    n
+      ? `<span class="revision-card__count"><span class="draft-diff__${kind}">${n} word${n === 1 ? "" : "s"}</span> ${verb}</span>`
+      : "";
+  return `<p class="revision-card__legend">${item(added, "add", "added")}${item(removed, "del", "removed")}</p>`;
+}
+
+// The marks are drawn once, as the card lands: a highlighter stroke. The thread
+// repaints while it runs, so each repaint resumes the stroke where it is
+// (a negative delay) instead of starting it over.
+const SWEEP_MS = 1400;
+
 function renderRevisionTurn(message, sessionId) {
   const { id, postId, before, after, intent } = message;
   const runs = diffWords(diffSource(before), diffSource(after));
@@ -621,12 +642,14 @@ function renderRevisionTurn(message, sessionId) {
   const post = getPosts(sessionId).find((p) => p.id === postId);
   const undone = post && post.revision?.undone && sameDraft(post, before);
   const live = post && (undone || sameDraft(post, after));
+  const elapsed = Date.now() - (message.createdAt || 0);
+  const fresh = !undone && elapsed < SWEEP_MS;
   const tab = (key, label) =>
     `<button type="button" class="ap-tabs-tab${view === key ? " active" : ""}" role="tab" aria-selected="${view === key}" data-revision-tab="${key}" data-revision-id="${escapeHtml(id)}">${label}</button>`;
   const body =
     view === "side"
       ? `<div class="revision-card__side">
-          <div class="revision-card__col"><p class="revision-card__col-label">Before</p>${paragraphsHtml(runs, "before")}</div>
+          <div class="revision-card__col is-before"><p class="revision-card__col-label">Before</p>${paragraphsHtml(runs, "before")}</div>
           <div class="revision-card__col"><p class="revision-card__col-label">After</p>${paragraphsHtml(runs, "after")}</div>
         </div>`
       : `<div class="revision-card__text">${paragraphsHtml(runs, "unified")}</div>`;
@@ -637,20 +660,26 @@ function renderRevisionTurn(message, sessionId) {
   return renderMessageBubble({
     role: "assistant",
     text: `${escapeHtml(revisionSummary(intent, before, after))}
-      <section class="revision-card${undone ? " is-undone" : ""}" aria-label="What changed">
+      <section class="revision-card${undone ? " is-undone" : ""}${fresh ? " is-fresh" : ""}" ${fresh ? `style="--sweep-elapsed: ${elapsed}ms"` : ""} aria-label="What changed">
         <div class="revision-card__head">
-          <span class="revision-card__net"><i class="${networkIcon(message.network)}" aria-hidden="true"></i>${escapeHtml(networkLabel(message.network))} draft</span>
+          ${renderProfileTag(profileForNetwork(message.network), { network: message.network })}
           <div class="ap-tabs revision-card__tabs"><div class="ap-tabs-nav" role="tablist" aria-label="How to show the changes">${tab("changes", "Changes")}${tab("side", "Side by side")}</div></div>
         </div>
         ${body}
         <div class="revision-card__foot">
-          ${undone ? `<span class="revision-card__state"><i class="ap-icon-rotate-left" aria-hidden="true"></i>Back to the version before</span>` : ""}
-          ${undo}
           ${
-            post
-              ? `<button type="button" class="ap-button stroked grey${getFocusKey() === key ? " is-active" : ""}" data-content-card="post" data-content-key="${key}" data-content-ids="${escapeHtml(postId)}">Open draft</button>`
-              : ""
+            undone
+              ? `<p class="revision-card__state"><i class="ap-icon-rotate-left" aria-hidden="true"></i>Back to the version before</p>`
+              : revisionLegend(wordCounts(runs))
           }
+          <span class="revision-card__actions">
+            ${undo}
+            ${
+              post
+                ? `<button type="button" class="ap-button stroked grey${getFocusKey() === key ? " is-active" : ""}" data-content-card="post" data-content-key="${key}" data-content-ids="${escapeHtml(postId)}">Open draft</button>`
+                : ""
+            }
+          </span>
         </div>
       </section>`,
   });

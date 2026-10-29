@@ -6,7 +6,7 @@
 // A text is a list of paragraphs. Tokens are its words plus a break between
 // paragraphs; spacing is not diffed (a post's paragraphs are plain sentences).
 
-import { escapeText } from "./utils.js?v=2401";
+import { escapeText } from "./utils.js?v=2405";
 
 const BREAK = "\n";
 
@@ -102,6 +102,11 @@ export function changeRatio(runs) {
   const eq = words(runs, "eq");
   const changed = words(runs, "add") + words(runs, "del");
   return changed ? changed / (changed + 2 * eq) : 0;
+}
+
+// How many words a rewrite added and removed — the card's legend.
+export function wordCounts(runs) {
+  return { added: words(runs, "add"), removed: words(runs, "del") };
 }
 
 export function hasChanges(runs) {
