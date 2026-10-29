@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2389";
-import { catalogueRoute } from "../active-playbook.js?v=2389";
+import { navigate } from "../router.js?v=2391";
+import { catalogueRoute } from "../active-playbook.js?v=2391";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,13 +13,13 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2389";
-import { mount, RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2389";
-import { isFlagOn } from "../feature-flags.js?v=2389";
-import { renderReview } from "./welcome-alt-review.js?v=2389";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2389";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2389";
-import { getContextById, updateContext } from "../contexts-store.js?v=2389";
+} from "../context-builder.js?v=2391";
+import { mount, RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2391";
+import { isFlagOn } from "../feature-flags.js?v=2391";
+import { renderReview } from "./welcome-alt-review.js?v=2391";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2391";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2391";
+import { getContextById, updateContext } from "../contexts-store.js?v=2391";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -27,14 +27,14 @@ import {
   networkVoice,
   networkVoiceOn,
   playbookNetworks,
-} from "../voice-parts.js?v=2389";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2389";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2389";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2389";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2389";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2389";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2389";
-import { showToast } from "../components/toast.js?v=2389";
+} from "../voice-parts.js?v=2391";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2391";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2391";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2391";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2391";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2391";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2391";
+import { showToast } from "../components/toast.js?v=2391";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -140,7 +140,8 @@ const playbookReview = () => ({
 // default voice adapted for a network. No account yet: posts connect one first.
 const VOICE_TINT = "voice";
 const NETWORKS_GROUP = "Network by network";
-const NETWORKS_HINT = "I write for each network in your default voice, unless you give it its own.";
+const NETWORKS_HINT =
+  "I write for each network in your default voice, unless you give it its own. I start from your connected accounts.";
 // `withNetworks` false (a Playbook's « Add a voice for X »): the network is
 // already chosen, no question about the others.
 function voiceReview(sid, overrides = {}, { withNetworks = true } = {}) {
@@ -164,7 +165,7 @@ function voiceReview(sid, overrides = {}, { withNetworks = true } = {}) {
         pick: (all) => all.filter(notNetworks),
       },
       withNetworks &&
-        nets().length > 0 && {
+        networkVoiceOn() && {
           id: "voice-networks",
           tab: "voice",
           tint: VOICE_TINT,

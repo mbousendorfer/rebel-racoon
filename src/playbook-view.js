@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2389";
-import { conceptHint } from "./concepts.js?v=2389";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2391";
+import { conceptHint } from "./concepts.js?v=2391";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2389";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2389";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2389";
-import { isFlagOn } from "./feature-flags.js?v=2389";
-import { clipLookOf } from "./videos-store.js?v=2389";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2389";
-import { parseHashParams } from "./url-state.js?v=2389";
+} from "./playbook-brand-kit.js?v=2391";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2391";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2391";
+import { isFlagOn } from "./feature-flags.js?v=2391";
+import { clipLookOf } from "./videos-store.js?v=2391";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2391";
+import { parseHashParams } from "./url-state.js?v=2391";
 import {
   isListPart,
   voiceParts,
@@ -53,14 +53,14 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2389";
-import { showToast } from "./components/toast.js?v=2389";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2389";
-import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2389";
-import { updateContext } from "./contexts-store.js?v=2389";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2389";
-import { consumeHandoff } from "./handoff.js?v=2389";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2389";
+} from "./voice-parts.js?v=2391";
+import { showToast } from "./components/toast.js?v=2391";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2391";
+import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2391";
+import { updateContext } from "./contexts-store.js?v=2391";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2391";
+import { consumeHandoff } from "./handoff.js?v=2391";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2391";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2389";
+} from "./social-profiles.js?v=2391";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2811,7 +2811,11 @@ function voiceWaysCard(
 // `voiceRulesFor` is the draft's (never saved): a network out of it keeps the
 // default voice, chosen; in it with no rules yet, its first draft asks.
 function networkPickerCards(data, nets, first) {
-  if (!nets.length || !networkVoiceOn()) return [];
+  if (!networkVoiceOn()) return [];
+  // Every network: the Playbook's (its connected accounts') first, then the
+  // others, not connected — a voice can be made for one before connecting it
+  // (2026-10-29, asked: « créer une voice pour un network non connecté »).
+  const all = [...nets, ...Object.keys(NETWORKS).filter((n) => !nets.includes(n))];
   const picked = data.voiceRulesFor || [];
   // One row per network — a voice is a network's, not an account's — with the
   // connected accounts on it underneath, as a reminder of what I write for
@@ -2840,15 +2844,16 @@ function networkPickerCards(data, nets, first) {
   // brand posts is known — 2026-10-29, asked: « la question, c'est est-ce que
   // tu veux utiliser une voice spécifique pour les networks suivants ou bien
   // utiliser la voice par défaut »).
-  const stateOf = (net) =>
+  const voiceState = (net) =>
     !picked.includes(net)
       ? "Uses your default voice"
       : networkVoiceFilled(data, net)
         ? "Its own voice"
         : "Its own voice, to fill in";
+  const stateOf = (net) => (accountsOn(net).length ? voiceState(net) : `Not connected · ${voiceState(net)}`);
   const pickBlock = pb2Block(
     "Which networks get their own voice?",
-    `<div class="recap__pick-list">${nets
+    `<div class="recap__pick-list">${all
       .map((net) =>
         row(
           net,
@@ -2862,7 +2867,7 @@ function networkPickerCards(data, nets, first) {
       .join("")}</div>`,
     {
       wide: true,
-      hint: "The networks of your connected accounts. I write for each in your default voice. Tick the ones that need their own, and I add an empty voice for you to fill in.",
+      hint: "Your connected accounts' networks come first. I write for each network in your default voice. Tick the ones that need their own, and I add an empty voice for you to fill in. You can tick a network you haven't connected yet.",
       index: first,
       className: "pb2-voice-networks",
     },
@@ -2894,10 +2899,16 @@ export function networkVoiceFilled(data, net) {
 // chosen (its rules, if any, go), one in it waits for rules.
 function setNetworkRules(net, on) {
   const d = cfg.getData();
+  // A network ticked joins the Playbook's networks if it wasn't one (not
+  // connected yet); unticked, one with no connected account leaves them.
+  const nets = playbookNetworks(d);
+  const connected = getConnectedProfiles().some((p) => normalizeNetwork(p.platform) === net);
+  if (on && !nets.includes(net)) d.connectedSocials = [...(d.connectedSocials || []), net];
+  if (!on && !connected) d.connectedSocials = (d.connectedSocials || []).filter((n) => normalizeNetwork(n) !== net);
   const picked = (d.voiceRulesFor || []).filter((n) => n !== net);
   d.voiceRulesFor = on ? [...picked, net] : picked;
   const rest = Object.fromEntries(Object.entries(d.voiceByNetwork || {}).filter(([n]) => n !== net));
-  d.voiceByNetwork = on ? rest : { ...rest, [net]: brandVoiceAsIs(d) };
+  d.voiceByNetwork = on || !connected ? rest : { ...rest, [net]: brandVoiceAsIs(d) };
   repaint();
 }
 
