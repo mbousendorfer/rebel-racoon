@@ -9,11 +9,11 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2432";
-import { navigate } from "../router.js?v=2432";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2432";
-import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2432";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2432";
+import { html, raw } from "../utils.js?v=2433";
+import { navigate } from "../router.js?v=2433";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2433";
+import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2433";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2433";
 
 // Where the default voice was read from, said on the reveal.
 const READ_FROM = { website: "your site", documents: "your files", interview: "your answers" };
@@ -71,23 +71,22 @@ export function renderWelcomeAltReady(_params, target) {
       return html`
         <h1 class="welcome-flow__title" id="welcomeFlowTitle">One question before I write.</h1>
         <p class="welcome-intro__sub">
-          Your site didn't tell me enough about the business. In one sentence: what do you sell, and to whom?
+          Your site didn't tell me enough about the business. In one sentence: what do you sell, and to whom? Or
+          <button type="button" class="ap-link" data-thin-interview>answer a few questions instead</button>.
         </p>
         <form class="welcome-flow__answer" data-thin-form novalidate>
-          <textarea
-            class="ap-textarea-field welcome-flow__textarea"
-            name="answer"
-            rows="3"
-            placeholder="e.g. Handmade soap for people with sensitive skin, sold in our Lyon shop and online."
-            aria-labelledby="welcomeFlowTitle"
-            data-flow-autofocus
-          ></textarea>
+          <div class="ap-textarea-field welcome-flow__textarea">
+            <textarea
+              name="answer"
+              rows="3"
+              placeholder="e.g. Handmade soap for people with sensitive skin, sold in our Lyon shop and online."
+              aria-labelledby="welcomeFlowTitle"
+              data-flow-autofocus
+            ></textarea>
+          </div>
           <div class="welcome-flow__actions">
             <button type="button" class="ap-button ghost grey" data-flow-back>
               <i class="ap-icon-arrow-left"></i><span>Back</span>
-            </button>
-            <button type="button" class="ap-button ghost grey" data-thin-interview>
-              <span>Answer a few questions instead</span>
             </button>
             <button type="submit" class="ap-button primary blue" data-thin-next disabled>
               <span>Continue</span>

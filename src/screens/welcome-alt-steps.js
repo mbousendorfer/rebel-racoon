@@ -14,8 +14,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2432";
-import { navigate } from "../router.js?v=2432";
+import { html, raw, escapeHtml } from "../utils.js?v=2433";
+import { navigate } from "../router.js?v=2433";
 import {
   getDraft,
   patchDraft,
@@ -23,11 +23,11 @@ import {
   readAltFiles,
   writeAltManually,
   analyzeAltInterview,
-} from "../context-builder.js?v=2432";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2432";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2432";
-import { connectors as connectorMocks } from "../mocks.js?v=2432";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=2432";
+} from "../context-builder.js?v=2433";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2433";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2433";
+import { connectors as connectorMocks } from "../mocks.js?v=2433";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=2433";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
@@ -227,14 +227,15 @@ export function renderWelcomeAltInterview(_params, target) {
         <p class="welcome-flow__kicker">Question ${turns.length + 1}</p>
         <h1 class="welcome-flow__title is-question" id="welcomeFlowTitle">${step.question}</h1>
         <form class="welcome-flow__answer" data-interview-form novalidate>
-          <textarea
-            class="ap-textarea-field welcome-flow__textarea"
-            name="answer"
-            rows="4"
-            placeholder="In your own words…"
-            aria-labelledby="welcomeFlowTitle"
-            data-flow-autofocus
-          ></textarea>
+          <div class="ap-textarea-field welcome-flow__textarea">
+            <textarea
+              name="answer"
+              rows="4"
+              placeholder="In your own words…"
+              aria-labelledby="welcomeFlowTitle"
+              data-flow-autofocus
+            ></textarea>
+          </div>
           ${actions(continueButton("Continue", { disabled: true }), {
             skip: step.optional ? "Skip this question" : "",
           })}

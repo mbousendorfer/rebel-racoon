@@ -791,8 +791,9 @@ body:not(.onboarding) .welcome-intro__wordmark {
   margin-top: var(--ref-spacing-md);
 }
 
-.welcome-flow__textarea {
-  width: 100%;
+/* The DS field (.ap-textarea-field > textarea) styles the textarea; the run
+   only gives it its height. */
+.welcome-flow__textarea > textarea {
   min-height: 120px;
   resize: vertical;
 }
