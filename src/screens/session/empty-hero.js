@@ -1,20 +1,20 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2445";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2445";
-import { getContextById } from "../../contexts-store.js?v=2445";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2445";
-import { renderTopicCard } from "../../components/topic-card.js?v=2445";
-import { findTopicSource } from "../../topics-catalog.js?v=2445";
-import { html, raw } from "../../utils.js?v=2445";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2445";
-import { renderStarterCards } from "../../components/starter-card.js?v=2445";
-import { isFlagOn } from "../../feature-flags.js?v=2445";
-import { isDemo } from "../../demo-mode.js?v=2445";
-import { voicesToFinish } from "../../voice-parts.js?v=2445";
-import { networkLabel } from "../../social-profiles.js?v=2445";
-import "../../archie-pixels.js?v=2445";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2447";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2447";
+import { getContextById } from "../../contexts-store.js?v=2447";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2447";
+import { renderTopicCard } from "../../components/topic-card.js?v=2447";
+import { findTopicSource } from "../../topics-catalog.js?v=2447";
+import { html, raw } from "../../utils.js?v=2447";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2447";
+import { renderStarterCards } from "../../components/starter-card.js?v=2447";
+import { isFlagOn } from "../../feature-flags.js?v=2447";
+import { isDemo } from "../../demo-mode.js?v=2447";
+import { voicesToFinish } from "../../voice-parts.js?v=2447";
+import { networkLabel, networkIcon } from "../../social-profiles.js?v=2447";
+import "../../archie-pixels.js?v=2447";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -173,9 +173,9 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
           ${raw(composerMarkup)}
         </div>
         <div class="starter-rows" role="group" aria-label="Start from a workflow">
-          ${raw(renderStarterCards({ sourceLabel, videoLabel, rows: true }))}${raw(finishVoicesRow(session))}
+          ${raw(renderStarterCards({ sourceLabel, videoLabel, rows: true }))}
         </div>
-        ${raw(renderFreshTopics(session, { staged: true }))}
+        ${raw(finishVoicesRow(session))} ${raw(renderFreshTopics(session, { staged: true }))}
       </div>
     `;
   }
@@ -216,15 +216,23 @@ function finishVoicesRow(session) {
     nets.length === 1
       ? `${networkLabel(nets[0])} still uses your default voice.`
       : `${nets.length} networks still use your default voice.`;
+  // Set apart from the starters (asked: « trop proche visuellement des autres
+  // starters ») — a card of its own under them, the networks it's about, and
+  // its action as a button, not a row to click.
   return `
-    <button type="button" class="starter-row" data-finish-voices="${ctx.id}" data-finish-voices-net="${nets[0]}">
-      <span class="starter-row__icon starter-card--purple" aria-hidden="true"><i class="ap-icon-quote"></i></span>
-      <span class="starter-row__text">
-        <span class="starter-row__label">Finish your voices</span>
-        <span class="starter-row__desc">${desc}</span>
+    <section class="voice-nudge" aria-label="Finish your voices">
+      <span class="voice-nudge__icon" aria-hidden="true"><i class="ap-icon-quote"></i></span>
+      <span class="voice-nudge__text">
+        <span class="voice-nudge__title">Finish your voices</span>
+        <span class="voice-nudge__desc">${desc}</span>
       </span>
-      <i class="starter-row__arrow ap-icon-arrow-right" aria-hidden="true"></i>
-    </button>`;
+      <span class="voice-nudge__nets" aria-hidden="true">${nets
+        .map((n) => `<i class="${networkIcon(n)}" title="${networkLabel(n)}"></i>`)
+        .join("")}</span>
+      <button type="button" class="ap-button secondary blue" data-finish-voices="${ctx.id}" data-finish-voices-net="${nets[0]}">
+        <span>${nets.length === 1 ? "Add its voice" : "Add their voices"}</span>
+      </button>
+    </section>`;
 }
 
 function heroSub() {
