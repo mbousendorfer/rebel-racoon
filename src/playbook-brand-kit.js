@@ -9,16 +9,16 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=2525";
-import { openImageLookChat } from "./draft-image-flow.js?v=2525";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=2525";
+import { escapeHtml as esc } from "./utils.js?v=2526";
+import { openImageLookChat } from "./draft-image-flow.js?v=2526";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=2526";
 import {
   handlePlaybookImagesClick,
   renderPresetLookPicker,
   renderImagesGenerate,
   renderImagesReferences,
   renderImagesStyles,
-} from "./modules/image-studio/index.js?v=2525";
+} from "./modules/image-studio/index.js?v=2526";
 
 const ROLE_LABELS = {
   primary: "Primary",
@@ -82,11 +82,15 @@ export function renderColorRole(color, index) {
   });
 }
 
-/** Read-mode caption under a swatch: its role, when it says more than the name. */
+/** Read-mode caption under a swatch: its role, when it says more than the name.
+ *  Names sharing a hex are merged (« Primary · Text »): any part counts. */
 export function colorRoleCaption(color) {
   if (!color.role) return "";
   const label = ROLE_LABELS[color.role];
-  return String(color.name || "").toLowerCase() === label.toLowerCase() ? "" : label;
+  const parts = String(color.name || "")
+    .toLowerCase()
+    .split(" · ");
+  return parts.includes(label.toLowerCase()) ? "" : label;
 }
 
 /** "Logo versions" row: which version each mark is. */
