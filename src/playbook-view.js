@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2550";
-import { conceptHint } from "./concepts.js?v=2550";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2552";
+import { conceptHint } from "./concepts.js?v=2552";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2550";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2550";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2550";
-import { isFlagOn } from "./feature-flags.js?v=2550";
-import { clipLookOf } from "./videos-store.js?v=2550";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2550";
-import { parseHashParams } from "./url-state.js?v=2550";
+} from "./playbook-brand-kit.js?v=2552";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2552";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2552";
+import { isFlagOn } from "./feature-flags.js?v=2552";
+import { clipLookOf } from "./videos-store.js?v=2552";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2552";
+import { parseHashParams } from "./url-state.js?v=2552";
 import {
   isListPart,
   voiceParts,
@@ -55,13 +55,13 @@ import {
   canLearnFrom,
   ADAPTED_FROM,
   voiceHasRules,
-} from "./voice-parts.js?v=2550";
-import { showToast } from "./components/toast.js?v=2550";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2550";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2550";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2550";
-import { consumeHandoff } from "./handoff.js?v=2550";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2550";
+} from "./voice-parts.js?v=2552";
+import { showToast } from "./components/toast.js?v=2552";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2552";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2552";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2552";
+import { consumeHandoff } from "./handoff.js?v=2552";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2552";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2550";
+} from "./social-profiles.js?v=2552";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -532,30 +532,6 @@ function editActionButtons() {
 
 function canEditView() {
   return cfg?.canEdit !== false;
-}
-
-function panelPen(scope) {
-  return `<button type="button" class="ap-icon-button transparent recap__panel-edit" data-recap-edit-card="${scope}" title="Edit section" aria-label="Edit section"><i class="ap-icon-pen"></i></button>`;
-}
-
-function panelEditActions() {
-  return `<div class="recap__panel-actions">${editActionButtons()}</div>`;
-}
-
-function renderPanelHead(section, edit, extraAction = "") {
-  return `
-    <header class="recap__panel-head pb2-panel-head">
-      <p class="pb2-panel-lead">${esc(SECTION_LEADS[section.scope] || "")}</p>
-      ${edit ? panelEditActions() : `${extraAction}${canEditView() ? panelPen(section.scope) : ""}`}
-    </header>
-  `;
-  return `
-    <header class="recap__panel-head">
-      <span class="recap__panel-icon"><i class="${section.icon}" aria-hidden="true"></i></span>
-      <h2 class="recap__panel-title">${esc(section.title)}</h2>
-      ${edit ? panelEditActions() : `${extraAction}${canEditView() ? panelPen(section.scope) : ""}`}
-    </header>
-  `;
 }
 
 // The brand marks — a GALLERY, because a site carries several and Archie brings
@@ -1584,11 +1560,10 @@ function renderRosterPanel(data, r, edit) {
   if (!edit)
     return `${pb2TabHead("competitors", discoverBtn)}
       <section class="pb2-block pb2-block--bare" id="${section.id}">${body}</section>`;
-  return `
-    <section class="recap__panel ${edit ? "is-editing" : ""}" id="${section.id}" data-recap-roster="${r.scope}" ${
-      edit ? "data-recap-editing-card" : ""
-    }>
-      ${renderPanelHead(section, edit, discoverBtn)}
+  // Editing keeps the tab's own head (Cancel / Save where Edit was), like the
+  // other tabs: the old panel head moved the lead into a box on Edit.
+  return `${pb2TabHead(r.scope, "", { editing: true })}
+    <section class="recap__panel is-editing pb2-block--bare" id="${section.id}" data-recap-roster="${r.scope}" data-recap-editing-card>
       <div class="recap__panel-body">${body}</div>
     </section>
   `;
@@ -1889,11 +1864,8 @@ function renderInfluencersPanel(data, edit) {
   if (!edit)
     return `${pb2TabHead("influencers", addBtn)}
       <section class="pb2-block pb2-block--bare" id="${section.id}" data-recap-roster="${r.scope}"><div class="recap__infsec">${rows}</div></section>`;
-  return `
-    <section class="recap__panel ${edit ? "is-editing" : ""}" id="${section.id}" data-recap-roster="${r.scope}" ${
-      edit ? "data-recap-editing-card" : ""
-    }>
-      ${renderPanelHead(section, edit, addBtn)}
+  return `${pb2TabHead(r.scope, "", { editing: true })}
+    <section class="recap__panel is-editing pb2-block--bare" id="${section.id}" data-recap-roster="${r.scope}" data-recap-editing-card>
       <div class="recap__panel-body">
         <div class="recap__infsec">
           ${rows}
