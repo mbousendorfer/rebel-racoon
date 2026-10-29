@@ -21,16 +21,18 @@ import {
   postActivity,
   postDraftResult,
   GENERATION_TOOLS,
-} from "./assistant.js?v=2420";
-import * as inlineQuestion from "./inline-question.js?v=2420";
-import { addPostDraft } from "./posts-store.js?v=2420";
-import { getSessionById } from "./sessions-store.js?v=2420";
-import { getContextById } from "./contexts-store.js?v=2420";
-import { playbookForNewWork } from "./active-playbook.js?v=2420";
-import { getConnectedProfiles, buildConnectedProfileItems } from "./social-profiles.js?v=2420";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2420";
-import { requireNetworkVoices } from "./network-voice-flow.js?v=2420";
-import { createPlan, updatePlan, getPlans } from "./post-plan-store.js?v=2420";
+} from "./assistant.js?v=2421";
+import * as inlineQuestion from "./inline-question.js?v=2421";
+import { addPostDraft } from "./posts-store.js?v=2421";
+import { getSessionById } from "./sessions-store.js?v=2421";
+import { getContextById } from "./contexts-store.js?v=2421";
+import { playbookForNewWork } from "./active-playbook.js?v=2421";
+import { getConnectedProfiles, buildConnectedProfileItems } from "./social-profiles.js?v=2421";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2421";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2421";
+import { createPlan, updatePlan, getPlans } from "./post-plan-store.js?v=2421";
+import { setHandoff } from "./handoff.js?v=2421";
+import { navigate } from "./router.js?v=2421";
 
 // "write / draft / create a post about X" — the ask this flow answers. The
 // topic is everything after "about".
@@ -73,6 +75,41 @@ export function startPostPlan(sessionId, text) {
   );
   askAudience(sessionId, plan.id);
   return true;
+}
+
+// « Draft my first post », the first-time run's last button: a new chat on the
+// Playbook just saved asks what the post is about, then plans it like any
+// other. Both ends live here.
+export const FIRST_POST_CHAT_HANDOFF = "pendingFirstPostChat";
+
+export function openFirstPostChat(contextId) {
+  setHandoff(FIRST_POST_CHAT_HANDOFF, { contextId });
+  const params = new URLSearchParams({ contextId, title: "My first post" });
+  navigate(`/session/new-${Date.now().toString(36)}?${params.toString()}`);
+}
+
+/** session.js, on consuming the handoff. */
+export function startFirstPostChat(sessionId, { contextId }) {
+  const ctx = getContextById(contextId);
+  // What the Playbook says the audience struggles with: subjects that are
+  // already theirs, so the first pick costs no thinking.
+  const subjects = (Array.isArray(ctx?.audienceProblems) ? ctx.audienceProblems : [])
+    .map((p) => (typeof p === "string" ? p : p?.label || ""))
+    .filter(Boolean)
+    .slice(0, 3);
+  const go = (subject) => {
+    const s = String(subject || "").trim();
+    if (s) startPostPlan(sessionId, `Write a post about ${s}`);
+  };
+  postAssistantMessage(sessionId, "Your Playbook is saved. What should your first post be about?");
+  inlineQuestion.ask(sessionId, {
+    title: null,
+    stepLabel: "First post",
+    items: subjects.map((s) => ({ value: s, label: s })),
+    customPlaceholder: "Or say it in your words",
+    onPick: go,
+    onCustom: go,
+  });
 }
 
 function askAudience(sessionId, planId) {

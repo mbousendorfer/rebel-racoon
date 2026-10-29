@@ -15,9 +15,9 @@
 // /welcome-alt/intro first (welcome-alt-intro.js), then the shell's steps
 // (welcome-alt-shell.js, -connect, -steps, -ready).
 
-import { navigate } from "../router.js?v=2420";
-import { setHandoff } from "../handoff.js?v=2420";
-import { isFlagOn } from "../feature-flags.js?v=2420";
+import { navigate } from "../router.js?v=2421";
+import { setHandoff } from "../handoff.js?v=2421";
+import { isFlagOn } from "../feature-flags.js?v=2421";
 
 // Mock URL — the brand site is supposed to be collected by an earlier
 // step that lives outside the prototype. We hardcode a believable value

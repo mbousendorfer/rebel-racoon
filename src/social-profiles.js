@@ -7,11 +7,11 @@
 // as the muted caption, and a DS avatar carrying the brand photo plus a
 // corner network badge.
 
-import { socialAccounts, demoManyProfiles, DEMO_ACCOUNTS } from "./mocks.js?v=2420";
-import { escapeHtml } from "./utils.js?v=2420";
-import { createNotifier } from "./store-utils.js?v=2420";
-import { isNewUser } from "./user-mode.js?v=2420";
-import { isFlagOn } from "./feature-flags.js?v=2420";
+import { socialAccounts, demoManyProfiles, DEMO_ACCOUNTS } from "./mocks.js?v=2421";
+import { escapeHtml } from "./utils.js?v=2421";
+import { createNotifier } from "./store-utils.js?v=2421";
+import { isNewUser } from "./user-mode.js?v=2421";
+import { isFlagOn } from "./feature-flags.js?v=2421";
 
 // THE network table — every surface that names, badges, counts or colours a
 // network reads it, so a network is spelled one way everywhere. It replaced
