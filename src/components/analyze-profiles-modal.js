@@ -15,15 +15,15 @@
 //     it fires onConfirm(ids) then closes. A warning notes the overwrite.
 //   - Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2514";
-import { escapeHtml as esc } from "../utils.js?v=2514";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2515";
+import { escapeHtml as esc } from "../utils.js?v=2515";
 import {
   getConnectedProfiles,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   BRAND_INITIALS,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=2514";
+} from "../social-profiles.js?v=2515";
 
 const MODAL_ID = "analyze-profiles";
 
@@ -45,7 +45,7 @@ const HTML = `
 >
   <div class="ap-dialog-header">
     <span class="ap-dialog-title" id="analyzeProfilesTitle">Learn your voice from your posts</span>
-    <span class="ap-dialog-subtitle analyze-profiles-modal__lead" id="analyzeProfilesLead">Pick the accounts to learn from — I read their recent posts and rewrite your Voice profile.</span>
+    <span class="ap-dialog-subtitle analyze-profiles-modal__lead" id="analyzeProfilesLead">Pick the accounts to learn from. I read their recent posts and rewrite your Voice profile.</span>
   </div>
   <button class="ap-dialog-close" type="button" id="analyzeProfilesClose" aria-label="Close">
     <i class="ap-icon-close"></i>
@@ -192,8 +192,8 @@ export function open({ onConfirm = null, network = null } = {}) {
   onlyNetwork = network;
   const label = network ? NETWORK_LABEL[network] || network : "";
   leadEl.textContent = network
-    ? `Pick the ${label} accounts to learn from — I read their recent posts and write your ${label} voice.`
-    : "Pick the accounts to learn from — I read their recent posts and rewrite your Voice profile.";
+    ? `Pick the ${label} accounts to learn from. I read their recent posts and write your ${label} voice.`
+    : "Pick the accounts to learn from. I read their recent posts and rewrite your Voice profile.";
   warnEl.textContent = network ? `This replaces your ${label} voice.` : "This replaces your Voice profile.";
   renderList();
   syncConfirm();

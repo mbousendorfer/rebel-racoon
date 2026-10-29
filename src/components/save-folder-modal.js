@@ -11,9 +11,9 @@
 //       object = file the drafts into it. New folders are created here
 //       (addFolder via the dropdown's create item) before the callback fires.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2514";
-import { getFolders, addFolder } from "../folders-store.js?v=2514";
-import { escapeHtml } from "../utils.js?v=2514";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2515";
+import { getFolders, addFolder } from "../folders-store.js?v=2515";
+import { escapeHtml } from "../utils.js?v=2515";
 
 const MODAL_ID = "saveFolder";
 
@@ -252,6 +252,23 @@ export function open({ count = 0, onConfirm = null } = {}) {
 
   const draftWord = count === 1 ? "draft" : "drafts";
   titleEl.textContent = count ? `Save ${count} ${draftWord}` : "Save drafts";
+  // One draft: « separate » and « these drafts » mean nothing, so the options say it singular.
+  const one = count === 1;
+  const say = (mode, title, desc) => {
+    const [t, d] = optionsEl.querySelector(`input[value="${mode}"]`).nextElementSibling.children;
+    t.textContent = title;
+    d.textContent = desc;
+  };
+  say(
+    "drafts",
+    one ? "Save as a draft" : "Save as separate drafts",
+    one ? "Filed on its own in your Agorapulse drafts." : "Each draft is filed on its own in your drafts.",
+  );
+  say(
+    "folder",
+    "Save to a folder",
+    one ? "File it in an Agorapulse folder." : "Group these drafts in an Agorapulse folder.",
+  );
   pendingOnConfirm = onConfirm;
 
   selectedFolderId = null;

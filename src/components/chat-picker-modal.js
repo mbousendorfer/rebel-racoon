@@ -12,14 +12,14 @@
 //     onPick({ kind: "new" } | { kind: "existing", session })
 //   });
 
-import { recentSessions } from "../mocks.js?v=2514";
-import { getSources } from "../sources-stream.js?v=2514";
-import { getIdeas } from "../library.js?v=2514";
-import { getPosts } from "../posts-store.js?v=2514";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2514";
+import { recentSessions } from "../mocks.js?v=2515";
+import { getSources } from "../sources-stream.js?v=2515";
+import { getIdeas } from "../library.js?v=2515";
+import { getPosts } from "../posts-store.js?v=2515";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2515";
 
 const MODAL_ID = "chatPicker";
-import { renderPicker, bindWizardKeyboard, unbindWizardKeyboard } from "../screens/_analyse-common.js?v=2514";
+import { renderPicker, bindWizardKeyboard, unbindWizardKeyboard } from "../screens/_analyse-common.js?v=2515";
 
 let backdrop, modal, body;
 let initialized = false;
@@ -50,7 +50,7 @@ function buildItems() {
   const newItem = {
     value: "new",
     label: "Start a new chat",
-    caption: "Empty chat — start fresh",
+    caption: "Starts empty",
     icon: "ap-icon-plus",
   };
   const existing = recentSessions.map((s) => {
@@ -65,7 +65,15 @@ function buildItems() {
     return {
       value: s.id,
       label: s.name,
-      caption: `${plural(sources, "source")} · ${plural(ideas, "idea")} · ${plural(drafts, "draft")} · ${s.lastActivity}`,
+      // Only what the chat holds: « 0 sources · 0 ideas » was noise before the date.
+      caption: [
+        sources && plural(sources, "source"),
+        ideas && plural(ideas, "idea"),
+        drafts && plural(drafts, "draft"),
+        s.lastActivity,
+      ]
+        .filter(Boolean)
+        .join(" · "),
       icon: "ap-icon-single-chat-bubble",
     };
   });
