@@ -7,10 +7,11 @@
 // as the muted caption, and a DS avatar carrying the brand photo plus a
 // corner network badge.
 
-import { socialAccounts, demoManyProfiles, DEMO_ACCOUNTS } from "./mocks.js?v=2367";
-import { escapeHtml } from "./utils.js?v=2367";
-import { createNotifier } from "./store-utils.js?v=2367";
-import { isNewUser } from "./user-mode.js?v=2367";
+import { socialAccounts, demoManyProfiles, DEMO_ACCOUNTS } from "./mocks.js?v=2372";
+import { escapeHtml } from "./utils.js?v=2372";
+import { createNotifier } from "./store-utils.js?v=2372";
+import { isNewUser } from "./user-mode.js?v=2372";
+import { isFlagOn } from "./feature-flags.js?v=2372";
 
 // THE network table — every surface that names, badges, counts or colours a
 // network reads it, so a network is spelled one way everywhere. It replaced
@@ -221,8 +222,14 @@ function ensureSeeded() {
   } catch {
     /* ignore */
   }
+  // A new user starts with nothing connected — except under connectFirst
+  // (UP-Onboarding, 2026-10-29): an Agorapulse user arrives with their accounts
+  // already connected (the networks of the Admin popover), so the run never asks.
   if (!Array.isArray(saved))
-    saved = isNewUser() ? [] : startNetworks().flatMap((n) => brandAccountsOn(n).map((p) => p.id));
+    saved =
+      isNewUser() && !isFlagOn("connectFirst")
+        ? []
+        : startNetworks().flatMap((n) => brandAccountsOn(n).map((p) => p.id));
   connectedIds = new Set(saved);
   return connectedIds;
 }

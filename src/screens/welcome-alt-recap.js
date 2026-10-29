@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2367";
-import { catalogueRoute } from "../active-playbook.js?v=2367";
+import { navigate } from "../router.js?v=2372";
+import { catalogueRoute } from "../active-playbook.js?v=2372";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,26 +13,28 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2367";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2367";
-import { isFlagOn } from "../feature-flags.js?v=2367";
-import { renderReview } from "./welcome-alt-review.js?v=2367";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2367";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2367";
+} from "../context-builder.js?v=2372";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2372";
+import { isFlagOn } from "../feature-flags.js?v=2372";
+import { renderReview } from "./welcome-alt-review.js?v=2372";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2372";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2372";
+import { getContextById, updateContext } from "../contexts-store.js?v=2372";
 import {
   brandVoiceAsIs,
+  canLearnFrom,
   learnNetworkVoice,
   networkVoice,
   networkVoiceOn,
   playbookNetworks,
-} from "../voice-parts.js?v=2367";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2367";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2367";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2367";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2367";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2367";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2367";
-import { showToast } from "../components/toast.js?v=2367";
+} from "../voice-parts.js?v=2372";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2372";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2372";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2372";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2372";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2372";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2372";
+import { showToast } from "../components/toast.js?v=2372";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -125,6 +127,7 @@ const playbookReview = () => ({
   sub: "I've filled in every card. Scroll through and fix anything that's off. Changes save as you type.",
   parts: RECAP_SECTIONS.filter((t) => t.id !== "voice"),
   next: { label: "On to your voice", go: () => navigate("/welcome-alt/voice") },
+  lastLabel: "Looks good, on to your voice",
   done: { title: "Your Playbook is all set.", lead: "Every part is confirmed. Now, how you sound." },
   back: "/welcome-alt/ready",
 });
@@ -136,7 +139,7 @@ const playbookReview = () => ({
 // Learn from… for the default voice; posts, a document, questions or the
 // default voice adapted for a network. No account yet: posts connect one first.
 const VOICE_TINT = "voice";
-function voiceReview(sid) {
+function voiceReview(sid, overrides = {}) {
   const voice = RECAP_SECTIONS.find((t) => t.id === "voice");
   const nets = () => (networkVoiceOn() ? playbookNetworks(getDraft(sid)) : []);
   const netOf = (partId) => partId.startsWith("voice-net-") && partId.slice("voice-net-".length);
@@ -178,10 +181,19 @@ function voiceReview(sid) {
 
   // The accounts to read on a network (or any, for the default voice).
   const accountsOn = (net) => getConnectedProfiles().filter((p) => !net || normalizeNetwork(p.platform) === net);
-  const postsDesc = (net) => {
-    const a = accountsOn(net).find((p) => p.postCount);
-    if (a) return `${a.handle} · ${a.postCount} posts`;
-    return net ? `Connect your ${networkLabel(net)} account, I read its posts` : "Connect an account, I read its posts";
+  // Posts to learn from: a connected account with enough of them, else — no
+  // account on the network — connect one first. An account with too few posts
+  // (`canLearnFrom`) offers no posts at all, as in the chat's Voice step.
+  const postsWay = (net, title) => {
+    const have = accountsOn(net);
+    const a = have.find(canLearnFrom);
+    if (have.length && !a) return null;
+    const desc = a
+      ? `${a.handle} · ${a.postCount} posts`
+      : net
+        ? `Connect your ${networkLabel(net)} account, I read its posts`
+        : "Connect an account, I read its posts";
+    return { id: "posts", icon: "ap-icon-double-chat-bubbles", title, desc };
   };
   const ways = (partId) => {
     const net = netOf(partId);
@@ -189,27 +201,27 @@ function voiceReview(sid) {
       return {
         label: "Learn it from",
         items: [
-          { id: "posts", icon: "ap-icon-double-chat-bubbles", title: "An account's posts", desc: postsDesc(null) },
+          postsWay(null, "An account's posts"),
           { id: "document", icon: "ap-icon-file--text", title: "A document", desc: "A brand book or a style guide" },
-        ],
+        ].filter(Boolean),
       };
     if (!net) return null;
     const label = networkLabel(net);
     return {
       label: `Add rules for ${label} from`,
       items: [
-        { id: "posts", icon: "ap-icon-double-chat-bubbles", title: `Your ${label} posts`, desc: postsDesc(net) },
+        postsWay(net, `Your ${label} posts`),
         { id: "document", icon: "ap-icon-file--text", title: "A document", desc: "A style guide or a brief" },
         { id: "interview", icon: "ap-icon-question", title: "A few questions", desc: "About a minute" },
         { id: "adapt", icon: "ap-icon-sparkles", title: "Your default voice, adapted", desc: "Nothing to read" },
-      ],
+      ].filter(Boolean),
     };
   };
 
   // Posts: the accounts already connected, else connect one first (the
   // connect dialog is the consent, DECISIONS « Connecting an account »).
   const withAccounts = (net, use) => {
-    const have = accountsOn(net);
+    const have = accountsOn(net).filter(canLearnFrom);
     if (have.length)
       return openAnalyzeProfilesModal({
         network: net ? have[0].platform : null,
@@ -291,10 +303,74 @@ function voiceReview(sid) {
     parts,
     ways,
     onWay,
-    next: { label: "Draft my first post", go: () => enterArchie(sid) },
+    next: { label: finishLabel(), go: () => finishRun(sid) },
     done: { title: "Your voice is set.", lead: "Every draft starts from it. Let's write the first one." },
     back: "/welcome-alt/recap",
+    ...overrides,
   };
+}
+
+// /playbook/:id/voice/:net — « Add a voice for X » on a saved Playbook's Voice
+// tab (2026-10-29, asked: « la même expérience de création / review »). The
+// same review on a working copy of the Playbook, opened on X's rules (X joins
+// the networks if it wasn't one); « Save to Playbook » writes the voice back,
+// Back drops the copy. Other networks keep what they had: none is moved to the
+// default voice behind the user's back.
+const VOICE_FIELDS = ["voiceSummary", "voiceAlways", "voiceNever", "voiceByPost", "voiceSometimes", "voiceMode"];
+export function renderPlaybookVoice({ id, net }, target) {
+  const ctx = getContextById(id);
+  if (!ctx || !networkVoiceOn()) {
+    navigate(`/playbook/${id}`);
+    return () => {};
+  }
+  const sid = `playbook-voice-${id}-${net}`;
+  const copy = JSON.parse(JSON.stringify(ctx));
+  const nets = playbookNetworks(copy);
+  const own = nets.filter((n) => networkVoice(copy, n).state === "own");
+  restoreDraft(sid, {
+    ...copy,
+    connectedSocials: nets.includes(net) ? copy.connectedSocials : [...(copy.connectedSocials || []), net],
+    voiceRulesFor: [...new Set([...own, net])],
+    revealed: true,
+  });
+  const back = `/playbook/${id}?tab=voice`;
+  const label = networkLabel(net);
+  const config = {
+    mode: "onboarding",
+    getData: () => getDraft(sid),
+    isReady: () => true,
+    commit: () => {},
+    revert: (snapshot) => patchDraft(sid, snapshot),
+    skipLoader: true,
+    showTop: false,
+    networkPicker: true,
+  };
+  return renderReview(
+    target,
+    sid,
+    config,
+    voiceReview(sid, {
+      title: `A voice for ${label}`,
+      sub: `Your default voice, where you post, then the rules for ${label}. Nothing is saved until you save it.`,
+      start: `voice-net-${net}`,
+      progress: false,
+      back,
+      next: {
+        label: "Save to Playbook",
+        go: () => {
+          const d = getDraft(sid);
+          updateContext(id, {
+            connectedSocials: d.connectedSocials,
+            voiceByNetwork: d.voiceByNetwork,
+            ...Object.fromEntries(VOICE_FIELDS.map((f) => [f, d[f]])),
+          });
+          navigate(`/playbook/${id}?tab=voice&voice=${net}`);
+          showToast(`Voice saved to ${ctx.name || "your Playbook"}.`);
+        },
+      },
+      done: { title: `Rules for ${label} are ready.`, lead: "Save them to your Playbook." },
+    }),
+  );
 }
 
 // The draft behind both hosts, rehydrated on a reload, and the view's config.
@@ -381,8 +457,9 @@ function renderDraftView(target, host, { fallback = null } = {}) {
       return false;
     },
   };
-  // Flag connectFirst: the reviews close the run, in its split.
-  if (isFlagOn("connectFirst") && !integrated) return host(sid, config);
+  // Flag connectFirst: the reviews close the run, in its split — a returning
+  // user's new Playbook too (2026-10-29).
+  if (isFlagOn("connectFirst")) return host(sid, config);
   if (fallback) {
     navigate(fallback);
     return () => {};
@@ -408,6 +485,14 @@ function finishIntegrated(sid) {
 // returning user and reload into the populated app. The recap owns this
 // (rather than the draft's onComplete) so it still works after a reload,
 // where the in-memory onComplete is gone.
+// The run's end, whoever runs it: a first-time user enters Archie; a returning
+// user creating one Playbook more (`welcomeAltIntegrated`) saves it and goes
+// back where they started — no reload, which would re-seed the stores.
+export function finishRun(sid) {
+  return isIntegrated() ? finishIntegrated(sid) : enterArchie(sid);
+}
+export const finishLabel = () => (isIntegrated() ? "Save my Playbook" : "Draft my first post");
+
 export function enterArchie(sid) {
   patchDraft(sid, { onComplete: null });
   const saved = save(sid);
@@ -475,7 +560,7 @@ function clearPersistedDraft() {
 
 // Integrated New-Playbook mode (set by the /contexts + composer create
 // entry points) vs full-bleed first-time onboarding.
-function isIntegrated() {
+export function isIntegrated() {
   try {
     return window.sessionStorage.getItem(WELCOME_ALT_INTEGRATED_KEY) === "1";
   } catch {
@@ -483,7 +568,7 @@ function isIntegrated() {
   }
 }
 
-function readReturnTo() {
+export function readReturnTo() {
   try {
     return window.sessionStorage.getItem(WELCOME_ALT_RETURN_KEY) || "";
   } catch {

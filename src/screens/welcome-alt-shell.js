@@ -9,10 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2367";
-import { html, raw, escapeHtml } from "../utils.js?v=2367";
-import { navigate } from "../router.js?v=2367";
-import { isFlagOn } from "../feature-flags.js?v=2367";
+import "../archie-pixels.js?v=2372";
+import { html, raw, escapeHtml } from "../utils.js?v=2372";
+import { navigate } from "../router.js?v=2372";
+import { parseHashParams } from "../url-state.js?v=2372";
+import { isFlagOn } from "../feature-flags.js?v=2372";
 import {
   altSteps,
   createAltDraft,
@@ -20,18 +21,20 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2367";
-import { networkIcon, networkLabel } from "../social-profiles.js?v=2367";
-import { playbookNetworks } from "../voice-parts.js?v=2367";
+} from "../context-builder.js?v=2372";
+import { networkIcon, networkLabel } from "../social-profiles.js?v=2372";
+import { playbookNetworks } from "../voice-parts.js?v=2372";
 import {
   readSessionId,
+  isIntegrated,
+  readReturnTo,
   persistDraft,
   readPersistedDraft,
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2367";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2367";
+} from "./welcome-alt-recap.js?v=2372";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2372";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -72,16 +75,23 @@ export function goBack(step) {
   const steps = flowSteps();
   const prev = steps[steps.indexOf(step) - 1];
   if (prev) goTo(prev);
+  else if (isIntegrated()) navigate(readReturnTo() || "/");
   else navigate("/welcome-alt/intro");
 }
 
-// A fresh run — from the intro's "Let's go".
-export function startFlow() {
+// A fresh run — from the intro's "Let's go", or (`returnTo`) a returning user's
+// « Create a Playbook »: the same run, saved and handed back on finish.
+export function startFlow({ returnTo = null } = {}) {
   const sid = `welcome-alt-${Date.now().toString(36)}`;
   try {
     window.sessionStorage.setItem(SESSION_KEY, sid);
-    window.sessionStorage.removeItem("welcomeAltIntegrated");
-    window.sessionStorage.removeItem("welcomeAltReturnTo");
+    if (returnTo) {
+      window.sessionStorage.setItem("welcomeAltIntegrated", "1");
+      window.sessionStorage.setItem("welcomeAltReturnTo", returnTo);
+    } else {
+      window.sessionStorage.removeItem("welcomeAltIntegrated");
+      window.sessionStorage.removeItem("welcomeAltReturnTo");
+    }
   } catch {
     /* ignore */
   }
@@ -93,6 +103,13 @@ export function startFlow() {
 // The run's draft: the live one, else the one saved before a reload, else a new
 // run (a deep link straight onto a step).
 export function ensureFlowDraft() {
+  // A returning user's « Create a Playbook » (context-builder
+  // openNewPlaybookFlow, `?new=<where to go back>`): a fresh run, once.
+  const back = parseHashParams().get("new");
+  if (back) {
+    history.replaceState(null, "", `#${window.location.hash.slice(1).split("?")[0]}`);
+    return startFlow({ returnTo: back });
+  }
   const sid = readSessionId();
   if (sid && getDraft(sid)) return sid;
   const snap = sid && readPersistedDraft(sid);
@@ -379,13 +396,13 @@ function renderProgress(step) {
 // the part's blocks, dealt as a stack, floating on the pixels.
 // `build`: /welcome-alt/ready's stages ({ at, done }), which gate the card.
 // Returns { paint, sheet, cleanup }.
-export function mountShell(target, { step, sid, left, sheet = false, build }) {
+export function mountShell(target, { step, sid, left, sheet = false, build, progress = true }) {
   target.innerHTML = html`
     <div class="welcome-intro welcome-flow ${sheet ? "is-review" : ""}">
       <section class="welcome-intro__lede" aria-labelledby="welcomeFlowTitle">
         <img class="welcome-intro__wordmark" src="assets/logos/archie-wordmark.svg" alt="Archie" />
         <div class="welcome-intro__copy welcome-flow__copy">
-          ${raw(renderProgress(step))}
+          ${progress ? raw(renderProgress(step)) : ""}
           <div data-flow-left></div>
         </div>
       </section>

@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2367";
-import { conceptHint } from "./concepts.js?v=2367";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2372";
+import { conceptHint } from "./concepts.js?v=2372";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2367";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2367";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2367";
-import { isFlagOn } from "./feature-flags.js?v=2367";
-import { clipLookOf } from "./videos-store.js?v=2367";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2367";
-import { parseHashParams } from "./url-state.js?v=2367";
+} from "./playbook-brand-kit.js?v=2372";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2372";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2372";
+import { isFlagOn } from "./feature-flags.js?v=2372";
+import { clipLookOf } from "./videos-store.js?v=2372";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2372";
+import { parseHashParams } from "./url-state.js?v=2372";
 import {
   isListPart,
   voiceParts,
@@ -52,21 +52,21 @@ import {
   markAdapted,
   withNetworkVoices,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2367";
-import { showToast } from "./components/toast.js?v=2367";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2367";
-import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2367";
-import { updateContext } from "./contexts-store.js?v=2367";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2367";
-import { consumeHandoff } from "./handoff.js?v=2367";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2367";
+} from "./voice-parts.js?v=2372";
+import { showToast } from "./components/toast.js?v=2372";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2372";
+import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2372";
+import { updateContext } from "./contexts-store.js?v=2372";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2372";
+import { consumeHandoff } from "./handoff.js?v=2372";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2372";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   networkLabel,
   networkIcon,
-} from "./social-profiles.js?v=2367";
+} from "./social-profiles.js?v=2372";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1130,6 +1130,34 @@ function learnMenu(net = null) {
           </div>
         </details>`
     : "";
+}
+
+// « Add a voice for… » (flag voicePerNetwork, a saved Playbook, cfg.onAddNetworkVoice):
+// every network, the Playbook's first; picking one opens the voice review on
+// it (welcome-alt-recap.js renderPlaybookVoice, 2026-10-29).
+function addVoiceMenu(data) {
+  if (!isLibrary() || !canEditView() || !networkVoiceOn() || !cfg.onAddNetworkVoice) return "";
+  const mine = playbookNetworks(data);
+  const nets = [...mine, ...Object.keys(NETWORKS).filter((n) => !mine.includes(n))];
+  return `<details class="recap__panel-menu" data-recap-learn-menu>
+      <summary class="ap-button primary orange recap__panel-action recap__panel-menu-toggle">
+        <i class="ap-icon-plus" aria-hidden="true"></i>
+        <span>Add a voice for…</span>
+        <i class="ap-icon-chevron-down recap__menu-caret" aria-hidden="true"></i>
+      </summary>
+      <div class="ap-action-dropdown recap__panel-menu-pop" role="menu" aria-label="Add a voice for a network">
+        ${nets
+          .map(
+            (
+              n,
+            ) => `<button type="button" class="ap-action-dropdown-item" data-pb2-add-voice="${esc(n)}" role="menuitem">
+          <i class="${networkIcon(n)}"></i>
+          <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">${esc(networkLabel(n))}</span></div></div>
+        </button>`,
+          )
+          .join("")}
+      </div>
+    </details>`;
 }
 
 // The brand's colours as editable rows — one per colour, plus "Add colour".
@@ -2589,7 +2617,7 @@ function renderVoiceRead2(data, learnMenu) {
     return `${pb2TabHead("voice", learnMenu)}<div class="pb2-grid">${own}</div>`;
   }
   if (voiceNet) return renderNetworkVoiceRead(data);
-  return `${renderVoiceTabs(data)}${pb2TabHead("voice", learnMenu)}${voiceIntroHtml(data)}<div class="pb2-grid">${[
+  return `${renderVoiceTabs(data)}${pb2TabHead("voice", learnMenu + addVoiceMenu(data))}${voiceIntroHtml(data)}<div class="pb2-grid">${[
     ...pb2VoiceParts(data),
     ...networkVoiceCards(data),
     isLibrary() && canEditView() && voiceNets(data).length ? voiceSplitBlock(data, voiceParts().length) : "",
@@ -2733,7 +2761,7 @@ function networkPickerCards(data, nets, first) {
       .join("")}</div>`,
     {
       wide: true,
-      hint: "I write for each network you pick. Nothing to connect yet: I'll ask for an account when your first post is ready.",
+      hint: "Your connected accounts are ticked. I write for each network you keep.",
       index: first,
       className: "pb2-voice-networks",
     },
@@ -2955,7 +2983,11 @@ function renderNetworkVoiceRead(data) {
   if (state === "default") {
     // Edit starts from the default voice (data-pb2-voice-own).
     const actions = canEditView()
-      ? `${learnMenu(net)}<button type="button" class="ap-button stroked blue" data-pb2-voice-own><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></button><button type="button" class="ap-button primary orange" data-recap-learn="adapt" data-recap-learn-net="${esc(net)}"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Adapt for ${esc(label)}</span></button>`
+      ? `${learnMenu(net)}<button type="button" class="ap-button stroked blue" data-pb2-voice-own><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></button>${
+          cfg.onAddNetworkVoice && networkVoiceOn()
+            ? `<button type="button" class="ap-button primary orange" data-pb2-add-voice="${esc(net)}"><i class="ap-icon-plus" aria-hidden="true"></i><span>Add a voice for ${esc(label)}</span></button>`
+            : `<button type="button" class="ap-button primary orange" data-recap-learn="adapt" data-recap-learn-net="${esc(net)}"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Adapt for ${esc(label)}</span></button>`
+        }`
       : "";
     // Kept on the default voice by choice: said, not warned. Never set: warned.
     const notice = chosen
@@ -3577,6 +3609,8 @@ function onClick(event) {
   // the saved Playbook's confirm would open twice.
   const voiceSplit = event.target.closest("[data-pb2-voice-split]");
   if (voiceSplit) return event.target.matches("input") && setVoiceSplit(voiceSplit.dataset.pb2VoiceSplit);
+  const addVoice = event.target.closest("[data-pb2-add-voice]");
+  if (addVoice) return cfg.onAddNetworkVoice?.(addVoice.dataset.pb2AddVoice);
   const postOn = event.target.closest("[data-pb2-post-on]");
   if (postOn) return event.target.matches("input") && setPostOn(postOn.dataset.pb2PostOn, event.target.checked);
   const mainNet = event.target.closest("[data-pb2-main-net]");

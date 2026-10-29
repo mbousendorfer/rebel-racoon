@@ -231,8 +231,9 @@ so no screen announces a step the run won't ask.
 The connect screen is gone from the first-time run. **Where you post** and **which network matters
 most** are asked in the Voice review (`/welcome-alt/voice`, part Your networks; a first-screen
 `/welcome-alt/networks` lived one day and was removed on 2026-10-29, asked: « le "where do you post" est
-toujours au même endroit »), written to `connectedSocials` as network slugs, the main one first —
-nothing is connected. This rule is what makes that safe: `requireConnectedProfiles`
+toujours au même endroit »), written to `connectedSocials` as network slugs, the main one first. A new user arrives with their
+Agorapulse accounts already connected (2026-10-29: « les comptes sont connectés déjà »), so the
+networks are ticked from them and posts are read without a connect dialog. This rule is what makes that safe: `requireConnectedProfiles`
 already wraps every path that produces a draft, so the first draft asks for an account and its grid
 leads with the Playbook's networks, the main one first. The time saved goes to the voice, now a step of
 its own: since 2026-10-29 the run's last review (`/welcome-alt/voice`, see « Une voix par réseau »). The skip dialog and its feedback key stay,

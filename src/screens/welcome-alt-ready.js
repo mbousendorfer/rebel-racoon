@@ -8,11 +8,11 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2367";
-import { navigate } from "../router.js?v=2367";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2367";
-import { enterArchie } from "./welcome-alt-recap.js?v=2367";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2367";
+import { html, raw } from "../utils.js?v=2372";
+import { navigate } from "../router.js?v=2372";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2372";
+import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2372";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2372";
 
 const STAGE_MS = 1300; // each stage holds at least this long, so the work reads as work
 const started = new Map(); // sid → when this screen first showed it (a re-render doesn't restart it)
@@ -70,7 +70,7 @@ export function renderWelcomeAltReady(_params, target) {
         <p class="welcome-intro__sub">
           ${manual
             ? "Tell me how your brand sounds and who it speaks to. Every draft I write starts there."
-            : "Every draft I write starts from it. Draft your first post now, or go through it first, part by part."}
+            : "Every draft I write starts from it. Go through it, set your voice, or draft your first post now."}
         </p>
         <ul class="welcome-flow__options">
           ${raw(
@@ -81,6 +81,14 @@ export function renderWelcomeAltReady(_params, target) {
               desc: manual ? "Part by part, card by card." : "Check and edit every part before your first post.",
             }),
           )}
+          ${raw(
+            choice({
+              hook: "data-ready-voice",
+              icon: "ap-icon-quote",
+              title: "Set my voice",
+              desc: "How you sound, where you post, and rules for each network.",
+            }),
+          )}
           ${manual
             ? ""
             : raw(
@@ -88,8 +96,10 @@ export function renderWelcomeAltReady(_params, target) {
                   hook: "data-ready-start",
                   icon: "ap-icon-sparkles",
                   featured: true,
-                  title: "Draft my first post",
-                  desc: "I'll write it now. You can edit the Playbook anytime.",
+                  title: finishLabel(),
+                  desc: isIntegrated()
+                    ? "Add it to your Playbooks. You can edit it anytime."
+                    : "I'll write it now. You can edit the Playbook anytime.",
                 }),
               )}
         </ul>
@@ -140,8 +150,10 @@ export function renderWelcomeAltReady(_params, target) {
   const timer = window.setInterval(tick, 200);
 
   const onClick = (event) => {
-    if (event.target.closest("[data-ready-start]")) enterArchie(sid);
+    if (event.target.closest("[data-ready-start]")) finishRun(sid);
     else if (event.target.closest("[data-ready-review]")) navigate("/welcome-alt/recap");
+    // The Voice has its own review (2026-10-29): reachable from the reveal too.
+    else if (event.target.closest("[data-ready-voice]")) navigate("/welcome-alt/voice");
     else if (event.target.closest("[data-flow-back]")) goBack("recap");
   };
   target.addEventListener("click", onClick);

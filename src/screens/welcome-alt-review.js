@@ -32,12 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2367";
-import { navigate } from "../router.js?v=2367";
-import { getDraft, patchDraft } from "../context-builder.js?v=2367";
-import { mount } from "../playbook-view.js?v=2367";
-import { parseHashParams } from "../url-state.js?v=2367";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2367";
+import { html, raw } from "../utils.js?v=2372";
+import { navigate } from "../router.js?v=2372";
+import { getDraft, patchDraft } from "../context-builder.js?v=2372";
+import { mount } from "../playbook-view.js?v=2372";
+import { parseHashParams } from "../url-state.js?v=2372";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2372";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -46,7 +46,8 @@ const OUT_MS = 240; // the part's column leaves
 const GLIDE_MS = 720; // a card glides to the middle
 
 // `review`: { step, title, sub, parts (a list, or a function for parts that
-// come and go), next: { label, go }, done: { title, lead }, back, ways? }.
+// come and go), next: { label, go }, done: { title, lead }, back, ways?,
+// start? (the part to open first), progress? (false: no step dots) }.
 // `ways(partId)`: the ways to fill the part on screen, listed on the left
 // ({ label, items: [{ id, icon, title, desc }] }); `onWay(partId, id, refresh)`
 // runs one, `refresh()` repaints the part with what it changed.
@@ -54,7 +55,10 @@ export function renderReview(target, sid, config, review) {
   const parts = () => (typeof review.parts === "function" ? review.parts() : review.parts);
   const reviewed = () => new Set(getDraft(sid)?.reviewedParts || []);
   // The part on screen: the URL's tab when it names one (a reload), else the first.
-  let currentId = parts().find((t) => t.id === parseHashParams().get("tab"))?.id || parts()[0].id;
+  let currentId =
+    parts().find((t) => t.id === parseHashParams().get("tab"))?.id ||
+    parts().find((t) => t.id === review.start)?.id ||
+    parts()[0].id;
   const current = () => currentId;
   const partOf = (id) => parts().find((t) => t.id === id) || parts()[0];
   const tintOf = (id) => tint(partOf(id).tint || id);
@@ -62,7 +66,7 @@ export function renderReview(target, sid, config, review) {
   // (2026-10-20: "Confirm Brief" read as admin).
   const looksGood = (id) => {
     const next = parts()[parts().findIndex((t) => t.id === id) + 1];
-    return next ? `Looks good, on to ${next.title}` : "Looks good, finish";
+    return next ? `Looks good, on to ${next.title}` : review.lastLabel || "Looks good, finish";
   };
 
   let index = 0; // the card in focus, within the current part
@@ -147,7 +151,7 @@ export function renderReview(target, sid, config, review) {
     `;
   };
 
-  const shell = mountShell(target, { step: review.step, sid, left, sheet: true });
+  const shell = mountShell(target, { step: review.step, sid, left, sheet: true, progress: review.progress !== false });
   shell.sheet.classList.add("is-scroll");
   const body = shell.sheet.querySelector("[data-flow-sheet-body]");
   // The end of the run: "all set", over the stage.
@@ -284,10 +288,12 @@ export function renderReview(target, sid, config, review) {
     applying = false;
     shell.paint();
   };
+  // A repaint (a box ticked, a chip added) rebuilds the column: the card being
+  // edited stays where it was instead of the column jumping back to the top.
   const observer = new MutationObserver(() => {
     if (applying) return;
     applyColumn();
-    focus(); // the repainted cards keep their dimming
+    centre({ instant: true });
   });
   observer.observe(body, { childList: true });
 
