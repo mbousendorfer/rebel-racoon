@@ -17,7 +17,7 @@
 //   - Registers with modal-coordinator so opening the dialog auto-closes
 //     any other overlay (drawer, modal, shortcut legend).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2498";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2499";
 
 const MODAL_ID = "confirm";
 

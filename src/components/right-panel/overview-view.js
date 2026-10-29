@@ -7,18 +7,18 @@
 // numbers in words and links to its tab. Render-only; the shell
 // (right-panel.js) owns the delegated clicks (data-rpanel-goto / -focus).
 
-import { escapeAttr, escapeText, formatClock } from "../../utils.js?v=2498";
-import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2498";
-import { getThread } from "../../assistant.js?v=2498";
-import { getSources } from "../../sources-stream.js?v=2498";
-import { getIdeas } from "../../library.js?v=2498";
-import { getPosts } from "../../posts-store.js?v=2498";
-import { isPostValid } from "../../post-validation.js?v=2498";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2498";
-import { iconFor } from "../../file-kinds.js?v=2498";
-import { thumbBackground } from "../clip-card.js?v=2498";
-import { pendingProcesses } from "../conversation-status-card.js?v=2498";
-import { activeSessionId } from "../right-panel.js?v=2498";
+import { escapeAttr, escapeText, formatClock } from "../../utils.js?v=2499";
+import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2499";
+import { getThread } from "../../assistant.js?v=2499";
+import { getSources } from "../../sources-stream.js?v=2499";
+import { getIdeas } from "../../library.js?v=2499";
+import { getPosts } from "../../posts-store.js?v=2499";
+import { isPostValid } from "../../post-validation.js?v=2499";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2499";
+import { iconFor } from "../../file-kinds.js?v=2499";
+import { thumbBackground } from "../clip-card.js?v=2499";
+import { pendingProcesses } from "../conversation-status-card.js?v=2499";
+import { activeSessionId } from "../right-panel.js?v=2499";
 
 // Live drafts only — the Drafts tab hides scheduled ones, so does its count.
 const liveDrafts = (sid) => getPosts(sid).filter((p) => p.status !== "scheduled");
@@ -92,8 +92,9 @@ function renderNextStep({ sources, ideas, drafts, pending }) {
   } else if (toFix) {
     box = {
       type: "warning",
-      line: `${plural(toFix, "draft")} ${toFix === 1 ? "needs a fix before it can" : "need a fix before they can"} go out.`,
-      cta: { to: "drafts", label: "Review drafts" },
+      line: `${plural(toFix, "draft")} ${toFix === 1 ? "needs fixes before it can" : "need fixes before they can"} go out.`,
+      // Straight to the « Needs fixes » filter: the drafts to fix, not all of them.
+      cta: { to: "drafts", label: "Review drafts", filter: "needs_fixes" },
     };
   } else if (drafts.length) {
     box = {
@@ -116,13 +117,13 @@ function renderNextStep({ sources, ideas, drafts, pending }) {
     ? `<span class="ap-loader size-16" aria-hidden="true"><svg><circle></circle><circle></circle></svg></span>`
     : `<i class="${NEXT_ICON[box.type]}" aria-hidden="true"></i>`;
   return `
-    <div class="ap-infobox ${box.type} rpanel-ov__next" role="status">
+    <div class="ap-infobox ${box.type} rpanel-ov__next"${pending.length ? ' role="status"' : ""}>
       ${icon}
       <div class="ap-infobox-content">
         <div class="ap-infobox-texts">
           <span class="ap-infobox-message">${box.line}</span>
         </div>
-        ${box.cta ? `<button type="button" class="ap-button stroked grey" data-rpanel-goto="${box.cta.to}">${box.cta.label}</button>` : ""}
+        ${box.cta ? `<button type="button" class="ap-button stroked grey" data-rpanel-goto="${box.cta.to}"${box.cta.filter ? ` data-rpanel-goto-filter="${box.cta.filter}"` : ""}>${box.cta.label}</button>` : ""}
       </div>
     </div>
   `;
@@ -160,13 +161,7 @@ function renderSources(sources) {
         </li>`;
     })
     .join("");
-  return section(
-    "sources",
-    "Sources",
-    plural(sources.length, "source"),
-    "Manage",
-    `<ul class="rpanel-ov__list">${rows}</ul>`,
-  );
+  return section("sources", "Sources", "", "Open", `<ul class="rpanel-ov__list">${rows}</ul>`);
 }
 
 // ── Ideas — kind + title, how many made it to a draft ───────────────────────
@@ -220,7 +215,7 @@ function renderClips(clips) {
       </li>`,
     )
     .join("");
-  return section("clips", "Clips", plural(clips.length, "clip"), "Open", `<ul class="rpanel-ov__strip">${frames}</ul>`);
+  return section("clips", "Clips", "", "Open", `<ul class="rpanel-ov__strip">${frames}</ul>`);
 }
 
 // ── Drafts — the post itself, where it goes, whether it can ─────────────────
@@ -242,19 +237,21 @@ function renderDrafts(drafts) {
             <i class="${networkIcon(p.network)} rpanel-ov__draft-network" title="${label}" aria-label="${label}"></i>
             <span class="rpanel-ov__draft-body">
               <span class="rpanel-ov__draft-text">${escapeText(text)}</span>
-              <span class="ap-status ${ok ? "green" : "orange"} rpanel-ov__state">${ok ? "Ready" : "Needs a fix"}</span>
+              <span class="ap-status ${ok ? "green" : "orange"} rpanel-ov__state">${ok ? "Ready" : "Needs fixes"}</span>
             </span>
             ${p.imageUrl ? `<img class="rpanel-ov__draft-media" src="${escapeAttr(p.imageUrl)}" alt="" loading="lazy" />` : ""}
           </button>
         </li>`;
     })
     .join("");
-  const metric = toFix ? `${drafts.length - toFix} ready, ${toFix} to fix` : `${drafts.length} ready`;
+  const metric = toFix
+    ? `${drafts.length - toFix} ready, ${toFix} ${toFix === 1 ? "needs" : "need"} fixes`
+    : `${drafts.length} ready`;
   return section(
     "drafts",
     "Drafts",
     metric,
-    drafts.length > DRAFTS_SHOWN ? `See all ${drafts.length}` : "Review",
+    drafts.length > DRAFTS_SHOWN ? `See all ${drafts.length}` : "Open",
     `<ul class="rpanel-ov__list rpanel-ov__list--drafts">${rows}</ul>`,
   );
 }

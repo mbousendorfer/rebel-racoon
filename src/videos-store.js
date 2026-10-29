@@ -20,10 +20,10 @@
 //             preset), transcript, segments (null = auto framing), texts[],
 //             brand (null = the Playbook's clip look) }
 
-import { seedVideos } from "./mocks.js?v=2498";
-import { isNewUser } from "./user-mode.js?v=2498";
-import { createNotifier } from "./store-utils.js?v=2498";
-import { getDefaultContext, getContextById } from "./contexts-store.js?v=2498";
+import { seedVideos } from "./mocks.js?v=2499";
+import { isNewUser } from "./user-mode.js?v=2499";
+import { createNotifier } from "./store-utils.js?v=2499";
+import { getDefaultContext, getContextById } from "./contexts-store.js?v=2499";
 
 const MIN_VIDEO_MS = 30 * 1000;
 const MAX_VIDEO_MS = 2 * 60 * 60 * 1000;
