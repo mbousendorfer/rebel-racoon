@@ -11,18 +11,18 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=2524";
-import { isFlagOn } from "../../feature-flags.js?v=2524";
-import { escapeAttr, escapeText } from "../../utils.js?v=2524";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2524";
-import { getSessions } from "../../sessions-store.js?v=2524";
-import { renderEmptyState } from "../../components/empty-state.js?v=2524";
-import { getSources, getIdeas } from "../../library.js?v=2524";
-import { getPosts } from "../../posts-store.js?v=2524";
-import { getContextById } from "../../contexts-store.js?v=2524";
-import { voicesToFinish } from "../../voice-parts.js?v=2524";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2524";
-import { pageState } from "../home.js?v=2524";
+} from "../../playbook-access.js?v=2525";
+import { isFlagOn } from "../../feature-flags.js?v=2525";
+import { escapeAttr, escapeText } from "../../utils.js?v=2525";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2525";
+import { getSessions } from "../../sessions-store.js?v=2525";
+import { renderEmptyState } from "../../components/empty-state.js?v=2525";
+import { getSources, getIdeas } from "../../library.js?v=2525";
+import { getPosts } from "../../posts-store.js?v=2525";
+import { getContextById } from "../../contexts-store.js?v=2525";
+import { voicesToFinish } from "../../voice-parts.js?v=2525";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2525";
+import { pageState } from "../home.js?v=2525";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -484,9 +484,7 @@ export function renderContextCard(ctx) {
     : "";
   const openAttrs = `
       data-contexts-card="${ctx.id}"
-      role="button"
-      tabindex="0"
-      ${cardTitle ? `title="${escapeAttr(cardTitle)}" aria-label="${escapeAttr(cardTitle)}"` : ""}`;
+      ${cardTitle ? `title="${escapeAttr(cardTitle)}"` : ""}`;
 
   // ── The tile ────────────────────────────────────────────────────────────
   // The catalogue's own shape, flag OFF: a colour strip, the voice chip, three
@@ -502,7 +500,10 @@ export function renderContextCard(ctx) {
 
       <header class="contexts-card__head">
         <h3 class="contexts-card__name">
-          ${escapeText(ctx.name)}
+          <!-- The keyboard way in: the tile is no longer a role=button wrapping
+               its own action buttons (ARIA nested interactive). A click anywhere
+               on the tile still opens it (delegated on data-contexts-card). -->
+          <button type="button" class="contexts-card__open"${cardTitle ? ` aria-label="${escapeAttr(cardTitle)}"` : ""}>${escapeText(ctx.name)}</button>
           ${isDefaultBadge}
         </h3>
       </header>

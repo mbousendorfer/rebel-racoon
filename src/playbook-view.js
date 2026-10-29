@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2524";
-import { conceptHint } from "./concepts.js?v=2524";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2525";
+import { conceptHint } from "./concepts.js?v=2525";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2524";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2524";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2524";
-import { isFlagOn } from "./feature-flags.js?v=2524";
-import { clipLookOf } from "./videos-store.js?v=2524";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2524";
-import { parseHashParams } from "./url-state.js?v=2524";
+} from "./playbook-brand-kit.js?v=2525";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2525";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2525";
+import { isFlagOn } from "./feature-flags.js?v=2525";
+import { clipLookOf } from "./videos-store.js?v=2525";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2525";
+import { parseHashParams } from "./url-state.js?v=2525";
 import {
   isListPart,
   voiceParts,
@@ -55,13 +55,13 @@ import {
   canLearnFrom,
   ADAPTED_FROM,
   voiceHasRules,
-} from "./voice-parts.js?v=2524";
-import { showToast } from "./components/toast.js?v=2524";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2524";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2524";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2524";
-import { consumeHandoff } from "./handoff.js?v=2524";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2524";
+} from "./voice-parts.js?v=2525";
+import { showToast } from "./components/toast.js?v=2525";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2525";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2525";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2525";
+import { consumeHandoff } from "./handoff.js?v=2525";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2525";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2524";
+} from "./social-profiles.js?v=2525";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2252,7 +2252,9 @@ function renderTabs2(data) {
         ${visibleTabs()
           .map((t) => {
             const on = t.id === activeTab;
+            // WAI-ARIA tabs: one Tab stop (the active tab), ←/→ between them (onKeydown).
             return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}"
+            id="pb2-tab-${t.id}" aria-controls="pb2-panel" tabindex="${on ? 0 : -1}"
             data-pb2-tab="${t.id}">
             <span>${esc(t.title)}</span>
             ${counts[t.id] ? `<span class="ap-counter normal grey">${counts[t.id]}</span>` : ""}
@@ -3356,7 +3358,9 @@ function paint() {
       ${raw(renderTop())}
       <div class="welcome-screen__body recap pb2__body">
         ${raw(renderHeader2(data))} ${raw(cfg.notice?.() || "")} ${raw(renderTabs2(data))}
-        <div class="pb2__panel" role="tabpanel">${raw(renderActivePanel(data))}</div>
+        <div class="pb2__panel" role="tabpanel" id="pb2-panel" aria-labelledby="pb2-tab-${activeTab}">
+          ${raw(renderActivePanel(data))}
+        </div>
         ${raw(renderRefModal(data))} ${raw(renderRosterModal(data))} ${raw(renderInfluencerAddModal())}
       </div>
     </section>
@@ -4369,6 +4373,15 @@ function onChange(event) {
 }
 
 function onKeydown(event) {
+  const tab = (event.key === "ArrowRight" || event.key === "ArrowLeft") && event.target.closest?.("[data-pb2-tab]");
+  if (tab) {
+    const tabs = [...tab.parentElement.querySelectorAll("[data-pb2-tab]")];
+    const next = tabs[(tabs.indexOf(tab) + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
+    event.preventDefault();
+    next.click();
+    mountTarget?.querySelector(`#pb2-tab-${CSS.escape(next.dataset.pb2Tab)}`)?.focus();
+    return;
+  }
   if (!editScope) return;
   if (event.target.matches("[data-recap-audience-input]") && event.key === "Enter") {
     event.preventDefault();

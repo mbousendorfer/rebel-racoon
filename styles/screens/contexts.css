@@ -225,9 +225,24 @@
 /* The card hover of the house (design-guidelines §4): a blue border, no
    lift, no shadow — focus-visible reads the same. */
 .contexts-card:hover,
-.contexts-card:focus-visible {
+.contexts-card:has(.contexts-card__open:focus-visible) {
   outline: none;
   border-color: var(--ref-color-electric-blue-100);
+}
+
+/* The name is the tile's button: it reads as the title it was. */
+.contexts-card__open {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.contexts-card__open:focus-visible {
+  outline: none;
 }
 
 /* Swatch strip — top edge, full-width, colored per ctx.color. */
