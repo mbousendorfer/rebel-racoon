@@ -1322,3 +1322,9 @@
 .pb2-voice-ways__actions {
   display: contents;
 }
+
+/* The ways to give a voice: the run's option rows, in a block — no top margin
+   (the block's head spaces it). */
+.welcome-flow__options.pb2-voice-rows {
+  margin: 0;
+}

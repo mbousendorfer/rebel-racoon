@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2469";
-import { conceptHint } from "./concepts.js?v=2469";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2470";
+import { conceptHint } from "./concepts.js?v=2470";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2469";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2469";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2469";
-import { isFlagOn } from "./feature-flags.js?v=2469";
-import { clipLookOf } from "./videos-store.js?v=2469";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2469";
-import { parseHashParams } from "./url-state.js?v=2469";
+} from "./playbook-brand-kit.js?v=2470";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2470";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2470";
+import { isFlagOn } from "./feature-flags.js?v=2470";
+import { clipLookOf } from "./videos-store.js?v=2470";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2470";
+import { parseHashParams } from "./url-state.js?v=2470";
 import {
   isListPart,
   voiceParts,
@@ -54,13 +54,13 @@ import {
   canLearnFrom,
   ADAPTED_FROM,
   voiceHasRules,
-} from "./voice-parts.js?v=2469";
-import { showToast } from "./components/toast.js?v=2469";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2469";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2469";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2469";
-import { consumeHandoff } from "./handoff.js?v=2469";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2469";
+} from "./voice-parts.js?v=2470";
+import { showToast } from "./components/toast.js?v=2470";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2470";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2470";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2470";
+import { consumeHandoff } from "./handoff.js?v=2470";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2470";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2469";
+} from "./social-profiles.js?v=2470";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2782,6 +2782,20 @@ function networkVoiceCards(data) {
 // (2026-10-29, asked: in the right column, in edit, for the default voice AND a
 // network's rules). `net` null: the default voice (posts of any account, a
 // document); a network: its posts, a document, a few questions, adapted.
+// The ways to give a voice, as the run's option rows (welcome-alt-steps.js,
+// « How should I learn your voice? »): asked « faut utiliser la même chose ».
+function voiceWaysRows(items) {
+  return `<ul class="welcome-flow__options pb2-voice-rows">${items
+    .map(
+      (t) => `<li><button type="button" class="welcome-flow__option" ${t.attrs}>
+        <span class="welcome-flow__glyph is-icon"><i class="${t.icon}" aria-hidden="true"></i></span>
+        <span class="welcome-flow__option-text"><span class="welcome-flow__option-title">${esc(t.name)}</span><span class="welcome-flow__option-desc">${esc(t.hint)}</span></span>
+        <i class="ap-icon-arrow-right welcome-flow__option-add" aria-hidden="true"></i>
+      </button></li>`,
+    )
+    .join("")}</ul>`;
+}
+
 function voiceWaysCard(net = null, { title = "Rewrite it from", hint = "", className = "pb2-voice-ways" } = {}) {
   const account = getConnectedProfiles().find((p) => canLearnFrom(p) && (!net || normalizeNetwork(p.platform) === net));
   const label = net ? networkLabel(net) : "";
@@ -2839,18 +2853,14 @@ function voiceWaysCard(net = null, { title = "Rewrite it from", hint = "", class
     </section>`;
   return pb2Block(
     title,
-    `<div class="voice-ask__options" style="--others:${Math.max(tiles.length - 1, 1)}">${tiles
-      .map(
-        (
-          c,
-          i,
-        ) => `<button type="button" class="voice-ask__option${i ? "" : " is-best"}" data-voice-ask="${esc(net || "")}" data-voice-choice="${c.value}">
-          <span class="voice-ask__icon" aria-hidden="true"><i class="${c.icon}"></i></span>
-          <span class="voice-ask__text"><span class="voice-ask__name">${esc(c.tile)}</span><span class="voice-ask__hint">${esc(c.hint)}</span></span>
-          ${i ? "" : `<span class="ap-tag green mini voice-ask__best">Recommended</span>`}
-        </button>`,
-      )
-      .join("")}</div>`,
+    voiceWaysRows(
+      tiles.map((c) => ({
+        attrs: `data-voice-ask="${esc(net || "")}" data-voice-choice="${c.value}"`,
+        icon: c.icon,
+        name: c.tile,
+        hint: c.hint,
+      })),
+    ),
     {
       wide: true,
       hint:
@@ -3041,19 +3051,10 @@ function networkVoiceEmpty(net, chosen) {
   // One block under the tab's head (asked: « visuellement c'est pas terrible »):
   // the head says what happens and carries Keep the default voice; the block
   // only offers the ways — no second title, icon or sentence.
-  return pb2Block(
-    `Give ${label} its own voice`,
-    `<div class="voice-ask__options" style="--others:${Math.max(tiles.length - 1, 1)}">${tiles
-      .map(
-        (t, i) => `<button type="button" class="voice-ask__option${i ? "" : " is-best"}" ${t.attrs}>
-          <span class="voice-ask__icon" aria-hidden="true"><i class="${t.icon}"></i></span>
-          <span class="voice-ask__text"><span class="voice-ask__name">${esc(t.name)}</span><span class="voice-ask__hint">${esc(t.hint)}</span></span>
-          ${i ? "" : `<span class="ap-tag green mini voice-ask__best">Recommended</span>`}
-        </button>`,
-      )
-      .join("")}</div>`,
-    { wide: true, className: `pb2-voice-net pb2-voice-net--${net}` },
-  );
+  return pb2Block(`Give ${label} its own voice`, voiceWaysRows(tiles), {
+    wide: true,
+    className: `pb2-voice-net pb2-voice-net--${net}`,
+  });
 }
 
 function networkVoiceLead(net, voice, data) {
