@@ -6,13 +6,13 @@
 // the side-effecting actions wired by the sidebar's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2426";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2426";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2426";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2426";
-import { getRole, setRole, ORG } from "./org.js?v=2426";
-import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2426";
-import { resetIntro } from "./components/voice-intro-modal.js?v=2426";
+import { html, raw, escapeHtml } from "./utils.js?v=2428";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2428";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2428";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2428";
+import { getRole, setRole, ORG } from "./org.js?v=2428";
+import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2428";
+import { resetIntro } from "./components/voice-intro-modal.js?v=2428";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
@@ -40,7 +40,7 @@ export function applyUserMode(target) {
     window.location.hash = "#/welcome-alt";
   } else if (target === "returning") {
     const h = window.location.hash;
-    if (h.startsWith("#/welcome") || h.startsWith("#/session/welcome-alt-")) {
+    if (h.startsWith("#/welcome")) {
       window.location.hash = "#/";
     }
   }

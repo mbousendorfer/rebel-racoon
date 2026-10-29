@@ -3,15 +3,10 @@
    so the app shell (sidebar + topbar) is hidden — see layout.css.
 
    Surfaces:
-     /session/welcome-alt-* → the conversational Playbook builder runs in
-                              the existing session shell.
-     /welcome-alt/intro     → what the setup will ask (flag connectFirst).
-     /welcome-alt/connect…ready → the run as screens, in the same split
-                              (.welcome-flow, flag connectFirst).
+     /welcome-alt/intro     → what the setup will ask.
+     /welcome-alt/brand…ready → the run as screens, in the same split
+                              (.welcome-flow).
      /welcome-alt/recap     → the curated Playbook reveal (styles below).
-
-   The shared `.welcome-screen*` chrome + `.welcome-hero` base also back
-   the welcome-alt session hero (see session.css `.welcome-hero--alt`).
 */
 
 .welcome-screen {
@@ -77,54 +72,7 @@
   gap: var(--ref-spacing-xl);
 }
 
-.welcome-hero {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--ref-spacing-md);
-  max-width: 520px;
-}
-
-.welcome-hero__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-sm);
-  border-radius: var(--app-radius-pill);
-  background: var(--app-butter);
-  color: var(--ref-color-orange-150);
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-}
-
-.welcome-hero__title {
-  margin: 0;
-  font-family: var(--sys-text-style-h1-font-family);
-  font-size: var(--sys-text-style-marketing-size);
-  line-height: var(--sys-text-style-marketing-line-height);
-  font-weight: var(--sys-text-style-marketing-weight);
-  color: var(--ref-color-grey-100);
-  letter-spacing: -0.02em;
-}
-
-.welcome-hero__sub {
-  margin: 0;
-  font-size: var(--sys-text-style-subtitle-size);
-  line-height: var(--sys-text-style-subtitle-line-height);
-  font-weight: var(--sys-text-style-subtitle-weight);
-  color: var(--ref-color-grey-80);
-}
-
-.welcome-hero__sub strong {
-  color: var(--ref-color-grey-100);
-  font-weight: var(--sys-text-style-marketing-weight);
-  background: linear-gradient(180deg, transparent 65%, var(--ref-color-orange-10) 65%);
-  padding: 0 var(--ref-spacing-xxxs);
-  border-radius: var(--app-radius-sm);
-}
-
-/* ---------- /welcome-alt/intro — the app's first screen (flag connectFirst) ----------
+/* ---------- /welcome-alt/intro — the app's first screen  ----------
    Split, full-bleed. Left: the headline and the steps ahead. Right: Archie's
    warm pixel field with the Playbook those steps build, assembling itself.
    ONE load sequence: step --i lights up at --t, as its line lands on the card.
@@ -588,7 +536,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
   }
 }
 
-/* ---------- The run: /welcome-alt/connect → /ready (flag connectFirst) ----------
+/* ---------- The run: /welcome-alt/connect → /ready  ----------
    The intro's split, reused (welcome-alt-shell.js): the step on the left, the
    stage on the right where the card fills with real answers. Unlike the intro
    there is no load sequence — the card is already there from one step to the
@@ -1715,7 +1663,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
 /* ---------- /welcome-alt/recap — Playbook reveal ----------
    Curated, marketing-grade presentation of the captured Playbook. Own
    namespace (`.recap` / `.welcome-screen--reveal`) so it stays isolated
-   from the shared `.welcome-screen` / `.welcome-hero` chrome above. */
+   from the shared `.welcome-screen` chrome above. */
 
 .welcome-screen--reveal .welcome-screen__body.recap {
   align-items: stretch;

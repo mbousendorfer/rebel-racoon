@@ -20,11 +20,11 @@
 //   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2426";
-import { getContextById } from "../contexts-store.js?v=2426";
-import { playbookForNewWork } from "../active-playbook.js?v=2426";
-import { isNewUser } from "../user-mode.js?v=2426";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2426";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2428";
+import { getContextById } from "../contexts-store.js?v=2428";
+import { playbookForNewWork } from "../active-playbook.js?v=2428";
+import { isNewUser } from "../user-mode.js?v=2428";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2428";
 import {
   networkVoiceOn,
   networkVoice,
@@ -34,7 +34,7 @@ import {
   baseValue,
   voiceItemsHtml,
   voiceNetTagHtml,
-} from "../voice-parts.js?v=2426";
+} from "../voice-parts.js?v=2428";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -44,11 +44,11 @@ import {
   INTERVIEW,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2426";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2426";
-import "../archie-pixels.js?v=2426";
-import { navigate } from "../router.js?v=2426";
-import { escapeHtml } from "../utils.js?v=2426";
+} from "../network-voice-flow.js?v=2428";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2428";
+import "../archie-pixels.js?v=2428";
+import { navigate } from "../router.js?v=2428";
+import { escapeHtml } from "../utils.js?v=2428";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -403,7 +403,7 @@ function injectOnce() {
 // network on the default voice — and never over another dialog or the first run.
 export function maybeOpenVoiceIntro(path) {
   if (!networkVoiceOn() || introSeen() || isNewUser() || document.body.classList.contains("has-modal")) return;
-  if (path.startsWith("/welcome-alt") || path.startsWith("/session/welcome-alt-")) return;
+  if (path.startsWith("/welcome-alt")) return;
   const ctx = playbookForNewWork();
   if (!ctx || !playbookNetworks(ctx).some((n) => networkVoice(ctx, n).state !== "own")) return;
   openVoiceIntro(ctx.id);

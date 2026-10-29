@@ -1,4 +1,4 @@
-// /welcome-alt/intro — flag connectFirst: the very first screen of the app for a
+// /welcome-alt/intro — the very first screen of the app for a
 // new user. It says what we build together (a Playbook), what one is and why
 // it's needed (every post starts from it), then what the setup will ask — and
 // shows what comes out of it.
@@ -13,14 +13,14 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2426";
-import { startDemo } from "../demo-flow.js?v=2426";
-import { isFlagOn } from "../feature-flags.js?v=2426";
-import { html, raw } from "../utils.js?v=2426";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2426";
-import { navigate } from "../router.js?v=2426";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2426";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2426";
+import "../archie-pixels.js?v=2428";
+import { startDemo } from "../demo-flow.js?v=2428";
+import { isFlagOn } from "../feature-flags.js?v=2428";
+import { html, raw } from "../utils.js?v=2428";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2428";
+import { navigate } from "../router.js?v=2428";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2428";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2428";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.

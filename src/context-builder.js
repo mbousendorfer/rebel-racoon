@@ -1,50 +1,30 @@
-// Conversational context-builder orchestrator.
+// Playbook creation's draft and its moves.
 //
-// Playbook CREATION is the First Time User ALT flow (`startAlt`): a 3-question
-// chat (URL → profile → optional documents) that kicks off a mock website
-// analysis, then reveals the editable recap (see playbook-view + the
-// welcome-alt-recap / integrated New-Playbook wrappers). `save()` persists the
-// draft into the contexts-store. The older brief-builder (a "Website /
-// Documents" source picker → right-panel brief form) was removed once the ALT
-// flow became the single creation path.
+// Playbook CREATION is the first-time run (screens/welcome-alt-*.js): the
+// source (a website read in the background, files, an interview or by hand),
+// the account the voice is learned from, then the reveal and the reviews of the
+// editable recap (playbook-view). `save()` persists the draft into the
+// contexts-store. The chat onboarding that came first was deleted with the
+// flag connectFirst (2026-10-29).
 //
-// State per "session" (a synthetic id when invoked outside a real chat) is the
-// draft: { websiteUrl, name, businessSummary, audience, audienceProblems,
-// tones, contentStyle, objective, contentAction, ctaLinks, language, color,
-// suggestions, editingId, onComplete }.
+// State per "session" (a synthetic id, the run's) is the draft: { websiteUrl,
+// name, businessSummary, audience, audienceProblems, tones, contentStyle,
+// objective, contentAction, ctaLinks, language, color, suggestions, editingId,
+// onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=2426";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2426";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2426";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2426";
-import { showToast } from "./components/toast.js?v=2426";
-import { recordReasons } from "./feedback-store.js?v=2426";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2426";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2426";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2426";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2428";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2428";
 import {
   analyzeWebsite,
   analyzeSocialProfiles,
   analyzeBrandFiles,
   analyzeInterview,
-  nextInterviewQuestion,
-  INTERVIEW_OPENING,
-} from "./context-mock-analysis.js?v=2426";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2426";
-import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=2426";
-import { markIntroSeen } from "./components/voice-intro-modal.js?v=2426";
-import { connectors as connectorMocks } from "./mocks.js?v=2426";
-import {
-  getConnectedProfiles,
-  getConnectedProfileById,
-  buildConnectedProfileItems,
-  PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=2426";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2426";
-import { isFlagOn } from "./feature-flags.js?v=2426";
-import { startDemo } from "./demo-flow.js?v=2426";
-import { navigate } from "./router.js?v=2426";
-import { setHandoff } from "./handoff.js?v=2426";
+} from "./context-mock-analysis.js?v=2428";
+import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=2428";
+import { markIntroSeen } from "./components/voice-intro-modal.js?v=2428";
+import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2428";
+import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2428";
+import { isFlagOn } from "./feature-flags.js?v=2428";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -142,7 +122,7 @@ function emptyDraft(overrides = {}) {
 }
 
 // Repaint hook for surfaces that show a draft as it fills (the onboarding
-// screens under flag connectFirst). Returns the unsubscribe.
+// screens). Returns the unsubscribe.
 export function subscribeDraft(sessionId, fn) {
   if (!subscribers.has(sessionId)) subscribers.set(sessionId, new Set());
   subscribers.get(sessionId).add(fn);
@@ -332,24 +312,10 @@ export function isAnalysisReady(sessionId) {
   return Boolean(d.businessSummary || (d.tones && d.tones.length));
 }
 
-// First Time User ALT — a 3-question onboarding (URL → profiles →
-// documents) rendered as inline-questions inside a chat with
-// body.onboarding chrome. The website analysis kicks off in
-// the background as soon as the URL lands, so by the time the user
-// finishes the documents step the brief panel can open immediately.
-//
-// `prefilledUrl` represents an URL collected by an earlier step that
-// lives outside the prototype — the chat surface uses it to pre-populate
-// the URL question card so the user just confirms instead of typing.
-export function startAlt(sessionId, { onComplete, prefilledUrl = "" } = {}) {
-  createAltDraft(sessionId, { onComplete, prefilledUrl });
-  askAltUrl(sessionId, (prefilledUrl || "").trim());
-}
-
-// ── The onboarding's moves, without the chat ─────────────────────────────
-// Each step's effect on the draft, shared by the chat above and by the
-// dedicated onboarding screens (flag connectFirst, screens/welcome-alt-*.js):
-// one implementation, two hosts.
+// ── The onboarding's moves ───────────────────────────────────────────────
+// Each step's effect on the draft, for the run's screens
+// (screens/welcome-alt-*.js). The chat onboarding they replaced was deleted
+// with the flag connectFirst (2026-10-29).
 
 export function createAltDraft(sessionId, { onComplete = null, prefilledUrl = "" } = {}) {
   const url = (prefilledUrl || "").trim();
@@ -360,9 +326,15 @@ export function createAltDraft(sessionId, { onComplete = null, prefilledUrl = ""
   return drafts.get(sessionId);
 }
 
-// Take the connected accounts as the Playbook's, as they stand now.
+// Take the connected accounts as the Playbook's, as they stand now. The first
+// one is the selected profile: a Playbook still names ONE identity.
 function syncAltProfiles(sessionId) {
-  commitAltProfiles(sessionId, getConnectedProfiles(), { echo: false });
+  const d = drafts.get(sessionId);
+  const profiles = getConnectedProfiles();
+  if (d && profiles.length) {
+    d.selectedProfileId = profiles[0].id;
+    d.connectedSocials = profiles.map((p) => p.platform);
+  }
   notify(sessionId);
 }
 
@@ -439,563 +411,16 @@ export function analyzeAltInterview(sessionId, interview) {
   }, 4000);
 }
 
-// The onboarding steps, in order, as they exist under the current flags — the
-// single place that knows which questions the flow asks. `multilingualPlaybook`
-// inserts a language step after the URL. The account step is a choice (a Skip),
-// and when nothing is connected it offers to connect rather than listing
-// profiles that don't exist. Skipping is not a dead end: the chat flows that
-// draft FOR an account ask again at the moment it is needed
-// (connect-profiles-flow.js).
-// Labels are derived from this list, so adding or removing a step renumbers the
-// rest for free.
-// Exported for the intro screen (/welcome-alt/intro), which announces them.
+// The onboarding steps before the account and the reveal, in order, under the
+// flags of the moment: `multilingualPlaybook` inserts a language step after the
+// URL, `connectors` the documents. The screens' order derives from this list
+// (welcome-alt-shell.js flowSteps).
 export function altSteps() {
   const steps = ["url"];
   if (isFlagOn("multilingualPlaybook")) steps.push("language");
-  // Flag connectFirst: the accounts are asked on the screen before the chat.
-  if (!isFlagOn("connectFirst")) steps.push("profile");
   // The documents step offers connectors: it waits for their flag (2026-10-29).
   if (isFlagOn("connectors")) steps.push("documents");
   return steps;
-}
-function altTotalSteps() {
-  return altSteps().length;
-}
-function altStepLabel(stepId) {
-  return `${altSteps().indexOf(stepId) + 1} / ${altTotalSteps()}`;
-}
-// Walk to the step before `stepId`, whichever ones are present under the flags.
-function askAltPrevious(sessionId, stepId) {
-  const steps = altSteps();
-  const prev = steps[steps.indexOf(stepId) - 1];
-  const d = drafts.get(sessionId);
-  if (prev === "language") askAltLanguage(sessionId);
-  else if (prev === "profile") askAltProfile(sessionId);
-  else if (prev === "documents") askAltDocuments(sessionId);
-  // After the interview, Back leaves it (as in prod); keeping the answers puts
-  // this step back.
-  else if (d?.sourceType === "interview")
-    leaveInterview(sessionId, () =>
-      stepId === "language" ? askAltLanguage(sessionId) : askAltProfile(sessionId, { announce: false }),
-    );
-  else askAltUrl(sessionId, d?.sourceUrl || d?.websiteUrl || "");
-}
-// The step after the URL question — the language picker when multilingual is
-// on, otherwise the account step.
-function askAltAfterUrl(sessionId) {
-  if (isFlagOn("multilingualPlaybook")) askAltLanguage(sessionId);
-  else askAltProfile(sessionId);
-}
-
-// The first step offers two more ways in beside
-// the URL — from files (logo, past visuals, photos → a mocked analysis) and by
-// hand (no analysis; the empty fiche is the form). Same step, same count: only
-// its answers change, so every later step is untouched.
-const ALT_START_ITEMS = [
-  {
-    value: "files",
-    label: "Start from files",
-    caption: "Your logo, past visuals, or photos",
-    icon: "ap-icon-upload",
-  },
-  {
-    value: "manual",
-    label: "Fill it in myself",
-    caption: "Write the Playbook yourself, part by part",
-    icon: "ap-icon-pen",
-  },
-];
-
-// Prod's content-studio-playbook-no-website (baked in 2026-10-16): a way in for
-// a brand with no site to read — I interview the user instead.
-const ALT_NO_WEBSITE_ITEM = {
-  value: "noWebsite",
-  label: "I don't have a website",
-  caption: "Answer a few quick questions instead",
-  icon: "ap-icon-single-chat-bubble",
-};
-
-// Flag demoMode: try me on a made-up brand before setting up your own
-// (demo-flow.js). Leaves the onboarding for the demo chat.
-const ALT_DEMO_ITEM = {
-  value: "demo",
-  label: "Try it with a demo brand",
-  caption: "Bramble & Bean, a coffee roaster I made up. Nothing gets posted",
-  icon: "ap-icon-play",
-};
-
-// The no-website interview, in place of the URL question (same step, same
-// number). One question at a time, picked from the answers so far by
-// nextInterviewQuestion; each answered question joins the thread as Archie's
-// line + the user's answer. When the answers can carry a brief, the Playbook is
-// written from them in the background and the flow moves on to the account.
-function startAltInterview(sessionId) {
-  const d = drafts.get(sessionId);
-  if (!d) return;
-  Object.assign(d, { sourceType: "interview", sourceUrl: "", websiteUrl: "", sourceFile: null, interview: [] });
-  postUserTurn(sessionId, ALT_NO_WEBSITE_ITEM.label);
-  postAssistantMessage(sessionId, "No problem. I'll ask you a few quick questions instead. Answer in your own words.");
-  inlineQuestion.exit(sessionId);
-  notify(sessionId);
-  askAltInterview(sessionId, nextInterviewQuestion([]));
-}
-
-// The Skip label says when Skip unlocks: the core questions carry the brief.
-function interviewSkipLabel(step) {
-  if (step.optional) return "Skip this question";
-  if (step.coreLeft <= 1) return "Skip available after this question";
-  return `Skip available in ${step.coreLeft} questions`;
-}
-
-function askAltInterview(sessionId, step) {
-  const d = drafts.get(sessionId);
-  if (!d) return;
-  if (step.done) {
-    finishAltInterview(sessionId);
-    return;
-  }
-  const record = (turn, echo) => {
-    const dd = drafts.get(sessionId);
-    if (!dd) return;
-    dd.interview = [...dd.interview, { topic: step.topic, question: step.question, ...turn }];
-    postAssistantMessage(sessionId, step.question);
-    postUserTurn(sessionId, echo);
-    inlineQuestion.exit(sessionId);
-    notify(sessionId);
-    // Prod asks a model for the next question: a beat of "thinking" first.
-    inlineQuestion.ask(sessionId, {
-      title: "Thinking about the next question…",
-      stepLabel: altStepLabel("url"),
-      items: [],
-      loading: true,
-    });
-    window.setTimeout(() => {
-      const now = drafts.get(sessionId);
-      if (now?.sourceType === "interview") askAltInterview(sessionId, nextInterviewQuestion(now.interview));
-    }, 900);
-  };
-  inlineQuestion.ask(sessionId, {
-    title: step.question,
-    stepLabel: altStepLabel("url"),
-    items: [],
-    customPlaceholder: "Type your answer…",
-    onCustom: (value) => {
-      const answer = (value || "").trim();
-      if (!answer) return askAltInterview(sessionId, step);
-      record({ answer, ...(step.followUp ? { followUp: true } : {}) }, answer);
-    },
-    skipLabel: interviewSkipLabel(step),
-    skipDisabled: !step.optional,
-    onSkip: () => record({ answer: "", skipped: true }, "Skipped"),
-    onBack: () => leaveInterview(sessionId, () => askAltInterview(sessionId, step)),
-  });
-}
-
-function finishAltInterview(sessionId) {
-  postAssistantMessage(sessionId, "Thanks, that's what I needed. I'm putting your answers together while we finish.");
-  // Same background timing as the files analysis: the brief is ready by the
-  // time the remaining steps are done.
-  analyzeAltInterview(sessionId, drafts.get(sessionId)?.interview || []);
-  askAltAfterUrl(sessionId);
-}
-
-// Back to "How do you want to start?" drops the answers — confirmed first when
-// there are some. `stay` puts the current step back.
-function leaveInterview(sessionId, stay) {
-  const reset = () => {
-    const d = drafts.get(sessionId);
-    if (d) Object.assign(d, { sourceType: "website", interview: [] });
-    askAltUrl(sessionId, "");
-  };
-  if (!drafts.get(sessionId)?.interview?.length) return reset();
-  openConfirmModal({
-    title: "Discard your answers?",
-    body: "Going back to the website question drops the answers you gave me.",
-    confirmLabel: "Discard",
-    cancelLabel: "Keep my answers",
-    danger: true,
-    onConfirm: reset,
-    onCancel: stay,
-  });
-}
-
-function startAltFromFiles(sessionId) {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "image/*";
-  input.multiple = true;
-  input.addEventListener("change", () => {
-    const files = Array.from(input.files || []).filter((f) => f.type.startsWith("image/"));
-    if (!files.length) return; // cancelled — the question stays open
-    const read = files.map(
-      (file) =>
-        new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve({ name: file.name, url: reader.result });
-          reader.onerror = () => resolve(null);
-          reader.readAsDataURL(file);
-        }),
-    );
-    Promise.all(read).then((loaded) => {
-      const list = loaded.filter(Boolean);
-      if (!drafts.get(sessionId) || !list.length) return;
-      postUserTurn(sessionId, `${list.length} ${list.length === 1 ? "file" : "files"} added`);
-      inlineQuestion.exit(sessionId);
-      // Same background timing as the website analysis, for the same reason.
-      readAltFiles(sessionId, list);
-      askAltAfterUrl(sessionId);
-    });
-  });
-  input.click();
-}
-
-function startAltManually(sessionId) {
-  if (!drafts.get(sessionId)) return;
-  postUserTurn(sessionId, "I'll fill it in myself");
-  inlineQuestion.exit(sessionId);
-  writeAltManually(sessionId);
-  askAltAfterUrl(sessionId);
-}
-
-function askAltUrl(sessionId, prefilledUrl = "") {
-  const intro = prefilledUrl
-    ? "Here's the site I found. Confirm it below to begin."
-    : "No website? Pick another way in below.";
-  postAssistantMessage(sessionId, intro);
-  inlineQuestion.ask(sessionId, {
-    title: "How do you want to start?",
-    stepLabel: altStepLabel("url"),
-    items: [...ALT_START_ITEMS, ALT_NO_WEBSITE_ITEM, ...(isFlagOn("demoMode") ? [ALT_DEMO_ITEM] : [])],
-    onPick: (value) => {
-      if (value === "demo") startDemo();
-      else if (value === "noWebsite") startAltInterview(sessionId);
-      else if (value === "files") startAltFromFiles(sessionId);
-      else startAltManually(sessionId);
-    },
-    customPlaceholder: "Your website, like your-brand.com",
-    customValue: prefilledUrl,
-    customFirst: true,
-    customIcon: "ap-icon-link",
-    onCustom: (value) => {
-      if (!drafts.get(sessionId)) return;
-      postUserTurn(sessionId, (value || "").trim());
-      inlineQuestion.exit(sessionId);
-      // Kick off the website analysis in the background. It runs while
-      // the user moves through questions 2 and 3 — by the time they
-      // finish, the draft is hydrated and the brief panel can render
-      // without an additional pending state.
-      readAltWebsite(sessionId, value);
-      askAltAfterUrl(sessionId);
-    },
-  });
-}
-
-// Language step (multilingual flag ON only) — pick the ONE language this
-// Playbook writes in. It becomes the Playbook's primary language, the default
-// Archie drafts posts in; more languages can be added later in the editor.
-// Voice examples are authored per language, never translated.
-function askAltLanguage(sessionId) {
-  postAssistantMessage(
-    sessionId,
-    "Which language should this Playbook write in? It's the language I'll draft your posts in. You can add more later in the Playbook.",
-  );
-  const d = drafts.get(sessionId);
-  const current =
-    d?.primaryLanguage || d?.language || (Array.isArray(d?.languages) && d.languages[0]) || DEFAULT_LANGUAGE;
-  inlineQuestion.ask(sessionId, {
-    title: "Choose your Playbook language",
-    subtitle: "The language I'll write your posts in. You can add more later.",
-    stepLabel: altStepLabel("language"),
-    items: LANGUAGE_OPTIONS.map((l) => ({ value: l, label: l, icon: "ap-icon-web" })),
-    selected: current,
-    onPick: (lang) => {
-      const chosen = lang || DEFAULT_LANGUAGE;
-      const dd = drafts.get(sessionId);
-      if (dd) {
-        dd.languages = [chosen];
-        dd.primaryLanguage = chosen;
-        dd.language = chosen;
-      }
-      postUserTurn(sessionId, chosen);
-      inlineQuestion.exit(sessionId);
-      notify(sessionId);
-      askAltProfile(sessionId);
-    },
-    onBack: () => askAltPrevious(sessionId, "language"),
-  });
-}
-
-// Record the account(s) this Playbook publishes as, echo them, and move on.
-// The first one is the selected profile — connecting several is allowed, but a
-// Playbook still names ONE identity.
-//
-// `echo: false` records without a user turn — the accounts were connected
-// before the chat began (flag connectFirst), so there is no answer to echo.
-function commitAltProfiles(sessionId, profiles, { echo = true } = {}) {
-  const d = drafts.get(sessionId);
-  if (!d || !profiles.length) return;
-  d.selectedProfileId = profiles[0].id;
-  d.connectedSocials = profiles.map((p) => p.platform);
-  if (echo) postUserProfilesTurn(sessionId, profiles);
-}
-
-// The feedback-store key for the skip reasons. One key, not one per user: the
-// question is asked once, and a second answer replaces the first.
-const SKIP_CONNECT_TARGET = "skip:connect-profiles";
-
-// The account step. It is a CHOICE rather than a
-// gate: optional either way, and shaped by what the user actually has.
-//   - nothing connected → offer to connect (the same rows and the same modal as
-//     the in-chat step), or Skip;
-//   - something connected → the normal profile pick, plus a Skip.
-// Skipping leaves connectedSocials empty, which is a legitimate Playbook state:
-// the chat flows ask for an account when they need one.
-//
-// `announce` is false when a dialog this step opened hands control back (the
-// connect dialog cancelled, the skip dialog backed out): the step is being PUT
-// BACK, not asked again, and re-posting its line would leave the thread saying
-// the same sentence twice for one question.
-function askAltProfile(sessionId, { announce = true } = {}) {
-  // No account step in this run (flag connectFirst): every way in lands on the
-  // step that follows it instead.
-  if (!altSteps().includes("profile")) {
-    askAltDocuments(sessionId);
-    return;
-  }
-  const connectedProfiles = getConnectedProfiles();
-
-  if (connectedProfiles.length === 0) {
-    if (announce) {
-      postAssistantMessage(
-        sessionId,
-        "Connect the account you'll publish from and I'll tune tone and format for it. Skip it and I'll ask when I write your first draft.",
-      );
-    }
-    inlineQuestion.ask(sessionId, {
-      title: "Connect an account (optional)",
-      subtitle: "Nothing publishes yet. This only lets me write and schedule for it.",
-      stepLabel: altStepLabel("profile"),
-      // The same grid as the in-chat step, and as the product's own "Add new
-      // social profiles" screen: pick a network, its dialog hands back the
-      // account.
-      variant: "cards",
-      cardCols: 4,
-      items: connectableNetworkCards(),
-      skipLabel: "Skip",
-      onPick: (platform) => {
-        openConnectAccountModal({
-          network: platform,
-          preselected: accountIdsForNetwork(platform),
-          onConfirm: (accounts) => {
-            if (!accounts.length) return;
-            commitAltProfiles(sessionId, accounts);
-            inlineQuestion.exit(sessionId);
-            notify(sessionId);
-            askAltDocuments(sessionId);
-          },
-          // Backing out of the dialog puts the grid back, not a dead end.
-          onDismiss: () => askAltProfile(sessionId, { announce: false }),
-        });
-      },
-      // Skipping is allowed, but not silent: the dialog reassures about what a
-      // connected account is used for, then asks why this one isn't. It is the
-      // only moment that question can be asked — later flows ask for an
-      // account, never for a reason. Backing out of it leaves the grid
-      // standing, exactly like backing out of the connect dialog.
-      onSkip: () => {
-        openSkipConnectModal({
-          onSkip: (reasons, comment) => {
-            // The reasons are optional: record only an actual answer.
-            if (reasons.length || comment) {
-              recordReasons(SKIP_CONNECT_TARGET, { reasons, comment }, { kind: "skip", step: "connect-profiles" });
-            }
-            showToast("Noted. I'll ask again when I write your first draft.");
-            inlineQuestion.exit(sessionId);
-            notify(sessionId);
-            askAltDocuments(sessionId);
-          },
-          onDismiss: () => askAltProfile(sessionId, { announce: false }),
-        });
-      },
-      onBack: () => askAltPrevious(sessionId, "profile"),
-    });
-    return;
-  }
-
-  // Connected profiles + their picker presentation come from the shared
-  // social-profiles helper so this onboarding step and the in-session
-  // draft profile picker stay identical.
-  const items = buildConnectedProfileItems();
-
-  if (announce) {
-    postAssistantMessage(sessionId, "Pick the account that will publish. I'll tune tone and format for it.");
-  }
-  inlineQuestion.ask(sessionId, {
-    title: "Which account will publish? (optional)",
-    stepLabel: altStepLabel("profile"),
-    items,
-    // With many connected profiles, filter the list live instead of scrolling.
-    searchable: items.length > PROFILE_SEARCH_THRESHOLD,
-    searchPlaceholder: "Search accounts by name, handle, or network…",
-    onPick: (id) => {
-      const profile = connectedProfiles.find((p) => p.id === id);
-      if (!drafts.get(sessionId)) return;
-      if (profile) commitAltProfiles(sessionId, [profile]);
-      inlineQuestion.exit(sessionId);
-      notify(sessionId);
-      askAltDocuments(sessionId);
-    },
-    skipLabel: "Skip",
-    onSkip: () => {
-      inlineQuestion.exit(sessionId);
-      notify(sessionId);
-      askAltDocuments(sessionId);
-    },
-    // Back to the language picker (multilingual on) or the URL question — and
-    // askAltPrevious re-renders question 1 with whatever URL the draft holds.
-    onBack: () => askAltPrevious(sessionId, "profile"),
-  });
-}
-
-function askAltDocuments(sessionId) {
-  // No documents step in this run (flag connectors OFF): on to what follows it.
-  if (!altSteps().includes("documents")) return afterAltDocuments(sessionId);
-  postAssistantMessage(
-    sessionId,
-    "Connect the documents that describe your Brand: a brand book, guidelines, a strategy doc. Optional.",
-  );
-  // Onboarding keeps the choice tight — the four sources most people connect
-  // first. The full catalogue lives on /connectors; the subtitle points there.
-  const ONBOARDING_DOC_CONNECTORS = ["slite", "notion", "gdrive", "slack"];
-  const items = ONBOARDING_DOC_CONNECTORS.map((id) => connectorMocks.find((c) => c.id === id))
-    .filter(Boolean)
-    .map((c) => ({
-      value: c.id,
-      label: c.name,
-      caption: c.desc,
-      imgSrc: c.logo,
-    }));
-  inlineQuestion.ask(sessionId, {
-    title: "Connect documents (optional)",
-    subtitle: "You can connect more later from Connectors.",
-    stepLabel: altStepLabel("documents"),
-    items,
-    multi: true,
-    submitLabel: "Continue",
-    skipLabel: "Skip",
-    onPick: (ids) => {
-      if (ids?.length) {
-        const noun = ids.length === 1 ? "connector" : "connectors";
-        postUserTurn(sessionId, `${ids.length} ${noun} connected`);
-      }
-      inlineQuestion.exit(sessionId);
-      notify(sessionId);
-      afterAltDocuments(sessionId);
-    },
-    onSkip: () => {
-      inlineQuestion.exit(sessionId);
-      notify(sessionId);
-      afterAltDocuments(sessionId);
-    },
-    onBack: () => askAltPrevious(sessionId, "documents"),
-  });
-}
-
-// Optional final step — upload reference images so generated visuals stay
-// on-brand. Picking the one action opens a file dialog (data URLs → the draft's
-// referenceImages, surfaced in the Playbook + the image generator); a cancelled
-// dialog leaves the question open so the user can still Skip.
-function afterAltDocuments(sessionId) {
-  if (altSteps().includes("images")) askAltReferenceImages(sessionId);
-  else maybeOpenAltBrief(sessionId);
-}
-
-function askAltReferenceImages(sessionId) {
-  postAssistantMessage(
-    sessionId,
-    "Last one, optional: add a few reference images so I keep generated visuals on-brand. Or skip.",
-  );
-  inlineQuestion.ask(sessionId, {
-    title: "Add reference images (optional)",
-    subtitle: "Logos, product shots, a brand board. I use them in the image generator.",
-    stepLabel: altStepLabel("images"),
-    items: [
-      {
-        value: "add",
-        label: "Add reference images",
-        caption: "Choose files from your computer",
-        icon: "ap-icon-multiple-images",
-      },
-    ],
-    skipLabel: "Skip",
-    onPick: () => openAltReferenceImagePicker(sessionId),
-    onSkip: () => {
-      inlineQuestion.exit(sessionId);
-      notify(sessionId);
-      maybeOpenAltBrief(sessionId);
-    },
-    onBack: () => askAltDocuments(sessionId),
-  });
-}
-
-// Throwaway multi-file picker → reads each image as a data URL (so it persists
-// with the Playbook, unlike an ephemeral object URL) into the draft, then
-// advances. Mirrors the Playbook Brand-section upload handler.
-let altRefSeq = 0;
-function openAltReferenceImagePicker(sessionId) {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "image/*";
-  input.multiple = true;
-  input.addEventListener("change", () => {
-    const files = Array.from(input.files || []);
-    if (!files.length) return; // cancelled — leave the question open to Skip
-    let pending = files.length;
-    for (const file of files) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const d = drafts.get(sessionId);
-        if (d) {
-          if (!Array.isArray(d.referenceImages)) d.referenceImages = [];
-          altRefSeq += 1;
-          d.referenceImages.push({ id: `ref-${altRefSeq}`, label: file.name, url: reader.result });
-        }
-        pending -= 1;
-        if (pending === 0) {
-          const n = files.length;
-          postUserTurn(sessionId, `${n} reference ${n === 1 ? "image" : "images"} added`);
-          inlineQuestion.exit(sessionId);
-          notify(sessionId);
-          maybeOpenAltBrief(sessionId);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-  input.click();
-}
-
-// At the end of the ALT chat, navigate to the centered /welcome-alt/recap
-// surface instead of opening the right-anchored brief panel. The brief
-// panel is an editing surface; the end of a conversational flow deserves
-// a dedicated result presentation (UI/UX review).
-//
-// Stashes the ALT sessionId in sessionStorage so the recap screen can
-// re-attach to the same draft after navigation.
-function maybeOpenAltBrief(sessionId) {
-  // Navigate straight to the recap — it owns the branded loading
-  // sequence (centered Archie loader + staged "here's what we're doing"
-  // copy) and waits for the analysis to land before revealing the
-  // Playbook. No in-chat "Reading your site" notice: the loading moment
-  // belongs on the recap surface, not as a stray chat pill.
-  try {
-    window.sessionStorage.setItem("welcomeAltSessionId", sessionId);
-  } catch {
-    /* ignore */
-  }
-  // Use the hash router — context-builder doesn't import navigate()
-  // directly to avoid a cycle with the router module.
-  window.location.hash = "#/welcome-alt/recap";
 }
 
 export function save(sessionId) {
@@ -1118,28 +543,14 @@ export function save(sessionId) {
   if (!d.editingId && isWorkspaceMode() && saved) setActivePlaybook(saved.id);
   const onComplete = d.onComplete;
   drafts.delete(sessionId);
-  inlineQuestion.exit(sessionId);
   notify(sessionId);
   if (onComplete) onComplete(saved);
   return saved;
 }
 
-// "Create a Playbook" from a screen of the app shell: the conversational flow
-// (welcome-alt) runs in its own transient session with the sidebar + topbar
-// kept (`welcomeAltIntegrated`), and the recap hands back to `returnTo`.
+// "Create a Playbook" from a screen of the app shell: the same run as a
+// first-time user's, straight to the brand (the intro and the demo are for the
+// first time); the recap hands back to `returnTo`.
 export function openNewPlaybookFlow(returnTo) {
-  // Flag connectFirst: the same run as a first-time user's, straight to the
-  // brand (the intro and the demo are for the first time).
-  if (isFlagOn("connectFirst")) {
-    window.location.hash = `#/welcome-alt/brand?new=${encodeURIComponent(returnTo || "/")}`;
-    return;
-  }
-  try {
-    window.sessionStorage.setItem("welcomeAltIntegrated", "1");
-    window.sessionStorage.setItem("welcomeAltReturnTo", returnTo);
-  } catch {
-    /* ignore */
-  }
-  setHandoff("pendingStartContextBuilder", { flow: "alt", prefilledUrl: "", returnTo });
-  navigate(`/session/welcome-alt-${Date.now().toString(36)}`);
+  window.location.hash = `#/welcome-alt/brand?new=${encodeURIComponent(returnTo || "/")}`;
 }

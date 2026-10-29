@@ -1,4 +1,4 @@
-// The onboarding shell — flag connectFirst. Every screen of the first-time
+// The onboarding shell. Every screen of the first-time
 // flow (brand → language → documents → ready → the reviews) is the same
 // split: the step on the left, Archie's stage on the right, where the Playbook
 // card fills in with the user's REAL answers as they go — the networks it
@@ -9,11 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2426";
-import { html, raw, escapeHtml } from "../utils.js?v=2426";
-import { navigate } from "../router.js?v=2426";
-import { parseHashParams } from "../url-state.js?v=2426";
-import { isFlagOn } from "../feature-flags.js?v=2426";
+import "../archie-pixels.js?v=2428";
+import { html, raw, escapeHtml } from "../utils.js?v=2428";
+import { navigate } from "../router.js?v=2428";
+import { parseHashParams } from "../url-state.js?v=2428";
+import { isFlagOn } from "../feature-flags.js?v=2428";
 import {
   altSteps,
   createAltDraft,
@@ -21,9 +21,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2426";
-import { getConnectedProfiles, getConnectedProfileById, networkIcon, networkLabel } from "../social-profiles.js?v=2426";
-import { playbookNetworks } from "../voice-parts.js?v=2426";
+} from "../context-builder.js?v=2428";
+import { getConnectedProfiles, getConnectedProfileById, networkIcon, networkLabel } from "../social-profiles.js?v=2428";
+import { playbookNetworks } from "../voice-parts.js?v=2428";
 import {
   readSessionId,
   isIntegrated,
@@ -33,8 +33,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2426";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2426";
+} from "./welcome-alt-recap.js?v=2428";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2428";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";

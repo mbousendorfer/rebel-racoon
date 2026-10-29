@@ -257,27 +257,6 @@ export const FLAGS = Object.freeze([
       "three Topics to review instead of six.",
   },
   {
-    id: "connectFirst",
-    group: "Onboarding",
-    tip: "The first-time run as screens: the brand, a reveal, then a review of the Playbook and one of your voice, where you also pick your networks.",
-    label: "UP-Onboarding: voice & networks",
-    // OFF: a new user lands straight in the onboarding chat, where connecting
-    // an account is the step after the website URL.
-    default: false,
-    hides:
-      "When ON, the first-time run is a series of screens instead of the chat. " +
-      "First the plan (the steps ahead, in order), then one screen per step, " +
-      "all in the same split: the step on the left, and on the right Archie's " +
-      "stage where the Playbook card fills in with the real answers (the " +
-      "site's name, voice, audience, colours). Nothing to connect: the first " +
-      "draft asks for an account. The website is a field, prefilled, with " +
-      "files, a short interview or by hand as other ways in. It ends on a " +
-      "reveal, then two reviews in cards: the Playbook, then your voice on its " +
-      "own (the default voice, where you post, and with " +
-      "voicePerNetwork the networks that get a voice of their own), before your " +
-      "first draft.",
-  },
-  {
     id: "demoMode",
     group: "Onboarding",
     tip: "From the first screen, try Archie on a made-up brand (Bramble & Bean) with pretend accounts — one wave of drafts, nothing can be scheduled.",

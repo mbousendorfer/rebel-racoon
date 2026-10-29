@@ -67,94 +67,6 @@
   margin: 0 auto;
 }
 
-/* First Time User ALT — editorial marketing hero rendered at the top of
-   the wizard chat for /session/welcome-alt-* sessions. The inner
-   .welcome-hero (welcome.css) owns the flex column + typography; the
-   `--alt` modifier (below) recentres it. This wrapper grows to fill the
-   space above the conversation and vertically centres the hero block, so
-   the screen reads as a composed page (hero top/middle, conversation
-   anchored at the bottom) rather than a small block floating over a void.
-   `flex: 1 0 auto` claims the free space but never shrinks below the
-   hero's own content, so a long conversation still scrolls normally. */
-/* The welcome-alt Exit affordance now lives in the topbar (see
-   topbar.js renderWelcomeAltExit), so the wizard chrome no longer
-   needs the floating button + its positioning context. */
-
-.welcome-alt-hero {
-  position: relative;
-  width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
-  padding: var(--ref-spacing-xxl) 0 var(--ref-spacing-lg);
-  flex: 1 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  /* Clip the decorative orb to the hero so it never spills past the
-     column edge and triggers a horizontal scrollbar on narrow widths. */
-  overflow: hidden;
-}
-
-/* The hero claims the free space via flex-grow; for that to win, the
-   conversation column must drop the `margin-top: auto` it inherits from
-   .analyse__chat-inner (auto margins absorb free space before flex-grow,
-   which would otherwise re-open the void above the conversation). */
-.session__assistant-wizard-chat:has(.welcome-alt-hero) .analyse__chat-inner {
-  margin-top: 0;
-}
-
-/* Editorial variant of the shared .welcome-hero column — centred copy and
-   a slightly wider reading width so the headline + chips sit symmetric
-   under the focal orb. */
-.welcome-alt-hero .welcome-hero--alt {
-  position: relative;
-  z-index: 1;
-  align-items: center;
-  text-align: center;
-  max-width: 560px;
-  gap: var(--ref-spacing-sm);
-}
-
-.welcome-alt-hero .welcome-hero__eyebrow i {
-  font-size: var(--sys-icon-css-xs);
-}
-
-/* Decorative focal glow behind the headline. Soft brand-orange radial —
-   not the mermaid gradient (reserved for live AI surfaces). Sized in px
-   because it is a free-form decorative blob with no spacing token. */
-.welcome-alt-hero__orb {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 640px;
-  height: 640px;
-  transform: translate(-50%, -50%);
-  border-radius: var(--app-radius-circle);
-  background: radial-gradient(circle, var(--ref-color-orange-20) 0%, transparent 70%);
-  opacity: 0.7;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Capability chips — visualise the three facets the URL extraction
-   produces (voice / audience / visual identity). */
-/* Subtle decorative canvas for the welcome-alt session — soft warm
-   blob top-right + cool blob bottom-left, same recipe as
-   `.welcome-screen__bg` on the linear /welcome surface. Keeps the
-   conversation bottom-anchored (default `.analyse__chat-inner`
-   behavior) but stops the empty space above the conversation from
-   feeling austere. Scoped via :has() so it only paints when the
-   marketing hero is present. Uses the lightest defined tints
-   (--ref-color-orange-10 + --ref-color-electric-blue-05) — note
-   `--ref-color-orange-05` is not defined in the DS. */
-.session__assistant--wizard:has(.welcome-alt-hero) {
-  background:
-    radial-gradient(ellipse 60% 50% at 100% 0%, var(--ref-color-orange-10) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 50% at 0% 100%, var(--ref-color-electric-blue-05) 0%, transparent 70%),
-    var(--app-surface);
-}
-
 /* The wizard chat renders the thread inside `<div data-assistant-thread>`
    so the assistant subscriber can repaint it without nuking
    `chrome.body`. That wrapper is a plain block by default, which means
@@ -484,8 +396,7 @@ body.playbook-revoked .session__composer-card {
   max-width: min(1040px, 100%);
 }
 
-/* Decorative focal glow behind the empty-state hero — same recipe as
-   .welcome-alt-hero__orb. 640px brand-orange radial centred behind the
+/* Decorative focal glow behind the empty-state hero. 640px brand-orange radial centred behind the
    "What are you working on?" headline + composer, bleeding into the
    canvas gradient below. pointer-events:none so the starter cards
    underneath stay clickable. */

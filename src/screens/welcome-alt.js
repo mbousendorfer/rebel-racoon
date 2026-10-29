@@ -1,57 +1,10 @@
-// First Time User ALT — thin redirect. We don't render anything; we
-// mint a transient session, arm the pendingStartContextBuilder handoff
-// with `flow: "alt"` + `finishMode: "switch-to-returning"`, and
-// navigate immediately. session.js consumes the handoff on mount and
-// fires contextBuilder.startAlt() inside the onboarding chrome (the
-// session view hides sidebar+topbar when path matches
-// /session/welcome-alt-*, see app.js setAfterRender).
-//
-// Earlier iteration rendered a visual single-select profile picker
-// here; user feedback was that ALT should be conversational from the
-// first screen — the profile pick is now question 2 of 3 inside the
-// chat, alongside URL (q1) and Documents (q3, skippable).
-//
-// Flag connectFirst: the run is a series of screens instead of the chat —
-// /welcome-alt/intro first (welcome-alt-intro.js), then the shell's steps
-// (welcome-alt-shell.js, -connect, -steps, -ready).
-
-import { navigate } from "../router.js?v=2426";
-import { setHandoff } from "../handoff.js?v=2426";
-import { isFlagOn } from "../feature-flags.js?v=2426";
-
-// Mock URL — the brand site is supposed to be collected by an earlier
-// step that lives outside the prototype. We hardcode a believable value
-// here so the conversational entry feels like a continuation, not the
-// first beat. Matches the "NS" brand initials used by askAltProfile.
-const PREFILLED_URL = "https://nicesoap.com";
+// /welcome-alt — a redirect: the first-time run starts on its intro
+// (welcome-alt-intro.js), then the shell's steps (welcome-alt-shell.js,
+// -steps, -ready). The chat onboarding it used to start was deleted with the
+// flag connectFirst (2026-10-29).
 
 export function renderWelcomeAlt(_params, _target) {
-  if (isFlagOn("connectFirst")) {
-    // replace, so Back from the connect screen doesn't bounce here and forward again.
-    window.location.replace("#/welcome-alt/intro");
-    return () => {};
-  }
-  startOnboardingChat();
+  // replace, so Back from the intro doesn't bounce here and forward again.
+  window.location.replace("#/welcome-alt/intro");
   return () => {};
-}
-
-function startOnboardingChat() {
-  // First-time onboarding is full-bleed: make sure no leftover
-  // "integrated" flag (from a previous New-Playbook run) keeps the app
-  // shell visible here.
-  try {
-    window.sessionStorage.removeItem("welcomeAltIntegrated");
-    window.sessionStorage.removeItem("welcomeAltReturnTo");
-  } catch {
-    /* ignore */
-  }
-  document.body.classList.add("onboarding");
-  const sid = `welcome-alt-${Date.now().toString(36)}`;
-  setHandoff("pendingStartContextBuilder", {
-    returnTo: "/",
-    finishMode: "switch-to-returning",
-    flow: "alt",
-    prefilledUrl: PREFILLED_URL,
-  });
-  navigate(`/session/${sid}`);
 }

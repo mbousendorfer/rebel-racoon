@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2426";
-import { conceptHint } from "./concepts.js?v=2426";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2428";
+import { conceptHint } from "./concepts.js?v=2428";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2426";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2426";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2426";
-import { isFlagOn } from "./feature-flags.js?v=2426";
-import { clipLookOf } from "./videos-store.js?v=2426";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2426";
-import { parseHashParams } from "./url-state.js?v=2426";
+} from "./playbook-brand-kit.js?v=2428";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2428";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2428";
+import { isFlagOn } from "./feature-flags.js?v=2428";
+import { clipLookOf } from "./videos-store.js?v=2428";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2428";
+import { parseHashParams } from "./url-state.js?v=2428";
 import {
   isListPart,
   voiceParts,
@@ -53,13 +53,13 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2426";
-import { showToast } from "./components/toast.js?v=2426";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2426";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2426";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2426";
-import { consumeHandoff } from "./handoff.js?v=2426";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2426";
+} from "./voice-parts.js?v=2428";
+import { showToast } from "./components/toast.js?v=2428";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2428";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2428";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2428";
+import { consumeHandoff } from "./handoff.js?v=2428";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2428";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -69,7 +69,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2426";
+} from "./social-profiles.js?v=2428";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2034,7 +2034,7 @@ const SECTION_LEADS = {
 };
 
 // The recap's sections with what each holds — the onboarding review walks
-// through them one by one (flag connectFirst, welcome-alt-review.js).
+// through them one by one (welcome-alt-review.js).
 export const RECAP_SECTIONS = TABS.filter((t) => t.id !== "images").map((t) => ({
   ...t,
   lead: SECTION_LEADS[t.id],
@@ -2862,7 +2862,7 @@ function voiceWaysCard(net = null, { title = "Rewrite it from", hint = "", class
   );
 }
 
-// The run's Voice review (cfg.networkPicker, flag connectFirst — 2026-10-29,
+// The run's Voice review (cfg.networkPicker — 2026-10-29,
 // asked: « que l'on puisse ou non ajouter des voices pour des networks
 // spécifiques »; the main-network card was removed the same day, asked):
 // where the brand posts, then which networks get rules of their own — none by

@@ -49,7 +49,6 @@ body.has-modal {
 .network-voice-modal,
 .voice-proposal-modal,
 .voice-intro-modal,
-.skip-connect,
 .fill-document-modal,
 .search-modal,
 .shortcut-legend {
@@ -546,7 +545,6 @@ body.has-modal {
 .network-voice-modal.open,
 .voice-proposal-modal.open,
 .voice-intro-modal.open,
-.skip-connect.open,
 .fill-document-modal.open,
 .search-modal.open,
 .shortcut-legend.open {
@@ -1529,172 +1527,6 @@ body.has-modal {
 /* The DS .ap-dialog-footer does the pinning by structure now (it is a sibling of
    the scroller), so the hand-rolled sticky footer with its four negative margins
    is gone. Nothing left to style. */
-
-/* ── Skip-connecting-an-account modal ──────────────────────── */
-/* Intercepts onboarding's Skip on the account step: reassures first, then asks
-   why. Three stacked blocks — lead copy, the assurances, the question — so the
-   rhythm is read-then-answer rather than a form with a preamble. */
-/* 680, not the 480–520 of its neighbours, and the number is derived rather than
-   picked: the widest string in the trio measures 162px ("Your accounts stay
-   yours", and "Nothing publishes on its own." to the pixel), and three separate
-   blocks each pay their own 12px of side padding plus two 16px gutters between
-   them — 3 × (162 + 24) + 32 = 590, which needs 680 of dialog to leave any
-   slack at all. Anything narrower and the longest claim wraps while its two
-   neighbours don't, which is the ragged 1-2-2 this layout exists to avoid.
-   It also buys the reason list a single line for its longest row. */
-.skip-connect {
-  width: min(calc(100% - 32px), 680px);
-  flex-direction: column;
-}
-
-/* The DS content block neither scrolls nor shrinks, so in a dialog capped at
-   100vh - 48px it keeps its full height and pushes the footer past the bottom
-   edge, where .ap-dialog's own overflow:hidden clips it — measured at a 600px
-   viewport: Back / Skip landed 256px below the dialog, unreachable. Same fix
-   as the Share dialog above: let the content scroll and let it shrink. */
-.skip-connect .ap-dialog-content {
-  overflow-y: auto;
-  min-height: 0;
-}
-
-.skip-connect__lead {
-  margin: 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-80);
-}
-
-/* The three guarantees, as a TRIO rather than a stack. Two reasons it is a row:
-   a claim plus its detail needs the rank that three equal paragraphs could not
-   give it, and the stack had the same silhouette as the checkbox list below —
-   two piles of text lines, so nothing said "read this, then answer that".
-   ⚠️ Three columns or ONE, never auto-fit: two tiles plus an orphan third was
-   invisible while this was a band and is glaring now that the tiles are
-   separate shapes. The breakpoint is the same arithmetic as the width above —
-   the dialog only reaches its full 680 once the viewport clears 712 (it is
-   `100% - 32` below that), and under 680 a tile can no longer hold its claim
-   on one line, so that is exactly where the row becomes a column.
-   ⚠️ The fill and the padding belong to each ITEM, never to this container: one
-   grey rectangle holding three columns reads as a single banner, and the three
-   blocks only appear on a second look. White gutters between three filled
-   tiles is what says "three things" in one glance — separation by ground, not
-   by a divider, which would still be one band cut in three. */
-.skip-connect__assurances {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--ref-spacing-sm);
-}
-
-@media (max-width: 711px) {
-  .skip-connect__assurances {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Not `.ap-card`: the DS card is white with a grey-10 hairline (the house rule
-   puts every border on grey-20) and gaps its children by 16px, which would air
-   out a three-line stack. Two overrides is no longer using the component, so
-   this is composed from the tokens instead — no border at all, since the fill
-   already bounds the tile and a second edge inside a bordered dialog is a line
-   for nothing. */
-.skip-connect__assurance {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xs);
-  background: var(--ref-color-grey-bg);
-  border-radius: var(--ref-border-radius-md);
-}
-
-/* The glyph anchors the column, so it is a rank up from the marker it was at
-   16px in grey-60 — but still grey-80, the top of the ink range rather than
-   a colour: nothing here is interactive and nothing here is AI. */
-.skip-connect__assurance > i {
-  font-size: var(--sys-icon-css-md);
-  color: var(--ref-color-grey-80);
-  margin-bottom: var(--ref-spacing-xxxs);
-}
-
-/* Rank by weight and size, never by a lighter grey: the claim is body-bold at
-   grey-100, the detail caption at grey-80. Both stay inside the ink range. */
-.skip-connect__claim {
-  font-size: var(--sys-text-style-body-bold-size);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  color: var(--ref-color-grey-100);
-}
-
-.skip-connect__detail {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
-}
-
-/* The question's own heading. `.ap-form-field > label` is body-regular at
-   grey-100 — the same size, weight and ink as the six answers under it, so the
-   question did not read as the question. Body-BOLD ranks it without reaching
-   for a heading style the dialog title already owns.
-   No margin-top anywhere in this dialog: .ap-dialog-content gaps its children
-   by --ref-spacing-md, and every margin added a second one (48px of air
-   before the infobox, 32 above the trio) — which is what made the vertical
-   rhythm look arbitrary. */
-/* Two classes, not one: the DS's own `.ap-form-field > label` is 0-1-1 and beats
-   a lone class, so a single `.skip-connect__label` silently stayed regular. */
-.skip-connect__question > .skip-connect__label {
-  font-size: var(--sys-text-style-body-bold-size);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  color: var(--ref-color-grey-100);
-}
-
-/* Sits under the label and above the boxes — it says the answer is required,
-   which a disabled Skip alone would leave the reader to work out. */
-.skip-connect__hint {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
-}
-
-.skip-connect__reasons {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  margin-top: var(--ref-spacing-xs);
-}
-
-/* Plain DS checkbox rows, no card chrome: six bordered cards would weigh more
-   than the question does, and there is nothing per-row to frame. The DS's own
-   gap is drawn for a short label, so widen it and top-align for the ones that
-   wrap. */
-.skip-connect__reason {
-  align-items: flex-start;
-  gap: var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-100);
-}
-
-.skip-connect__other {
-  margin-top: var(--ref-spacing-xs);
-}
-
-/* The demo offer under the "try first" tick (flag demoMode) — indented to the
-   checkbox's label so it reads as that row's answer. */
-.skip-connect__demo {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
-  padding-left: calc(var(--ref-spacing-md) + var(--ref-spacing-xxxs)); /* the checkbox + its gap */
-  color: var(--ref-color-grey-80);
-}
-
-.skip-connect__note {
-  margin: 0;
-}
 
 /* ── Assign for review (assign-modal.js) ─────────────────────────────
    Short form, so the dialog lets the reviewer dropdown escape it rather than

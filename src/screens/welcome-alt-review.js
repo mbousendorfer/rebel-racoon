@@ -1,4 +1,4 @@
-// The run's two reviews, under flag connectFirst — one screen, two hosts
+// The run's two reviews — one screen, two hosts
 // (2026-10-29, asked: « séparer + fortement la Voice et le Playbook », the
 // same cards for both):
 //   /welcome-alt/recap  the Playbook — Brief, Branding, Competitors, Influencers;
@@ -32,12 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2426";
-import { navigate } from "../router.js?v=2426";
-import { getDraft, patchDraft } from "../context-builder.js?v=2426";
-import { mount } from "../playbook-view.js?v=2426";
-import { parseHashParams } from "../url-state.js?v=2426";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2426";
+import { html, raw } from "../utils.js?v=2428";
+import { navigate } from "../router.js?v=2428";
+import { getDraft, patchDraft } from "../context-builder.js?v=2428";
+import { mount } from "../playbook-view.js?v=2428";
+import { parseHashParams } from "../url-state.js?v=2428";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2428";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour

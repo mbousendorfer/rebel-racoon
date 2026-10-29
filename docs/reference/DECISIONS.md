@@ -205,6 +205,8 @@ Two rules this rests on:
   (`{ id: "tt", platformLabel: "TikTok" }`) that have nothing to connect to and would render as
   "undefined" rows.
 
+**Figé ON le 2026-10-29** : `connectFirst` n'est plus un flag ; le chat d'onboarding, son étape comptes et `skip-connect-modal` sont supprimés — ce qui suit est l'histoire.
+
 **Connect first (flag `connectFirst`, 2026-10-19).** A new user can be asked to connect BEFORE
 anything else — `/welcome-alt/connect`, modelled on prod's Archie signup step — without breaking
 this rule: the ask moves to the front, it doesn't become a gate. The screen keeps the same two beats

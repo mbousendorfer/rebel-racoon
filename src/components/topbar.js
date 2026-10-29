@@ -1,8 +1,8 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2426";
-import { conceptHint, conceptText } from "../concepts.js?v=2426";
-import { getPath, navigate } from "../router.js?v=2426";
-import { parseHashParams } from "../url-state.js?v=2426";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2426";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2428";
+import { conceptHint, conceptText } from "../concepts.js?v=2428";
+import { getPath, navigate } from "../router.js?v=2428";
+import { parseHashParams } from "../url-state.js?v=2428";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2428";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -18,38 +18,38 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=2426";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2426";
-import { contentCounts } from "./right-panel/overview-view.js?v=2426";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2426";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2426";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2426";
+} from "./right-panel.js?v=2428";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2428";
+import { contentCounts } from "./right-panel/overview-view.js?v=2428";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2428";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2428";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2428";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=2426";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2426";
-import { open as openRenameModal } from "./rename-modal.js?v=2426";
+} from "./conversation-status-card.js?v=2428";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2428";
+import { open as openRenameModal } from "./rename-modal.js?v=2428";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=2426";
-import { isFlagOn } from "../feature-flags.js?v=2426";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=2426";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2426";
-import { findCadence } from "../topics-catalog.js?v=2426";
+} from "../contexts-store.js?v=2428";
+import { isFlagOn } from "../feature-flags.js?v=2428";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=2428";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2428";
+import { findCadence } from "../topics-catalog.js?v=2428";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=2426";
+} from "../top-posts-flow.js?v=2428";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2426";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2428";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -89,7 +89,6 @@ export function renderTopbar(_options = {}) {
   if (!el) return;
   const onSession = isSessionRoute();
   const back = backTargetFor(getPath());
-  const onWelcomeAlt = onSession && isWelcomeAltSession();
   const rpMode = getRightPanelMode();
   const draftCount = onSession ? latestDraftCount() : 0;
   // Empty conversation = no user turn yet. Used as one input to the
@@ -97,9 +96,6 @@ export function renderTopbar(_options = {}) {
   // can land before the user types if a source got auto-extracted).
   const isEmpty = onSession ? isEmptyConversation() : true;
   const ideaCount = onSession ? sessionIdeaCount() : 0;
-  // Welcome-alt swaps the right-side pills cluster for a single Exit
-  // button — the wizard has no conversation to surface yet, so the
-  // session pills + chat-status toggle would just be dead controls.
   // The info toggle only appears once the chat has something to summarise —
   // on a brand-new/empty chat the status card would be all "None yet", so we
   // hide the control entirely (matches conversation-status-card.render).
@@ -117,15 +113,13 @@ export function renderTopbar(_options = {}) {
   const ownActions = pageActions && pageActions.path === getPath() ? pageActions.markup : "";
   const rightSide = ownActions
     ? ownActions
-    : onWelcomeAlt
-      ? renderWelcomeAltExit()
-      : onSession
-        ? `${sessionActions}${renderStatusCardToggle(statusCardAvailable)}`
-        : getPath() === "/topics"
-          ? renderTopicsSettings()
-          : getPath().startsWith("/insights")
-            ? renderInsightsActions()
-            : "";
+    : onSession
+      ? `${sessionActions}${renderStatusCardToggle(statusCardAvailable)}`
+      : getPath() === "/topics"
+        ? renderTopicsSettings()
+        : getPath().startsWith("/insights")
+          ? renderInsightsActions()
+          : "";
   // On the repurposing winner board (profile-first mode), the topbar leads with
   // a "Change profile" back — the app's standard back affordance — in place of
   // the session title.
@@ -158,27 +152,6 @@ function renderTopPostsBack() {
     <button type="button" class="ap-button ghost grey app-topbar__back" data-topbar-topposts-back>
       <i class="ap-icon-arrow-left" aria-hidden="true"></i>
       <span>Change profile</span>
-    </button>
-  `;
-}
-
-// Right-side Exit affordance shown during the integrated Playbook
-// creation flow. The first-time onboarding flow has body.onboarding
-// applied, so the topbar is hidden — only the integrated returning-user
-// flow ever sees this button (the welcome-alt wizard chrome itself has
-// no Exit affordance any more; this is the canonical one). Click goes
-// through the session.js confirm-modal that was previously gating the
-// floating wizard Exit button.
-function renderWelcomeAltExit() {
-  return `
-    <button
-      type="button"
-      class="ap-button ghost grey"
-      data-topbar-welcome-alt-exit
-      aria-label="Exit Playbook creation"
-    >
-      Exit
-      <i class="ap-icon-close" aria-hidden="true"></i>
     </button>
   `;
 }
@@ -262,14 +235,8 @@ function renderStatusCardToggle(available) {
 
 // On session routes the title doubles as a rename trigger — click to
 // open the rename modal for the active conversation. Off-session the
-// title is a plain heading. Welcome-alt sessions (Playbook creation)
-// override both: a fixed "New Playbook" label, no rename — the session
-// has no persisted name yet, and the user will name the Playbook
-// itself at the end of the flow.
+// title is a plain heading.
 function renderTitle(onSession) {
-  if (onSession && isWelcomeAltSession()) {
-    return `<h1 class="app-topbar__title">New Playbook</h1>`;
-  }
   const title = currentTitle();
   if (onSession) {
     const sid = currentSessionId();
@@ -373,23 +340,6 @@ export function initTopbar() {
       const mode = getRightPanelMode();
       if (mode === "sources") closeRightPanel();
       else openSourcesPanel();
-      return;
-    }
-    // Welcome-alt Exit — open the discard-progress confirm and navigate
-    // back to the dashboard. Pairs with the topbar button rendered by
-    // renderWelcomeAltExit() above. The wizard chrome no longer carries
-    // its own Exit affordance; this is the only entry.
-    if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=2426").then(({ open }) => {
-        open({
-          title: "Discard this Playbook?",
-          body: "Your answers so far will be lost. You can create a Playbook again anytime.",
-          confirmLabel: "Discard Playbook",
-          cancelLabel: "Keep going",
-          danger: true,
-          onConfirm: () => navigate("/"),
-        });
-      });
       return;
     }
     if (event.target.closest("[data-topbar-toggle-status-card]")) {
@@ -657,19 +607,6 @@ function backTargetFor(path) {
     return { to: pb ? `/topics?pb=${encodeURIComponent(pb)}` : "/topics", label: "Back to Topic Feed" };
   }
   return null;
-}
-
-// The welcome-alt session hosts the conversational Playbook builder
-// (URL → profile → optional docs). It runs in app-shell chrome only
-// in the integrated entry (returning user creates a Playbook from
-// /contexts); the first-time onboarding hides chrome entirely via the
-// body.onboarding class set in app.js. Either way, the Sources / Ideas
-// / Drafts pills + the chat-status toggle don't apply during creation
-// — there's no thread yet, no drafts, no idea bank. Use this helper to
-// gate session-pill rendering.
-function isWelcomeAltSession() {
-  const sid = currentSessionId();
-  return !!sid && sid.startsWith("welcome-alt-");
 }
 
 // The DS Top bar pattern's back (V2 Molecules › Top bar, 7016:21445): an icon

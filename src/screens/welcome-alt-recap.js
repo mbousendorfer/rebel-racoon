@@ -4,9 +4,9 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2426";
-import { openFirstPostChat } from "../post-plan-flow.js?v=2426";
-import { catalogueRoute } from "../active-playbook.js?v=2426";
+import { navigate } from "../router.js?v=2428";
+import { openFirstPostChat } from "../post-plan-flow.js?v=2428";
+import { catalogueRoute } from "../active-playbook.js?v=2428";
 import {
   getDraft,
   isAnalysisReady,
@@ -14,12 +14,11 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2426";
-import { mount, RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2426";
-import { isFlagOn } from "../feature-flags.js?v=2426";
-import { renderReview } from "./welcome-alt-review.js?v=2426";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2426";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2426";
+} from "../context-builder.js?v=2428";
+import { RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2428";
+import { renderReview } from "./welcome-alt-review.js?v=2428";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2428";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2428";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -27,22 +26,22 @@ import {
   networkVoice,
   networkVoiceOn,
   playbookNetworks,
-} from "../voice-parts.js?v=2426";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2426";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2426";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2426";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2426";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2426";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2426";
-import { showToast } from "../components/toast.js?v=2426";
+} from "../voice-parts.js?v=2428";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2428";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2428";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2428";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2428";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2428";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2428";
+import { showToast } from "../components/toast.js?v=2428";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
 const WELCOME_ALT_INTEGRATED_KEY = "welcomeAltIntegrated";
 const WELCOME_ALT_RETURN_KEY = "welcomeAltReturnTo";
 
-// `lands`: the lines of the onboarding's Playbook card (flag connectFirst,
-// welcome-alt-shell.js) that land once the stage is done — a line no stage
+// `lands`: the lines of the onboarding's Playbook card (welcome-alt-shell.js)
+// that land once the stage is done — a line no stage
 // names lands as soon as it's known (the site's colours, the competitors).
 export const LOADING_STAGES = [
   { title: "Reading your website", sub: "Scanning your pages, copy, and brand cues.", lands: ["summary"] },
@@ -87,20 +86,16 @@ export const INTERVIEW_LOADING_STAGES = [
 let introDoneSid = null; // sid whose intro loader has already played
 
 export function renderWelcomeAltRecap(_params, target) {
-  return renderDraftView(target, (sid, config) => renderReview(target, sid, config, playbookReview()));
+  return renderDraftView((sid, config) => renderReview(target, sid, config, playbookReview()));
 }
 
-// /welcome-alt/voice (flag connectFirst): the Voice's own review, after the
+// /welcome-alt/voice: the Voice's own review, after the
 // Playbook's — the same cards, the voice tab split in two parts.
 export function renderWelcomeAltVoice(_params, target) {
-  return renderDraftView(
-    target,
-    (sid, config) => {
-      startVoiceRules(sid);
-      return renderReview(target, sid, { ...config, networkPicker: true }, voiceReview(sid));
-    },
-    { fallback: "/welcome-alt/recap" },
-  );
+  return renderDraftView((sid, config) => {
+    startVoiceRules(sid);
+    return renderReview(target, sid, { ...config, networkPicker: true }, voiceReview(sid));
+  });
 }
 
 // The first time on the Voice review: every network follows the default voice
@@ -294,8 +289,8 @@ function voiceReview(sid, overrides = {}) {
 }
 
 // The draft behind both hosts, rehydrated on a reload, and the view's config.
-// `host(sid, config)` renders it (flag connectFirst); otherwise, the recap.
-function renderDraftView(target, host, { fallback = null } = {}) {
+// `host(sid, config)` renders it.
+function renderDraftView(host) {
   const integrated = isIntegrated();
   // First-time onboarding is full-bleed; the integrated New-Playbook flow
   // keeps the app shell (sidebar + topbar) — app.js skips the onboarding
@@ -323,8 +318,8 @@ function renderDraftView(target, host, { fallback = null } = {}) {
 
   // "Fill it in myself" has nothing to analyse: no loader, straight to the fiche.
   const source = getDraft(sid)?.sourceType;
-  // `revealed`: the onboarding's own reveal (/welcome-alt/ready, flag
-  // connectFirst) already showed the building — the details open straight.
+  // `revealed`: the onboarding's own reveal (/welcome-alt/ready) already
+  // showed the building — the details open straight.
   const skipLoader =
     restored ||
     source === "manual" ||
@@ -377,14 +372,9 @@ function renderDraftView(target, host, { fallback = null } = {}) {
       return false;
     },
   };
-  // Flag connectFirst: the reviews close the run, in its split — a returning
-  // user's new Playbook too (2026-10-29).
-  if (isFlagOn("connectFirst")) return host(sid, config);
-  if (fallback) {
-    navigate(fallback);
-    return () => {};
-  }
-  return mount(target, config);
+  // The reviews close the run, in its split — a returning user's new Playbook
+  // too (2026-10-29).
+  return host(sid, config);
 }
 
 // New Playbook (integrated) finish — persist the Playbook and return to the

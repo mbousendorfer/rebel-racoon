@@ -1,4 +1,4 @@
-// /welcome-alt/ready — flag connectFirst: the end of the first-time run.
+// /welcome-alt/ready — the end of the first-time run.
 //
 // Two beats on one screen. Building: the stages of the analysis tick on the
 // left (the recap's own stage lists, by source) while the card on the right
@@ -9,11 +9,11 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2426";
-import { navigate } from "../router.js?v=2426";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2426";
-import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2426";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2426";
+import { html, raw } from "../utils.js?v=2428";
+import { navigate } from "../router.js?v=2428";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2428";
+import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2428";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2428";
 
 // Where the default voice was read from, said on the reveal.
 const READ_FROM = { website: "your site", documents: "your files", interview: "your answers" };

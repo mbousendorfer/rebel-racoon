@@ -1,4 +1,4 @@
-// The middle of the first-time run — flag connectFirst. One screen per step, in
+// The middle of the first-time run. One screen per step, in
 // the onboarding shell (welcome-alt-shell.js); each step's effect on the draft
 // is context-builder's (readAltWebsite, readAltFiles, writeAltManually,
 // analyzeAltInterview), the same moves the chat onboarding makes.
@@ -14,8 +14,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2426";
-import { navigate } from "../router.js?v=2426";
+import { html, raw, escapeHtml } from "../utils.js?v=2428";
+import { navigate } from "../router.js?v=2428";
 import {
   getDraft,
   patchDraft,
@@ -24,12 +24,12 @@ import {
   writeAltManually,
   analyzeAltInterview,
   learnAltVoiceFrom,
-} from "../context-builder.js?v=2426";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2426";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2426";
-import { connectors as connectorMocks } from "../mocks.js?v=2426";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2426";
-import { networkIcon } from "../social-profiles.js?v=2426";
+} from "../context-builder.js?v=2428";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2428";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2428";
+import { connectors as connectorMocks } from "../mocks.js?v=2428";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2428";
+import { networkIcon } from "../social-profiles.js?v=2428";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
