@@ -11,16 +11,18 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=2466";
-import { isFlagOn } from "../../feature-flags.js?v=2466";
-import { escapeAttr, escapeText } from "../../utils.js?v=2466";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2466";
-import { getSessions } from "../../sessions-store.js?v=2466";
-import { renderEmptyState } from "../../components/empty-state.js?v=2466";
-import { getSources, getIdeas } from "../../library.js?v=2466";
-import { getPosts } from "../../posts-store.js?v=2466";
-import { getContextById } from "../../contexts-store.js?v=2466";
-import { pageState } from "../home.js?v=2466";
+} from "../../playbook-access.js?v=2467";
+import { isFlagOn } from "../../feature-flags.js?v=2467";
+import { escapeAttr, escapeText } from "../../utils.js?v=2467";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2467";
+import { getSessions } from "../../sessions-store.js?v=2467";
+import { renderEmptyState } from "../../components/empty-state.js?v=2467";
+import { getSources, getIdeas } from "../../library.js?v=2467";
+import { getPosts } from "../../posts-store.js?v=2467";
+import { getContextById } from "../../contexts-store.js?v=2467";
+import { voicesToFinish } from "../../voice-parts.js?v=2467";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2467";
+import { pageState } from "../home.js?v=2467";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -468,6 +470,21 @@ export function renderContextCard(ctx) {
       ${influencerCount ? counter("ap-icon-star", influencerCount, "influencer", "influencers") : ""}
     </div>
   `;
+  // Voices to finish (2026-10-29, asked: « une indication quand une voice n'est
+  // pas complète ou manquante sur la card d'un playbook »): how many, and on
+  // which networks.
+  const toFinish = voicesToFinish(ctx);
+  const voicesHtml = toFinish.length
+    ? `<div class="contexts-card__voices">
+        <span class="ap-status orange">${toFinish.length} voice${toFinish.length === 1 ? "" : "s"} to finish</span>
+        <span class="contexts-card__voice-nets">${toFinish
+          .map(
+            (n) =>
+              `<i class="${networkIcon(n)}" title="${escapeAttr(networkLabel(n))}" aria-label="${escapeAttr(networkLabel(n))}"></i>`,
+          )
+          .join("")}</span>
+      </div>`
+    : "";
   const openAttrs = `
       data-contexts-card="${ctx.id}"
       role="button"
@@ -504,6 +521,7 @@ export function renderContextCard(ctx) {
         </div>
       </footer>
 
+      ${voicesHtml}
       ${ctx.updatedAt ? `<div class="contexts-card__updated">Updated ${escapeText(ctx.updatedAt)}</div>` : ""}
     </article>
   `;

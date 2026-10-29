@@ -78,6 +78,11 @@
   min-height: 200px;
 }
 
+/* « N Playbooks have voices to finish » — over the grid, only when some do. */
+.contexts-view__voices {
+  margin-bottom: var(--ref-spacing-md);
+}
+
 /* Auto-fill grid: cards keep a readable minimum width (280px) and the
    number of columns reflows naturally when the available width shrinks
    (e.g. the right panel is open or the viewport is narrow). The previous
@@ -443,6 +448,18 @@
 
 .contexts-card__palette-dot:first-child {
   margin-left: 0;
+}
+
+/* Voices to finish on a card: the count, then the networks it's about. */
+.contexts-card__voices {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.contexts-card__voice-nets {
+  display: inline-flex;
+  gap: var(--ref-spacing-xxs);
 }
 
 .contexts-card__updated {

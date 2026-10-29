@@ -1,26 +1,27 @@
-import { html, raw, escapeAttr } from "../utils.js?v=2466";
-import { conceptText } from "../concepts.js?v=2466";
-import { renderTopbar } from "../components/topbar.js?v=2466";
+import { html, raw, escapeAttr } from "../utils.js?v=2467";
+import { conceptText } from "../concepts.js?v=2467";
+import { renderTopbar } from "../components/topbar.js?v=2467";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=2466";
-import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=2466";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2466";
-import { closePanel as closeRightPanel } from "../components/right-panel.js?v=2466";
-import { navigate, getPath } from "../router.js?v=2466";
-import { isFlagOn } from "../feature-flags.js?v=2466";
-import { setHandoff } from "../handoff.js?v=2466";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2466";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2466";
-import { visibleContexts, usableContexts } from "../playbook-access.js?v=2466";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2466";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2466";
-import { installMoreMenu } from "../components/more-menu.js?v=2466";
-import { showToast } from "../components/toast.js?v=2466";
-import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=2466";
+} from "../contexts-store.js?v=2467";
+import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=2467";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2467";
+import { closePanel as closeRightPanel } from "../components/right-panel.js?v=2467";
+import { navigate, getPath } from "../router.js?v=2467";
+import { isFlagOn } from "../feature-flags.js?v=2467";
+import { setHandoff } from "../handoff.js?v=2467";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2467";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2467";
+import { visibleContexts, usableContexts } from "../playbook-access.js?v=2467";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2467";
+import { voicesToFinish } from "../voice-parts.js?v=2467";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2467";
+import { installMoreMenu } from "../components/more-menu.js?v=2467";
+import { showToast } from "../components/toast.js?v=2467";
+import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=2467";
 import {
   chatPlaybook,
   renderChatsTab,
@@ -28,7 +29,7 @@ import {
   renderContextsEmpty,
   renderGhostCard,
   renderPlaybooksTable,
-} from "./home/lists.js?v=2466";
+} from "./home/lists.js?v=2467";
 
 // The account HOME — and the Playbooks catalogue it merged with.
 //
@@ -162,6 +163,24 @@ function activeTab() {
   return parseHashParams().get("tab") === "playbooks" ? "playbooks" : "chats";
 }
 
+// Above the Playbooks (2026-10-29, asked: « un encart tout en haut des playbooks
+// qui indique ce qu'il faudrait faire »): how many have voices to finish, and
+// what it costs. No button — each card says which networks.
+function voicesWarning(contexts) {
+  const n = contexts.filter((c) => voicesToFinish(c).length).length;
+  if (!n) return "";
+  return `
+    <div class="ap-infobox warning has-title contexts-view__voices" role="status">
+      <i class="ap-icon-warning_fill" aria-hidden="true"></i>
+      <div class="ap-infobox-content">
+        <div class="ap-infobox-texts">
+          <span class="ap-infobox-title">${n} Playbook${n === 1 ? " has" : "s have"} voices to finish</span>
+          <span class="ap-infobox-message">Until then, ${n === 1 ? "its" : "their"} drafts may miss what works on those networks.</span>
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderPage() {
   // What I'm allowed to see, not what the store holds — a colleague's private
   // Playbook is in the store and must not be in this grid.
@@ -179,7 +198,7 @@ function renderPage() {
           </div>
           <div class="contexts-view__head-actions">${raw(renderSearchField())}${raw(renderCreateButton())}</div>
         </header>
-
+        ${raw(voicesWarning(all))}
         <div class="contexts-view__body">${raw(renderTabBody())}</div>
       </div>
     `;
@@ -195,6 +214,7 @@ function renderPage() {
     <div class="contexts-view__page">
       ${raw(renderHomeHero())} ${raw(renderHomeWorkflows())}
       ${raw(renderHomeTabs(all.length, getSessions().length, tab))} ${raw(renderHomeToolbar(tab, totalChats))}
+      ${tab === "playbooks" ? raw(voicesWarning(all)) : ""}
       <div class="contexts-view__body">${raw(renderTabBody())}</div>
     </div>
   `;
