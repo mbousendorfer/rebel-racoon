@@ -1,17 +1,17 @@
-import { html, raw, escapeText, escapeAttr, formatTimeOfDay, formatClock } from "../utils.js?v=2517";
-import { showToast } from "./toast.js?v=2517";
-import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=2517";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2517";
+import { html, raw, escapeText, escapeAttr, formatTimeOfDay, formatClock } from "../utils.js?v=2518";
+import { showToast } from "./toast.js?v=2518";
+import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=2518";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2518";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
   normalizeNetwork,
-} from "../social-profiles.js?v=2517";
-import { getContextById } from "../contexts-store.js?v=2517";
-import { canEdit } from "../playbook-access.js?v=2517";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=2517";
+} from "../social-profiles.js?v=2518";
+import { getContextById } from "../contexts-store.js?v=2518";
+import { canEdit } from "../playbook-access.js?v=2518";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=2518";
 import {
   CADENCES,
   startOfDay,
@@ -21,7 +21,7 @@ import {
   planSlots,
   queueEntries,
   firstLine as extractFirstLine,
-} from "../schedule-engine.js?v=2517";
+} from "../schedule-engine.js?v=2518";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -1063,7 +1063,12 @@ function renderTimeline() {
 
 // Footer left: what the batch adds up to, once the dates exist.
 function renderFootSummary() {
-  const disclosure = `<span class="schedule-modal__foot-disclosure">Posts will publish to your connected accounts.</span>`;
+  // « Draft » until it's out (GLOSSARY), and singular for one.
+  const disclosure = `<span class="schedule-modal__foot-disclosure">${
+    state.posts.length === 1
+      ? "This draft publishes to your connected account."
+      : "These drafts publish to your connected accounts."
+  }</span>`;
   if (isComputing() || state.slots.length === 0) return disclosure;
   const times = state.slots.map((s) => s.when).sort((a, b) => a - b);
   const first = times[0];
@@ -1073,7 +1078,7 @@ function renderFootSummary() {
     span = `<strong>${escapeText(formatDay(first))}</strong> at ${formatTime(first)}`;
   } else {
     const days = Math.round((startOfDay(last) - startOfDay(first)) / 86400000) + 1;
-    span = `<strong>${times.length} posts over ${days} ${days === 1 ? "day" : "days"}</strong> · ${escapeText(formatShortDate(first))} – ${escapeText(formatShortDate(last))}`;
+    span = `<strong>${times.length} drafts over ${days} ${days === 1 ? "day" : "days"}</strong> · ${escapeText(formatShortDate(first))} – ${escapeText(formatShortDate(last))}`;
   }
   return `<span class="schedule-modal__foot-span">${span}</span>${disclosure}`;
 }
