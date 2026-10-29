@@ -1070,7 +1070,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
   padding: var(--ref-spacing-md); /* 24 — the review's compact rhythm (2026-10-20) */
   background: var(--app-surface);
   border: none;
-  border-radius: 20px;
+  border-radius: var(--app-radius-card);
   box-shadow: var(--app-shadow-popover-lg);
   /* The view repaints its whole DOM on most edits (a radio, a chip…): the
      block's own entrance (pb2-rise) would replay and the card jump. A new
@@ -1296,7 +1296,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
   /* The part's tint (PART_TINT in welcome-alt-review.js), shared with its tile in the list. */
   background: var(--part-tint, var(--app-surface-subtle));
   border-bottom: 1px solid var(--ref-color-grey-20);
-  border-radius: 20px 20px 0 0;
+  border-radius: var(--app-radius-card) var(--app-radius-card) 0 0;
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);

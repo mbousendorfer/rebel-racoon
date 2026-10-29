@@ -11,16 +11,16 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=2463";
-import { isFlagOn } from "../../feature-flags.js?v=2463";
-import { escapeAttr, escapeText } from "../../utils.js?v=2463";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2463";
-import { getSessions } from "../../sessions-store.js?v=2463";
-import { renderEmptyState } from "../../components/empty-state.js?v=2463";
-import { getSources, getIdeas } from "../../library.js?v=2463";
-import { getPosts } from "../../posts-store.js?v=2463";
-import { getContextById } from "../../contexts-store.js?v=2463";
-import { pageState } from "../home.js?v=2463";
+} from "../../playbook-access.js?v=2464";
+import { isFlagOn } from "../../feature-flags.js?v=2464";
+import { escapeAttr, escapeText } from "../../utils.js?v=2464";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2464";
+import { getSessions } from "../../sessions-store.js?v=2464";
+import { renderEmptyState } from "../../components/empty-state.js?v=2464";
+import { getSources, getIdeas } from "../../library.js?v=2464";
+import { getPosts } from "../../posts-store.js?v=2464";
+import { getContextById } from "../../contexts-store.js?v=2464";
+import { pageState } from "../home.js?v=2464";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
