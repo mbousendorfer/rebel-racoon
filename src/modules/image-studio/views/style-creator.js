@@ -9,21 +9,21 @@
 // active Playbook. (A three-subject "Test run" column was removed at the user's
 // request, 2026-10-06: "ça n'a pas de sens".)
 
-import { html, toString } from "../lib/html.js?v=2543";
-import { delegate } from "../lib/delegate.js?v=2543";
-import { getPath } from "../../../router.js?v=2543";
-import { setTopbarActions } from "../../../components/topbar.js?v=2543";
-import { renderFrame } from "./frame.js?v=2543";
-import { renderEmpty } from "../ui/empty.js?v=2543";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=2543";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2543";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=2543";
-import { toast } from "../ui/toast.js?v=2543";
-import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2543";
-import { copyService } from "../services/index.js?v=2543";
-import { lookFromColors } from "../render/visual.js?v=2543";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2543";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2543";
+import { html, toString } from "../lib/html.js?v=2544";
+import { delegate } from "../lib/delegate.js?v=2544";
+import { getPath } from "../../../router.js?v=2544";
+import { setTopbarActions } from "../../../components/topbar.js?v=2544";
+import { renderFrame } from "./frame.js?v=2544";
+import { renderEmpty } from "../ui/empty.js?v=2544";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=2544";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2544";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=2544";
+import { toast } from "../ui/toast.js?v=2544";
+import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2544";
+import { copyService } from "../services/index.js?v=2544";
+import { lookFromColors } from "../render/visual.js?v=2544";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2544";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2544";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -169,13 +169,20 @@ export function mount(target, params, ctx, { embed = null } = {}) {
       <section class="${card}">
         <!-- The DS textarea field, its label inside it; Generate is a standalone link on the label's line. -->
         <div class="ap-textarea-field resizable imst-prompt-field">
-          <label for="imst-st-prompt">Style prompt <small>(optional)</small></label>
+          <!-- Without images, why Generate is off is said in the label's description,
+               where everyone reads it (a title reached the mouse only). -->
+          <label for="imst-st-prompt"
+            >Style prompt
+            <small id="imst-st-prompt-hint"
+              >(optional)${!images.length ? " · add an image to generate it from" : ""}</small
+            ></label
+          >
           <button
             type="button"
             class="ap-link standalone imst-prompt-field__gen${!images.length || state.promptBusy ? " disabled" : ""}"
             data-imst-action="generate-prompt"
             aria-disabled="${!images.length || state.promptBusy}"
-            ${!images.length ? 'title="Add an image first"' : ""}
+            ${!images.length ? 'aria-describedby="imst-st-prompt-hint"' : ""}
           >
             <i class="ap-icon-sparkles" aria-hidden="true"></i
             ><span
