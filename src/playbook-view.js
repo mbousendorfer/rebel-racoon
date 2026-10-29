@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2441";
-import { conceptHint } from "./concepts.js?v=2441";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2442";
+import { conceptHint } from "./concepts.js?v=2442";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2441";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2441";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2441";
-import { isFlagOn } from "./feature-flags.js?v=2441";
-import { clipLookOf } from "./videos-store.js?v=2441";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2441";
-import { parseHashParams } from "./url-state.js?v=2441";
+} from "./playbook-brand-kit.js?v=2442";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2442";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2442";
+import { isFlagOn } from "./feature-flags.js?v=2442";
+import { clipLookOf } from "./videos-store.js?v=2442";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2442";
+import { parseHashParams } from "./url-state.js?v=2442";
 import {
   isListPart,
   voiceParts,
@@ -53,13 +53,13 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2441";
-import { showToast } from "./components/toast.js?v=2441";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2441";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2441";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2441";
-import { consumeHandoff } from "./handoff.js?v=2441";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2441";
+} from "./voice-parts.js?v=2442";
+import { showToast } from "./components/toast.js?v=2442";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2442";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2442";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2442";
+import { consumeHandoff } from "./handoff.js?v=2442";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2442";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -69,7 +69,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2441";
+} from "./social-profiles.js?v=2442";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2846,6 +2846,7 @@ function voiceWaysCard(net = null, { title = "Rewrite it from", hint = "", class
         ) => `<button type="button" class="voice-ask__option${i ? "" : " is-best"}" data-voice-ask="${esc(net || "")}" data-voice-choice="${c.value}">
           <span class="voice-ask__icon" aria-hidden="true"><i class="${c.icon}"></i></span>
           <span class="voice-ask__text"><span class="voice-ask__name">${esc(c.tile)}</span><span class="voice-ask__hint">${esc(c.hint)}</span></span>
+          ${i ? "" : `<span class="ap-tag green mini voice-ask__best">Recommended</span>`}
         </button>`,
       )
       .join("")}</div>`,
@@ -3050,6 +3051,7 @@ function networkVoiceEmpty(net, chosen) {
         (t, i) => `<button type="button" class="voice-ask__option${i ? "" : " is-best"}" ${t.attrs}>
           <span class="voice-ask__icon" aria-hidden="true"><i class="${t.icon}"></i></span>
           <span class="voice-ask__text"><span class="voice-ask__name">${esc(t.name)}</span><span class="voice-ask__hint">${esc(t.hint)}</span></span>
+          ${i ? "" : `<span class="ap-tag green mini voice-ask__best">Recommended</span>`}
         </button>`,
       )
       .join("")}</div>`,

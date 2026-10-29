@@ -1953,10 +1953,13 @@ body.has-modal {
 }
 /* The best way first, on its own row; the others share ONE row below,
    in as many equal columns as there are (--others). */
+/* One layout wherever a voice can be given (2026-10-29, asked: « utiliser
+   partout la même chose »): the thread, the run's review, the fiche. The best
+   way leads, the full width; the others are a two-column list. */
 .voice-ask__options {
   display: grid;
-  grid-template-columns: repeat(var(--others, 3), minmax(0, 1fr));
-  gap: var(--ref-spacing-xxs);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
 }
 .voice-ask__option.is-best {
   grid-column: 1 / -1;
@@ -1965,22 +1968,9 @@ body.has-modal {
   flex: none;
   margin-left: auto;
 }
-/* The others, narrower: the icon above, the words below, nothing cut. */
-.voice-ask__option:not(.is-best) {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xxs);
-}
-.voice-ask__option:not(.is-best) .voice-ask__hint {
-  white-space: normal;
-}
 @container (max-width: 420px) {
   .voice-ask__options {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .voice-ask__option:not(.is-best) {
-    flex-direction: row;
-    align-items: center;
   }
 }
 .voice-ask__option {
@@ -2031,49 +2021,36 @@ body.has-modal {
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
 }
-/* In the thread (and on the fiche): the best way leads — roomier, its icon on
-   Archie's orange — and the others step back into a two-column list, no
-   borders, each with its hint; a row lights grey-05 on hover. The run's
-   review (voiceWaysCard, outside .voice-ask) keeps its tiles. */
-.voice-ask .voice-ask__option.is-best {
+/* The best way: roomier, its icon on Archie's orange. The others step back:
+   no borders, each with its hint; a row lights grey-05 on hover. */
+.voice-ask__option.is-best {
   margin-bottom: var(--ref-spacing-xs);
   padding: var(--ref-spacing-sm);
 }
-.voice-ask .is-best .voice-ask__icon {
+.voice-ask__option.is-best .voice-ask__icon {
   width: 40px;
   height: 40px;
   background: var(--ref-color-orange-10);
   color: var(--ref-color-orange-100);
 }
-.voice-ask .voice-ask__options {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
-}
-.voice-ask .voice-ask__option:not(.is-best) {
-  flex-direction: row;
-  align-items: center;
+.voice-ask__option:not(.is-best) {
   border-color: transparent;
   padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
 }
-.voice-ask .voice-ask__option:not(.is-best):hover {
+.voice-ask__option:not(.is-best):hover {
   border-color: transparent;
   background: var(--ref-color-grey-05);
 }
-.voice-ask .voice-ask__option:not(.is-best) .voice-ask__icon {
+.voice-ask__option:not(.is-best) .voice-ask__icon {
   width: 24px;
   height: 24px;
   background: none;
 }
-.voice-ask .voice-ask__option:not(.is-best) .voice-ask__name {
+.voice-ask__option:not(.is-best) .voice-ask__name {
   font-weight: var(--ref-font-weight-regular);
 }
-.voice-ask .voice-ask__option:not(.is-best) .voice-ask__hint {
+.voice-ask__option:not(.is-best) .voice-ask__hint {
   white-space: nowrap;
-}
-@container (max-width: 420px) {
-  .voice-ask .voice-ask__options {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 /* The way out: Not now, then the default voice — the default answer — last,
    at the far right, as the secondary (stroked blue). */
