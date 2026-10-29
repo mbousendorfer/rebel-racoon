@@ -10,17 +10,18 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2472";
-import { isFlagOn } from "./feature-flags.js?v=2472";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2472";
+import { escapeHtml } from "./utils.js?v=2473";
+import { isFlagOn } from "./feature-flags.js?v=2473";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2473";
 import {
   networkMeta,
   networkLabel,
   networkIcon,
   normalizeNetwork,
   getConnectedProfileById,
+  getConnectedProfiles,
   profileForNetwork,
-} from "./social-profiles.js?v=2472";
+} from "./social-profiles.js?v=2473";
 
 // `hint`: what the part holds, said under its title — on the Playbook's tab
 // and in a voice proposal (one source for both).
@@ -122,9 +123,30 @@ export function playbookNetworks(ctx) {
 // learned on it, nothing to vary (2026-10-29, asked: « si j'ai qu'un seul
 // profil de connecté, il n'y a que la default voice … pas possible de rajouter
 // une voice pour un network non connecté »).
+// Connected means an account on it is connected now — a draft or a Playbook can
+// still list a network whose account left.
+function connectedNetworks(ctx) {
+  const on = new Set(getConnectedProfiles().map((p) => normalizeNetwork(p.platform)));
+  return playbookNetworks(ctx).filter((n) => on.has(n));
+}
+
 export function voiceNetworks(ctx) {
-  const nets = playbookNetworks(ctx);
+  const nets = connectedNetworks(ctx);
   return nets.length > 1 ? nets : [];
+}
+
+// The one network a Playbook writes for, when there is only one: its default
+// voice is that network's, and says so (« How your LinkedIn posts sound. »).
+export function onlyNetwork(ctx) {
+  if (!networkVoiceOn()) return "";
+  const nets = connectedNetworks(ctx);
+  return nets.length === 1 ? nets[0] : "";
+}
+
+// The voice a draft for this network was written in — null when the network
+// can't have one of its own (one network, or not connected): nothing to warn.
+export function draftVoice(ctx, network) {
+  return ctx && voiceNetworks(ctx).includes(normalizeNetwork(network)) ? networkVoice(ctx, network) : null;
 }
 
 // A network's own voice with something in it — empty, it still has to be filled.

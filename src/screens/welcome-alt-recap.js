@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2472";
-import { catalogueRoute } from "../active-playbook.js?v=2472";
+import { navigate } from "../router.js?v=2473";
+import { catalogueRoute } from "../active-playbook.js?v=2473";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,11 +13,11 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2472";
-import { RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2472";
-import { renderReview } from "./welcome-alt-review.js?v=2472";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2472";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2472";
+} from "../context-builder.js?v=2473";
+import { RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2473";
+import { renderReview } from "./welcome-alt-review.js?v=2473";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2473";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2473";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -26,15 +26,16 @@ import {
   networkVoiceOn,
   playbookNetworks,
   voiceNetworks,
-} from "../voice-parts.js?v=2472";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2472";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2472";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2472";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2472";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2472";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2472";
-import { showToast } from "../components/toast.js?v=2472";
-import { open as openConfirm } from "../components/confirm-modal.js?v=2472";
+  onlyNetwork,
+} from "../voice-parts.js?v=2473";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2473";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2473";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2473";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2473";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2473";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2473";
+import { showToast } from "../components/toast.js?v=2473";
+import { open as openConfirm } from "../components/confirm-modal.js?v=2473";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -143,8 +144,8 @@ function voiceReview(sid, overrides = {}) {
   const netOf = (partId) => partId.startsWith("voice-net-") && partId.slice("voice-net-".length);
   // One network: the default voice is that network's, said in its words.
   const only = () => {
-    const all = networkVoiceOn() ? playbookNetworks(getDraft(sid)) : [];
-    return all.length === 1 ? networkLabel(all[0]) : "";
+    const net = onlyNetwork(getDraft(sid));
+    return net ? networkLabel(net) : "";
   };
   const notNetworks = (el) => !el.matches(".pb2-voice-net, .pb2-voice-networks");
   // The ways live on the cards (tiles), not on the left (2026-10-29).
