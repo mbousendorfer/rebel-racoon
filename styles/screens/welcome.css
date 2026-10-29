@@ -281,30 +281,19 @@ body:not(.onboarding) .welcome-intro__wordmark {
   margin-top: var(--ref-spacing-lg);
 }
 
-/* « Only here for video clips? » — the way around the Playbook, under the CTA. */
+/* « Only here for video clips? » — the way around the Playbook, under the CTA:
+   the run's own option row, behind a hairline. */
 .welcome-intro__clips {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xs);
   margin-top: var(--ref-spacing-xl);
   padding-top: var(--ref-spacing-md);
   border-top: 1px solid var(--ref-color-grey-20);
 }
 
-.welcome-intro__clips-ask {
+.welcome-intro__clips .welcome-flow__or {
   margin: 0;
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.welcome-intro__clips-note {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
 }
 
 /* Right: the stage */

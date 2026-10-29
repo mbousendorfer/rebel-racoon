@@ -13,15 +13,15 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2459";
-import { startDemo } from "../demo-flow.js?v=2459";
-import { isFlagOn } from "../feature-flags.js?v=2459";
-import { html, raw } from "../utils.js?v=2459";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2459";
-import { navigate } from "../router.js?v=2459";
-import { setHandoff } from "../handoff.js?v=2459";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2459";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2459";
+import "../archie-pixels.js?v=2460";
+import { startDemo } from "../demo-flow.js?v=2460";
+import { isFlagOn } from "../feature-flags.js?v=2460";
+import { html, raw } from "../utils.js?v=2460";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2460";
+import { navigate } from "../router.js?v=2460";
+import { setHandoff } from "../handoff.js?v=2460";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2460";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2460";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -135,13 +135,25 @@ export function renderWelcomeAltIntro(_params, target) {
                 )
               : ""}
           </div>
-          <!-- Clips first (2026-10-29, asked: « proposer de skip pour utiliser la
-               feature de clipping … dire qu'il faudra un playbook pour créer des
-               drafts »): cutting clips needs no Playbook, drafting from them does. -->
+          <!-- Clips first (2026-10-29): cutting clips needs no Playbook, and
+               nothing blocks the drafts after — the Playbook only makes them
+               sound like you. The same option row as the run's other ways in. -->
           <div class="welcome-intro__clips">
-            <p class="welcome-intro__clips-ask">Only here for video clips?</p>
-            <button type="button" class="ap-button stroked grey" data-welcome-clips>Start with video clips</button>
-            <p class="welcome-intro__clips-note">Cut clips now. You'll need a Playbook to turn them into drafts.</p>
+            <p class="welcome-flow__or">Only here for video clips?</p>
+            <button type="button" class="welcome-flow__option" data-welcome-clips>
+              <span
+                class="welcome-flow__glyph is-icon is-tinted"
+                style="--part-tint: var(--ref-color-purple-20); --part-ink: var(--ref-color-purple-150)"
+                ><i class="ap-icon-video" aria-hidden="true"></i
+              ></span>
+              <span class="welcome-flow__option-text">
+                <span class="welcome-flow__option-title">Start with video clips</span>
+                <span class="welcome-flow__option-desc"
+                  >Cut the best moments of a video now. Build your Playbook later, so the drafts sound like you.</span
+                >
+              </span>
+              <i class="ap-icon-arrow-right welcome-flow__option-add" aria-hidden="true"></i>
+            </button>
           </div>
         </div>
       </section>

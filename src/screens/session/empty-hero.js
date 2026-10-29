@@ -1,21 +1,21 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2459";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2459";
-import { getContextById } from "../../contexts-store.js?v=2459";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2459";
-import { renderTopicCard } from "../../components/topic-card.js?v=2459";
-import { findTopicSource } from "../../topics-catalog.js?v=2459";
-import { html, raw } from "../../utils.js?v=2459";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2459";
-import { renderStarterCards } from "../../components/starter-card.js?v=2459";
-import { isFlagOn } from "../../feature-flags.js?v=2459";
-import { isDemo } from "../../demo-mode.js?v=2459";
-import { voicesToFinish } from "../../voice-parts.js?v=2459";
-import { networkLabel, networkIcon } from "../../social-profiles.js?v=2459";
-import { parseHashParams } from "../../url-state.js?v=2459";
-import "../../archie-pixels.js?v=2459";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2460";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2460";
+import { getContextById } from "../../contexts-store.js?v=2460";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2460";
+import { renderTopicCard } from "../../components/topic-card.js?v=2460";
+import { findTopicSource } from "../../topics-catalog.js?v=2460";
+import { html, raw } from "../../utils.js?v=2460";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2460";
+import { renderStarterCards } from "../../components/starter-card.js?v=2460";
+import { isFlagOn } from "../../feature-flags.js?v=2460";
+import { isDemo } from "../../demo-mode.js?v=2460";
+import { voicesToFinish } from "../../voice-parts.js?v=2460";
+import { networkLabel, networkIcon } from "../../social-profiles.js?v=2460";
+import { parseHashParams } from "../../url-state.js?v=2460";
+import "../../archie-pixels.js?v=2460";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -247,17 +247,19 @@ function playbookReadyBlock(session) {
   if (parseHashParams().get("welcome") !== "1") return "";
   const ctx = session?.contextId ? getContextById(session.contextId) : null;
   if (!ctx) return "";
+  // A DS infobox, not a card (asked: « celui du haut devrait peut-être être une
+  // infobox »): it's news, the cards below are things to do.
   return `
-    <section class="voice-nudge voice-nudge--welcome" aria-label="Your Playbook is ready">
-      <span class="voice-nudge__icon" aria-hidden="true"><i class="ap-icon-sparkles"></i></span>
-      <span class="voice-nudge__text">
-        <span class="voice-nudge__title">Your Playbook is ready</span>
-        <span class="voice-nudge__desc">Tell me what to post, or drop a link or a file. I'll draft it in your voice.</span>
-      </span>
-      <button type="button" class="ap-button secondary blue" data-open-playbook="${ctx.id}">
-        <span>Open my Playbook</span>
-      </button>
-    </section>`;
+    <div class="ap-infobox success has-title empty-chat__ready" role="status">
+      <i class="ap-icon-rounded-check_fill" aria-hidden="true"></i>
+      <div class="ap-infobox-content">
+        <div class="ap-infobox-texts">
+          <span class="ap-infobox-title">Your Playbook is ready</span>
+          <span class="ap-infobox-message">Tell me what to post, or drop a link or a file. I'll draft it in your voice.</span>
+          <button type="button" class="ap-link" data-open-playbook="${ctx.id}">Open my Playbook</button>
+        </div>
+      </div>
+    </div>`;
 }
 
 function heroSub() {

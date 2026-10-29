@@ -829,10 +829,13 @@ body.playbook-revoked .session__composer-card {
   text-align: left;
 }
 
-/* The same card at the top of the first chat after the run. */
-.voice-nudge--welcome {
-  margin-top: 0;
+/* The first chat after the run: « Your Playbook is ready », a DS infobox in
+   the composer's column, left-aligned like the nudge below. */
+.empty-chat__ready {
+  width: 100%;
+  max-width: 740px;
   margin-bottom: var(--ref-spacing-lg);
+  text-align: left;
 }
 
 .voice-nudge__icon {
