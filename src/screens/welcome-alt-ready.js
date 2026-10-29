@@ -3,17 +3,17 @@
 // Two beats on one screen. Building: the stages of the analysis tick on the
 // left (the recap's own stage lists, by source) while the card on the right
 // fills with what's learned. Then the reveal: "Your Playbook is ready." and the
-// way out — Review my Playbook (the review, /welcome-alt/recap), Review my voice
+// way out — Check what I learned (the review, /welcome-alt/recap), Check my voice
 // (/welcome-alt/voice) or Start
 // writing (saves and enters Archie, the recap's enterArchie). Back, always.
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2449";
-import { navigate } from "../router.js?v=2449";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2449";
-import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2449";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2449";
+import { html, raw } from "../utils.js?v=2450";
+import { navigate } from "../router.js?v=2450";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2450";
+import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2450";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2450";
 
 // Where the default voice was read from, said on the reveal.
 const READ_FROM = { website: "your site", documents: "your files", interview: "your answers" };
@@ -81,7 +81,7 @@ export function renderWelcomeAltReady(_params, target) {
             choice({
               hook: "data-ready-review",
               icon: "ap-icon-pen",
-              title: manual ? "Fill in my Playbook" : "Review my Playbook",
+              title: manual ? "Fill in my Playbook" : "Check what I learned",
               desc: manual ? "Part by part, card by card." : "Your business, audience, look and competitors.",
             }),
           )}
@@ -89,7 +89,7 @@ export function renderWelcomeAltReady(_params, target) {
             choice({
               hook: "data-ready-voice",
               icon: "ap-icon-quote",
-              title: "Review my voice",
+              title: "Check my voice",
               desc: "How you sound, on every network.",
             }),
           )}
