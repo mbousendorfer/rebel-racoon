@@ -24,12 +24,12 @@
 // card (defined in right-panel.css). Classes prefixed `clip-card__*`
 // own clip-specific bits (thumbnail, timeframe overlay).
 
-import { iconFor } from "../file-kinds.js?v=2549";
-import { escapeText, escapeAttr, formatClock } from "../utils.js?v=2549";
-import { installMoreMenu } from "./more-menu.js?v=2549";
-import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=2549";
-import { videoForClip } from "../clip-captions.js?v=2549";
-import { FORMATS } from "../clip-formats.js?v=2549";
+import { iconFor } from "../file-kinds.js?v=2550";
+import { escapeText, escapeAttr, formatClock } from "../utils.js?v=2550";
+import { installMoreMenu } from "./more-menu.js?v=2550";
+import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=2550";
+import { videoForClip } from "../clip-captions.js?v=2550";
+import { FORMATS } from "../clip-formats.js?v=2550";
 
 const fmtTime = (s) => formatClock(s);
 
@@ -146,7 +146,7 @@ export function renderClipCard(
           <span class="ap-tag grey rpanel-ideas__kind clip-card__kind">Clip</span>
           ${
             sourceName
-              ? `<span class="clip-card__source-name" title="${escapeAttr(sourceName)}">
+              ? `<span class="ap-tag grey clip-card__source-name" title="${escapeAttr(sourceName)}">
                   <i class="${iconFor(sourceKind)}" aria-hidden="true"></i>
                   <span>${escapeText(sourceName)}</span>
                 </span>`

@@ -219,28 +219,11 @@
   flex: 0 0 auto;
 }
 
+/* The source is the idea card's chip (a DS grey tag): only its room in the row
+   here, the tag draws itself and truncates its own text. */
 .clip-card__source-name {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-width: 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-80);
-}
-
-.clip-card__source-name > i {
-  flex: 0 0 auto;
-  font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-80);
-}
-
-.clip-card__source-name > span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* Kebab menu — anchored top-right of the content zone, holds Edit
