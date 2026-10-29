@@ -7,7 +7,7 @@
  * already used by other modals in this app.
  */
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2490";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2491";
 
 const OVERLAY_ID = "shortcutLegend";
 
@@ -21,17 +21,12 @@ const HTML = `
   aria-labelledby="shortcutLegendTitle"
   aria-hidden="true"
 >
-  <header class="ap-dialog-header">
-    <h2 id="shortcutLegendTitle">Keyboard shortcuts</h2>
-    <button
-      type="button"
-      class="ap-icon-button transparent ap-dialog-close"
-      aria-label="Close"
-      id="shortcutLegendClose"
-    >
-      <i class="ap-icon-close"></i>
-    </button>
-  </header>
+  <div class="ap-dialog-header">
+    <span class="ap-dialog-title" id="shortcutLegendTitle">Keyboard shortcuts</span>
+  </div>
+  <button class="ap-dialog-close" type="button" id="shortcutLegendClose" aria-label="Close">
+    <i class="ap-icon-close"></i>
+  </button>
   <div class="ap-dialog-content shortcut-legend__content">
     <dl class="shortcut-legend__list">
       <div class="shortcut-legend__row">
@@ -39,8 +34,12 @@ const HTML = `
         <dd>Show this list</dd>
       </div>
       <div class="shortcut-legend__row">
+        <dt><kbd>⌘</kbd> + <kbd>K</kbd></dt>
+        <dd>Search chats</dd>
+      </div>
+      <div class="shortcut-legend__row">
         <dt><kbd>Esc</kbd></dt>
-        <dd>Close any modal, drawer, popover, or right panel</dd>
+        <dd>Close the open dialog or panel</dd>
       </div>
       <div class="shortcut-legend__row">
         <dt><kbd>Enter</kbd></dt>
@@ -56,7 +55,7 @@ const HTML = `
       </div>
       <div class="shortcut-legend__row">
         <dt><kbd>⌘</kbd> + <kbd>B</kbd></dt>
-        <dd>Toggle the sidebar (collapse to icon rail or expand)</dd>
+        <dd>Collapse or expand the sidebar</dd>
       </div>
       <div class="shortcut-legend__row">
         <dt><kbd>1</kbd>–<kbd>9</kbd></dt>
