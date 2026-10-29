@@ -160,6 +160,10 @@
   width: auto;
   align-self: flex-start;
 }
+/* Inside the app shell (a Playbook's voice review), the rail carries the brand. */
+body:not(.onboarding) .welcome-intro__wordmark {
+  display: none;
+}
 
 /* Centred in its half, both ways — on a wide screen the column no longer
    hugs the left edge; the text inside stays left-aligned. */
