@@ -1206,7 +1206,7 @@
 /* The voice review's network rows: the connected accounts on the network,
    as profile tags under its state. */
 /* « Which networks get their own voice? » — one compact row per network
-   (2026-10-29): icon, name over its account, the DS checkbox at the end. */
+   (2026-10-29): the DS checkbox first, then icon, name over its account. */
 .pb2-netpick {
   display: flex;
   flex-direction: column;
