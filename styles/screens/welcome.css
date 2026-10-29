@@ -316,7 +316,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
   overflow-y: auto;
   padding: var(--ref-spacing-md);
   background: var(--app-surface);
-  border-radius: 16px;
+  border-radius: var(--app-radius-modal);
   box-shadow: var(--app-shadow-popover-lg);
   animation: welcome-intro-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
 }
@@ -894,7 +894,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
   display: block;
   width: 60%;
   height: 10px;
-  border-radius: 5px;
+  border-radius: var(--app-radius-pill);
   background: var(--app-surface-subtle);
 }
 
@@ -1576,7 +1576,9 @@ body:not(.onboarding) .welcome-intro__wordmark {
   /* Each side keeps room for the nav's column (28px + air), so it never sits
      on a card, and the column stays centred. */
   padding: 0 max(calc(28px + 2 * var(--ref-spacing-lg)), calc((100% - 720px) / 2));
-  mask-image: linear-gradient(180deg, transparent 0, #000 96px, #000 calc(100% - 140px), transparent 100%);
+  /* Fully gone under the confirm bar (bottom lg + 36px): half-faded rows on both
+     sides of the button read as clipped. */
+  mask-image: linear-gradient(180deg, transparent 0, #000 96px, #000 calc(100% - 160px), transparent calc(100% - 64px));
 }
 
 .welcome-flow__sheet.is-scroll .welcome-flow__sheet-body::-webkit-scrollbar {

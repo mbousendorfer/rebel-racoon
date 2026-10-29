@@ -13,15 +13,15 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2530";
-import { startDemo } from "../demo-flow.js?v=2530";
-import { isFlagOn } from "../feature-flags.js?v=2530";
-import { html, raw } from "../utils.js?v=2530";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2530";
-import { navigate } from "../router.js?v=2530";
-import { setHandoff } from "../handoff.js?v=2530";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2530";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2530";
+import "../archie-pixels.js?v=2531";
+import { startDemo } from "../demo-flow.js?v=2531";
+import { isFlagOn } from "../feature-flags.js?v=2531";
+import { html, raw } from "../utils.js?v=2531";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2531";
+import { navigate } from "../router.js?v=2531";
+import { setHandoff } from "../handoff.js?v=2531";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2531";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2531";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -71,6 +71,8 @@ const ROWS = [
     ])}</span>`,
   },
   { step: "url", label: "Goal", value: chips(["Brand awareness", "Visit the shop"]) },
+  // The fourth part the pills promise.
+  { step: "url", label: "Competitors", value: chips(["Savonnerie Marius", "Pure Bloc"]) },
   { step: "language", label: "Writes in", value: `<span class="welcome-intro__plain">English</span>` },
   {
     step: "url",
