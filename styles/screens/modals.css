@@ -2154,22 +2154,20 @@ body.has-modal {
   color: var(--ref-color-electric-blue-100);
   transform: translateX(2px);
 }
-/* The other ways: a caption, then plain ghost buttons that wrap — the
-   caption takes the buttons' inset, so it starts on their icons' column. */
+/* The how's question: the body's heading, on the card title's rung. */
+.voice-ask__ask {
+  margin: 0;
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+/* The other ways: stroked buttons that wrap — a contour, lighter than the
+   tile, heavier than the ghost exits. */
 .voice-ask__others {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-}
-.voice-ask__label {
-  flex-basis: 100%;
-  margin: 0;
-  padding-left: var(--ref-spacing-sm);
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-80);
+  gap: var(--ref-spacing-xxs);
 }
 /* The run's voice review (playbook-view voiceWaysCard) keeps tiles: the
    best way first on its own row, the others on ONE row, equal columns. */
