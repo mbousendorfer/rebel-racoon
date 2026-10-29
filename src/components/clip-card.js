@@ -24,12 +24,12 @@
 // card (defined in right-panel.css). Classes prefixed `clip-card__*`
 // own clip-specific bits (thumbnail, timeframe overlay).
 
-import { iconFor } from "../file-kinds.js?v=2516";
-import { escapeText, escapeAttr, formatClock } from "../utils.js?v=2516";
-import { installMoreMenu } from "./more-menu.js?v=2516";
-import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=2516";
-import { videoForClip } from "../clip-captions.js?v=2516";
-import { FORMATS } from "../clip-formats.js?v=2516";
+import { iconFor } from "../file-kinds.js?v=2517";
+import { escapeText, escapeAttr, formatClock } from "../utils.js?v=2517";
+import { installMoreMenu } from "./more-menu.js?v=2517";
+import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=2517";
+import { videoForClip } from "../clip-captions.js?v=2517";
+import { FORMATS } from "../clip-formats.js?v=2517";
 
 const fmtTime = (s) => formatClock(s);
 
@@ -215,7 +215,7 @@ export function renderClipCard(
             class="ap-button secondary blue rpanel-ideas__use"
             data-clip-draft="${escapeAttr(clip.id)}"
           >
-            <i class="ap-icon-archie-official"></i>
+            <i class="ap-icon-sparkles"></i>
             <span>Draft post</span>
           </button>
         </div>

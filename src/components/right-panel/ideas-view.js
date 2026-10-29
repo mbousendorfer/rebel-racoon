@@ -2,12 +2,12 @@
 // the per-card feedback and "why this idea" state. Moved out of right-panel.js,
 // unchanged; the filter state it reads is owned (and written) by the shell.
 
-import { html, raw } from "../../utils.js?v=2516";
-import { conceptText } from "../../concepts.js?v=2516";
-import { isFlagOn } from "../../feature-flags.js?v=2516";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2516";
-import { renderClipCard } from "../clip-card.js?v=2516";
-import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2516";
+import { html, raw } from "../../utils.js?v=2517";
+import { conceptText } from "../../concepts.js?v=2517";
+import { isFlagOn } from "../../feature-flags.js?v=2517";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2517";
+import { renderClipCard } from "../clip-card.js?v=2517";
+import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2517";
 import {
   closeInline,
   activeSessionId,
@@ -15,7 +15,7 @@ import {
   ideasFilter,
   outputsView,
   sessionIdeas,
-} from "../right-panel.js?v=2516";
+} from "../right-panel.js?v=2517";
 
 // Idea kind taxonomy — handoff Ideas filter rail (§ 2.6). Order is the order
 // shown in the chip row. Each kind's tag colour is IDEA_KIND_TAG
@@ -202,8 +202,8 @@ function renderClipsList(entries) {
   const actions = selecting
     ? `
         <div class="rpanel-drafts__group-actions">
-          <button type="button" class="ap-button stroked blue" data-rpanel-clips-draft>
-            <i class="ap-icon-archie-official"></i>
+          <button type="button" class="ap-button secondary blue" data-rpanel-clips-draft>
+            <i class="ap-icon-sparkles"></i>
             <span>Draft ${selectedCount > 1 ? "posts" : "post"}</span>
           </button>
           <button type="button" class="ap-icon-button" data-rpanel-clips-delete aria-label="Delete ${selectedCount} selected clip${selectedCount > 1 ? "s" : ""}" title="Delete selected clips">
