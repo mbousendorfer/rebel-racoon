@@ -27,9 +27,9 @@ function potentialFor(confidence) {
   return { label: "Low potential", color: "grey" };
 }
 
-import { iconFor } from "../file-kinds.js?v=2528";
-import { installMoreMenu } from "./more-menu.js?v=2528";
-import { IDEA_KIND_TAG } from "./idea-card-compact.js?v=2528";
+import { iconFor } from "../file-kinds.js?v=2529";
+import { installMoreMenu } from "./more-menu.js?v=2529";
+import { IDEA_KIND_TAG } from "./idea-card-compact.js?v=2529";
 
 // ── Overflow menu — one open at a time (shared behaviour) ──────────────
 // idea-card keeps a module-local listener (below) for the Sources toggle and
@@ -44,7 +44,7 @@ async function togglePinMenuItem(pinBtn) {
   setPinned(pinBtn, !wasPressed);
   closeAllIdeaMoreMenus();
 
-  const { showToast } = await import("./toast.js?v=2528");
+  const { showToast } = await import("./toast.js?v=2529");
   showToast(wasPressed ? "Idea unpinned" : "Idea pinned", {
     action: {
       label: "Undo",

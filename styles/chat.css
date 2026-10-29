@@ -637,6 +637,12 @@ span.chat-bubble-choice-chip {
   outline: none;
 }
 
+/* Keyboard focus also gets the app's 2px ring: the 1px border alone was the
+   thinnest focus in the app (≈3:1 on butter). */
+.drafts-card:focus-visible {
+  box-shadow: 0 0 0 2px var(--ref-color-electric-blue-100);
+}
+
 /* Active (pinned) — the same light-blue wash with a slightly firmer border. */
 .drafts-card.is-active {
   border-color: var(--ref-color-electric-blue-40);
@@ -1237,6 +1243,15 @@ span.chat-bubble-choice-chip {
   --e-turn-gap: var(--ref-spacing-xl);
   gap: var(--e-turn-gap);
   padding-inline: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xxxs));
+}
+
+/* The composer shares the turns' edges at every width: the same gutter, less
+   the composer's own padding (sm), and the 740px column widened to hold it.
+   Below ~1180px the card ran 48px past the turns on each side. */
+.session__assistant:has(.session__assistant-thread > .e-turn) .session__composer-inner {
+  --e-composer-gutter: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xxxs) - var(--ref-spacing-sm));
+  padding-inline: var(--e-composer-gutter);
+  max-width: calc(740px + 2 * var(--e-composer-gutter));
 }
 
 /* A status that unfolds points right when closed, down when open — the
