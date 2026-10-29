@@ -1118,6 +1118,14 @@
   border-radius: var(--app-radius-sm);
 }
 
+/* The pane renders the toggle in the sticky action bar, not in a section head:
+   same hidden checkbox, so the same ring on its label there. */
+.topic-article__section-check:focus-visible ~ .topic-article__actionbar .topic-article__posts-toggle {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+  border-radius: var(--app-radius-sm);
+}
+
 /* ── The trail — the DS "Post History" timeline ────────────────────────────
    No accordion and no sibling checkbox: the trail left the article, so what is
    left here is the ROW styling, shared by its two hosts — the modal the feed

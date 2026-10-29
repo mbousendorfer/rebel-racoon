@@ -32,17 +32,17 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=2486";
-import { conceptText } from "../concepts.js?v=2486";
-import { navigate, getPath } from "../router.js?v=2486";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2486";
-import { renderTopbar } from "../components/topbar.js?v=2486";
-import { showToast } from "../components/toast.js?v=2486";
-import { renderEmptyState } from "../components/empty-state.js?v=2486";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2486";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2486";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2486";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2486";
+import { html, raw, escapeAttr } from "../utils.js?v=2487";
+import { conceptText } from "../concepts.js?v=2487";
+import { navigate, getPath } from "../router.js?v=2487";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2487";
+import { renderTopbar } from "../components/topbar.js?v=2487";
+import { showToast } from "../components/toast.js?v=2487";
+import { renderEmptyState } from "../components/empty-state.js?v=2487";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2487";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2487";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2487";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2487";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -53,7 +53,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=2486";
+} from "../topics-store.js?v=2487";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -62,13 +62,13 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=2486";
-import { renderTopicCard } from "../components/topic-card.js?v=2486";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=2486";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2486";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=2486";
-import { useTopicInChat } from "../topic-flow.js?v=2486";
-import { canEdit } from "../playbook-access.js?v=2486";
+} from "../topics-catalog.js?v=2487";
+import { renderTopicCard } from "../components/topic-card.js?v=2487";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=2487";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2487";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=2487";
+import { useTopicInChat } from "../topic-flow.js?v=2487";
+import { canEdit } from "../playbook-access.js?v=2487";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -245,9 +245,24 @@ function paint(target, pb) {
   // The pane's own offset is kept only while the SAME article stays open —
   // opening another Topic has to start at the top of it.
   const sameArticle = view.openTopicId && view.openTopicId === view.paintedTopicId;
+  const prevTopicId = view.paintedTopicId;
   view.paintedTopicId = view.openTopicId;
 
+  // Focus survives the repaint too (WCAG 2.4.3): the innerHTML below replaces the
+  // node the reader was on, so note its first data-* hook and focus its twin after
+  // — the recipe of topics-settings.js. A pane that closed hands focus back to its
+  // card.
+  const focused = target.contains(document.activeElement) ? document.activeElement : null;
+  const focusHook = focused && [...focused.attributes].find((a) => a.name.startsWith("data-"));
+  const focusWasInPane = !!focused?.closest(".topics-view__pane");
+
   target.innerHTML = html`<section class="screen topics-view">${raw(renderPage(pb))}</section>`;
+
+  let refocus = focusHook && target.querySelector(`[${focusHook.name}="${CSS.escape(focusHook.value)}"]`);
+  if (!refocus && focusWasInPane && prevTopicId) {
+    refocus = target.querySelector(`[data-topic-read="${CSS.escape(prevTopicId)}"]`);
+  }
+  refocus?.focus({ preventScroll: true });
 
   const root = target.querySelector(".topics-view");
   if (root && prev.root) root.scrollTop = prev.root;
@@ -448,7 +463,7 @@ function renderToolbar(pb, feed) {
           type="button"
           class="ap-button stroked grey"
           data-topic-filters-toggle
-          aria-haspopup="true"
+          aria-haspopup="dialog"
           aria-expanded="${view.filtersOpen ? "true" : "false"}"
         >
           <i class="ap-icon-filter"></i><span>Filters</span>
@@ -487,7 +502,7 @@ function renderToolbar(pb, feed) {
 // reader sees elsewhere — the state's own pill for "Marked as", the source's own
 // provenance badge for "Sources".
 function renderFilters() {
-  return html`<div class="ap-filter-dropdown topics-view__filter-panel" role="menu" aria-label="Filter topics">
+  return html`<div class="ap-filter-dropdown topics-view__filter-panel" role="dialog" aria-label="Filter Topics">
     <div class="ap-filter-dropdown__content">
       ${raw(
         renderFilterLeaf(
