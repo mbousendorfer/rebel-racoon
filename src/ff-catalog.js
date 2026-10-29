@@ -210,8 +210,9 @@ export const FLAGS = Object.freeze([
     // OFF: the thread as of Monday 2026-10-05 — every conversation restyle
     // since then (Tuesday's card system included) is ON only; the Monday
     // values live in styles/chat-legacy.css (body:not(.conv-new)). Figma
-    // "Conversation styles" § E1–E4 is the reference for ON.
-    default: false,
+    // "Conversation styles" § E1–E4 is the reference for ON. ON by default
+    // since 2026-10-29.
+    default: true,
     hides:
       "When ON, every turn of the chat takes one shape, mirrored: Archie on the " +
       "left, you on the right, each with a 24px avatar disc on the turn's " +
