@@ -1244,11 +1244,12 @@ body.ui-idea-card .rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
   min-height: 24px;
 }
 
+/* The DS h3 (16/24 bold), not a subtitle size with a hand-set line-height. */
 .rpanel-ov__title {
   margin: 0;
-  font-size: var(--sys-text-style-subtitle-size, 16px);
-  line-height: 22px;
-  font-weight: var(--sys-text-style-body-bold-weight);
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
   color: var(--ref-color-grey-100);
 }
 
@@ -1442,9 +1443,10 @@ body.ui-idea-card .rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
   border-radius: var(--app-radius-sm);
   background: rgb(0 0 0 / 0.55);
   color: var(--ref-color-white);
-  font-size: 11px;
-  line-height: 16px;
-  font-weight: var(--sys-text-style-body-bold-weight);
+  /* caption bold: 11px was off the DS's text styles. */
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1503,8 +1505,9 @@ body.ui-idea-card .rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  font-size: 13px;
-  line-height: 19px;
+  /* DS body (14/20): 13 / 19 sat between two text styles. */
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
 }
 
 .rpanel-ov__draft-media {

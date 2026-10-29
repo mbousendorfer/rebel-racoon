@@ -1245,12 +1245,14 @@ span.chat-bubble-choice-chip {
   padding-inline: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xxxs));
 }
 
-/* The composer shares the turns' edges at every width: the same gutter, less
-   the composer's own padding (sm), and the 740px column widened to hold it.
-   Below ~1180px the card ran 48px past the turns on each side. */
+/* The composer shares the turns' edges: the same gutter, less the composer's
+   own padding (sm), and the 740px column widened to hold it. Below ~1180px the
+   card ran 48px past the turns on each side. The gutter gives way first when
+   the column is too narrow for the toolbar (a panel open): a wrapped toolbar
+   is worse than two edges. */
 .session__assistant:has(.session__assistant-thread > .e-turn) .session__composer-inner {
   --e-composer-gutter: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xxxs) - var(--ref-spacing-sm));
-  padding-inline: var(--e-composer-gutter);
+  padding-inline: min(var(--e-composer-gutter), max(0px, calc((100% - 600px) / 2)));
   max-width: calc(740px + 2 * var(--e-composer-gutter));
 }
 

@@ -19,18 +19,18 @@
 // sequence: this is tooling, and it is the only reason those overlay modules
 // are imported twice in the app's graph.
 
-import * as addSourceModal from "./components/add-source-modal.js?v=2532";
-import * as bugReportModal from "./components/bug-report-modal.js?v=2532";
-import * as feedbackModal from "./components/feedback-modal.js?v=2532";
-import * as chatPickerModal from "./components/chat-picker-modal.js?v=2532";
-import * as searchModal from "./components/search-modal.js?v=2532";
-import * as connectorsModal from "./components/connectors-modal.js?v=2532";
-import * as connectAccountModal from "./components/connect-account-modal.js?v=2532";
-import * as analyzeProfilesModal from "./components/analyze-profiles-modal.js?v=2532";
-import * as fillDocumentModal from "./components/fill-document-modal.js?v=2532";
-import * as saveFolderModal from "./components/save-folder-modal.js?v=2532";
-import * as shortcutLegend from "./components/shortcut-legend.js?v=2532";
-import { openDrafts, openIdeas, openSources } from "./components/right-panel.js?v=2532";
+import * as addSourceModal from "./components/add-source-modal.js?v=2534";
+import * as bugReportModal from "./components/bug-report-modal.js?v=2534";
+import * as feedbackModal from "./components/feedback-modal.js?v=2534";
+import * as chatPickerModal from "./components/chat-picker-modal.js?v=2534";
+import * as searchModal from "./components/search-modal.js?v=2534";
+import * as connectorsModal from "./components/connectors-modal.js?v=2534";
+import * as connectAccountModal from "./components/connect-account-modal.js?v=2534";
+import * as analyzeProfilesModal from "./components/analyze-profiles-modal.js?v=2534";
+import * as fillDocumentModal from "./components/fill-document-modal.js?v=2534";
+import * as saveFolderModal from "./components/save-folder-modal.js?v=2534";
+import * as shortcutLegend from "./components/shortcut-legend.js?v=2534";
+import { openDrafts, openIdeas, openSources } from "./components/right-panel.js?v=2534";
 
 // Both are deferred: the screen has to mount before an overlay can sit on it.
 // The panel waits longer than the modal because a session screen seeds its
