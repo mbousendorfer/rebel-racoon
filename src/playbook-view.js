@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2383";
-import { conceptHint } from "./concepts.js?v=2383";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2384";
+import { conceptHint } from "./concepts.js?v=2384";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2383";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2383";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2383";
-import { isFlagOn } from "./feature-flags.js?v=2383";
-import { clipLookOf } from "./videos-store.js?v=2383";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2383";
-import { parseHashParams } from "./url-state.js?v=2383";
+} from "./playbook-brand-kit.js?v=2384";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2384";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2384";
+import { isFlagOn } from "./feature-flags.js?v=2384";
+import { clipLookOf } from "./videos-store.js?v=2384";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2384";
+import { parseHashParams } from "./url-state.js?v=2384";
 import {
   isListPart,
   voiceParts,
@@ -53,14 +53,14 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2383";
-import { showToast } from "./components/toast.js?v=2383";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2383";
-import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2383";
-import { updateContext } from "./contexts-store.js?v=2383";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2383";
-import { consumeHandoff } from "./handoff.js?v=2383";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2383";
+} from "./voice-parts.js?v=2384";
+import { showToast } from "./components/toast.js?v=2384";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2384";
+import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2384";
+import { updateContext } from "./contexts-store.js?v=2384";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2384";
+import { consumeHandoff } from "./handoff.js?v=2384";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2384";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -69,7 +69,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2383";
+} from "./social-profiles.js?v=2384";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2799,8 +2799,17 @@ function voiceWaysCard(net = null, { title = "Learn it from a source", hint = ""
 function networkPickerCards(data, nets, first) {
   if (!nets.length || !networkVoiceOn()) return [];
   const picked = data.voiceRulesFor || [];
-  const glyph = (net) =>
-    `<span class="welcome-flow__glyph"><i class="${networkIcon(net)}" aria-hidden="true"></i></span>`;
+  // Each network as its connected account — its avatar with the network's badge,
+  // its handle — a reminder of what I write for (2026-10-29, asked).
+  const accountOn = (net) => getConnectedProfiles().find((p) => normalizeNetwork(p.platform) === net);
+  const glyph = (net) => {
+    const a = accountOn(net);
+    if (!a) return `<span class="welcome-flow__glyph"><i class="${networkIcon(net)}" aria-hidden="true"></i></span>`;
+    const inner = a.photo
+      ? `<img src="${esc(a.photo)}" alt="" />`
+      : `<span class="ap-avatar-initials">${esc(a.initials || "")}</span>`;
+    return `<span class="ap-avatar size-32" aria-hidden="true">${inner}<span class="ap-avatar-network"><i class="${networkIcon(net)}"></i></span></span>`;
+  };
   const row = (net, on, desc, control) => `
     <label class="recap__pick${on ? " is-picked" : ""}">
       ${glyph(net)}
@@ -2823,7 +2832,7 @@ function networkPickerCards(data, nets, first) {
         row(
           net,
           picked.includes(net),
-          stateOf(net),
+          [accountOn(net)?.handle || accountOn(net)?.name, stateOf(net)].filter(Boolean).join(" · "),
           `<span class="ap-checkbox-container" data-pb2-voice-rules="${esc(net)}"><input type="checkbox" ${
             picked.includes(net) ? "checked" : ""
           } aria-label="A voice of its own for ${esc(networkLabel(net))}" /><i></i></span>`,
@@ -2832,7 +2841,7 @@ function networkPickerCards(data, nets, first) {
       .join("")}</div>`,
     {
       wide: true,
-      hint: "Every network uses your default voice. Tick the ones that need a voice of their own: each gets an empty voice to fill.",
+      hint: "Your connected accounts, below. Each uses your default voice: tick the ones that need a voice of their own, and each gets an empty voice to fill.",
       index: first,
       className: "pb2-voice-networks",
     },
