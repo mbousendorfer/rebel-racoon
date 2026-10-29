@@ -17,10 +17,10 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=2412";
-import { parseHashParams } from "../url-state.js?v=2412";
-import { escapeHtml as esc } from "../utils.js?v=2412";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2412";
+import { navigate, getPath } from "../router.js?v=2415";
+import { parseHashParams } from "../url-state.js?v=2415";
+import { escapeHtml as esc } from "../utils.js?v=2415";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2415";
 import {
   getContextById,
   getContexts,
@@ -28,15 +28,15 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=2412";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2412";
-import { mount, snapshotEditable } from "../playbook-view.js?v=2412";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2412";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2412";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2412";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2412";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2412";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=2412";
+} from "../contexts-store.js?v=2415";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2415";
+import { mount, snapshotEditable } from "../playbook-view.js?v=2415";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2415";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2415";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2415";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2415";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2415";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=2415";
 import {
   canView,
   canEdit,
@@ -48,12 +48,13 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=2412";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2412";
-import { showToast } from "../components/toast.js?v=2412";
-import { learnNetworkVoice } from "../voice-parts.js?v=2412";
-import { openVoiceProposal, openVoiceInterview } from "../components/voice-proposal-modal.js?v=2412";
-import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2412";
+} from "../playbook-access.js?v=2415";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2415";
+import { showToast } from "../components/toast.js?v=2415";
+import { learnNetworkVoice } from "../voice-parts.js?v=2415";
+import { openVoiceProposal, openVoiceInterview } from "../components/voice-proposal-modal.js?v=2415";
+import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2415";
+import { openNetworkVoiceChat } from "../network-voice-flow.js?v=2415";
 
 const AUTOFILL_MS = 1500;
 
@@ -227,8 +228,8 @@ export function renderPlaybook(params, target) {
       // the callback and playbook-view renders no affordance.
       onEditName: canEdit(getContextById(id)) ? onEditName : undefined,
       onAnalyzeVoice: canEdit(getContextById(id)) ? onAnalyzeVoice : undefined,
-      // « Add a voice for X » (flag voicePerNetwork): the run's voice review, on this Playbook.
-      onAddNetworkVoice: canEdit(getContextById(id)) ? (net) => navigate(`/playbook/${id}/voice/${net}`) : undefined,
+      // « Add a voice for X » (flag voicePerNetwork): a new chat on this Playbook, on the Voice step.
+      onAddNetworkVoice: canEdit(getContextById(id)) ? (net) => openNetworkVoiceChat(id, net) : undefined,
       onFooter,
     };
   }

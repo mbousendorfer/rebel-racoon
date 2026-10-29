@@ -33,7 +33,7 @@
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2412";
+import * as inlineQuestion from "./inline-question.js?v=2415";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -43,14 +43,14 @@ import {
   postVoiceTurn,
   resolveTurn,
   getThread,
-} from "./assistant.js?v=2412";
-import { getContextById, updateContext } from "./contexts-store.js?v=2412";
-import { getSessionById } from "./sessions-store.js?v=2412";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2412";
-import { setHandoff } from "./handoff.js?v=2412";
-import { navigate } from "./router.js?v=2412";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2412";
-import { getPosts } from "./posts-store.js?v=2412";
+} from "./assistant.js?v=2415";
+import { getContextById, updateContext } from "./contexts-store.js?v=2415";
+import { getSessionById } from "./sessions-store.js?v=2415";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2415";
+import { setHandoff } from "./handoff.js?v=2415";
+import { navigate } from "./router.js?v=2415";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2415";
+import { getPosts } from "./posts-store.js?v=2415";
 import {
   networkVoiceOn,
   networkVoice,
@@ -61,7 +61,7 @@ import {
   playbookNetworks,
   voiceParts,
   adaptNetworkVoice,
-} from "./voice-parts.js?v=2412";
+} from "./voice-parts.js?v=2415";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;
@@ -239,6 +239,29 @@ export function giveNetworkVoice(sessionId, ctxId, net) {
   );
 }
 
+// « Add a voice for X » on a Playbook's Voice tab: a new chat on that Playbook
+// opens on the same step. Both ends live here.
+export const NETWORK_VOICE_CHAT_HANDOFF = "pendingNetworkVoiceChat";
+
+export function openNetworkVoiceChat(contextId, net) {
+  setHandoff(NETWORK_VOICE_CHAT_HANDOFF, { contextId, net });
+  const params = new URLSearchParams({ contextId, title: `Voice for ${networkLabel(net)}` });
+  navigate(`/session/new-${Date.now().toString(36)}?${params.toString()}`);
+}
+
+/** session.js, on consuming the handoff. */
+export function startNetworkVoiceChat(sessionId, { contextId, net }) {
+  const label = networkLabel(net);
+  askVoice(
+    sessionId,
+    contextId,
+    [net],
+    () =>
+      postAssistantMessage(sessionId, `${label} has its own voice now. Want me to draft a post for ${label} with it?`),
+    { giving: true, line: `Until it has one, I write your ${label} posts in your default voice.` },
+  );
+}
+
 function askInterview(sessionId, net, onDone, answers = {}, k = 0) {
   const step = INTERVIEW[k];
   if (!step) return onDone(answers);
@@ -310,11 +333,18 @@ export function answerVoiceAsk(sessionId, turnId, choice) {
 // missing, what rules for the network cover, the ways to add them as tiles,
 // the best one recommended — then « Use my default voice » and « Not now ».
 // `giving`: from « Add rules for X » — nothing waits, so no default voice.
-function askVoice(sessionId, ctxId, nets, onReady, { giving = false } = {}) {
+// `line`: the block's sentence, when the default one doesn't fit (no drafts).
+function askVoice(sessionId, ctxId, nets, onReady, { giving = false, line = null } = {}) {
   const [net, ...rest] = nets;
   const label = networkLabel(net);
   const { items } = voiceChoices(net, { needed: !giving, chat: true });
-  const turnId = postVoiceTurn(sessionId, "voice-ask", { contextId: ctxId, network: net, choices: items, giving });
+  const turnId = postVoiceTurn(sessionId, "voice-ask", {
+    contextId: ctxId,
+    network: net,
+    choices: items,
+    giving,
+    line,
+  });
   const go = () => (rest.length ? askVoice(sessionId, ctxId, rest, onReady) : onReady());
   // The block keeps its tiles until a choice goes through (a dismissed
   // document dialog leaves it to pick again).
