@@ -19,14 +19,14 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2407";
-import { isPortraitFormat } from "../clip-formats.js?v=2407";
-import { presetById } from "../clip-captions.js?v=2407";
-import { renderFeedbackControl } from "./feedback-control.js?v=2407";
-import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2407";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2407";
-import { REVEAL_MS } from "../archie-pixels.js?v=2407";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2407";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2408";
+import { isPortraitFormat } from "../clip-formats.js?v=2408";
+import { presetById } from "../clip-captions.js?v=2408";
+import { renderFeedbackControl } from "./feedback-control.js?v=2408";
+import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2408";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2408";
+import { REVEAL_MS } from "../archie-pixels.js?v=2408";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2408";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -176,8 +176,8 @@ function renderChangesStatus(post, opts) {
       <i class="ap-icon-${undone ? "rotate-left" : "rounded-check_fill"}" aria-hidden="true"></i>
       <div class="flow"><span>${undone ? "Your post is back to the previous version." : "Your post has been updated."}</span></div>
       <span class="posts__card-changes-actions">
-        <button type="button" class="ap-link small standalone" data-post-changes-undo="${escapeAttr(post.id)}">${undone ? "Redo" : "Undo"}</button>
-        <button type="button" class="ap-link small standalone" data-post-changes-accept="${escapeAttr(post.id)}">${undone ? "Done" : "Accept"}</button>
+        <button type="button" class="ap-link small standalone" data-post-changes-undo="${escapeAttr(post.id)}"><i class="ap-icon-rotate-${undone ? "right" : "left"}" aria-hidden="true"></i>${undone ? "Redo" : "Undo"}</button>
+        <button type="button" class="ap-link small standalone" data-post-changes-accept="${escapeAttr(post.id)}"><i class="ap-icon-check" aria-hidden="true"></i>${undone ? "Done" : "Accept"}</button>
       </span>
     </div>
   </div>`;
