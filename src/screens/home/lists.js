@@ -11,18 +11,18 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=2494";
-import { isFlagOn } from "../../feature-flags.js?v=2494";
-import { escapeAttr, escapeText } from "../../utils.js?v=2494";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2494";
-import { getSessions } from "../../sessions-store.js?v=2494";
-import { renderEmptyState } from "../../components/empty-state.js?v=2494";
-import { getSources, getIdeas } from "../../library.js?v=2494";
-import { getPosts } from "../../posts-store.js?v=2494";
-import { getContextById } from "../../contexts-store.js?v=2494";
-import { voicesToFinish } from "../../voice-parts.js?v=2494";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2494";
-import { pageState } from "../home.js?v=2494";
+} from "../../playbook-access.js?v=2496";
+import { isFlagOn } from "../../feature-flags.js?v=2496";
+import { escapeAttr, escapeText } from "../../utils.js?v=2496";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2496";
+import { getSessions } from "../../sessions-store.js?v=2496";
+import { renderEmptyState } from "../../components/empty-state.js?v=2496";
+import { getSources, getIdeas } from "../../library.js?v=2496";
+import { getPosts } from "../../posts-store.js?v=2496";
+import { getContextById } from "../../contexts-store.js?v=2496";
+import { voicesToFinish } from "../../voice-parts.js?v=2496";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2496";
+import { pageState } from "../home.js?v=2496";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -136,7 +136,7 @@ function playbookBrief(ctx) {
 
 function defaultBadge(ctx) {
   return ctx.isDefault
-    ? `<span class="contexts-card__badge" title="Default Playbook: new chats start with it"><i class="ap-icon-star_fill"></i></span>`
+    ? `<span class="contexts-card__badge" role="img" aria-label="Default Playbook" title="Default Playbook: new chats start with it"><i class="ap-icon-star_fill" aria-hidden="true"></i></span>`
     : "";
 }
 
@@ -451,10 +451,7 @@ export function renderContextCard(ctx) {
   // default star, the Current mark, the title of the click — comes from the
   // shared helpers above, the same rule topic-card.js follows for its shapes.
   const voiceHtml = voiceHeadline
-    ? `<div class="contexts-card__voice">
-        <i class="ap-icon-archie-official"></i>
-        <span>${escapeText(voiceHeadline)}</span>
-      </div>`
+    ? `<span class="ap-tag grey contexts-card__voice"><span>${escapeText(voiceHeadline)}</span></span>`
     : "";
   const briefHtml = summary
     ? `<p class="contexts-card__brief">${escapeText(summary)}</p>`

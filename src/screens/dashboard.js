@@ -1,7 +1,7 @@
-import { getSessions } from "../sessions-store.js?v=2494";
-import { scopeSessions } from "../active-playbook.js?v=2494";
-import { getContexts } from "../contexts-store.js?v=2494";
-import { isNewUser } from "../user-mode.js?v=2494";
+import { getSessions } from "../sessions-store.js?v=2496";
+import { scopeSessions } from "../active-playbook.js?v=2496";
+import { getContexts } from "../contexts-store.js?v=2496";
+import { isNewUser } from "../user-mode.js?v=2496";
 
 // Dashboard route — pure redirect surface.
 //

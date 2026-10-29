@@ -145,17 +145,16 @@
   font-family: inherit;
   transition:
     border-color var(--ref-animation-short) var(--app-ease-out),
-    background-color var(--ref-animation-short) var(--app-ease-out),
-    transform var(--ref-animation-short) var(--app-ease-out);
+    background-color var(--ref-animation-short) var(--app-ease-out);
 }
 
+/* Card hover = blue border, no lift, no accent edge (house rules). */
 .contexts-card--ghost:hover,
 .contexts-card--ghost:focus-visible {
   outline: none;
-  border-color: var(--app-archie-mark);
+  border-color: var(--ref-color-electric-blue-100);
   background: var(--app-butter);
   color: var(--ref-color-grey-100);
-  transform: translateY(-1px);
 }
 
 /* Rest: butter tile with the Archie logo in brand orange (the logo mask paints
@@ -281,7 +280,6 @@
   border-radius: var(--ref-border-radius-sm);
   background: var(--ref-color-white);
   border: 1px solid var(--app-border);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--ref-animation-short) var(--app-ease-out);
@@ -293,6 +291,9 @@
   pointer-events: auto;
 }
 
+/* ponytail: 28px is off the DS (36px, no size modifier) — kept because 36px
+   buttons push the head's reserve to 124px and wrap most names onto two lines.
+   DS gap: a compact icon button; drop this once the DS ships one. */
 .contexts-card__actions .ap-icon-button {
   width: 28px;
   height: 28px;
@@ -348,38 +349,26 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--ref-color-yellow-100);
+  /* grey-80, not yellow-100 (1.24:1 on white): a meaningful glyph needs 3:1. */
+  color: var(--ref-color-grey-80);
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   font-weight: var(--sys-text-style-body-weight);
 }
 
-/* Voice headline — small italic-ish pill showing the brand's tones
-   joined. Sparkles icon ties it to the AI-extracted voice profile. */
+/* Voice headline — the brand's tones joined, a DS grey tag (static data:
+   no blue glyph). Only its place in the column and the truncation here. */
 .contexts-card__voice {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
   align-self: flex-start;
   max-width: 100%;
-  padding: var(--ref-spacing-xxxs) 10px;
-  border-radius: 999px;
-  background: var(--ref-color-grey-05);
-  color: var(--ref-color-grey-100);
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
 }
 
+/* The DS caps a tag's text at 180px; the tile column is the cap here. */
 .contexts-card__voice > span {
+  max-width: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.contexts-card__voice > i {
-  color: var(--ref-color-electric-blue-100);
-  font-size: var(--sys-icon-css-xs);
 }
 
 .contexts-card__brief {
@@ -401,7 +390,8 @@
 
 .contexts-card__foot {
   display: flex;
-  align-items: center;
+  /* Top, so the palette dots pin to the first counter line when they wrap. */
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--ref-spacing-xs);
   margin-top: auto;
