@@ -356,11 +356,15 @@ button.ap-link {
     transform var(--ref-animation-short) var(--app-ease-out),
     box-shadow var(--ref-animation-short) var(--app-ease-out);
 }
-.ap-dropzone:hover,
-.ap-dropzone:focus-visible {
-  outline: none;
+.ap-dropzone:hover {
   border-color: var(--ref-color-electric-blue-100);
   background: var(--ref-color-electric-blue-05);
+}
+/* Focus is a ring, not the hover's drag-over look: a dialog that opens on its
+   dropzone (Fill from a document) otherwise reads as « a file is over me ». */
+.ap-dropzone:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
 }
 .ap-dropzone.is-dragover {
   border-color: var(--ref-color-electric-blue-100);

@@ -414,7 +414,8 @@ body.has-modal {
 }
 
 .search-modal__input::placeholder {
-  color: var(--ref-color-grey-40);
+  /* The DS placeholder ink (grey-40 was 2.06:1). */
+  color: var(--comp-input-text-placeholder-color);
 }
 
 .search-modal__kbd {
@@ -465,13 +466,10 @@ body.has-modal {
   color: var(--ref-color-grey-100);
 }
 
+/* The row keeps its ink on the blue-05 wash: blue-100 text there was 3.15:1,
+   and the ↵ keycap already says what Enter does. */
 .search-modal__result.is-highlighted {
   background: var(--ref-color-electric-blue-05);
-  color: var(--ref-color-electric-blue-100);
-}
-
-.search-modal__result.is-highlighted .search-modal__result-title {
-  color: var(--ref-color-electric-blue-100);
 }
 
 .search-modal__result-title {
