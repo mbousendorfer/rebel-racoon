@@ -64,7 +64,8 @@ for (const shot of shots) {
       reducedMotion: "reduce",
     });
     const page = await context.newPage();
-    await page.clock.setFixedTime(new Date(config.fixedTime));
+    // liveClock: flows that wait on elapsed time (welcome-alt /ready) never finish under a frozen Date.
+    if (!shot.liveClock) await page.clock.setFixedTime(new Date(config.fixedTime));
     await page.addInitScript(SEED_RANDOM);
     await page.addInitScript(
       ({ mode, flags }) => {
@@ -86,6 +87,8 @@ for (const shot of shots) {
         if (action.hover) await page.hover(action.hover);
         if (action.focus) await page.focus(action.focus);
         if (action.press) await page.keyboard.press(action.press);
+        if (action.waitFor) await page.waitForSelector(action.waitFor, { timeout: 15000 });
+        if (action.sleep) await page.waitForTimeout(action.sleep);
         await page.waitForLoadState("networkidle");
       }
       await page.waitForSelector(shot.wait || "body", { timeout: 10000 });
