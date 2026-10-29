@@ -173,10 +173,10 @@
   border-top: 0;
   border-radius: 0;
 }
-.posts__card-wrap:has(> .posts__card-changes) {
-  gap: 0;
-}
+/* Glued to its draft by pulling the card over the wrap's gap: an infobox
+   before the strip (an error, a warning) keeps its space. */
 .posts__card-wrap > .posts__card-changes + .ap-card {
+  margin-top: calc(-1 * var(--ref-spacing-xxs));
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }

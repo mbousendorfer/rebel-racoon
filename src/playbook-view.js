@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2361";
-import { conceptHint } from "./concepts.js?v=2361";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2364";
+import { conceptHint } from "./concepts.js?v=2364";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2361";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2361";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2361";
-import { isFlagOn } from "./feature-flags.js?v=2361";
-import { clipLookOf } from "./videos-store.js?v=2361";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2361";
-import { parseHashParams } from "./url-state.js?v=2361";
+} from "./playbook-brand-kit.js?v=2364";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2364";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2364";
+import { isFlagOn } from "./feature-flags.js?v=2364";
+import { clipLookOf } from "./videos-store.js?v=2364";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2364";
+import { parseHashParams } from "./url-state.js?v=2364";
 import {
   isListPart,
   voiceParts,
@@ -52,15 +52,15 @@ import {
   markAdapted,
   withNetworkVoices,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2361";
-import { showToast } from "./components/toast.js?v=2361";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2361";
-import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2361";
-import { updateContext } from "./contexts-store.js?v=2361";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2361";
-import { consumeHandoff } from "./handoff.js?v=2361";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2361";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2361";
+} from "./voice-parts.js?v=2364";
+import { showToast } from "./components/toast.js?v=2364";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2364";
+import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2364";
+import { updateContext } from "./contexts-store.js?v=2364";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2364";
+import { consumeHandoff } from "./handoff.js?v=2364";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2364";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2364";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2638,6 +2638,7 @@ function voiceSplitBlock(data, index) {
       wide: true,
       hint: "Each network can follow your default voice as it is, or have rules of its own.",
       index,
+      className: "pb2-voice-split-block",
     },
   );
 }
@@ -2652,6 +2653,7 @@ function networkVoiceCards(data) {
   const nets = isLibrary() ? [] : voiceNets(data);
   if (!nets.length) return [];
   const first = voiceParts().length;
+  if (cfg.networkPicker) return networkPickerCards(data, nets, first);
   const split = voiceSplitBlock(data, first);
   if (!voiceSplitIsEach(data)) return [split];
   return [
@@ -2683,6 +2685,118 @@ function networkVoiceCards(data) {
       });
     }),
   ];
+}
+
+// The run's Voice review (cfg.networkPicker, flag connectFirst — 2026-10-29,
+// asked: « que l'on puisse ou non ajouter des voices pour des networks
+// spécifiques », and the main network asked here rather than first thing):
+// the main network, then which networks get rules of their own — none by
+// default, every network on the default voice — then a card per network
+// picked. The ways to add rules live on the review's left, not in the cards.
+// `voiceRulesFor` is the draft's (never saved): a network out of it keeps the
+// default voice, chosen; in it with no rules yet, its first draft asks.
+function networkPickerCards(data, nets, first) {
+  const picked = data.voiceRulesFor || [];
+  const glyph = (net) =>
+    `<span class="welcome-flow__glyph"><i class="${networkIcon(net)}" aria-hidden="true"></i></span>`;
+  const row = (net, on, desc, control) => `
+    <label class="recap__pick${on ? " is-picked" : ""}">
+      ${glyph(net)}
+      <span class="recap__pick-text">
+        <span class="recap__pick-name">${esc(networkLabel(net))}</span>
+        ${desc ? `<span class="recap__pick-desc">${esc(desc)}</span>` : ""}
+      </span>
+      ${control}
+    </label>`;
+  const main = nets.length > 1 ? nets[0] : null;
+  const mainBlock = main
+    ? pb2Block(
+        "Your main network",
+        `<div class="recap__pick-list" role="radiogroup" aria-label="Your main network">${nets
+          .map((net) =>
+            row(
+              net,
+              net === main,
+              net === main ? "Its rules come first" : "",
+              `<span class="ap-radio-container" data-pb2-main-net="${esc(net)}"><input type="radio" name="pb2-main-net" ${
+                net === main ? "checked" : ""
+              } aria-label="${esc(networkLabel(net))}, my main network" /></span>`,
+            ),
+          )
+          .join("")}</div>`,
+        {
+          wide: true,
+          hint: "The network that matters most. I set up its rules first.",
+          index: first,
+          className: "pb2-voice-networks",
+        },
+      )
+    : "";
+  const stateOf = (net) => {
+    if (!picked.includes(net)) return "Your default voice";
+    return networkVoice(data, net).state === "own" ? "Its own rules" : "No rules yet";
+  };
+  const pickBlock = pb2Block(
+    "Rules per network",
+    `<div class="recap__pick-list">${nets
+      .map((net) =>
+        row(
+          net,
+          picked.includes(net),
+          stateOf(net),
+          `<span class="ap-checkbox-container" data-pb2-voice-rules="${esc(net)}"><input type="checkbox" ${
+            picked.includes(net) ? "checked" : ""
+          } aria-label="Rules of its own for ${esc(networkLabel(net))}" /><i></i></span>`,
+        ),
+      )
+      .join("")}</div>`,
+    {
+      wide: true,
+      hint: "Every network follows your default voice. Pick the ones that need rules of their own.",
+      index: first + 1,
+      className: "pb2-voice-networks",
+    },
+  );
+  const cards = nets
+    .filter((net) => picked.includes(net))
+    .map((net, i) => {
+      const label = networkLabel(net);
+      const { state, voice } = networkVoice(data, net);
+      const body =
+        state === "own"
+          ? `${learnedVoiceHtml(data, net, voice, { pending: false })}
+           <div class="pb2-voice-net__foot"><button type="button" class="ap-button ghost grey" data-pb2-voice-reset="${esc(net)}">Use my default voice instead</button></div>`
+          : voiceAskHtml(data, net, {
+              id: net,
+              line: `Until you add rules, your ${label} posts follow your default voice. Left as is, I'll ask before your first ${label} post.`,
+              later: null,
+            });
+      return pb2Block(`Rules for ${label}`, body, {
+        wide: true,
+        hint: `What your ${label} posts do on top of your default voice.`,
+        index: first + 2 + i,
+        icon: networkIcon(net),
+        className: `pb2-voice-net pb2-voice-net--${net}`,
+      });
+    });
+  return [mainBlock, pickBlock, ...cards].filter(Boolean);
+}
+
+// Picking: the main network leads `connectedSocials` (voice-parts.js
+// mainNetwork); a network out of `voiceRulesFor` keeps the default voice,
+// chosen (its rules, if any, go), one in it waits for rules.
+function setMainNetwork(net) {
+  const d = cfg.getData();
+  d.connectedSocials = [net, ...(d.connectedSocials || []).filter((n) => n !== net)];
+  repaint();
+}
+function setNetworkRules(net, on) {
+  const d = cfg.getData();
+  const picked = (d.voiceRulesFor || []).filter((n) => n !== net);
+  d.voiceRulesFor = on ? [...picked, net] : picked;
+  const rest = Object.fromEntries(Object.entries(d.voiceByNetwork || {}).filter(([n]) => n !== net));
+  d.voiceByNetwork = on ? rest : { ...rest, [net]: brandVoiceAsIs(d) };
+  repaint();
 }
 
 // The same voice everywhere: every network keeps the default voice, chosen.
@@ -3421,7 +3535,13 @@ function onClick(event) {
   // the saved Playbook's confirm would open twice.
   const voiceSplit = event.target.closest("[data-pb2-voice-split]");
   if (voiceSplit) return event.target.matches("input") && setVoiceSplit(voiceSplit.dataset.pb2VoiceSplit);
+  const mainNet = event.target.closest("[data-pb2-main-net]");
+  if (mainNet) return event.target.matches("input") && setMainNetwork(mainNet.dataset.pb2MainNet);
+  const rulesFor = event.target.closest("[data-pb2-voice-rules]");
+  if (rulesFor)
+    return event.target.matches("input") && setNetworkRules(rulesFor.dataset.pb2VoiceRules, event.target.checked);
   const resetVoice = event.target.closest("[data-pb2-voice-reset]");
+  if (resetVoice && cfg.networkPicker) return setNetworkRules(resetVoice.dataset.pb2VoiceReset, false);
   if (resetVoice)
     return isLibrary()
       ? resetNetworkVoice(resetVoice.dataset.pb2VoiceReset)

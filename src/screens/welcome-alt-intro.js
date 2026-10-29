@@ -13,19 +13,19 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2361";
-import { startDemo } from "../demo-flow.js?v=2361";
-import { isFlagOn } from "../feature-flags.js?v=2361";
-import { html, raw, escapeHtml } from "../utils.js?v=2361";
+import "../archie-pixels.js?v=2364";
+import { startDemo } from "../demo-flow.js?v=2364";
+import { isFlagOn } from "../feature-flags.js?v=2364";
+import { html, raw, escapeHtml } from "../utils.js?v=2364";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORKS,
   getConnectedProfiles,
   getConnectableNetworks,
-} from "../social-profiles.js?v=2361";
-import { navigate } from "../router.js?v=2361";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2361";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2361";
+} from "../social-profiles.js?v=2364";
+import { navigate } from "../router.js?v=2364";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2364";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2364";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -95,7 +95,7 @@ const ROWS = [
   { step: "url", label: "Goal", value: chips(["Brand awareness", "Visit the shop"]) },
   { step: "language", label: "Writes in", value: `<span class="welcome-intro__plain">English</span>` },
   {
-    step: "documents",
+    step: "url",
     label: "Colors & type",
     // An example brand palette.
     value: ["--app-convo-navy", "--ref-color-orange-100", "--ref-color-yellow-40", "--app-surface-subtle"]

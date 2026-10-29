@@ -10,41 +10,33 @@
 //   /welcome-alt/interview  no website: one question at a time
 //   /welcome-alt/language   flag multilingualPlaybook
 //   /welcome-alt/documents  optional
-//   /welcome-alt/voice      the default voice, then rules for each network
-//                           (flag voicePerNetwork), the main one first
 //
 // Friction, removed on purpose: the website is the field, not the 4th option;
 // the analysis starts on submit and runs while the next steps are answered;
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2361";
-import { navigate } from "../router.js?v=2361";
+import { html, raw, escapeHtml } from "../utils.js?v=2364";
+import { navigate } from "../router.js?v=2364";
 import {
   getDraft,
   patchDraft,
-  isAnalysisReady,
   readAltWebsite,
   readAltFiles,
   writeAltManually,
   analyzeAltInterview,
-} from "../context-builder.js?v=2361";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2361";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2361";
-import { connectors as connectorMocks } from "../mocks.js?v=2361";
-import { NETWORKS, networkLabel } from "../social-profiles.js?v=2361";
-import { brandVoiceAsIs, mainNetwork, networkVoice, networkVoiceOn, playbookNetworks } from "../voice-parts.js?v=2361";
-import { voiceChoices } from "../network-voice-flow.js?v=2361";
-import { learnedVoiceHtml, voiceAskHtml } from "../components/voice-intro-modal.js?v=2361";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2361";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceTraits } from "./welcome-alt-shell.js?v=2361";
+} from "../context-builder.js?v=2364";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2364";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2364";
+import { connectors as connectorMocks } from "../mocks.js?v=2364";
+import { NETWORKS } from "../social-profiles.js?v=2364";
+import { playbookNetworks } from "../voice-parts.js?v=2364";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=2364";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
-// `mounted(shell, sid)`: once painted; may return its own cleanup.
-function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown, mounted }) {
+function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
   const sid = ensureFlowDraft();
   const shell = mountShell(target, { step, sid, left: () => left(sid) });
-  const off = mounted?.(shell, sid);
   const handlers = {
     click: (e) => {
       if (e.target.closest("[data-flow-back]")) return goBack(step);
@@ -61,7 +53,6 @@ function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKe
   for (const [type, fn] of Object.entries(handlers)) target.addEventListener(type, fn);
   target.querySelector("[data-flow-autofocus]")?.focus({ preventScroll: true });
   return () => {
-    off?.();
     shell.cleanup();
     for (const [type, fn] of Object.entries(handlers)) target.removeEventListener(type, fn);
   };
@@ -85,9 +76,9 @@ const continueButton = (label = "Continue", { disabled = false } = {}) =>
   `<button type="submit" class="ap-button primary blue" data-flow-next ${disabled ? "disabled" : ""}><span>${escapeHtml(label)}</span></button>`;
 
 // ── /welcome-alt/networks ────────────────────────────────────────────────
-// Where the brand posts, and the network that matters most: first in
-// `connectedSocials` (voice-parts.js mainNetwork). Nothing is connected here,
-// the first draft asks for an account (connect-profiles-flow.js).
+// Where the brand posts, in `connectedSocials`, in the order picked (the main
+// network is chosen on the Voice review since 2026-10-29). Nothing is connected
+// here, the first draft asks for an account (connect-profiles-flow.js).
 
 const netGlyph = (id) =>
   `<span class="welcome-flow__glyph"><i class="${NETWORKS[id].icon}" aria-hidden="true"></i></span>`;
@@ -116,32 +107,18 @@ export function renderWelcomeAltNetworks(_params, target) {
               }),
             )}
           </ul>
-          ${nets.length > 1
-            ? raw(html`
-                <p class="welcome-flow__or" id="welcomeMainNet">Which one matters most? I'll set up its voice first.</p>
-                <ul class="welcome-flow__options is-grid" aria-labelledby="welcomeMainNet">
-                  ${nets.map((id) =>
-                    optionRow({
-                      name: "main",
-                      value: id,
-                      checked: id === nets[0],
-                      lead: netGlyph(id),
-                      title: NETWORKS[id].label,
-                    }),
-                  )}
-                </ul>
-              `)
-            : ""}
           ${actions(continueButton("Continue", { disabled: !nets.length }))}
         </form>
       `;
     },
     onChange: (e, sid, shell) => {
-      const data = new FormData(e.target.form);
-      const picked = data.getAll("network");
-      // The main one: the radio, else the one that was main, else the first left.
-      const main = [data.get("main"), mainNetwork(getDraft(sid)), picked[0]].find((n) => n && picked.includes(n));
-      patchDraft(sid, { connectedSocials: main ? [main, ...picked.filter((n) => n !== main)] : [] });
+      const picked = new FormData(e.target.form).getAll("network");
+      // The order picked; the Voice review asks again which get rules.
+      const kept = playbookNetworks(getDraft(sid)).filter((n) => picked.includes(n));
+      patchDraft(sid, {
+        connectedSocials: [...kept, ...picked.filter((n) => !kept.includes(n))],
+        voiceRulesFor: undefined,
+      });
       shell.paint();
       target.querySelector(`input[name="${e.target.name}"][value="${e.target.value}"]`)?.focus();
     },
@@ -448,179 +425,6 @@ export function renderWelcomeAltDocuments(_params, target) {
     },
     onClick: (e) => {
       if (e.target.closest("[data-flow-skip]")) goNext("documents");
-    },
-  });
-}
-
-// ── /welcome-alt/voice ───────────────────────────────────────────────────
-// The default voice is read from the source (it lands on the card here), and
-// every network starts from it. Flag voicePerNetwork: the same voice
-// everywhere, or rules for each network, one network open at a time, the main
-// one first; the ways in are the creation review's (Adapt · questions; no
-// account yet, so no posts to learn from). What Archie proposes lands on the
-// draft on « Add to Voice profile »; a network left alone asks before its
-// first draft. The review reads the same draft, nothing is asked twice.
-
-const READ_FROM = { website: "your site", documents: "your files", interview: "your answers" };
-const andList = (items) => new Intl.ListFormat("en", { type: "conjunction" }).format(items);
-
-export function renderWelcomeAltVoice(_params, target) {
-  let open; // the network whose card is open; undefined → the first without rules
-
-  const nets = (d) => (networkVoiceOn() ? playbookNetworks(d) : []);
-  const each = (d) => d.voiceSplit !== "same";
-  const firstOpen = (d) => nets(d).find((n) => networkVoice(d, n).state !== "own") ?? null;
-
-  // A network: its card when open (the card names it), else a row that opens it.
-  const netRow = (d, net) => {
-    const { state } = networkVoice(d, net);
-    const label = networkLabel(net);
-    const main = net === nets(d)[0] && nets(d).length > 1;
-    if (net === open) {
-      const card =
-        state === "own"
-          ? `${learnedVoiceHtml(d, net, null, { pending: false })}
-             <div class="welcome-flow__actions"><button type="button" class="ap-button ghost grey" data-voice-ask="${escapeHtml(net)}" data-voice-choice="reset">Use my default voice instead</button></div>`
-          : voiceAskHtml(d, net, {
-              id: net,
-              choices: voiceChoices(net).items.filter((c) => c.value !== "document" && c.value !== "edit"),
-              line: main
-                ? `Your main network, so let's start here. Until you add rules, your ${label} posts follow your default voice.`
-                : `Until you add rules, your ${label} posts follow your default voice. Left as is, I'll ask before your first ${label} post.`,
-              later: null,
-            });
-      return html`<li class="welcome-flow__voice-net">${raw(card)}</li>`;
-    }
-    const desc = [
-      main ? "Your main network" : "",
-      state === "own" ? "Rules added" : d.voiceByNetwork?.[net] ? "Your default voice" : "No rules yet",
-    ]
-      .filter(Boolean)
-      .join(" · ");
-    return html`
-      <li>
-        <button type="button" class="welcome-flow__option" data-voice-open="${net}" aria-expanded="false">
-          ${raw(netGlyph(net))}
-          <span class="welcome-flow__option-text">
-            <span class="welcome-flow__option-title">Rules for ${label}</span>
-            <span class="welcome-flow__option-desc">${desc}</span>
-          </span>
-          <i class="ap-icon-arrow-right welcome-flow__option-add" aria-hidden="true"></i>
-        </button>
-      </li>
-    `;
-  };
-
-  return screen(target, {
-    step: "voice",
-    left: (sid) => {
-      const d = getDraft(sid);
-      if (!isAnalysisReady(sid)) {
-        return html`
-          <h1 class="welcome-flow__title" id="welcomeFlowTitle">${STEP_TEXT.voice.title}</h1>
-          <p class="welcome-intro__sub">One moment, I'm still reading how you sound.</p>
-          <span class="ap-loader small" aria-label="Reading"></span>
-          ${actions("")}
-        `;
-      }
-      if (open === undefined) open = firstOpen(d);
-      const traits = voiceTraits(d).map((t) => t.toLowerCase());
-      const list = nets(d);
-      const names = andList(list.map(networkLabel));
-      return html`
-        <h1 class="welcome-flow__title" id="welcomeFlowTitle">${STEP_TEXT.voice.title}</h1>
-        <p class="welcome-intro__sub">
-          ${traits.length
-            ? `I read your default voice from ${READ_FROM[d.sourceType] || "your Brand"}: ${andList(traits)}. Every network starts from it.`
-            : "Your default voice is on your Playbook. Every network starts from it."}
-        </p>
-        <form data-choice-form novalidate>
-          ${list.length
-            ? raw(html`
-                <ul class="welcome-flow__options" role="radiogroup" aria-label="Rules per network">
-                  ${[
-                    optionRow({
-                      name: "split",
-                      value: "same",
-                      checked: !each(d),
-                      lead: `<span class="welcome-flow__glyph is-icon"><i class="ap-icon-quote" aria-hidden="true"></i></span>`,
-                      title: "The same voice everywhere",
-                      desc: `I write for ${names} in your default voice.`,
-                    }),
-                    optionRow({
-                      name: "split",
-                      value: "each",
-                      checked: each(d),
-                      lead: `<span class="welcome-flow__glyph is-icon"><i class="ap-icon-sparkles" aria-hidden="true"></i></span>`,
-                      title: "Rules for each network",
-                      desc: "Your default voice, plus what works on each one.",
-                    }),
-                  ]}
-                </ul>
-                ${each(d)
-                  ? raw(html`
-                      <p class="welcome-flow__or">Your networks</p>
-                      <ul class="welcome-flow__options">
-                        ${list.map((n) => netRow(d, n))}
-                      </ul>
-                    `)
-                  : ""}
-              `)
-            : ""}
-          ${actions(continueButton())}
-        </form>
-      `;
-    },
-    onChange: (e, sid, s) => {
-      if (e.target.name !== "split") return;
-      const d = getDraft(sid);
-      // The same voice everywhere: every network keeps the default voice,
-      // chosen. Back to rules for each: what was kept that way goes.
-      patchDraft(sid, {
-        voiceSplit: e.target.value,
-        voiceByNetwork:
-          e.target.value === "same"
-            ? Object.fromEntries(nets(d).map((n) => [n, brandVoiceAsIs(d)]))
-            : Object.fromEntries(Object.entries(d.voiceByNetwork || {}).filter(([, v]) => v.optimizedBy !== "brand")),
-      });
-      open = undefined;
-      s.paint();
-    },
-    onClick: (e, sid, s) => {
-      const toggle = e.target.closest("[data-voice-open]")?.dataset.voiceOpen;
-      if (toggle) {
-        open = toggle;
-        return s.paint();
-      }
-      const pick = e.target.closest("[data-voice-choice]");
-      if (!pick) return;
-      const net = pick.dataset.voiceAsk;
-      const choice = pick.dataset.voiceChoice;
-      const d = getDraft(sid);
-      // Added: the next network without rules opens.
-      const set = (voice) => {
-        patchDraft(sid, { voiceByNetwork: { ...(d.voiceByNetwork || {}), [net]: voice } });
-        open = choice === "reset" ? net : firstOpen(getDraft(sid));
-        s.paint();
-      };
-      if (choice === "reset") return set(brandVoiceAsIs(d));
-      if (choice === "interview")
-        return openVoiceInterview({
-          net,
-          onDone: (answers) => openVoiceProposal({ ctx: d, net, choice, from: answers, onUse: set }),
-        });
-      openVoiceProposal({ ctx: d, net, choice, onUse: set });
-    },
-    onSubmit: () => goNext("voice"),
-    // Still reading: repaint once the analysis lands.
-    mounted: (s, sid) => {
-      if (isAnalysisReady(sid)) return null;
-      const timer = window.setInterval(() => {
-        if (!isAnalysisReady(sid)) return;
-        window.clearInterval(timer);
-        s.paint();
-      }, 200);
-      return () => window.clearInterval(timer);
     },
   });
 }

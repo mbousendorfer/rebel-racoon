@@ -13,36 +13,36 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=2361";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2361";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2361";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2361";
-import { showToast } from "./components/toast.js?v=2361";
-import { recordReasons } from "./feedback-store.js?v=2361";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2361";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2361";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2361";
+import * as inlineQuestion from "./inline-question.js?v=2364";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2364";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2364";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2364";
+import { showToast } from "./components/toast.js?v=2364";
+import { recordReasons } from "./feedback-store.js?v=2364";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2364";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2364";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2364";
 import {
   analyzeWebsite,
   analyzeBrandFiles,
   analyzeInterview,
   nextInterviewQuestion,
   INTERVIEW_OPENING,
-} from "./context-mock-analysis.js?v=2361";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2361";
-import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=2361";
-import { markIntroSeen } from "./components/voice-intro-modal.js?v=2361";
-import { connectors as connectorMocks } from "./mocks.js?v=2361";
+} from "./context-mock-analysis.js?v=2364";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2364";
+import { cloneItems, withNetworkVoices, networkVoiceOn } from "./voice-parts.js?v=2364";
+import { markIntroSeen } from "./components/voice-intro-modal.js?v=2364";
+import { connectors as connectorMocks } from "./mocks.js?v=2364";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=2361";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2361";
-import { isFlagOn } from "./feature-flags.js?v=2361";
-import { startDemo } from "./demo-flow.js?v=2361";
-import { navigate } from "./router.js?v=2361";
-import { setHandoff } from "./handoff.js?v=2361";
+} from "./social-profiles.js?v=2364";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2364";
+import { isFlagOn } from "./feature-flags.js?v=2364";
+import { startDemo } from "./demo-flow.js?v=2364";
+import { navigate } from "./router.js?v=2364";
+import { setHandoff } from "./handoff.js?v=2364";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -419,7 +419,8 @@ export function altSteps() {
   if (isFlagOn("multilingualPlaybook")) steps.push("language");
   // Flag connectFirst: the accounts are asked on the screen before the chat.
   if (!isFlagOn("connectFirst")) steps.push("profile");
-  steps.push("documents");
+  // The documents step offers connectors: it waits for their flag (2026-10-29).
+  if (isFlagOn("connectors")) steps.push("documents");
   return steps;
 }
 function altTotalSteps() {
@@ -822,6 +823,8 @@ function askAltProfile(sessionId, { announce = true } = {}) {
 }
 
 function askAltDocuments(sessionId) {
+  // No documents step in this run (flag connectors OFF): on to what follows it.
+  if (!altSteps().includes("documents")) return afterAltDocuments(sessionId);
   postAssistantMessage(
     sessionId,
     "Connect the documents that describe your Brand: a brand book, guidelines, a strategy doc. Optional.",

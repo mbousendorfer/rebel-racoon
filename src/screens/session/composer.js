@@ -4,22 +4,22 @@
 // session.js, unchanged; the mention picker stays there, since bindSession
 // writes its highlight state.
 
-import { isFlagOn } from "../../feature-flags.js?v=2361";
-import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2361";
-import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2361";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2361";
-import { getSources, getIdeas } from "../../library.js?v=2361";
-import * as clipStudio from "../../clip-studio.js?v=2361";
-import { getThread } from "../../assistant.js?v=2361";
-import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2361";
-import { revokedContextFor } from "../../playbook-access.js?v=2361";
-import { getSessionById } from "../../sessions-store.js?v=2361";
-import { catalogueRoute } from "../../active-playbook.js?v=2361";
-import { getActiveConnector } from "../../composer-connector.js?v=2361";
-import { isDemo } from "../../demo-mode.js?v=2361";
-import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=2361";
-import { renderTopicPickerRow } from "./empty-hero.js?v=2361";
-import { renderChatGallery } from "./chat-gallery.js?v=2361";
+import { isFlagOn } from "../../feature-flags.js?v=2364";
+import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2364";
+import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2364";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2364";
+import { getSources, getIdeas } from "../../library.js?v=2364";
+import * as clipStudio from "../../clip-studio.js?v=2364";
+import { getThread } from "../../assistant.js?v=2364";
+import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2364";
+import { revokedContextFor } from "../../playbook-access.js?v=2364";
+import { getSessionById } from "../../sessions-store.js?v=2364";
+import { catalogueRoute } from "../../active-playbook.js?v=2364";
+import { getActiveConnector } from "../../composer-connector.js?v=2364";
+import { isDemo } from "../../demo-mode.js?v=2364";
+import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=2364";
+import { renderTopicPickerRow } from "./empty-hero.js?v=2364";
+import { renderChatGallery } from "./chat-gallery.js?v=2364";
 
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the
