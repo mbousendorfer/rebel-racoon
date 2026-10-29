@@ -1481,23 +1481,6 @@ archie-pixels.empty-chat__pixels {
   color: var(--ref-color-grey-80);
 }
 
-.session__composer-hint kbd {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 var(--ref-spacing-xxxs);
-  border-radius: var(--app-radius-sm);
-  background: var(--ref-color-grey-05);
-  border: 1px solid var(--app-border);
-  font-family: inherit;
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-80);
-}
-
 /* Attach dropdown — DS .ap-action-dropdown anchored above the trigger.
    We only override positioning here ; the DS provides the surface,
    border, shadow, item layout, hover / focus states. */

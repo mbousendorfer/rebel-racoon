@@ -987,3 +987,28 @@ button.ap-link {
 :not(.ap-button) > .ap-icon-sparkles-mermaid {
   background: var(--ref-color-mermaid-gradient-background);
 }
+
+/* ── Keycap ───────────────────────────────────────────────────────────────
+   The DS ships no keycap; four hand-made ones disagreed (grey-05, white, white
+   with a 2px bottom edge). One look for every <kbd> the app draws: ⌘K's Esc,
+   its ↵ row hint, the shortcut legend, the composer hint. */
+.search-modal__kbd,
+.search-modal__result-kbd,
+.shortcut-legend__row kbd,
+.session__composer-hint kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 var(--ref-spacing-xxxs);
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-grey-05);
+  border: 1px solid var(--app-border);
+  font-family: inherit;
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-80);
+}

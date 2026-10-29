@@ -418,24 +418,6 @@ body.has-modal {
   color: var(--comp-input-text-placeholder-color);
 }
 
-.search-modal__kbd {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 18px;
-  padding: 0 var(--ref-spacing-xxxs);
-  border-radius: var(--app-radius-sm);
-  background: var(--ref-color-grey-05);
-  border: 1px solid var(--app-border);
-  font-family: inherit;
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-80);
-  flex-shrink: 0;
-}
-
 .search-modal__group-heading {
   margin: 0;
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-xxxs);
@@ -496,23 +478,6 @@ body.has-modal {
 
 .search-modal__result.is-highlighted .search-modal__result-meta {
   opacity: 1;
-}
-
-.search-modal__result-kbd {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 18px;
-  padding: 0 var(--ref-spacing-xxxs);
-  border-radius: var(--app-radius-sm);
-  background: var(--ref-color-white);
-  border: 1px solid var(--app-border);
-  font-family: inherit;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-80);
 }
 
 .search-modal__empty {
@@ -883,21 +848,6 @@ body.has-modal {
   line-height: var(--sys-text-style-body-line-height);
   font-weight: var(--sys-text-style-body-weight);
   color: var(--sys-text-color-default);
-}
-
-.shortcut-legend__row kbd {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
-  background: var(--ref-color-white);
-  border: 1px solid var(--app-border);
-  border-bottom-width: 2px;
-  border-radius: var(--app-radius-sm);
-  font-family: inherit;
-  font-size: var(--sys-text-style-caption-bold-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-100);
-  line-height: var(--sys-text-style-caption-bold-line-height);
 }
 
 /* ── Save-drafts modal ─────────────────────────────────────────────────
