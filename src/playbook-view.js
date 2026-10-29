@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2436";
-import { conceptHint } from "./concepts.js?v=2436";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2437";
+import { conceptHint } from "./concepts.js?v=2437";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2436";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2436";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2436";
-import { isFlagOn } from "./feature-flags.js?v=2436";
-import { clipLookOf } from "./videos-store.js?v=2436";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2436";
-import { parseHashParams } from "./url-state.js?v=2436";
+} from "./playbook-brand-kit.js?v=2437";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2437";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2437";
+import { isFlagOn } from "./feature-flags.js?v=2437";
+import { clipLookOf } from "./videos-store.js?v=2437";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2437";
+import { parseHashParams } from "./url-state.js?v=2437";
 import {
   isListPart,
   voiceParts,
@@ -53,13 +53,13 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2436";
-import { showToast } from "./components/toast.js?v=2436";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2436";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2436";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2436";
-import { consumeHandoff } from "./handoff.js?v=2436";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2436";
+} from "./voice-parts.js?v=2437";
+import { showToast } from "./components/toast.js?v=2437";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2437";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2437";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2437";
+import { consumeHandoff } from "./handoff.js?v=2437";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2437";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -68,7 +68,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2436";
+} from "./social-profiles.js?v=2437";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2883,24 +2883,25 @@ function networkPickerCards(data, nets, first) {
   // (2026-10-29, asked: « groupe ça par network »).
   const accountsOn = (net) => getConnectedProfiles().filter((p) => normalizeNetwork(p.platform) === net);
   // One compact row per network (2026-10-29, asked: « + compact ») — its icon,
-  // its name, the account I write for (or « Not connected »), and a DS toggle:
-  // a voice of its own, or the default voice.
+  // its name, the account I write for (or « Not connected »), and a DS
+  // checkbox: the question is « which ones », a pick among several (asked:
+  // « c'est ptet des checkbox plutôt non? »). The whole row is the label.
   const row = (net) => {
     const accounts = accountsOn(net);
     const on = picked.includes(net);
     const caption = accounts.length ? accounts.map((a) => a.handle).join(", ") : "Not connected";
     const toFill = on && !networkVoiceFilled(data, net) ? " · to fill in" : "";
     return `
-    <div class="pb2-netpick__row">
+    <label class="pb2-netpick__row">
       <i class="${networkIcon(net)} pb2-netpick__icon" aria-hidden="true"></i>
       <span class="pb2-netpick__text">
         <span class="pb2-netpick__name">${esc(networkLabel(net))}</span>
         <span class="pb2-netpick__account">${esc(caption + toFill)}</span>
       </span>
-      <label class="ap-toggle-container" data-pb2-voice-rules="${esc(net)}"><input type="checkbox" ${
+      <span class="ap-checkbox-container" data-pb2-voice-rules="${esc(net)}"><input type="checkbox" ${
         on ? "checked" : ""
-      } aria-label="A voice of its own for ${esc(networkLabel(net))}" /><i></i><span>Own voice</span></label>
-    </div>`;
+      } aria-label="A voice of its own for ${esc(networkLabel(net))}" /><i></i></span>
+    </label>`;
   };
   const pickBlock = pb2Block(
     "Which networks get their own voice?",
