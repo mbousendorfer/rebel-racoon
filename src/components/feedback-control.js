@@ -20,13 +20,13 @@
 // list scroll position survives — same rationale as the clip/idea thumbs it
 // replaces.
 
-import { escapeAttr, escapeText } from "../utils.js?v=2537";
-import { showToast } from "./toast.js?v=2537";
-import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2537";
-import { getContextById } from "../contexts-store.js?v=2537";
-import { networkLabel } from "../social-profiles.js?v=2537";
-import { feedbackNetworkVoice } from "../voice-parts.js?v=2537";
-import { openVoiceProposal } from "./voice-proposal-modal.js?v=2537";
+import { escapeAttr, escapeText } from "../utils.js?v=2538";
+import { showToast } from "./toast.js?v=2538";
+import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2538";
+import { getContextById } from "../contexts-store.js?v=2538";
+import { networkLabel } from "../social-profiles.js?v=2538";
+import { feedbackNetworkVoice } from "../voice-parts.js?v=2538";
+import { openVoiceProposal } from "./voice-proposal-modal.js?v=2538";
 
 // "What was off?" reasons per element kind. value = stable key, label = UI.
 const REASONS = {
@@ -114,7 +114,7 @@ export function renderFeedbackPanel(targetId, { kind, voice = null } = {}) {
         <textarea
           data-fb-comment
           rows="2"
-          aria-label="Anything else about this draft? Optional"
+          aria-label="Anything else about this ${NOUN[kind] || "result"}? Optional"
           placeholder="Anything else? (optional)"
         >${escapeText(rec?.comment || "")}</textarea>
       </div>

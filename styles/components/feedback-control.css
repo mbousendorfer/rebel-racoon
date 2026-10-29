@@ -74,6 +74,10 @@
 
 /* ── Inline variant (clip card): panel breaks out full-width below the
    footer row, padded to align with the card content. ─────────────────── */
+/* Inside the white clip card the panel goes back to a grey-05 inset: a white
+   bordered card there was a card inside a card. */
 .clip-card .fb__panel {
   margin: 0 var(--ref-spacing-xs) var(--ref-spacing-xs);
+  background: var(--ref-color-grey-05);
+  border-color: transparent;
 }

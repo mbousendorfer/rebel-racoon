@@ -17,17 +17,17 @@ import {
   getContexts,
   subscribe as subscribeContexts,
   updateContext,
-} from "../../../contexts-store.js?v=2537";
-import { createStyle } from "../model/schema.js?v=2537";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=2537";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=2537";
+} from "../../../contexts-store.js?v=2538";
+import { createStyle } from "../model/schema.js?v=2538";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=2538";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=2538";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=2537";
-import { storageService as storage } from "../services/index.js?v=2537";
+} from "../../../active-playbook.js?v=2538";
+import { storageService as storage } from "../services/index.js?v=2538";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
