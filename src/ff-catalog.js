@@ -188,7 +188,7 @@ export const FLAGS = Object.freeze([
     id: "draftChanges",
     group: "Chat & drafts",
     tip: "When Archie rewrites a draft, you see what changed: a card in the chat (Changes or Side by side, Undo) and the new words marked on the draft.",
-    label: "Draft changes (what changed)",
+    label: "UI-Draft changes: what changed",
     // ON: a rewrite keeps the version it replaced. OFF: the rewrite as before,
     // no card, no marks, no undo.
     default: true,
