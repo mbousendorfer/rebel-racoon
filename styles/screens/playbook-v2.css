@@ -1047,38 +1047,85 @@
   min-width: 0;
 }
 
-/* The DS column, as a card on the page's grey: grey-20 all round (the DS's
-   own grey-10 right edge is a full-height column's), hugging its rows, sticky
-   under the tabs like the head beside it. Visible overflow: Another network…
-   opens its menu past the card. */
+/* The DS secondary-nav column (design-guidelines O4, the account selector's
+   CSS-UI recipe), as a card on the page's grey: white, grey-20 all round,
+   hugging its rows, sticky under the tabs like the head beside it. Visible
+   overflow: Another network… opens its menu past the card. */
 .pb2-voice-nav {
   position: sticky;
   top: calc(var(--pb2-tabs-h, 0px) + var(--ref-spacing-xxs));
-  height: auto;
+  background: var(--ref-color-white);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
-  overflow: visible;
 }
 
-.pb2-voice-nav__items {
-  padding: var(--ref-spacing-xxs) 0;
-  overflow: visible;
+/* Default voice, then the networks: one hairline between the two. */
+.pb2-voice-nav__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xxs);
 }
 
-/* A row is a <button>: only the browser's own button look is reset; the
-   hover and .selected stay the DS's. */
-.pb2-voice-nav__item {
+.pb2-voice-nav__group + .pb2-voice-nav__group {
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.pb2-voice-nav__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
   width: 100%;
+  min-height: var(--comp-button-height);
+  padding: 0 var(--ref-spacing-xxs);
   border: 0;
-  background: transparent;
+  border-radius: var(--ref-border-radius-sm);
+  background: none;
+  color: var(--ref-color-grey-100);
   font: inherit;
   text-align: left;
+  cursor: pointer;
+}
+
+.pb2-voice-nav__row:hover {
+  background: var(--ref-color-grey-05);
+}
+
+.pb2-voice-nav__row[aria-current="true"] {
+  background: var(--ref-color-electric-blue-20);
+  color: var(--ref-color-electric-blue-150);
+}
+
+.pb2-voice-nav__row[aria-current="true"] .pb2-voice-nav__name {
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.pb2-voice-nav__row > i {
+  flex-shrink: 0;
+}
+
+.pb2-voice-nav__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* « Follows default »: the exception, so only it is marked; ink grey-80. */
+.pb2-voice-nav__note {
+  flex-shrink: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.pb2-voice-nav__row[aria-current="true"] .pb2-voice-nav__note {
+  color: inherit;
 }
 
 .pb2-voice-nav__foot {
   /* flex: the menu hugs its button, never the column's width. */
   display: flex;
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxs);
   border-top: 1px solid var(--ref-color-grey-20);
 }
 

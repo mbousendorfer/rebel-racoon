@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2419";
-import { conceptHint } from "./concepts.js?v=2419";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2420";
+import { conceptHint } from "./concepts.js?v=2420";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2419";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2419";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2419";
-import { isFlagOn } from "./feature-flags.js?v=2419";
-import { clipLookOf } from "./videos-store.js?v=2419";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2419";
-import { parseHashParams } from "./url-state.js?v=2419";
+} from "./playbook-brand-kit.js?v=2420";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2420";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2420";
+import { isFlagOn } from "./feature-flags.js?v=2420";
+import { clipLookOf } from "./videos-store.js?v=2420";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2420";
+import { parseHashParams } from "./url-state.js?v=2420";
 import {
   isListPart,
   voiceParts,
@@ -53,13 +53,13 @@ import {
   withNetworkVoices,
   canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2419";
-import { showToast } from "./components/toast.js?v=2419";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2419";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2419";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2419";
-import { consumeHandoff } from "./handoff.js?v=2419";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2419";
+} from "./voice-parts.js?v=2420";
+import { showToast } from "./components/toast.js?v=2420";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2420";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2420";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2420";
+import { consumeHandoff } from "./handoff.js?v=2420";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2420";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
@@ -69,7 +69,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2419";
+} from "./social-profiles.js?v=2420";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2126,40 +2126,32 @@ function voiceIntroHtml(data) {
   </div>`;
 }
 
-// The voices, as the DS list panel left of the voice on screen (2026-10-29,
-// asked: « on peut pas avoir des tabs et en dessous de nouveau des tabs ») —
-// the page's tabs stay the only row of tabs. Default voice first, then each
-// network with its state under its name; « Another network… » at its foot. It
-// replaced a second row of tabs AND the « Your networks » block that repeated
-// them. The selected row is the DS's own .selected, never an edge bar.
+// The voices, as the DS secondary-nav column left of the voice on screen
+// (2026-10-29, asked: « on peut pas avoir des tabs et en dessous de nouveau des
+// tabs ») — the page's tabs stay the only row of tabs. Built on the account
+// selector's CSS-UI recipe (design-guidelines O4, ap-nav-selector being
+// Angular-only): 36 px caption rows, the current one a blue fill, never an edge
+// bar. Default voice first, then the networks, each marked « Follows default »
+// when it has no voice of its own; « Another network… » at its foot.
 function renderVoiceNav(data) {
   const nets = voiceNets(data);
   // Creation shows each network as a card under the default voice instead.
   if (!nets.length || !isLibrary()) return "";
-  const row = (net, name, sub, icon) => {
+  const row = (net, name, icon, note = "") => {
     const on = (net || null) === voiceNet;
-    return `<button type="button" class="ap-list-panel-item pb2-voice-nav__item${on ? " selected" : ""}"${
-      on ? ' aria-current="true"' : ""
-    } data-pb2-voice-net="${net}">
+    return `<button type="button" class="pb2-voice-nav__row"${on ? ' aria-current="true"' : ""} data-pb2-voice-net="${net}">
       <i class="${icon}" aria-hidden="true"></i>
-      <span class="ap-list-panel-item-text">
-        <span class="ap-list-panel-item-name">${esc(name)}</span>
-        <span class="ap-list-panel-item-subtitle">${esc(sub)}</span>
-      </span>
+      <span class="ap-caption pb2-voice-nav__name">${esc(name)}</span>
+      ${note ? `<span class="ap-caption pb2-voice-nav__note">${esc(note)}</span>` : ""}
     </button>`;
   };
   const more = addVoiceMenu(data);
-  return `<nav class="ap-list-panel pb2-voice-nav" aria-label="Voices">
-      <div class="ap-list-panel-items pb2-voice-nav__items">
-        ${row("", "Default voice", "All networks", "ap-icon-quote")}
+  return `<nav class="pb2-voice-nav" aria-label="Voices">
+      <div class="pb2-voice-nav__group">${row("", "Default voice", "ap-icon-quote")}</div>
+      <div class="pb2-voice-nav__group">
         ${nets
           .map((n) =>
-            row(
-              n,
-              networkLabel(n),
-              networkVoice(data, n).state === "own" ? "Own voice" : "Uses default voice",
-              networkIcon(n),
-            ),
+            row(n, networkLabel(n), networkIcon(n), networkVoice(data, n).state === "own" ? "" : "Follows default"),
           )
           .join("")}
       </div>

@@ -19,8 +19,8 @@
 //     • onDone() — fired after a committed change (scope or ownership), so the
 //       caller can repaint or bail out if it just handed away its own access.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2419";
-import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=2419";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2420";
+import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=2420";
 import {
   canTransfer,
   isMine,
@@ -29,10 +29,10 @@ import {
   recipientsOf,
   tiedProfile,
   profileBlockFor,
-} from "../playbook-access.js?v=2419";
-import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=2419";
-import { showToast } from "./toast.js?v=2419";
-import { html, raw, escapeHtml } from "../utils.js?v=2419";
+} from "../playbook-access.js?v=2420";
+import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=2420";
+import { showToast } from "./toast.js?v=2420";
+import { html, raw, escapeHtml } from "../utils.js?v=2420";
 
 const MODAL_ID = "sharePlaybook";
 
