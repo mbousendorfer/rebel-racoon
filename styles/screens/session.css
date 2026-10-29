@@ -1759,11 +1759,13 @@ archie-pixels.empty-chat__pixels {
   min-width: 0;
 }
 
+/* Body, like the select's « Playbook » label on a new chat: the word keeps its
+   size once the chat starts (it dropped from 14 to 12). The ink ranks it. */
 .composer-playbook__label {
   flex-shrink: 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  font-weight: var(--sys-text-style-body-weight);
   color: var(--ref-color-grey-80);
 }
 
