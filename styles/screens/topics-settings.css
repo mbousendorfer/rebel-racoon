@@ -181,10 +181,13 @@
   background: transparent;
 }
 
+/* grey-80, not grey-60 (3.10:1 on the page, and the disabled ink): the text is
+   what a reader weighs before « Need this source? ». The off state is said by the
+   ground, the greyed badge, the tag and the disabled switch. */
 .topics-src.is-off .topics-src__name,
 .topics-src.is-off .topics-src__desc,
 .topics-src.is-off .topics-src__note {
-  color: var(--ref-color-grey-60);
+  color: var(--sys-text-color-light);
 }
 
 .topics-src.is-off .topic-badge {

@@ -29,22 +29,22 @@
 // now does — and a row cannot without turning the list into a form. No save bar:
 // every control commits immediately through updateFeed.
 
-import { html, raw } from "../utils.js?v=2501";
-import { navigate } from "../router.js?v=2501";
-import { parseHashParams } from "../url-state.js?v=2501";
-import { renderTopbar } from "../components/topbar.js?v=2501";
-import { renderEmptyState } from "../components/empty-state.js?v=2501";
-import { getContextById, getDefaultContext } from "../contexts-store.js?v=2501";
+import { html, raw } from "../utils.js?v=2502";
+import { navigate } from "../router.js?v=2502";
+import { parseHashParams } from "../url-state.js?v=2502";
+import { renderTopbar } from "../components/topbar.js?v=2502";
+import { renderEmptyState } from "../components/empty-state.js?v=2502";
+import { getContextById, getDefaultContext } from "../contexts-store.js?v=2502";
 import {
   getActivePlaybook,
   isWorkspaceMode,
   catalogueRoute,
   subscribe as subscribeScope,
-} from "../active-playbook.js?v=2501";
-import { editableContexts, visibleContexts, canEdit } from "../playbook-access.js?v=2501";
-import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2501";
-import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=2501";
-import { open as openFeedback } from "../components/feedback-modal.js?v=2501";
+} from "../active-playbook.js?v=2502";
+import { editableContexts, visibleContexts, canEdit } from "../playbook-access.js?v=2502";
+import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2502";
+import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=2502";
+import { open as openFeedback } from "../components/feedback-modal.js?v=2502";
 
 // Above this many Playbooks the picker earns a search field. Below it, a search
 // box over four rows is just noise.
@@ -339,15 +339,18 @@ function renderSourceCard(ctx, feed, source, on) {
   // Playbook, so their note LINKS there rather than just naming it. One link per card at most, and
   // only on the cards that have somewhere to send you — the fork put an arrow row
   // on all eight, including the five that read nothing the Playbook holds.
-  const anchor = source.playbookAnchor
-    ? html`<a class="ap-link topics-src__note" href="#/playbook/${ctx.id}?section=${source.playbookAnchor}">
-        <i
-          class="${source.playbookAnchor === "influencers" ? "ap-icon-star" : "ap-icon-buildings"}"
-          aria-hidden="true"
-        ></i
-        ><span>Review this Playbook's ${source.playbookAnchor}</span>
-      </a>`
-    : "";
+  // Live cards only: on a card not available yet, a working link greyed to look
+  // disabled said the opposite of what it did.
+  const anchor =
+    source.playbookAnchor && live
+      ? html`<a class="ap-link topics-src__note" href="#/playbook/${ctx.id}?section=${source.playbookAnchor}">
+          <i
+            class="${source.playbookAnchor === "influencers" ? "ap-icon-star" : "ap-icon-buildings"}"
+            aria-hidden="true"
+          ></i
+          ><span>Review this Playbook's ${source.playbookAnchor}</span>
+        </a>`
+      : "";
 
   // The one source whose subject is a VALUE the feed holds, so its card shows
   // that value instead of only a description. A flag rather than an id check, so
