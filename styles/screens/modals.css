@@ -2204,6 +2204,7 @@ body.has-modal {
    borders, each with its hint; a row lights grey-05 on hover. The run's
    review (voiceWaysCard, outside .voice-ask) keeps its tiles. */
 .voice-ask .voice-ask__option.is-best {
+  margin-bottom: var(--ref-spacing-xs);
   padding: var(--ref-spacing-sm);
 }
 .voice-ask .is-best .voice-ask__icon {
@@ -2214,7 +2215,7 @@ body.has-modal {
 }
 .voice-ask .voice-ask__options {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
 }
 .voice-ask .voice-ask__option:not(.is-best) {
   flex-direction: row;
