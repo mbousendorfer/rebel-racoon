@@ -8,7 +8,7 @@
 // Suggested values become menthol chips (AI-suggested). Other static
 // option lists come from the brief panel renderer.
 
-import { objectivesInText } from "./objective-measures.js?v=2421";
+import { objectivesInText } from "./objective-measures.js?v=2422";
 
 const AGORAPULSE = {
   name: "Agorapulse",
@@ -250,11 +250,12 @@ const AGORAPULSE = {
 
 const GENERIC = {
   name: "Untitled brand",
-  businessSummary:
-    // Honest when the read is thin: a paragraph that fits any brand broke the
-    // trust of the first Playbook a tester built from their own site. It says
-    // what is missing and asks for the one sentence that fixes it (2026-10-28).
-    "I couldn't read enough on this site to say what the business does. Click Edit and add one sentence: what you sell, and to whom. I'll ground every post on it.",
+  // Honest when the read is thin: a paragraph that fits any brand broke the
+  // trust of the first Playbook a tester built from their own site (2026-10-28).
+  // Nothing is said in its place: the run asks the one sentence that is missing
+  // before it calls the Playbook ready (welcome-alt-ready.js, 2026-10-29).
+  thinRead: true,
+  businessSummary: "",
   suggestions: {
     audience: [
       "Operations and marketing leads at growing B2B teams",
@@ -340,30 +341,9 @@ const GENERIC = {
     languages: ["English"],
     primaryLanguage: "English",
     color: "blue",
-    // Placeholder competitor set — like every other GENERIC field, it's a
-    // usable template the user edits rather than a real market read.
-    competitors: [
-      {
-        name: "The category incumbent",
-        description:
-          "The best-known name in the category. Broadest feature set, highest price, and the one prospects benchmark you against.",
-        websiteUrl: "",
-        socials: [],
-      },
-      {
-        name: "The low-cost challenger",
-        description: "Cheaper and simpler. Wins on price with smaller teams and loses on depth once they scale.",
-        websiteUrl: "",
-        socials: [],
-      },
-      {
-        name: "The niche specialist",
-        description:
-          "Narrower than you but excellent at one job. Comes up whenever a prospect cares most about that one thing.",
-        websiteUrl: "",
-        socials: [],
-      },
-    ],
+    // No competitor from a thin read: archetypes shown as "I found these in
+    // your market" were a market read nobody did (2026-10-29).
+    competitors: [],
     imageVoice: {
       websites: [
         {

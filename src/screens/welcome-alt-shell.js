@@ -9,11 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2421";
-import { html, raw, escapeHtml } from "../utils.js?v=2421";
-import { navigate } from "../router.js?v=2421";
-import { parseHashParams } from "../url-state.js?v=2421";
-import { isFlagOn } from "../feature-flags.js?v=2421";
+import "../archie-pixels.js?v=2422";
+import { html, raw, escapeHtml } from "../utils.js?v=2422";
+import { navigate } from "../router.js?v=2422";
+import { parseHashParams } from "../url-state.js?v=2422";
+import { isFlagOn } from "../feature-flags.js?v=2422";
 import {
   altSteps,
   createAltDraft,
@@ -21,9 +21,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2421";
-import { networkIcon, networkLabel } from "../social-profiles.js?v=2421";
-import { playbookNetworks } from "../voice-parts.js?v=2421";
+} from "../context-builder.js?v=2422";
+import { networkIcon, networkLabel } from "../social-profiles.js?v=2422";
+import { playbookNetworks } from "../voice-parts.js?v=2422";
 import {
   readSessionId,
   isIntegrated,
@@ -33,8 +33,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2421";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2421";
+} from "./welcome-alt-recap.js?v=2422";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2422";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -348,7 +348,9 @@ function renderCard(sid, build) {
       ? escapeHtml(d.name.slice(0, 1).toUpperCase())
       : `<i class="ap-icon-buildings" aria-hidden="true"></i>`;
   const status = ready
-    ? `<span class="ap-status mermaid welcome-intro__card-status">Ready to write</span>`
+    ? d?.thinRead
+      ? `<span class="ap-status orange welcome-intro__card-status">Needs one answer</span>`
+      : `<span class="ap-status mermaid welcome-intro__card-status">Ready to write</span>`
     : learning
       ? `<span class="ap-status mermaid is-working welcome-intro__card-status">Learning your Brand…</span>`
       : "";
