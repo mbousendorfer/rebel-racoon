@@ -4,15 +4,15 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2357";
-import { catalogueRoute } from "../active-playbook.js?v=2357";
-import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=2357";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2357";
-import { isFlagOn } from "../feature-flags.js?v=2357";
-import { renderReview } from "./welcome-alt-review.js?v=2357";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2357";
-import { networkLabel } from "../social-profiles.js?v=2357";
-import { networkVoiceOn, playbookNetworks } from "../voice-parts.js?v=2357";
+import { navigate } from "../router.js?v=2358";
+import { catalogueRoute } from "../active-playbook.js?v=2358";
+import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=2358";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2358";
+import { isFlagOn } from "../feature-flags.js?v=2358";
+import { renderReview } from "./welcome-alt-review.js?v=2358";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2358";
+import { networkLabel } from "../social-profiles.js?v=2358";
+import { networkVoiceOn, playbookNetworks } from "../voice-parts.js?v=2358";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
