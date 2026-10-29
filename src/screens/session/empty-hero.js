@@ -1,18 +1,20 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2444";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2444";
-import { getContextById } from "../../contexts-store.js?v=2444";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2444";
-import { renderTopicCard } from "../../components/topic-card.js?v=2444";
-import { findTopicSource } from "../../topics-catalog.js?v=2444";
-import { html, raw } from "../../utils.js?v=2444";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2444";
-import { renderStarterCards } from "../../components/starter-card.js?v=2444";
-import { isFlagOn } from "../../feature-flags.js?v=2444";
-import { isDemo } from "../../demo-mode.js?v=2444";
-import "../../archie-pixels.js?v=2444";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2445";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2445";
+import { getContextById } from "../../contexts-store.js?v=2445";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2445";
+import { renderTopicCard } from "../../components/topic-card.js?v=2445";
+import { findTopicSource } from "../../topics-catalog.js?v=2445";
+import { html, raw } from "../../utils.js?v=2445";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2445";
+import { renderStarterCards } from "../../components/starter-card.js?v=2445";
+import { isFlagOn } from "../../feature-flags.js?v=2445";
+import { isDemo } from "../../demo-mode.js?v=2445";
+import { voicesToFinish } from "../../voice-parts.js?v=2445";
+import { networkLabel } from "../../social-profiles.js?v=2445";
+import "../../archie-pixels.js?v=2445";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -171,7 +173,7 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
           ${raw(composerMarkup)}
         </div>
         <div class="starter-rows" role="group" aria-label="Start from a workflow">
-          ${raw(renderStarterCards({ sourceLabel, videoLabel, rows: true }))}
+          ${raw(renderStarterCards({ sourceLabel, videoLabel, rows: true }))}${raw(finishVoicesRow(session))}
         </div>
         ${raw(renderFreshTopics(session, { staged: true }))}
       </div>
@@ -202,6 +204,29 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
 
 // In the demo the promise is said with the brand and a first move: a made-up
 // roaster, the workflow that shows the most in one click, nothing posted.
+// A nudge among the starters while the chat's Playbook has network voices to
+// finish (2026-10-29, asked: « quand des voice sont incomplètes … un bloc sur la
+// home avec un nudge », then « Un starter de plus »). It goes when they're all
+// done; it opens the Playbook's Voice tab on the first one.
+function finishVoicesRow(session) {
+  const ctx = session?.contextId ? getContextById(session.contextId) : null;
+  const nets = voicesToFinish(ctx);
+  if (!nets.length) return "";
+  const desc =
+    nets.length === 1
+      ? `${networkLabel(nets[0])} still uses your default voice.`
+      : `${nets.length} networks still use your default voice.`;
+  return `
+    <button type="button" class="starter-row" data-finish-voices="${ctx.id}" data-finish-voices-net="${nets[0]}">
+      <span class="starter-row__icon starter-card--purple" aria-hidden="true"><i class="ap-icon-quote"></i></span>
+      <span class="starter-row__text">
+        <span class="starter-row__label">Finish your voices</span>
+        <span class="starter-row__desc">${desc}</span>
+      </span>
+      <i class="starter-row__arrow ap-icon-arrow-right" aria-hidden="true"></i>
+    </button>`;
+}
+
 function heroSub() {
   return isDemo()
     ? "A demo with Bramble & Bean, a coffee roaster I made up. Try Batch from a source: I'll draft from its files in seconds. Nothing gets posted."

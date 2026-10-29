@@ -10,9 +10,9 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2444";
-import { isFlagOn } from "./feature-flags.js?v=2444";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2444";
+import { escapeHtml } from "./utils.js?v=2445";
+import { isFlagOn } from "./feature-flags.js?v=2445";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2445";
 import {
   networkMeta,
   networkLabel,
@@ -20,7 +20,7 @@ import {
   normalizeNetwork,
   getConnectedProfileById,
   profileForNetwork,
-} from "./social-profiles.js?v=2444";
+} from "./social-profiles.js?v=2445";
 
 // `hint`: what the part holds, said under its title — on the Playbook's tab
 // and in a voice proposal (one source for both).
@@ -115,6 +115,25 @@ export function playbookNetworks(ctx) {
     networkMeta(s) ? normalizeNetwork(s) : normalizeNetwork(getConnectedProfileById(s)?.platform),
   );
   return [...new Set(nets.filter((n) => networkMeta(n)))];
+}
+
+// A network's own voice with something in it — empty, it still has to be filled.
+export function voiceHasRules(voice) {
+  return (
+    Boolean(String(voice?.voiceSummary || "").trim()) ||
+    ["voiceAlways", "voiceNever", "voiceByPost", "voiceSometimes"].some((f) => (voice?.[f] || []).length)
+  );
+}
+
+// The networks of a Playbook whose voice is unfinished: never answered (no
+// voice of its own, the default voice not kept by choice) or its own and still
+// empty. The new chat's « Finish your voices » starter lists them.
+export function voicesToFinish(ctx) {
+  if (!networkVoiceOn() || !ctx) return [];
+  return playbookNetworks(ctx).filter((n) => {
+    const { state, chosen, voice } = networkVoice(ctx, n);
+    return state === "default" ? !chosen : state === "own" && !voiceHasRules(voice);
+  });
 }
 
 // The default voice is the Playbook's own five parts: generic, tied to no

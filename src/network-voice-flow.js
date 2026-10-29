@@ -33,7 +33,7 @@
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2444";
+import * as inlineQuestion from "./inline-question.js?v=2445";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -43,14 +43,14 @@ import {
   postVoiceTurn,
   resolveTurn,
   getThread,
-} from "./assistant.js?v=2444";
-import { getContextById, updateContext } from "./contexts-store.js?v=2444";
-import { getSessionById } from "./sessions-store.js?v=2444";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2444";
-import { setHandoff } from "./handoff.js?v=2444";
-import { navigate } from "./router.js?v=2444";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2444";
-import { getPosts } from "./posts-store.js?v=2444";
+} from "./assistant.js?v=2445";
+import { getContextById, updateContext } from "./contexts-store.js?v=2445";
+import { getSessionById } from "./sessions-store.js?v=2445";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2445";
+import { setHandoff } from "./handoff.js?v=2445";
+import { navigate } from "./router.js?v=2445";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2445";
+import { getPosts } from "./posts-store.js?v=2445";
 import {
   networkVoiceOn,
   networkVoice,
@@ -61,7 +61,7 @@ import {
   playbookNetworks,
   voiceParts,
   adaptNetworkVoice,
-} from "./voice-parts.js?v=2444";
+} from "./voice-parts.js?v=2445";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;
