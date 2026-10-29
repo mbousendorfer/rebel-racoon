@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2377";
-import { conceptHint } from "./concepts.js?v=2377";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2379";
+import { conceptHint } from "./concepts.js?v=2379";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2377";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2377";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2377";
-import { isFlagOn } from "./feature-flags.js?v=2377";
-import { clipLookOf } from "./videos-store.js?v=2377";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2377";
-import { parseHashParams } from "./url-state.js?v=2377";
+} from "./playbook-brand-kit.js?v=2379";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2379";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2379";
+import { isFlagOn } from "./feature-flags.js?v=2379";
+import { clipLookOf } from "./videos-store.js?v=2379";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2379";
+import { parseHashParams } from "./url-state.js?v=2379";
 import {
   isListPart,
   voiceParts,
@@ -51,22 +51,24 @@ import {
   voiceNetTagHtml,
   markAdapted,
   withNetworkVoices,
+  canLearnFrom,
   ADAPTED_FROM,
-} from "./voice-parts.js?v=2377";
-import { showToast } from "./components/toast.js?v=2377";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2377";
-import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2377";
-import { updateContext } from "./contexts-store.js?v=2377";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2377";
-import { consumeHandoff } from "./handoff.js?v=2377";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2377";
+} from "./voice-parts.js?v=2379";
+import { showToast } from "./components/toast.js?v=2379";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2379";
+import { voiceChoices, saveNetworkVoice } from "./network-voice-flow.js?v=2379";
+import { updateContext } from "./contexts-store.js?v=2379";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2379";
+import { consumeHandoff } from "./handoff.js?v=2379";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2379";
 import {
   NETWORKS,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   networkLabel,
   networkIcon,
-} from "./social-profiles.js?v=2377";
+  getConnectedProfiles,
+} from "./social-profiles.js?v=2379";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2079,6 +2081,13 @@ function voiceNets(data) {
   return playbookNetworks(data);
 }
 
+// The run's voice review opens a network's rules in edit (null: the default
+// voice) — a network without rules shows its card, the ways as tiles.
+export function editVoiceNetwork(net) {
+  setVoiceNet(net);
+  openEdit(cfg.getData(), "voice");
+}
+
 function setVoiceNet(net) {
   voiceNet = net || null;
   const [path] = window.location.hash.slice(1).split("?");
@@ -2386,6 +2395,7 @@ function renderVoiceEdit2(data) {
   }
   return `${renderVoiceTabs(data)}${pb2EditGrid("voice", [
     ...pb2VoiceParts(data, { edit: true, lead: mode }),
+    cfg.networkPicker && cfg.onVoiceWay ? defaultVoiceWays() : "",
     ...networkVoiceCards(data),
   ])}`;
 }
@@ -2721,12 +2731,45 @@ function networkVoiceCards(data) {
   ];
 }
 
+// The run's voice review: rewrite the default voice from a source — the
+// fiche's Learn from…, as tiles in a card (2026-10-29, asked: the ways belong
+// in the right column, not the left).
+function defaultVoiceWays() {
+  const account = getConnectedProfiles().find(canLearnFrom);
+  const tiles = [
+    account && {
+      value: "learn",
+      icon: "ap-icon-double-chat-bubbles",
+      tile: "An account's posts",
+      hint: `${account.handle} · ${account.postCount} posts`,
+    },
+    { value: "document", icon: "ap-icon-file--text", tile: "A document", hint: "A brand book or a style guide" },
+  ].filter(Boolean);
+  return pb2Block(
+    "Learn it from a source",
+    `<div class="voice-ask__options" style="--others:${Math.max(tiles.length - 1, 1)}">${tiles
+      .map(
+        (
+          c,
+          i,
+        ) => `<button type="button" class="voice-ask__option${i ? "" : " is-best"}" data-voice-ask="" data-voice-choice="${c.value}">
+          <span class="voice-ask__icon" aria-hidden="true"><i class="${c.icon}"></i></span>
+          <span class="voice-ask__text"><span class="voice-ask__name">${esc(c.tile)}</span><span class="voice-ask__hint">${esc(c.hint)}</span></span>
+        </button>`,
+      )
+      .join("")}</div>`,
+    { wide: true, hint: "I rewrite your default voice from it. You can edit it after.", className: "pb2-voice-ways" },
+  );
+}
+
 // The run's Voice review (cfg.networkPicker, flag connectFirst — 2026-10-29,
 // asked: « que l'on puisse ou non ajouter des voices pour des networks
 // spécifiques »; the main-network card was removed the same day, asked):
 // where the brand posts, then which networks get rules of their own — none by
 // default, every network on the default voice — then a card per network
-// picked. The ways to add rules live on the review's left, not in the cards.
+// picked. The ways to add rules are tiles in a network's card (2026-10-29: in
+// the right column, not the review's left); once it has rules, its part opens
+// them in edit (setVoiceNetwork).
 // `voiceRulesFor` is the draft's (never saved): a network out of it keeps the
 // default voice, chosen; in it with no rules yet, its first draft asks.
 function networkPickerCards(data, nets, first) {
@@ -2803,6 +2846,7 @@ function networkPickerCards(data, nets, first) {
            <div class="pb2-voice-net__foot"><button type="button" class="ap-button ghost grey" data-pb2-voice-reset="${esc(net)}">Use my default voice instead</button></div>`
           : voiceAskHtml(data, net, {
               id: net,
+              choices: voiceChoices(net).items.filter((c) => c.value !== "edit" && c.value !== "default"),
               line: `Until you add rules, your ${label} posts follow your default voice. Left as is, I'll ask before your first ${label} post.`,
               later: null,
             });
@@ -3146,7 +3190,9 @@ function renderActivePanel(data) {
     // Creation's review: each network connected so far gets its voice — learned
     // from its posts, else optimized — shown here before it's saved.
     if (!isLibrary() && networkVoiceOn()) data.voiceByNetwork = withNetworkVoices(data);
-    if (voiceNet && (!isLibrary() || !voiceNets(data).includes(voiceNet))) setVoiceNet(null);
+    // The run's voice review (cfg.networkPicker) opens a network's rules in edit.
+    const keep = cfg.networkPicker ? playbookNetworks(data) : isLibrary() ? voiceNets(data) : [];
+    if (voiceNet && !keep.includes(voiceNet)) setVoiceNet(null);
     return scope === "voice" ? renderVoiceEdit2(data) : renderVoiceRead2(data, learnMenu());
   }
   if (activeTab === "brand") return scope === "brand" ? renderBrandEdit2(data) : renderBrandRead2(data);
@@ -3573,6 +3619,8 @@ function onClick(event) {
   if (clipToggle && clipToggle.matches("input"))
     return setClipLook({ [clipToggle.dataset.pb2CliplookToggle]: clipToggle.checked });
   const giveVoice = !isLibrary() && event.target.closest("[data-voice-choice]");
+  if (giveVoice && cfg.onVoiceWay)
+    return cfg.onVoiceWay(giveVoice.dataset.voiceAsk || null, giveVoice.dataset.voiceChoice);
   if (giveVoice) return giveNetworkVoice(giveVoice.dataset.voiceAsk, giveVoice.dataset.voiceChoice);
   // A click on the label clicks its radio too: answer the radio's alone, or
   // the saved Playbook's confirm would open twice.

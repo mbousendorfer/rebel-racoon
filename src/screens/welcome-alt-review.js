@@ -32,12 +32,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2377";
-import { navigate } from "../router.js?v=2377";
-import { getDraft, patchDraft } from "../context-builder.js?v=2377";
-import { mount } from "../playbook-view.js?v=2377";
-import { parseHashParams } from "../url-state.js?v=2377";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2377";
+import { html, raw } from "../utils.js?v=2379";
+import { navigate } from "../router.js?v=2379";
+import { getDraft, patchDraft } from "../context-builder.js?v=2379";
+import { mount } from "../playbook-view.js?v=2379";
+import { parseHashParams } from "../url-state.js?v=2379";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2379";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -46,11 +46,11 @@ const OUT_MS = 240; // the part's column leaves
 const GLIDE_MS = 720; // a card glides to the middle
 
 // `review`: { step, title, sub, parts (a list, or a function for parts that
-// come and go), next: { label, go }, done: { title, lead }, back, ways?,
+// come and go; a part's `open()` opens its tab in edit itself, its `badge` says
+// what's left to do), next: { label, go }, done: { title, lead }, back, onWay?,
 // start? (the part to open first), progress? (false: no step dots) }.
-// `ways(partId)`: the ways to fill the part on screen, listed on the left
-// ({ label, items: [{ id, icon, title, desc }] }); `onWay(partId, id, refresh)`
-// runs one, `refresh()` repaints the part with what it changed.
+// `onWay(partId, way, refresh)`: a card's tile was picked (the voice review);
+// `refresh()` repaints the part with what it changed.
 export function renderReview(target, sid, config, review) {
   const parts = () => (typeof review.parts === "function" ? review.parts() : review.parts);
   const reviewed = () => new Set(getDraft(sid)?.reviewedParts || []);
@@ -76,32 +76,6 @@ export function renderReview(target, sid, config, review) {
   // (the list can repaint twice in a frame). The list repaints on every move,
   // so a check that always animated replayed on every click (2026-10-20).
   let justChecked = null;
-
-  // The ways to fill the part on screen, under the parts: the brand step's
-  // « Or start another way » rows.
-  const waysHtml = () => {
-    const ways = review.ways?.(current());
-    if (!ways?.items.length) return "";
-    return html`
-      <p class="welcome-flow__or">${ways.label}</p>
-      <ul class="welcome-flow__options">
-        ${ways.items.map(
-          (w) => html`
-            <li>
-              <button type="button" class="welcome-flow__option" data-review-way="${w.id}">
-                <span class="welcome-flow__glyph is-icon"><i class="${w.icon}" aria-hidden="true"></i></span>
-                <span class="welcome-flow__option-text">
-                  <span class="welcome-flow__option-title">${w.title}</span>
-                  <span class="welcome-flow__option-desc">${w.desc}</span>
-                </span>
-                <i class="ap-icon-arrow-right welcome-flow__option-add" aria-hidden="true"></i>
-              </button>
-            </li>
-          `,
-        )}
-      </ul>
-    `;
-  };
 
   const left = () => {
     const done = reviewed();
@@ -131,13 +105,13 @@ export function renderReview(target, sid, config, review) {
                   <span class="welcome-flow__option-title">${t.title}</span>
                   <span class="welcome-flow__option-desc">${t.lead}</span>
                 </span>
+                ${t.badge && !done.has(t.id) ? raw(`<span class="ap-status orange">${t.badge}</span>`) : ""}
                 ${raw(mark)}
               </button>
             </li>
           `;
         })}
       </ul>
-      ${raw(waysHtml())}
       <div class="welcome-flow__actions">
         <button type="button" class="ap-button ghost grey" data-flow-back>
           <i class="ap-icon-arrow-left"></i><span>Back</span>
@@ -169,6 +143,12 @@ export function renderReview(target, sid, config, review) {
   shell.sheet.append(barEl);
   const unmount = mount(body, {
     ...config,
+    // A way to fill the part, picked on a card's tile (the voice review):
+    // `net` null is the default voice.
+    ...(review.onWay && {
+      onVoiceWay: (net, way) =>
+        review.onWay(net ? `voice-net-${net}` : current(), way === "learn" ? "posts" : way, () => openPart(current())),
+    }),
     showTop: false,
     headerActions: () => null,
     audienceList: true,
@@ -302,7 +282,9 @@ export function renderReview(target, sid, config, review) {
     currentId = partOf(id).id;
     if (body.querySelector(".pb2.is-editing")) body.querySelector("[data-recap-save]")?.click();
     body.querySelector(`[data-pb2-tab="${partOf(id).tab || currentId}"]`)?.click();
-    body.querySelector("[data-recap-edit-card]")?.click();
+    // A part may open its tab in edit itself (the voice review: a network's rules).
+    if (partOf(id).open) partOf(id).open();
+    else body.querySelector("[data-recap-edit-card]")?.click();
     index = fromEnd ? Number.MAX_SAFE_INTEGER : 0;
     applyColumn();
     centre({ instant: true });
@@ -473,8 +455,6 @@ export function renderReview(target, sid, config, review) {
   };
 
   const onClick = (e) => {
-    const way = e.target.closest("[data-review-way]")?.dataset.reviewWay;
-    if (way) return review.onWay(current(), way, () => openPart(current()));
     const part = e.target.closest("[data-review-part]")?.dataset.reviewPart;
     if (part) {
       const asking = shell.sheet.classList.contains("is-asking");

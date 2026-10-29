@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2377";
-import { catalogueRoute } from "../active-playbook.js?v=2377";
+import { navigate } from "../router.js?v=2379";
+import { catalogueRoute } from "../active-playbook.js?v=2379";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,13 +13,13 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2377";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2377";
-import { isFlagOn } from "../feature-flags.js?v=2377";
-import { renderReview } from "./welcome-alt-review.js?v=2377";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2377";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2377";
-import { getContextById, updateContext } from "../contexts-store.js?v=2377";
+} from "../context-builder.js?v=2379";
+import { mount, RECAP_SECTIONS, editVoiceNetwork } from "../playbook-view.js?v=2379";
+import { isFlagOn } from "../feature-flags.js?v=2379";
+import { renderReview } from "./welcome-alt-review.js?v=2379";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2379";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2379";
+import { getContextById, updateContext } from "../contexts-store.js?v=2379";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -27,14 +27,14 @@ import {
   networkVoice,
   networkVoiceOn,
   playbookNetworks,
-} from "../voice-parts.js?v=2377";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2377";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2377";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2377";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2377";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2377";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2377";
-import { showToast } from "../components/toast.js?v=2377";
+} from "../voice-parts.js?v=2379";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2379";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2379";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2379";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2379";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2379";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2379";
+import { showToast } from "../components/toast.js?v=2379";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -135,7 +135,7 @@ const playbookReview = () => ({
 // The Voice: the default voice (its five parts), then — flag voicePerNetwork,
 // a Playbook with networks — the networks (where you post, which ones get rules),
 // then a part per network picked. All open the voice tab; each picks its own
-// blocks. The ways to fill a part are listed on the left (`ways`): the fiche's
+// blocks. The ways to fill a part are tiles on its cards (`onWay`): the fiche's
 // Learn from… for the default voice; posts, a document, questions or the
 // default voice adapted for a network. No account yet: posts connect one first.
 const VOICE_TINT = "voice";
@@ -144,6 +144,7 @@ function voiceReview(sid, overrides = {}) {
   const nets = () => (networkVoiceOn() ? playbookNetworks(getDraft(sid)) : []);
   const netOf = (partId) => partId.startsWith("voice-net-") && partId.slice("voice-net-".length);
   const notNetworks = (el) => !el.matches(".pb2-voice-net, .pb2-voice-networks");
+  // The ways live on the cards (tiles), not on the left (2026-10-29).
   const parts = () =>
     [
       {
@@ -153,6 +154,7 @@ function voiceReview(sid, overrides = {}) {
         title: "Default voice",
         icon: voice.icon,
         lead: "How you sound on every network.",
+        open: () => editVoiceNetwork(null),
         pick: (all) => all.filter(notNetworks),
       },
       {
@@ -162,6 +164,7 @@ function voiceReview(sid, overrides = {}) {
         title: "Your networks",
         icon: "ap-icon-web",
         lead: networkVoiceOn() ? "Where you post, and the ones that get rules of their own." : "Where you post.",
+        open: () => editVoiceNetwork(null),
         pick: (all) => all.filter((el) => el.matches(".pb2-voice-networks")),
       },
       ...nets()
@@ -173,49 +176,19 @@ function voiceReview(sid, overrides = {}) {
           title: `Rules for ${networkLabel(n)}`,
           icon: networkIcon(n),
           lead: `What your ${networkLabel(n)} posts do on top of your default voice.`,
-          pick: (all) => all.filter((el) => el.matches(`.pb2-voice-net--${n}`)),
+          // No rules yet: its card, the ways as tiles. Rules: they open in edit
+          // (the network's own five parts, voiceNet).
+          badge: networkVoice(getDraft(sid), n).state === "own" ? null : "To fill",
+          open: () => editVoiceNetwork(n),
+          pick: (all) => {
+            const card = all.filter((el) => el.matches(`.pb2-voice-net--${n}`));
+            return card.length ? card : all;
+          },
         })),
     ].filter(Boolean);
 
   // The accounts to read on a network (or any, for the default voice).
   const accountsOn = (net) => getConnectedProfiles().filter((p) => !net || normalizeNetwork(p.platform) === net);
-  // Posts to learn from: a connected account with enough of them, else — no
-  // account on the network — connect one first. An account with too few posts
-  // (`canLearnFrom`) offers no posts at all, as in the chat's Voice step.
-  const postsWay = (net, title) => {
-    const have = accountsOn(net);
-    const a = have.find(canLearnFrom);
-    if (have.length && !a) return null;
-    const desc = a
-      ? `${a.handle} · ${a.postCount} posts`
-      : net
-        ? `Connect your ${networkLabel(net)} account, I read its posts`
-        : "Connect an account, I read its posts";
-    return { id: "posts", icon: "ap-icon-double-chat-bubbles", title, desc };
-  };
-  const ways = (partId) => {
-    const net = netOf(partId);
-    if (partId === "voice-default")
-      return {
-        label: "Learn it from",
-        items: [
-          postsWay(null, "An account's posts"),
-          { id: "document", icon: "ap-icon-file--text", title: "A document", desc: "A brand book or a style guide" },
-        ].filter(Boolean),
-      };
-    if (!net) return null;
-    const label = networkLabel(net);
-    return {
-      label: `Add rules for ${label} from`,
-      items: [
-        postsWay(net, `Your ${label} posts`),
-        { id: "document", icon: "ap-icon-file--text", title: "A document", desc: "A style guide or a brief" },
-        { id: "interview", icon: "ap-icon-question", title: "A few questions", desc: "About a minute" },
-        { id: "adapt", icon: "ap-icon-sparkles", title: "Your default voice, adapted", desc: "Nothing to read" },
-      ].filter(Boolean),
-    };
-  };
-
   // Posts: the accounts already connected, else connect one first (the
   // connect dialog is the consent, DECISIONS « Connecting an account »).
   const withAccounts = (net, use) => {
@@ -299,7 +272,6 @@ function voiceReview(sid, overrides = {}) {
     title: "Set your voice",
     sub: "How you sound, then where you post and which networks get rules of their own. Changes save as you type.",
     parts,
-    ways,
     onWay,
     next: { label: finishLabel(), go: () => finishRun(sid) },
     done: { title: "Your voice is set.", lead: "Every draft starts from it. Let's write the first one." },
