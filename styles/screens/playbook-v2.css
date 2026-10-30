@@ -1349,3 +1349,11 @@
   font-size: var(--sys-icon-css-sm);
   cursor: help;
 }
+
+/* Competitors / Influencers on the fiche: the roster lines up with the reading
+   column of the other tabs (its own 32px inset sat it off the column edge). */
+.pb2 .pb2-block--bare .recap__cmpsec,
+.pb2 .pb2-block--bare .recap__infsec {
+  max-width: 760px;
+  padding-inline: 0;
+}
