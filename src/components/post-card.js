@@ -19,21 +19,21 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2579";
-import { isPortraitFormat } from "../clip-formats.js?v=2579";
-import { presetById } from "../clip-captions.js?v=2579";
-import { renderFeedbackControl } from "./feedback-control.js?v=2579";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2581";
+import { isPortraitFormat } from "../clip-formats.js?v=2581";
+import { presetById } from "../clip-captions.js?v=2581";
+import { renderFeedbackControl } from "./feedback-control.js?v=2581";
 import {
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=2579";
-import { validatePost, usedCharacters, youtubeTitle, nextStep } from "../post-validation.js?v=2579";
-import { REVEAL_MS } from "../archie-pixels.js?v=2579";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2579";
-import { languageOf } from "../draft-rewrite.js?v=2579";
+} from "../social-profiles.js?v=2581";
+import { validatePost, usedCharacters, youtubeTitle, nextStep } from "../post-validation.js?v=2581";
+import { REVEAL_MS } from "../archie-pixels.js?v=2581";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2581";
+import { languageOf } from "../draft-rewrite.js?v=2581";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -325,18 +325,26 @@ export function renderPostCard(post, opts = {}) {
   // the row without any JS wiring. When the draft has no provenance, the
   // feedback strip renders on its own.
   const gcBody = !editing && !regenerating ? renderGenerationContextBody(post) : "";
+  // The draft's next step ends the foot row (opts.verb): one row under the
+  // card for what you think of it, why it was written, and what to do next.
+  const nextStep = renderNextStep(post, opts, editing || regenerating);
   const belowCard = gcBody
     ? `<input type="checkbox" id="gc-${post.id}" class="posts__gencontext-check" hidden />
        <div class="posts__card-footrow">
          ${feedbackStrip}
-         <label class="posts__gencontext-toggle" for="gc-${post.id}">
-           <i class="ap-icon-information-circle posts__gencontext-info" aria-hidden="true"></i>
-           <span class="posts__gencontext-toggle-label">Why this draft</span>
-           <i class="ap-icon-chevron-down posts__gencontext-chevron" aria-hidden="true"></i>
-         </label>
+         <span class="posts__card-footend">
+           <label class="posts__gencontext-toggle" for="gc-${post.id}">
+             <i class="ap-icon-information-circle posts__gencontext-info" aria-hidden="true"></i>
+             <span class="posts__gencontext-toggle-label">Why this draft</span>
+             <i class="ap-icon-chevron-down posts__gencontext-chevron" aria-hidden="true"></i>
+           </label>
+           ${nextStep}
+         </span>
        </div>
        <div class="posts__gencontext-panel">${gcBody}</div>`
-    : feedbackStrip;
+    : nextStep
+      ? `<div class="posts__card-footrow">${feedbackStrip}<span class="posts__card-footend">${nextStep}</span></div>`
+      : feedbackStrip;
 
   const stats = post.stats || {};
   const engagement =
@@ -448,7 +456,7 @@ export function renderPostCard(post, opts = {}) {
           )}
           ${raw(renderFirstComment(post, { hidden: editing || regenerating }))}
         </article>
-        ${raw(renderNextStep(post, opts, editing || regenerating))} ${raw(belowCard)}
+        ${raw(belowCard)}
       </div>
 
       <!-- The rail is prod's (studio-mfe post-card-actions), in its order:
@@ -595,9 +603,7 @@ function renderNextStep(post, opts, busy) {
   // (Generate an image · Image Studio · Add image): a fourth door is noise.
   if (!action || action === "image") return "";
   const attr = { schedule: "data-post-schedule", shorten: "data-post-shorten", image: "data-post-image" }[action];
-  return `<div class="posts__card-next">
-    <button type="button" class="ap-button stroked blue" ${attr}="${escapeAttr(post.id)}">${label}</button>
-  </div>`;
+  return `<button type="button" class="ap-button stroked blue posts__card-next" ${attr}="${escapeAttr(post.id)}">${label}</button>`;
 }
 
 function renderPostIssues(post, opts = {}) {
