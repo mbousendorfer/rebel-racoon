@@ -1930,3 +1930,7 @@ span.chat-bubble-choice-chip {
   -webkit-font-smoothing: auto;
   -moz-osx-font-smoothing: auto;
 }
+
+.e-turn .chat-bubble--user .chat-bubble-text {
+  color: var(--ref-color-grey-100);
+}
