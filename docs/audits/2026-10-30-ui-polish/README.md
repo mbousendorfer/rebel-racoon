@@ -2,7 +2,7 @@
 
 A snapshot, dated like every file in `audits/`. Read the date before you trust a detail.
 
-Over three iterations we audited 13 surfaces of the prototype on 78 reproducible captures, shipped 61 fix batches to `main`, and re-audited after each iteration with reviewers who had not written the fixes. The global score (the mean of the 13 surface scores, /10) went from **7.08 to 8.37**. The loop stopped on the mission's third rule: two iterations in a row gained less than 0.3 (+0.24, then +0.02). The issues still open at severity 3 all need a product decision, listed in [To decide](#to-decide).
+Over three iterations we audited 13 surfaces of the prototype on 78 reproducible captures, shipped 61 fix batches to `main`, and re-audited after each iteration with reviewers who had not written the fixes. The global score (the mean of the 13 surface scores, /10) went from **7.08 to 8.37**. The loop stopped on the mission's third rule: two iterations in a row gained less than 0.3 (+0.24, then +0.02). The issues still open at severity 3 all needed a product decision; they shipped the next day, listed in [Decided](#decided).
 
 Open [`compare.html`](compare.html) for a slider on each changed screen, with a filter per surface.
 
@@ -43,7 +43,7 @@ The independent re-audits caught five regressions in our own fixes. We fixed all
 
 Our own score estimates ran high: we put iteration 1 at 8.31 and the re-auditors at 8.11, so every score in this report is the re-auditors' number.
 
-Two first-audit fixes did not ship as proposed. Turning « Draft post » orange (PN-12) contradicts FEATURES §17, and a confirm before deleting a reference image (PB-16) adds a step; both went to [To decide](#to-decide). The catalogue tile keeps 28px icon buttons (PB-03): at the DS 36px, most Playbook names wrapped onto two lines.
+Two first-audit fixes did not ship as proposed. Turning « Draft post » orange (PN-12) contradicts FEATURES §17, and a confirm before deleting a reference image (PB-16) adds a step; both went to [Decided](#decided). The catalogue tile keeps 28px icon buttons (PB-03): at the DS 36px, most Playbook names wrapped onto two lines.
 
 ## Method
 
@@ -303,55 +303,42 @@ Each section gives the surface's score, its changed screens (before | after) and
 | How you sound, on every network. (one voice)                                                      | How you sound, everywhere.                                                                  | With `voicePerNetwork` OFF there is one voice.                                     |
 | Every draft I write starts from this voice. I save as you type.                                   | (replaces « Give a network its own voice when it needs one »)                               | The screen offered no way to do that.                                              |
 
-## To decide
+## Decided
 
-Each item needs a product call, contradicts a doc in `docs/reference/`, or adds a step to a flow. We coded none of them.
+The loop left 36 items that needed a product call, contradicted a doc in `docs/reference/`, or added a step to a flow. On 2026-10-30 the user asked to apply them all, using the report's recommendations. Where one contradicted a doc, the doc changed in the same commit. Scores above predate these changes; nobody re-audited after them.
 
-### Chat and shell
+| Item                                    | What shipped                                                                                                                             | Commit      |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| Admin link in the new-chat hero (CH-17) | Behind an Admin flag, `chatPreviewTool`, OFF by default.                                                                                 | `1d9adee96` |
+| Topics row width (CH-16)                | The 740px column of the composer and starters.                                                                                           | `1d9adee96` |
+| Source pills (CH-09)                    | electric-blue-150 fill, white at 4.86:1.                                                                                                 | `1d9adee96` |
+| Blue in the Playbook palette (CH-04)    | A Playbook's « blue » shows as soft blue: the data stays, the interactive blue stays for controls.                                       | `1d9adee96` |
+| Mock copy (CH-15)                       | Typographic quotes in the Archie line of `threads.js`.                                                                                   | `1d9adee96` |
+| Draft preview account (PN-17)           | The preview shows the connected profile that publishes, like the schedule modal.                                                         | `cd4b57562` |
+| Schedule sentence (PN-19)               | « Tue, Nov 3, at LinkedIn's best time: the first best day from Fri, Oct 30. »                                                            | `cd4b57562` |
+| Draft post colour (PN-12)               | Kept as is: secondary blue with the sparkle on cards.                                                                                    | none        |
+| Schedule on the draft rail (PN2-07)     | Stroked blue, the other five stay grey.                                                                                                  | `cd4b57562` |
+| Clips on a video's Sources card (PN-23) | A « 5 clips › » row that opens the Clips tab.                                                                                            | `cd4b57562` |
+| Idea kind colours (PN-11)               | Grey tags.                                                                                                                               | `cd4b57562` |
+| Clip density (PN-21)                    | Thumbnail capped at 200px in the panel only.                                                                                             | `cd4b57562` |
+| Panel width under 1280px (PN-20)        | Floor 380px under 1280px (`--app-right-panel-floor`); the Reference button keeps its glyph alone at that width. PANEL-SIDEBAR-RULES §11. | `a43ca7072` |
+| Catalogue tile strip (PB-01)            | The brand mark the table uses. FEATURES §9.                                                                                              | `3b4bec9e0` |
+| Reference image delete (PB-16)          | Undo on the toast.                                                                                                                       | `3b4bec9e0` |
+| Unsaved style (Image Studio)            | « Discard this style? » on Cancel and Back when something changed.                                                                       | `3b4bec9e0` |
+| Duplicate catalogue title               | No topbar hint on `/contexts`.                                                                                                           | `3b4bec9e0` |
+| Influencer invite (TP-16)               | Only while the Playbook follows no influencer; stroked blue on the card.                                                                 | `8e194db9c` |
+| Unavailable sources (TP-17)             | Grouped under « Not available yet · 6 » as compact cards.                                                                                | `8e194db9c` |
+| Brand website sites (TP-11)             | Read-only until the source runs.                                                                                                         | `8e194db9c` |
+| Two primaries per review (OB-08)        | The left button is secondary blue.                                                                                                       | `094378b65` |
+| Voice rewrite with no undo (OB-17)      | A proposal first: « New default voice from … », Keep my voice / Add to Voice profile.                                                    | `094378b65` |
+| Featured reveal row hover (OB-16)       | Recorded as the one exception in UI-PATTERNS.                                                                                            | `094378b65` |
+| « All set » card (OB-18)                | Removed: the last confirm goes straight on.                                                                                              | `094378b65` |
+| Voice-mode tabs (OB2-03)                | At the head of the card they switch.                                                                                                     | `094378b65` |
+| Feedback width                          | 560px; UI-PATTERNS updated.                                                                                                              | `9b06bace0` |
+| « I read every message »                | « The team that builds me reads every message. »                                                                                         | `9b06bace0` |
+| `--app-radius-modal`                    | Dialogs keep the DS 8px; the doc says what the token still serves.                                                                       | `9b06bace0` |
 
-- **Admin link in the new-chat hero (CH-17).** A prototype control sits in the hero's prime spot. Recommendation: move it into the sidebar cog's Admin popover, which already holds the prototype controls.
-- **Topics row width in the hero (CH-16).** The composer and starters use a 740px column, the Topics row 1016px; `session.css:806` keeps the wider row on purpose. Recommendation: constrain Topics to the 740px column.
-- **Source pills in the thread (CH-09).** White on electric-blue-100 is 3.35:1. Options: an electric-blue-150 fill (passes AA, off-DS) or wait for the DS. Recommendation: blue-150 until the DS fixes its primary.
-- **Electric blue in the Playbook palette (CH-04).** A Playbook's colour is data, and blue is the interactive colour. Recommendation: remove blue from the palette at the source.
-- **Mock copy (CH-15).** One Archie line in `src/mocks/threads.js:121` quotes a Playbook name with straight quotes; the mission forbids editing mocks. Recommendation: allow copy-only edits to mock Archie lines.
-
-### Side panel, drafts, schedule
-
-- **Which account a draft preview shows (PN-17, severity 3).** The card shows the post's author (Maya Chen), the schedule modal the connected page (Northwind Studio Co.). Recommendation: the preview takes the connected profile, the one that publishes.
-- **Panel width under 1230px (PN-20).** PANEL-SIDEBAR-RULES §11 (panel ≥ 610px) and §8 (chat ≥ 560px) contradict each other; at 1024 the composer toolbar wraps. Recommendation: lower the panel floor to 380px under 1280px.
-- **The schedule sentence (PN-19).** « Not before Fri, Oct 30 » lands on Tue, Nov 3 with no reason on screen. Recommendation: name the chosen day in the sentence.
-- **Draft post colour (PN-12).** The audit proposed orange (an AI action); FEATURES §17 keeps orange for the one primary. We unified the cards on secondary blue with the sparkle. Recommendation: keep blue on cards.
-- **Schedule emphasis on the draft rail (PN2-07).** All six rail buttons are now grey. Recommendation: stroked blue for Schedule only.
-- **A video's clips on its Sources card (PN-23).** The Overview says « 2 ideas, 5 clips », the Sources card lists only the ideas. Recommendation: a « 5 clips » row like the ideas row.
-- **Idea kind colours (PN-11).** « Insight » green sits next to the green « Drafted ». Recommendation: grey kind tags; the word tells them apart.
-- **Clip density (PN-21).** One clip per screen at full panel width. Recommendation: cap the thumbnail height in the panel only.
-
-### Playbooks
-
-- **Catalogue tile colour strip (PB-01).** It reads as the coloured edge bar the house rules ban; FEATURES §9 keeps it. Recommendation: the brand mark the table view already uses.
-- **Reference image delete (PB-16).** One click, no confirm, no undo, while deleting a style asks. Recommendation: Undo on the existing toast.
-- **Unsaved style on Cancel or Back (Image Studio).** A typed name and up to six images vanish. Recommendation: a « Discard this style? » confirm when something changed.
-- **Duplicate catalogue title.** The topbar and the `h1` both say « Playbooks », and the tooltip repeats the subtitle. Recommendation: drop the topbar's hint on this route.
-
-### Topic Feed
-
-- **Influencer invite (TP-16).** A second primary on screen, shown even when the feed already holds influencer Topics. Recommendation: show it only when the Playbook follows no influencer, as a secondary blue button on the card.
-- **Unavailable sources on Feed settings (TP-17).** Since the AA fix, six unavailable cards weigh as much as the two live ones. Recommendation: group them under « Not available yet » as compact cards.
-- **Brand website site list (TP-11).** Editable while the source can't run. Recommendation: read-only until it goes live.
-
-### Onboarding
-
-- **Two primaries per review (OB-08).** The orange « Check my voice » on the left and the blue confirm at the bottom. Recommendation: secondary blue on the left.
-- **Voice rewritten from a source with no undo (OB-17).** Recommendation: the same proposal flow as a network voice (show, then « Add to Voice profile »).
-- **Featured reveal row hover (OB-16).** House rule says blue border, the row is orange by arbitration. Recommendation: record the exception in UI-PATTERNS.
-- **« Step 3 of 4 » on a screen that can end the run (OB-18).** Recommendation: « Looks good, finish » goes straight to the end, without the « all set » card.
-- **Voice-mode tabs at the bottom of their card (OB2-03).** They switch the cards below and read as a header over nothing. Recommendation: move them to the head of the cards they switch.
-
-### Dialogs
-
-- **Feedback and add-source widths.** UI-PATTERNS lists both at 640. Recommendation: feedback to 560, and update the doc.
-- **« I read every message ».** Archie claims to read feedback; the team does. Recommendation: keep the first person and make the claim true.
-- **`--app-radius-modal` (16px).** UI-PATTERNS documents it; the dialogs render the DS 8px. Recommendation: follow the DS and remove the token from the doc.
+Three shots joined `ui-capture.config.json` on the way: `first-time-chat`, `chat-loading` and `sidebar-collapsed`. The loading shot shows « Thinking… » twice, in the thread and over the composer. Nobody has audited that yet.
 
 ## DS gaps
 
