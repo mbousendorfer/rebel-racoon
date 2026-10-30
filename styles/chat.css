@@ -1846,14 +1846,9 @@ span.chat-bubble-choice-chip {
 }
 
 .draft-batch__card:hover,
-.draft-batch__card:focus-visible,
+.draft-batch__card:focus-within,
 .draft-batch__card.is-active {
   border-color: var(--ref-color-electric-blue-100);
-}
-
-.draft-batch__card:focus-visible {
-  outline: 2px solid var(--ref-color-electric-blue-100);
-  outline-offset: 2px;
 }
 
 .draft-batch__head {
@@ -1870,7 +1865,20 @@ span.chat-bubble-choice-chip {
 
 .draft-batch__name {
   flex: 1;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
   font-weight: var(--sys-text-style-body-bold-weight);
+  text-align: left;
+  cursor: pointer;
+}
+
+.draft-batch__name:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+  border-radius: var(--ref-border-radius-sm);
 }
 
 .draft-batch__text {

@@ -13,12 +13,12 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2603";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2603";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2603";
-import { getTopPost } from "../../top-posts-store.js?v=2603";
-import { getTopicById } from "../../topics-store.js?v=2603";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2603";
+} from "./thread-turns.js?v=2604";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2604";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2604";
+import { getTopPost } from "../../top-posts-store.js?v=2604";
+import { getTopicById } from "../../topics-store.js?v=2604";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2604";
 import {
   renderProfileEchoCard,
   networkLabel,
@@ -26,24 +26,24 @@ import {
   profileForNetwork,
   renderProfileTag,
   networkMeta,
-} from "../../social-profiles.js?v=2603";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2603";
-import { getIdeas } from "../../library.js?v=2603";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2603";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2603";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2603";
-import { getPlans } from "../../post-plan-store.js?v=2603";
-import { isFlagOn } from "../../feature-flags.js?v=2603";
-import { CURRENT_USER } from "../../org.js?v=2603";
-import { getSessionById } from "../../sessions-store.js?v=2603";
-import { getContextById } from "../../contexts-store.js?v=2603";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2603";
-import { getFocusKey } from "../../components/right-panel.js?v=2603";
-import { getPosts } from "../../posts-store.js?v=2603";
-import { nextStep } from "../../post-validation.js?v=2603";
-import { diffWords, diffParagraphs, changeRatio, wordCounts } from "../../word-diff.js?v=2603";
-import { revisionSummary, revisionGroupSummary, revisionState, languageOf } from "../../draft-rewrite.js?v=2603";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2603";
+} from "../../social-profiles.js?v=2604";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2604";
+import { getIdeas } from "../../library.js?v=2604";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2604";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2604";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2604";
+import { getPlans } from "../../post-plan-store.js?v=2604";
+import { isFlagOn } from "../../feature-flags.js?v=2604";
+import { CURRENT_USER } from "../../org.js?v=2604";
+import { getSessionById } from "../../sessions-store.js?v=2604";
+import { getContextById } from "../../contexts-store.js?v=2604";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2604";
+import { getFocusKey } from "../../components/right-panel.js?v=2604";
+import { getPosts } from "../../posts-store.js?v=2604";
+import { nextStep } from "../../post-validation.js?v=2604";
+import { diffWords, diffParagraphs, changeRatio, wordCounts } from "../../word-diff.js?v=2604";
+import { revisionSummary, revisionGroupSummary, revisionState, languageOf } from "../../draft-rewrite.js?v=2604";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2604";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -599,10 +599,13 @@ function renderDraftsCardTurn(message, sessionId) {
       const id = escapeHtml(p.id);
       const verb = action ? [label, `data-thread-draft-${action}="${id}"`] : null;
       return `
-        <div class="draft-batch__card ap-card${getFocusKey() === `post:${p.id}` ? " is-active" : ""}" data-content-card="post" data-content-key="post:${id}" data-content-ids="${id}" role="button" tabindex="0">
+        <div class="draft-batch__card ap-card${getFocusKey() === `post:${p.id}` ? " is-active" : ""}" data-content-card="post" data-content-key="post:${id}" data-content-ids="${id}">
           <span class="draft-batch__head">
             <i class="${networkIcon(p.network)} draft-batch__network" aria-hidden="true"></i>
-            <span class="draft-batch__name">${escapeHtml(networkLabel(p.network))}</span>
+            <!-- The keyboard way in: the card is no role=button wrapping its own
+                 verb (ARIA nested interactive). A click anywhere on the card
+                 still opens it (delegated on data-content-card). -->
+            <button type="button" class="draft-batch__name" aria-label="Open the ${escapeHtml(networkLabel(p.network))} draft">${escapeHtml(networkLabel(p.network))}</button>
             <span class="ap-status ${err ? "red" : "green"}">${err ? "Needs a fix" : "Ready"}</span>
           </span>
           <span class="draft-batch__text">${escapeHtml((p.text || []).join(" "))}</span>
