@@ -29,12 +29,12 @@
 // The view repaints its whole DOM on most edits (a chip added…), so the sheet
 // is re-laid after every paint (a MutationObserver on the host).
 
-import { html, raw } from "../utils.js?v=2590";
-import { navigate } from "../router.js?v=2590";
-import { getDraft, patchDraft } from "../context-builder.js?v=2590";
-import { mount } from "../playbook-view.js?v=2590";
-import { parseHashParams } from "../url-state.js?v=2590";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2590";
+import { html, raw } from "../utils.js?v=2591";
+import { navigate } from "../router.js?v=2591";
+import { getDraft, patchDraft } from "../context-builder.js?v=2591";
+import { mount } from "../playbook-view.js?v=2591";
+import { parseHashParams } from "../url-state.js?v=2591";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2591";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
