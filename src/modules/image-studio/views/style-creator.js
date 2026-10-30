@@ -9,22 +9,22 @@
 // active Playbook. (A three-subject "Test run" column was removed at the user's
 // request, 2026-10-06: "ça n'a pas de sens".)
 
-import { html, toString } from "../lib/html.js?v=2608";
-import { delegate } from "../lib/delegate.js?v=2608";
-import { getPath } from "../../../router.js?v=2608";
-import { setTopbarActions } from "../../../components/topbar.js?v=2608";
-import { renderFrame } from "./frame.js?v=2608";
-import { renderEmpty } from "../ui/empty.js?v=2608";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=2608";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2608";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=2608";
-import { toast } from "../ui/toast.js?v=2608";
-import { confirmDialog } from "../ui/dialog.js?v=2608";
-import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2608";
-import { copyService } from "../services/index.js?v=2608";
-import { lookFromColors } from "../render/visual.js?v=2608";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2608";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2608";
+import { html, toString } from "../lib/html.js?v=2609";
+import { delegate } from "../lib/delegate.js?v=2609";
+import { getPath } from "../../../router.js?v=2609";
+import { setTopbarActions } from "../../../components/topbar.js?v=2609";
+import { renderFrame } from "./frame.js?v=2609";
+import { renderEmpty } from "../ui/empty.js?v=2609";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=2609";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2609";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=2609";
+import { toast } from "../ui/toast.js?v=2609";
+import { confirmDialog } from "../ui/dialog.js?v=2609";
+import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2609";
+import { copyService } from "../services/index.js?v=2609";
+import { lookFromColors } from "../render/visual.js?v=2609";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2609";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2609";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -200,7 +200,7 @@ export function mount(target, params, ctx, { embed = null } = {}) {
         <h2 class="imst-read__title" id="imst-read-title">What I read from them</h2>
       </div>
       ${palette.length
-        ? html`<ul class="imst-read__palette" aria-label="Colours I sampled">
+        ? html`<ul class="imst-read__palette" aria-label="Colors I sampled">
             ${palette.map((c) => html`<li style="background:${c}" title="${c}"></li>`)}
           </ul>`
         : ""}
@@ -221,7 +221,7 @@ export function mount(target, params, ctx, { embed = null } = {}) {
           id="imst-st-prompt"
           data-imst-field="stylePrompt"
           rows="4"
-          placeholder="Describe the look: the light, the colour, what's in the frame."
+          placeholder="Describe the look: the light, the color, what's in the frame."
           ${state.promptBusy ? "disabled" : ""}
         >
 ${d.stylePrompt}</textarea
