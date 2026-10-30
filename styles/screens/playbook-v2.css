@@ -1357,3 +1357,21 @@
   max-width: 760px;
   padding-inline: 0;
 }
+
+/* The fiche's reading column (polish 2026-10-30): a voice's rules read as a
+   list of lines, a hairline between them, not as a stack of grey slabs — the
+   column has no boxes left but this one. Reading only: the editor, the voice
+   proposal and the onboarding keep their own rule rows. */
+.pb2:not(.is-editing) .pb2-block .voice-rules {
+  gap: 0;
+}
+
+.pb2:not(.is-editing) .pb2-block .voice-rule {
+  padding: var(--ref-spacing-xs) 0;
+  border-radius: 0;
+  background: none;
+}
+
+.pb2:not(.is-editing) .pb2-block .voice-rule + .voice-rule {
+  border-top: 1px solid var(--ref-color-grey-20);
+}
