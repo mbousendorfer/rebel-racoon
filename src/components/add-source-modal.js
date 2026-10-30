@@ -9,25 +9,25 @@
 // upload state machines live outside in sources-stream.js so they
 // continue running even after the modal closes.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2598";
-import { iconFor } from "../file-kinds.js?v=2598";
-import { connectorDocs } from "../mocks.js?v=2598";
+import { html, raw, escapeHtml } from "../utils.js?v=2599";
+import { iconFor } from "../file-kinds.js?v=2599";
+import { connectorDocs } from "../mocks.js?v=2599";
 import {
   getConnectors,
   findConnector,
   setConnectorStatus,
   subscribe as subscribeConnectors,
-} from "../connectors-store.js?v=2598";
-import { postConnectPrompt } from "../assistant.js?v=2598";
-import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2598";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2598";
-import { navigate } from "../router.js?v=2598";
-import { renderConnectorLogo } from "../connectors-view.js?v=2598";
-import { isFlagOn } from "../feature-flags.js?v=2598";
-import { showToast } from "./toast.js?v=2598";
-import { dropzoneHTML } from "./dropzone.js?v=2598";
-import { isDemo } from "../demo-mode.js?v=2598";
-import { addDemoSource } from "../demo-flow.js?v=2598";
+} from "../connectors-store.js?v=2599";
+import { postConnectPrompt } from "../assistant.js?v=2599";
+import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2599";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2599";
+import { navigate } from "../router.js?v=2599";
+import { renderConnectorLogo } from "../connectors-view.js?v=2599";
+import { isFlagOn } from "../feature-flags.js?v=2599";
+import { showToast } from "./toast.js?v=2599";
+import { dropzoneHTML } from "./dropzone.js?v=2599";
+import { isDemo } from "../demo-mode.js?v=2599";
+import { addDemoSource } from "../demo-flow.js?v=2599";
 
 const MODAL_ID = "addSource";
 import {
@@ -39,7 +39,7 @@ import {
   cancelUpload,
   getUploads,
   subscribeUploads,
-} from "../sources-stream.js?v=2598";
+} from "../sources-stream.js?v=2599";
 
 let backdrop, modal, contentEl, footerEl, fileInput;
 let initialized = false;
@@ -67,6 +67,15 @@ const TITLES = {
   url: "Add a URL",
   pasteText: "Paste text",
   connectors: "Add a source",
+};
+
+// What I do with it, under the title (redesign 2026-10-30): the dialog says
+// what happens next, in my voice, like every other step where I act.
+const SUBTITLES = {
+  upload: "I read it and tell you what's in it.",
+  url: "I read the page and tell you what's in it.",
+  pasteText: "I read it and tell you what's in it.",
+  connectors: "I read it and tell you what's in it.",
 };
 
 const ACCEPT = ".pdf,.doc,.docx,.txt,.md,.mp4,.mov,.mp3,.wav,.m4a,.png,.jpg,.jpeg";
@@ -115,10 +124,12 @@ const HTML = `
   role="dialog"
   aria-modal="true"
   aria-labelledby="addSourceTitle"
+  aria-describedby="addSourceSubtitle"
   aria-hidden="true"
 >
   <div class="ap-dialog-header">
     <span class="ap-dialog-title" id="addSourceTitle">Add a source</span>
+    <span class="ap-dialog-subtitle" id="addSourceSubtitle"></span>
   </div>
   <button class="ap-dialog-close" type="button" id="addSourceClose" aria-label="Close">
     <i class="ap-icon-close"></i>
@@ -642,6 +653,8 @@ function render() {
   // opened in. Just title it and render that one form.
   const titleEl = document.getElementById("addSourceTitle");
   if (titleEl) titleEl.textContent = TITLES[state.activeTab] || "Add a source";
+  const subEl = document.getElementById("addSourceSubtitle");
+  if (subEl) subEl.textContent = SUBTITLES[state.activeTab] || "";
   renderContent();
   renderFooter();
 }

@@ -17,10 +17,10 @@
 // On submit we simulate a ~1.4s round-trip and flash a success state; the
 // modal then closes itself. Nothing is actually posted.
 
-import { escapeHtml, formatTimeOfDay } from "../utils.js?v=2598";
-import { getSessionById } from "../sessions-store.js?v=2598";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2598";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2598";
+import { escapeHtml, formatTimeOfDay } from "../utils.js?v=2599";
+import { getSessionById } from "../sessions-store.js?v=2599";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2599";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2599";
 
 const MODAL_ID = "bugReport";
 

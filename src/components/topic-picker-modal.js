@@ -22,18 +22,18 @@
 // header empty and titles itself inside the scrolling body. paint() also writes
 // the Topic's title into the dialog's aria-label.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2598";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2598";
+import { html, raw, escapeHtml } from "../utils.js?v=2599";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2599";
 import {
   renderTopicArticle,
   renderTopicActions,
   renderTopicTrail,
   renderTopicPosts,
   renderTopicHeader,
-} from "../topic-article.js?v=2598";
-import { getTopicById, topicTitle } from "../topics-store.js?v=2598";
-import { findTopicSource } from "../topics-catalog.js?v=2598";
-import { useTopicInChat } from "../topic-flow.js?v=2598";
+} from "../topic-article.js?v=2599";
+import { getTopicById, topicTitle } from "../topics-store.js?v=2599";
+import { findTopicSource } from "../topics-catalog.js?v=2599";
+import { useTopicInChat } from "../topic-flow.js?v=2599";
 
 const MODAL_ID = "topic-picker";
 
