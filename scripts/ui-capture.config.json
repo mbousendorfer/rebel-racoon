@@ -417,7 +417,7 @@
           "press": "Enter"
         },
         {
-          "waitFor": "#app .ap-loader"
+          "waitFor": "#app .ap-status.is-working"
         }
       ]
     },

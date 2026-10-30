@@ -4,22 +4,22 @@
 // session.js, unchanged; the mention picker stays there, since bindSession
 // writes its highlight state.
 
-import { isFlagOn } from "../../feature-flags.js?v=2572";
-import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2572";
-import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2572";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2572";
-import { getSources, getIdeas } from "../../library.js?v=2572";
-import * as clipStudio from "../../clip-studio.js?v=2572";
-import { getThread } from "../../assistant.js?v=2572";
-import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2572";
-import { revokedContextFor } from "../../playbook-access.js?v=2572";
-import { getSessionById } from "../../sessions-store.js?v=2572";
-import { catalogueRoute } from "../../active-playbook.js?v=2572";
-import { getActiveConnector } from "../../composer-connector.js?v=2572";
-import { isDemo } from "../../demo-mode.js?v=2572";
-import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=2572";
-import { renderTopicPickerRow } from "./empty-hero.js?v=2572";
-import { renderChatGallery } from "./chat-gallery.js?v=2572";
+import { isFlagOn } from "../../feature-flags.js?v=2573";
+import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2573";
+import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2573";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2573";
+import { getSources, getIdeas } from "../../library.js?v=2573";
+import * as clipStudio from "../../clip-studio.js?v=2573";
+import { getThread } from "../../assistant.js?v=2573";
+import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2573";
+import { revokedContextFor } from "../../playbook-access.js?v=2573";
+import { getSessionById } from "../../sessions-store.js?v=2573";
+import { catalogueRoute } from "../../active-playbook.js?v=2573";
+import { getActiveConnector } from "../../composer-connector.js?v=2573";
+import { isDemo } from "../../demo-mode.js?v=2573";
+import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=2573";
+import { renderTopicPickerRow } from "./empty-hero.js?v=2573";
+import { renderChatGallery } from "./chat-gallery.js?v=2573";
 
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the
@@ -108,6 +108,11 @@ function humanizeLoadingMessage(m) {
   // reasoning pill — count the pill, not the empty answer slot, so a single
   // reply reads "Thinking…" rather than "2 tasks running…".
   if (m.hidden) return null;
+  // With the new conversation styles a reply's status is its own pill in the
+  // thread, right above the composer: the bar named it a second time
+  // (« Thinking… » twice, 2026-10-30). It keeps the background work.
+  if (isFlagOn("newConversationStyles") && ["assistant", "pending", "system", "system-notice"].includes(m.role))
+    return null;
   if (m.role === "idea-extraction") return `Extracting ideas from ${m.filename || "source"}…`;
   if (m.role === "clip-extraction") return `Extracting clips from ${m.filename || "source"}…`;
   if (m.role === "assistant") return withEllipsis(m.meta && m.meta !== "Archie" ? m.meta : "Thinking");

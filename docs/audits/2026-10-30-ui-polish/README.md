@@ -338,7 +338,7 @@ The loop left 36 items that needed a product call, contradicted a doc in `docs/r
 | « I read every message »                | « The team that builds me reads every message. »                                                                                         | `9b06bace0` |
 | `--app-radius-modal`                    | Dialogs keep the DS 8px; the doc says what the token still serves.                                                                       | `9b06bace0` |
 
-Three shots joined `ui-capture.config.json` on the way: `first-time-chat`, `chat-loading` and `sidebar-collapsed`. The loading shot shows « Thinking… » twice, in the thread and over the composer. Nobody has audited that yet.
+Three shots joined `ui-capture.config.json` on the way: `first-time-chat`, `chat-loading` and `sidebar-collapsed`. The loading shot showed « Thinking… » twice, in the thread and over the composer: the composer's status bar now leaves a reply's status to its pill in the thread.
 
 ## DS gaps
 
