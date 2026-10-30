@@ -474,3 +474,7 @@ Détail complet des formules de taille : [`SHELL-LAYOUT.md`](SHELL-LAYOUT.md).
 - [`FEATURES.md`](FEATURES.md) — où ces patterns sont utilisés (par feature)
 - [`SHELL-LAYOUT.md`](SHELL-LAYOUT.md) — formules de tailles sidebar / panel / status-card
 - [`../../CLAUDE.md`](../../CLAUDE.md) — résumé pour agents
+
+## Un draft qui ne peut pas partir : un seul ton (cohérence 2026-10-30)
+
+Partout où un draft est bloqué par la validation (`validatePost` : limite, média requis), il porte le **ton d'erreur DS** : l'infobox `error` au-dessus de la carte dans le panel Drafts, le statut `.ap-status red` « Needs a fix » et l'icône `ap-icon-error_fill` (`--sys-color-error-text`) sur la carte du lot dans le fil. « Rouge = destructif » (`tokens.css`) vaut pour les **actions** ; un draft bloqué n'est pas une action, c'est un état d'erreur, et le DS le peint en `error`. L'infobox `warning` de l'Overview reste : c'est le résumé du prochain pas du chat, pas l'état d'un draft.

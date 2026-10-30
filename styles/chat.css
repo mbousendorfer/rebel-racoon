@@ -1889,12 +1889,15 @@ span.chat-bubble-choice-chip {
   line-height: var(--sys-text-style-caption-line-height);
 }
 
+/* A draft that won't publish wears the DS error tone, as the Drafts panel's
+   infobox above the same draft does (coherence 2026-10-30): one tone for
+   « blocked », thread and panel. */
 .draft-batch__issue i {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
   margin-top: 1px;
-  background: var(--ref-color-orange-100);
+  background: var(--sys-color-error-text);
 }
 
 /* What blocks it, left; the verb that moves it on, right: every card ends on

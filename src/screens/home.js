@@ -1,27 +1,27 @@
-import { html, raw, escapeAttr } from "../utils.js?v=2599";
-import { conceptText } from "../concepts.js?v=2599";
-import { renderTopbar } from "../components/topbar.js?v=2599";
+import { html, raw, escapeAttr } from "../utils.js?v=2600";
+import { conceptText } from "../concepts.js?v=2600";
+import { renderTopbar } from "../components/topbar.js?v=2600";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=2599";
-import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=2599";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2599";
-import { closePanel as closeRightPanel } from "../components/right-panel.js?v=2599";
-import { navigate, getPath } from "../router.js?v=2599";
-import { isFlagOn } from "../feature-flags.js?v=2599";
-import { setHandoff } from "../handoff.js?v=2599";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2599";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2599";
-import { visibleContexts, usableContexts } from "../playbook-access.js?v=2599";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2599";
-import { voicesToFinish } from "../voice-parts.js?v=2599";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2599";
-import { installMoreMenu } from "../components/more-menu.js?v=2599";
-import { showToast } from "../components/toast.js?v=2599";
-import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=2599";
+} from "../contexts-store.js?v=2600";
+import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=2600";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2600";
+import { closePanel as closeRightPanel } from "../components/right-panel.js?v=2600";
+import { navigate, getPath } from "../router.js?v=2600";
+import { isFlagOn } from "../feature-flags.js?v=2600";
+import { setHandoff } from "../handoff.js?v=2600";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2600";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2600";
+import { visibleContexts, usableContexts } from "../playbook-access.js?v=2600";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2600";
+import { voicesToFinish } from "../voice-parts.js?v=2600";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2600";
+import { installMoreMenu } from "../components/more-menu.js?v=2600";
+import { showToast } from "../components/toast.js?v=2600";
+import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=2600";
 import {
   chatPlaybook,
   renderChatsTab,
@@ -29,7 +29,7 @@ import {
   renderContextsEmpty,
   renderGhostCard,
   renderPlaybooksTable,
-} from "./home/lists.js?v=2599";
+} from "./home/lists.js?v=2600";
 
 // The account HOME — and the Playbooks catalogue it merged with.
 //
