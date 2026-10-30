@@ -9,22 +9,22 @@
 // active Playbook. (A three-subject "Test run" column was removed at the user's
 // request, 2026-10-06: "ça n'a pas de sens".)
 
-import { html, toString } from "../lib/html.js?v=2606";
-import { delegate } from "../lib/delegate.js?v=2606";
-import { getPath } from "../../../router.js?v=2606";
-import { setTopbarActions } from "../../../components/topbar.js?v=2606";
-import { renderFrame } from "./frame.js?v=2606";
-import { renderEmpty } from "../ui/empty.js?v=2606";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=2606";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2606";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=2606";
-import { toast } from "../ui/toast.js?v=2606";
-import { confirmDialog } from "../ui/dialog.js?v=2606";
-import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2606";
-import { copyService } from "../services/index.js?v=2606";
-import { lookFromColors } from "../render/visual.js?v=2606";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2606";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2606";
+import { html, toString } from "../lib/html.js?v=2607";
+import { delegate } from "../lib/delegate.js?v=2607";
+import { getPath } from "../../../router.js?v=2607";
+import { setTopbarActions } from "../../../components/topbar.js?v=2607";
+import { renderFrame } from "./frame.js?v=2607";
+import { renderEmpty } from "../ui/empty.js?v=2607";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=2607";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2607";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=2607";
+import { toast } from "../ui/toast.js?v=2607";
+import { confirmDialog } from "../ui/dialog.js?v=2607";
+import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2607";
+import { copyService } from "../services/index.js?v=2607";
+import { lookFromColors } from "../render/visual.js?v=2607";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2607";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2607";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -170,7 +170,9 @@ export function mount(target, params, ctx, { embed = null } = {}) {
           sub:
             images.length >= CUSTOM_STYLE_LIMITS.images
               ? `${CUSTOM_STYLE_LIMITS.images} images added, the most a style takes. Remove one to add another`
-              : `Up to ${CUSTOM_STYLE_LIMITS.images} images that share the look you want · ${images.length} added`,
+              : images.length
+                ? `Up to ${CUSTOM_STYLE_LIMITS.images} images that share the look you want · ${images.length} added`
+                : `Up to ${CUSTOM_STYLE_LIMITS.images} images`,
           // Empty, the drop is the whole page (redesign 2026-10-30): the big zone.
           compact: images.length > 0,
           filled: true,

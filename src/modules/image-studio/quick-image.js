@@ -3,15 +3,15 @@
 // the network's shape — asked once, the first time, when the Playbook has no look. The studio stays one click away for
 // everything else. Headless, and the same services as the studio.
 
-import { CUSTOM_STYLE_LIMITS, QUICK_PRESETS } from "./config/style-presets.js?v=2606";
-import { MOCK } from "./config/mock.js?v=2606";
-import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=2606";
-import { hashString } from "./lib/prng.js?v=2606";
-import { copyService, imageGenerationService } from "./services/index.js?v=2606";
-import { styleThumbUrl } from "./ui/style-thumb.js?v=2606";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand, registerOneOffStyle } from "./state/store.js?v=2606";
-import { oneOffStyleFrom, saveStyle, uploadReference } from "./state/style-actions.js?v=2606";
-import { setPlaybookDefaultLook } from "./state/playbook-brand.js?v=2606";
+import { CUSTOM_STYLE_LIMITS, QUICK_PRESETS } from "./config/style-presets.js?v=2607";
+import { MOCK } from "./config/mock.js?v=2607";
+import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=2607";
+import { hashString } from "./lib/prng.js?v=2607";
+import { copyService, imageGenerationService } from "./services/index.js?v=2607";
+import { styleThumbUrl } from "./ui/style-thumb.js?v=2607";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand, registerOneOffStyle } from "./state/store.js?v=2607";
+import { oneOffStyleFrom, saveStyle, uploadReference } from "./state/style-actions.js?v=2607";
+import { setPlaybookDefaultLook } from "./state/playbook-brand.js?v=2607";
 
 /**
  * What the chat can offer: six styles (the Playbook's own first, then one

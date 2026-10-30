@@ -2,13 +2,13 @@
 // the per-card feedback and "why this idea" state. Moved out of right-panel.js,
 // unchanged; the filter state it reads is owned (and written) by the shell.
 
-import { html, raw, escapeAttr, escapeText } from "../../utils.js?v=2606";
-import { getPosts } from "../../posts-store.js?v=2606";
-import { conceptText } from "../../concepts.js?v=2606";
-import { isFlagOn } from "../../feature-flags.js?v=2606";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2606";
-import { renderClipCard } from "../clip-card.js?v=2606";
-import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2606";
+import { html, raw, escapeAttr, escapeText } from "../../utils.js?v=2607";
+import { getPosts } from "../../posts-store.js?v=2607";
+import { conceptText } from "../../concepts.js?v=2607";
+import { isFlagOn } from "../../feature-flags.js?v=2607";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2607";
+import { renderClipCard } from "../clip-card.js?v=2607";
+import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2607";
 import {
   closeInline,
   activeSessionId,
@@ -16,7 +16,7 @@ import {
   ideasFilter,
   outputsView,
   sessionIdeas,
-} from "../right-panel.js?v=2606";
+} from "../right-panel.js?v=2607";
 
 // Idea kind taxonomy — handoff Ideas filter rail (§ 2.6). Order is the order
 // shown in the chip row. Each kind's tag colour is IDEA_KIND_TAG
