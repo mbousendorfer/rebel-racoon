@@ -791,3 +791,10 @@ button.imst-style-card {
   border-radius: 50%;
   border: 1px solid var(--ref-color-grey-20);
 }
+
+/* The creator's page: the 6 images a style takes fit on one row (three 210px
+   tiles pushed my read and the name below the fold). The studio's column keeps
+   its own grid. */
+.imst-creator:not(.imst-creator--embed) .imst-sources {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}

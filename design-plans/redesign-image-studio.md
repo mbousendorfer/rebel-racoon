@@ -2,7 +2,7 @@
 
 Diagnostic : [`diagnose.md`](diagnose.md) §7. Note de départ **5,0**.
 
-**Objet porteur.** Le style d'image de la marque (`imageStyles` du Playbook, CONCEPTS §1, famille Brand identity) : un look appris de quelques images. Cadre fixe (FEATURES §18) : une seule colonne ; jusqu'à 10 images avec un poids chacune ; une fidélité ; un prompt de style. Retirés à la demande et à ne pas remettre : le Test run, les Do / Don't, les Presets to mix.
+**Objet porteur.** Le style d'image de la marque (`imageStyles` du Playbook, CONCEPTS §1, famille Brand identity) : un look appris de quelques images. Cadre fixe (FEATURES §18) : une seule colonne ; jusqu'à 6 images avec un poids chacune ; une fidélité ; un prompt de style. Retirés à la demande et à ne pas remettre : le Test run, les Do / Don't, les Presets to mix.
 
 ## Les trois directions (`.ui-redesign/explore/image-studio/`)
 
@@ -30,11 +30,11 @@ Diagnostic : [`diagnose.md`](diagnose.md) §7. Note de départ **5,0**.
 
 Ce qui change structurellement :
 
-1. **Vide, la page n'est que le dépôt** (A) : la zone de dépôt est le seul bloc, grande, avec ce qu'on attend (« Drop 3 to 10 images that share a look »). Le prompt et le nom n'apparaissent pas encore.
+1. **Vide, la page n'est que le dépôt** (A) : la zone de dépôt est le seul bloc, grande, avec ce qu'on attend (« Drop a few images that share a look »). Le prompt et le nom n'apparaissent pas encore.
 2. **Dès qu'il y a des images, je dis ce que j'en lis** : le prompt de style est rédigé tout seul (le `generatePrompt` existant, lancé au dépôt au lieu d'attendre le bouton). Il s'affiche sous le titre « What I read from them », avec la palette échantillonnée (les `colors` des images) en pastilles. Il reste éditable : c'est le même champ, `stylePrompt`. « Generate from the images » devient « Read them again ».
 3. **Le nom vient en dernier**, après la lecture.
 
-Inchangé : les poids par image, la fidélité, Save style / Cancel dans la topbar, jusqu'à 10 images, la colonne unique.
+Inchangé : les poids par image, la fidélité, Save style / Cancel dans la topbar, jusqu’à 6 images, la colonne unique.
 
 **Composants DS.** Dropzone partagé (`dropzoneHTML`), `.ap-textarea-field`, la marque d'Archie (butter) pour sa lecture.
 
