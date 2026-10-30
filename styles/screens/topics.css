@@ -1335,3 +1335,38 @@
   margin-left: auto;
   flex-shrink: 0;
 }
+
+/* ─── UI redesign 2026-10-30 (design-plans/redesign-topics.md) ───────────────
+   The queue reads as an inbox: each age group is ONE sheet of rows, a hairline
+   between them, instead of a stack of bordered cards. A row keeps the card's
+   states by an inset ring (no layout shift): blue-40 pointed at, blue-100 open;
+   the ground still says read / unread (grey-05 once triaged). */
+.topics-view__group-cards {
+  gap: 0;
+  overflow: hidden;
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+}
+
+.topics-view__group-cards > .topic-card--feed {
+  border: 0;
+  border-radius: 0;
+}
+
+.topics-view__group-cards > * + * {
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.topics-view__group-cards > .topic-card--feed:hover,
+.topics-view__group-cards > .topic-card--feed:focus-within {
+  box-shadow: inset 0 0 0 1px var(--ref-color-electric-blue-40);
+}
+
+.topics-view__group-cards > .topic-card--feed.is-reading {
+  box-shadow: inset 0 0 0 1px var(--ref-color-electric-blue-100);
+}
+
+.topics-view__group-cards .topic-card--feed .topic-card__body:focus-visible {
+  border-radius: 0;
+}
