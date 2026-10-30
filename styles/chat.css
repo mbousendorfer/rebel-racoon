@@ -1810,3 +1810,123 @@ span.chat-bubble-choice-chip {
   ) {
   border-top-left-radius: 0;
 }
+
+/* ─── UI redesign 2026-10-30 (design-plans/redesign-chat.md) ─────────────────
+   A drafts batch is shown where it was asked for: one card per draft, two
+   columns, its network, where it stands, its first three lines, what blocks
+   it in words and the one verb that moves it on. The card opens the panel on
+   its draft; hover = blue edge, no lift (house rule). */
+.draft-batch {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+}
+
+.draft-batch__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+}
+
+.draft-batch__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-white);
+  box-shadow: none;
+  color: var(--ref-color-grey-100);
+  text-align: left;
+  cursor: pointer;
+}
+
+.draft-batch__card:hover,
+.draft-batch__card:focus-visible,
+.draft-batch__card.is-active {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.draft-batch__card:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+}
+
+.draft-batch__head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.draft-batch__network {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.draft-batch__name {
+  flex: 1;
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.draft-batch__text {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.draft-batch__issue {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
+.draft-batch__issue i {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  background: var(--ref-color-orange-100);
+}
+
+.draft-batch__foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+}
+
+/* What Archie made of a source, on its chip: a text link, not a filled
+   button. It is a count that opens the panel; the filled pills were the
+   loudest thing on screen and said the same as the "N ideas ready" card,
+   now gone (one result, one announcement). */
+.source-chip .source-chip__action {
+  background: transparent;
+  color: var(--ref-color-electric-blue-100);
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxxs);
+}
+
+.source-chip .source-chip__action:hover,
+.source-chip .source-chip__action:focus-visible {
+  background: var(--ref-color-electric-blue-05);
+}
+
+.source-chip .source-chip__action:active {
+  background: var(--ref-color-electric-blue-10);
+}
+
+/* Your words: a white bubble on the grey canvas, grey-20 edge. The navy block
+   was the most contrasted thing in the thread; Archie's work is the content. */
+.e-turn .chat-bubble--user {
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-100);
+  border: 1px solid var(--ref-color-grey-20);
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+}
