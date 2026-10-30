@@ -472,7 +472,7 @@ body.ui-idea-card .rpanel-ideas__primary {
 /* The whole idea card drafts: while it's hovered, its Draft button shows its
    own DS hover fill, so the card says which action the click will run. */
 body.ui-idea-card .rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
-  background-color: var(--ref-color-electric-blue-20);
+  background-color: var(--ref-color-electric-blue-05);
 }
 
 /* ── Drafts mode (Lot 21) — rich PostCard feed ──────────────────────

@@ -478,3 +478,7 @@ Détail complet des formules de taille : [`SHELL-LAYOUT.md`](SHELL-LAYOUT.md).
 ## Un draft qui ne peut pas partir : un seul ton (cohérence 2026-10-30)
 
 Partout où un draft est bloqué par la validation (`validatePost` : limite, média requis), il porte le **ton d'erreur DS** : l'infobox `error` au-dessus de la carte dans le panel Drafts, le statut `.ap-status red` « Needs a fix » et l'icône `ap-icon-error_fill` (`--sys-color-error-text`) sur la carte du lot dans le fil. « Rouge = destructif » (`tokens.css`) vaut pour les **actions** ; un draft bloqué n'est pas une action, c'est un état d'erreur, et le DS le peint en `error`. L'infobox `warning` de l'Overview reste : c'est le résumé du prochain pas du chat, pas l'état d'un draft.
+
+## Le verbe d'une carte : un seul traitement (cohérence 2026-10-30)
+
+Le verbe qui fait avancer un objet sur sa carte — **Draft post** sur une idea ou un clip, **Schedule** / **Shorten it** / **Add an image** sur un draft (fil et panel) — est un `.ap-button stroked blue`, aligné à droite au pied de la carte. Une icône peut le préciser (l'étincelle de Draft post dit qu'Archie écrit), le niveau ne change pas. Le `secondary blue` teinté que portait Draft post est parti : deux traitements pour le même rôle se lisaient comme deux importances. Le primaire plein reste réservé à l'action d'une section ou d'une page (« Schedule N », Use in chat dans l'article d'un Topic).

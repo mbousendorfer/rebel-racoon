@@ -17,9 +17,9 @@
 //     showMention — render the Mention button (default true; false where there
 //                   is no composer, e.g. the standalone Ideas page)
 
-import { iconFor } from "../file-kinds.js?v=2600";
-import { escapeText, escapeAttr } from "../utils.js?v=2600";
-import { isFlagOn } from "../feature-flags.js?v=2600";
+import { iconFor } from "../file-kinds.js?v=2601";
+import { escapeText, escapeAttr } from "../utils.js?v=2601";
+import { isFlagOn } from "../feature-flags.js?v=2601";
 
 // Each idea kind → its DS `.ap-tag` colour variant. The one table: every kind
 // tag (this card, the panel's Overview and Sources, the full idea card, the
@@ -161,7 +161,7 @@ export function renderCompactIdeaCard(
         </div>
         <div class="rpanel-ideas__primary">
           ${mentionBtn}
-          <button type="button" class="ap-button secondary blue rpanel-ideas__use" data-rpanel-use-idea="${escapeAttr(idea.id)}">
+          <button type="button" class="ap-button stroked blue rpanel-ideas__use" data-rpanel-use-idea="${escapeAttr(idea.id)}">
             <i class="ap-icon-sparkles"></i>
             <span>Draft post</span>
           </button>
@@ -269,7 +269,7 @@ function renderClearIdeaCard(idea, sources = [], { verdict = null, whyOpen = fal
       <footer class="rpanel-ideas__card-actions">
         <div class="rpanel-ideas__primary">
           ${mentionBtn}
-          <button type="button" class="ap-button secondary blue rpanel-ideas__use" data-rpanel-use-idea="${escapeAttr(idea.id)}" title="Write a post from this idea">
+          <button type="button" class="ap-button stroked blue rpanel-ideas__use" data-rpanel-use-idea="${escapeAttr(idea.id)}" title="Write a post from this idea">
             <i class="ap-icon-sparkles"></i>
             <span>Draft post</span>
           </button>
