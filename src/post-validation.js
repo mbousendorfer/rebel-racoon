@@ -10,7 +10,7 @@
 // errors   block Schedule and Assign (the Drafts panel's « Needs fixes »).
 // warnings publish, but not the way the draft looks (X shows 4 images at most).
 
-import { networkMeta } from "./social-profiles.js?v=2577";
+import { networkMeta } from "./social-profiles.js?v=2578";
 
 // Characters a post consumes against its network limit — body paragraphs,
 // hashtags and the CTA, joined the way they'd publish (blank line between
@@ -77,3 +77,16 @@ export function validatePost(post) {
 }
 
 export const isPostValid = (post) => validatePost(post).errors.length === 0;
+
+// The one verb that moves a draft on: Schedule when it publishes as is, else the
+// fix for its first error when one click can do it (shorten the text, add an
+// image), else none (the fix needs the editor). Shared by the panel's draft card
+// and the thread's draft batch, so both name the same next step.
+export function nextStep(post) {
+  const error = validatePost(post).errors[0];
+  if (!error) return { action: "schedule", label: "Schedule", error: null };
+  if (error.field === "caption") return { action: "shorten", label: "Shorten it", error };
+  if (error.field === "media" && !/videos only/.test(error.message))
+    return { action: "image", label: "Add an image", error };
+  return { action: null, label: "", error };
+}

@@ -19,21 +19,21 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2577";
-import { isPortraitFormat } from "../clip-formats.js?v=2577";
-import { presetById } from "../clip-captions.js?v=2577";
-import { renderFeedbackControl } from "./feedback-control.js?v=2577";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2578";
+import { isPortraitFormat } from "../clip-formats.js?v=2578";
+import { presetById } from "../clip-captions.js?v=2578";
+import { renderFeedbackControl } from "./feedback-control.js?v=2578";
 import {
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=2577";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2577";
-import { REVEAL_MS } from "../archie-pixels.js?v=2577";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2577";
-import { languageOf } from "../draft-rewrite.js?v=2577";
+} from "../social-profiles.js?v=2578";
+import { validatePost, usedCharacters, youtubeTitle, nextStep } from "../post-validation.js?v=2578";
+import { REVEAL_MS } from "../archie-pixels.js?v=2578";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2578";
+import { languageOf } from "../draft-rewrite.js?v=2578";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -448,7 +448,7 @@ export function renderPostCard(post, opts = {}) {
           )}
           ${raw(renderFirstComment(post, { hidden: editing || regenerating }))}
         </article>
-        ${raw(belowCard)}
+        ${raw(renderNextStep(post, opts, editing || regenerating))} ${raw(belowCard)}
       </div>
 
       <!-- The rail is prod's (studio-mfe post-card-actions), in its order:
@@ -585,6 +585,19 @@ function renderFirstComment(post, { hidden = false } = {}) {
 // would publish to (renderProfileTag), since the rule is that network's. A
 // draft fixed a moment ago (`opts.justFixed`, held by the drafts panel) says so
 // in green before it settles back among the ready ones.
+// The draft's next step, named, under its card (opts.verb — the chat's Drafts
+// panel): Schedule, or the one-click fix. Schedule then leaves the icon rail
+// (the host drops it with railActions): the pipeline's last verb is a word.
+function renderNextStep(post, opts, busy) {
+  if (!opts.verb || busy) return "";
+  const { action, label } = nextStep(post);
+  if (!action) return "";
+  const attr = { schedule: "data-post-schedule", shorten: "data-post-shorten", image: "data-post-image" }[action];
+  return `<div class="posts__card-next">
+    <button type="button" class="ap-button stroked blue" ${attr}="${escapeAttr(post.id)}">${label}</button>
+  </div>`;
+}
+
 function renderPostIssues(post, opts = {}) {
   if (opts.justFixed) return infobox("success", "ap-icon-rounded-check_fill", "Fixed. Ready to publish.", "status");
   const { errors, warnings } = validatePost(post);

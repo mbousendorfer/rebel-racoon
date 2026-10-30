@@ -1073,3 +1073,11 @@
 .posts__row-action-blocked {
   display: inline-flex;
 }
+
+/* The draft's next step, named, right under its card (redesign 2026-10-30):
+   Schedule, or the one-click fix. Right-aligned like a card footer's actions;
+   hugs its label, never the card's width (house rule). */
+.posts__card-next {
+  display: flex;
+  justify-content: flex-end;
+}
