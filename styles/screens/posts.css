@@ -125,6 +125,14 @@
   gap: var(--ref-spacing-sm);
 }
 
+/* The connected account's photo, when it has one (PN-17). */
+.posts__card-avatar > img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
 .posts__card-avatar {
   width: 40px;
   height: 40px;

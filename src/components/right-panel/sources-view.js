@@ -3,15 +3,15 @@
 // the panel shell (open / close / resize / URL state / delegated listeners)
 // stays there.
 
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2560";
-import { isFlagOn } from "../../feature-flags.js?v=2560";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2560";
-import { escapeAttr, escapeText } from "../../utils.js?v=2560";
-import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2560";
-import { conceptText } from "../../concepts.js?v=2560";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2560";
-import { renderTopPostEcho } from "../top-post-card.js?v=2560";
-import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2560";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2562";
+import { isFlagOn } from "../../feature-flags.js?v=2562";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2562";
+import { escapeAttr, escapeText } from "../../utils.js?v=2562";
+import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2562";
+import { conceptText } from "../../concepts.js?v=2562";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2562";
+import { renderTopPostEcho } from "../top-post-card.js?v=2562";
+import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2562";
 
 // Sources mode view — list of source rows for the active session + a
 // trailing "+ Attach" button. Each row carries kind icon, filename,
@@ -172,8 +172,20 @@ function renderSourceRow(src) {
   // Ideas tab renders, so every link has a live target. Mirrors
   // the idea/clip card grammar (card content → footer actions).
   const sourceIdeas = sessionIdeas().filter((i) => Array.isArray(i.sourceIds) && i.sourceIds.includes(src.id));
+  // A video's clips get one row after its ideas, to the Clips tab: the Overview
+  // said « 2 ideas, 5 clips » and this card only the ideas (decided 2026-10-30, PN-23).
+  const clipCount = Array.isArray(src.clips) ? src.clips.length : 0;
+  const clipsRow = clipCount
+    ? `<li>
+        <button type="button" class="rpanel-sources__idea-link" data-rpanel-goto="clips">
+          <i class="ap-icon-video rpanel-sources__idea-icon" aria-hidden="true"></i>
+          <span class="rpanel-sources__idea-title">${clipCount} clip${clipCount === 1 ? "" : "s"}</span>
+          <i class="ap-icon-chevron-right rpanel-sources__idea-chevron" aria-hidden="true"></i>
+        </button>
+      </li>`
+    : "";
   const ideasList =
-    !isProcessing && sourceIdeas.length
+    !isProcessing && (sourceIdeas.length || clipCount)
       ? `<ul class="rpanel-sources__ideas">
           ${sourceIdeas
             .map(
@@ -186,7 +198,7 @@ function renderSourceRow(src) {
                     !i.kind
                       ? ""
                       : isFlagOn("contentPanel")
-                        ? `<span class="ap-tag ${IDEA_KIND_TAG[i.kind] || "green"} rpanel-ideas__kind rpanel-sources__idea-tag">${escapeText(i.kind.charAt(0).toUpperCase() + i.kind.slice(1))}</span>`
+                        ? `<span class="ap-tag ${IDEA_KIND_TAG[i.kind] || "grey"} rpanel-ideas__kind rpanel-sources__idea-tag">${escapeText(i.kind.charAt(0).toUpperCase() + i.kind.slice(1))}</span>`
                         : `<span class="rpanel-sources__idea-kind muted">${escapeText(i.kind.charAt(0).toUpperCase() + i.kind.slice(1))}</span>`
                   }
                   <i class="ap-icon-chevron-right rpanel-sources__idea-chevron" aria-hidden="true"></i>
@@ -194,6 +206,7 @@ function renderSourceRow(src) {
               </li>`,
             )
             .join("")}
+          ${clipsRow}
         </ul>`
       : "";
 
@@ -218,7 +231,6 @@ function renderSourceRow(src) {
   // (browse mode) — every clip cut from this video, plus the "Add clip" CTA to
   // create one manually. Count surfaced when clips already exist.
   const isVideo = src.kind === "Video";
-  const clipCount = Array.isArray(src.clips) ? src.clips.length : 0;
   const viewClipsItem = isVideo
     ? `<button type="button" role="menuitem" class="ap-action-dropdown-item" data-rpanel-source-clips="${src.id}">
           <i class="ap-icon-video"></i>

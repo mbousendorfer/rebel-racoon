@@ -19,15 +19,21 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2560";
-import { isPortraitFormat } from "../clip-formats.js?v=2560";
-import { presetById } from "../clip-captions.js?v=2560";
-import { renderFeedbackControl } from "./feedback-control.js?v=2560";
-import { networkLabel, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2560";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2560";
-import { REVEAL_MS } from "../archie-pixels.js?v=2560";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2560";
-import { languageOf } from "../draft-rewrite.js?v=2560";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2562";
+import { isPortraitFormat } from "../clip-formats.js?v=2562";
+import { presetById } from "../clip-captions.js?v=2562";
+import { renderFeedbackControl } from "./feedback-control.js?v=2562";
+import {
+  networkLabel,
+  normalizeNetwork,
+  profileForNetwork,
+  renderProfileTag,
+  BRAND_INITIALS,
+} from "../social-profiles.js?v=2562";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2562";
+import { REVEAL_MS } from "../archie-pixels.js?v=2562";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2562";
+import { languageOf } from "../draft-rewrite.js?v=2562";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -471,6 +477,9 @@ export function renderPostCard(post, opts = {}) {
               label: "Schedule draft",
               icon: "ap-icon-calendar",
               attr: "data-post-schedule",
+              // The rail's one coloured button: Schedule is where a draft goes
+              // next (decided 2026-10-30, PN2-07).
+              tone: "blue",
             }),
           ),
         )}
@@ -560,7 +569,7 @@ function renderGenerationContextBody(post) {
 function renderFirstComment(post, { hidden = false } = {}) {
   if (!post.firstComment || hidden) return "";
   return `<div class="posts__card-first-comment">
-    <div class="posts__card-avatar posts__card-avatar--small" aria-hidden="true">${post.author.initials}</div>
+    ${previewAvatar(previewIdentity(post), "posts__card-avatar posts__card-avatar--small")}
     <div class="posts__card-first-comment-body">
       <span class="posts__card-first-comment-label">First comment</span>
       <p class="posts__card-first-comment-text">${escapeText(post.firstComment)}</p>
@@ -619,9 +628,9 @@ function selectLabel(post) {
   return `Select ${networkLabel(normalizeNetwork(post.network))} draft${words ? `: ${words}` : ""}`;
 }
 
-function renderBlockedAction(post, regenerating, { label, icon, attr }) {
+function renderBlockedAction(post, regenerating, { label, icon, attr, tone = "" }) {
   const blocker = validatePost(post).errors[0];
-  const button = `<button type="button" class="ap-icon-button stroked" aria-label="${label}" ${
+  const button = `<button type="button" class="ap-icon-button stroked${tone ? ` ${tone}` : ""}" aria-label="${label}" ${
     blocker ? "" : `title="${label}"`
   } ${attr}="${post.id}" ${regenerating || blocker ? "disabled" : ""}><i class="${icon}"></i></button>`;
   return blocker
@@ -669,16 +678,37 @@ function authorHandle(post) {
   return escapeText((post.author?.name || "you").toLowerCase().replace(/[^a-z0-9]/g, ""));
 }
 
+// Who the preview shows: the connected account that will publish it, the one
+// the Schedule modal names (decided 2026-10-30, PN-17). A person's details
+// (« 1st », job title) don't belong to a page; the post's mock author stays the
+// fallback when nothing is connected on that network.
+function previewIdentity(post) {
+  const acct = profileForNetwork(post.network);
+  if (!acct) return post.author;
+  return {
+    name: escapeText(acct.name),
+    initials: acct.initials || BRAND_INITIALS,
+    photo: acct.photo,
+    connection: "",
+    title: "",
+    visibility: post.author?.visibility || "Public",
+  };
+}
+
+function previewAvatar(a, cls = "posts__card-avatar") {
+  return `<div class="${cls}" aria-hidden="true">${a.photo ? `<img src="${escapeAttr(a.photo)}" alt="" />` : a.initials}</div>`;
+}
+
 function renderNetworkHeader(post, net, handle) {
-  const a = post.author;
+  const a = previewIdentity(post);
   if (net === "instagram" || net === "tiktok" || net === "youtube")
     return `<header class="posts__card-header posts__card-header--compact">
-      <div class="posts__card-avatar posts__card-avatar--small" aria-hidden="true">${a.initials}</div>
+      ${previewAvatar(a, "posts__card-avatar posts__card-avatar--small")}
       <span class="posts__card-name">${net === "youtube" ? a.name : handle}</span>
     </header>`;
   if (net === "x")
     return `<header class="posts__card-header">
-      <div class="posts__card-avatar" aria-hidden="true">${a.initials}</div>
+      ${previewAvatar(a)}
       <div class="row posts__card-author-row">
         <span class="posts__card-name">${a.name}</span>
         <span class="muted">@${handle} · ${post.timeLabel}</span>
@@ -686,20 +716,20 @@ function renderNetworkHeader(post, net, handle) {
     </header>`;
   if (net === "facebook")
     return `<header class="posts__card-header">
-      <div class="posts__card-avatar" aria-hidden="true">${a.initials}</div>
+      ${previewAvatar(a)}
       <div class="posts__card-author">
         <span class="posts__card-name">${a.name}</span>
         <div class="muted posts__card-meta">${post.timeLabel} · ${a.visibility}</div>
       </div>
     </header>`;
   return `<header class="posts__card-header">
-    <div class="posts__card-avatar" aria-hidden="true">${a.initials}</div>
+    ${previewAvatar(a)}
     <div class="posts__card-author">
       <div class="row posts__card-author-row">
         <span class="posts__card-name">${a.name}</span>
-        <span class="muted">· ${a.connection}</span>
+        ${a.connection ? `<span class="muted">· ${a.connection}</span>` : ""}
       </div>
-      <div class="muted posts__card-title">${a.title}</div>
+      ${a.title ? `<div class="muted posts__card-title">${a.title}</div>` : ""}
       <div class="muted posts__card-meta">${post.timeLabel} · ${a.visibility}</div>
     </div>
   </header>`;

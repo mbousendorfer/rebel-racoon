@@ -1,17 +1,17 @@
-import { html, raw, escapeText, escapeAttr, formatTimeOfDay, formatClock } from "../utils.js?v=2560";
-import { showToast } from "./toast.js?v=2560";
-import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=2560";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2560";
+import { html, raw, escapeText, escapeAttr, formatTimeOfDay, formatClock } from "../utils.js?v=2562";
+import { showToast } from "./toast.js?v=2562";
+import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=2562";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2562";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
   normalizeNetwork,
-} from "../social-profiles.js?v=2560";
-import { getContextById } from "../contexts-store.js?v=2560";
-import { canEdit } from "../playbook-access.js?v=2560";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=2560";
+} from "../social-profiles.js?v=2562";
+import { getContextById } from "../contexts-store.js?v=2562";
+import { canEdit } from "../playbook-access.js?v=2562";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=2562";
 import {
   CADENCES,
   startOfDay,
@@ -21,7 +21,7 @@ import {
   planSlots,
   queueEntries,
   firstLine as extractFirstLine,
-} from "../schedule-engine.js?v=2560";
+} from "../schedule-engine.js?v=2562";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -547,8 +547,13 @@ function rhythmSentence() {
   if (state.posts.length === 1) {
     const name = networkName(networkOf(state.posts[0]));
     const when = s.timeOfDay ? `in the ${b(tod.label.toLowerCase())}` : `at ${b(`${name}'s best time`)}`;
-    // "Not before": the slot itself can land later (taken days, the
-    // network's best weekdays), and "From Thu" over a Tuesday slot read as a bug.
+    // Once the slot exists, the sentence names its day and why it's that one
+    // (decided 2026-10-30, PN-19): « Not before Fri, Oct 30 » over a Tuesday
+    // slot left the four days unexplained. Before that, "Not before": the slot
+    // can land later (taken days, the network's best weekdays).
+    const slot = state.slots[0];
+    if (slot && !isComputing() && startOfDay(slot.when) > startOfDay(s.startFrom))
+      return `${lead}${b(formatDay(slot.when))}, ${when}${skip}: the first best day from ${formatDay(s.startFrom)}.`;
     return `${lead}${lead ? "not before" : "Not before"} ${b(formatDay(s.startFrom))}, ${when}${skip}.`;
   }
   const cadence = CADENCES.find((c) => c.id === s.cadence) || CADENCES[0];

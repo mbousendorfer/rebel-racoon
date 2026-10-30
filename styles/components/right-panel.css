@@ -1686,3 +1686,10 @@ body.ui-idea-card .rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
 .app-right-panel.is-content .rpanel-drafts__feed .posts__card {
   border-color: var(--ref-color-grey-20);
 }
+
+/* Clips in the side panel: a capped thumbnail, so a 16:9 frame at full panel
+   width no longer fills the screen with one clip (decided 2026-10-30, PN-21).
+   The Clips space keeps its own size: this applies inside the panel only. */
+.app-right-panel .clip-card__thumb {
+  max-height: 200px;
+}

@@ -17,14 +17,17 @@
 //     showMention — render the Mention button (default true; false where there
 //                   is no composer, e.g. the standalone Ideas page)
 
-import { iconFor } from "../file-kinds.js?v=2560";
-import { escapeText, escapeAttr } from "../utils.js?v=2560";
-import { isFlagOn } from "../feature-flags.js?v=2560";
+import { iconFor } from "../file-kinds.js?v=2562";
+import { escapeText, escapeAttr } from "../utils.js?v=2562";
+import { isFlagOn } from "../feature-flags.js?v=2562";
 
 // Each idea kind → its DS `.ap-tag` colour variant. The one table: every kind
 // tag (this card, the panel's Overview and Sources, the full idea card, the
 // composer's mention pills) reads it.
-export const IDEA_KIND_TAG = { stat: "blue", quote: "menthol", hook: "tagOrange", story: "grey", insight: "green" };
+// Every kind in grey: the word tells them apart, and blue (interactive), green
+// (the « Drafted » success) and orange (AI) each already mean something here
+// (decided 2026-10-30, PN-11).
+export const IDEA_KIND_TAG = { stat: "grey", quote: "grey", hook: "grey", story: "grey", insight: "grey" };
 
 // What each kind of idea is, in the kind tag's tooltip (flag uiIdeaCard).
 const IDEA_KIND_HINT = {
@@ -128,7 +131,7 @@ export function renderCompactIdeaCard(
 
   const cardHead = `
     <div class="rpanel-ideas__card-head">
-      <span class="ap-tag ${IDEA_KIND_TAG[kind] || "green"} rpanel-ideas__kind">${kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
+      <span class="ap-tag ${IDEA_KIND_TAG[kind] || "grey"} rpanel-ideas__kind">${kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
       ${/* Same reading as the Overview: an idea already drafted says so here too. */ idea.used > 0 ? `<span class="ap-status green">Drafted</span>` : ""}
       ${
         sourceTags
@@ -240,7 +243,7 @@ function renderClearIdeaCard(idea, sources = [], { verdict = null, whyOpen = fal
   // not something to do with it, so it stays out of the actions row.
   const cardHead = `
     <div class="rpanel-ideas__card-head">
-      <span class="ap-tag ${IDEA_KIND_TAG[kind] || "green"} rpanel-ideas__kind" title="${escapeAttr(IDEA_KIND_HINT[kind] || "")}">${kindLabel} idea</span>
+      <span class="ap-tag ${IDEA_KIND_TAG[kind] || "grey"} rpanel-ideas__kind" title="${escapeAttr(IDEA_KIND_HINT[kind] || "")}">${kindLabel} idea</span>
       <div class="rpanel-ideas__feedback">
         ${thumbBtn("up")}
         ${thumbBtn("down")}
