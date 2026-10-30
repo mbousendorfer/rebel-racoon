@@ -270,8 +270,16 @@
    disabled rather than flipping and doing nothing. The tag says why, in grey —
    never in electric blue, which in this app is the colour of things you can act
    on, and this is the one control on the card that you cannot. */
-.topics-src__soon {
-  flex-shrink: 0;
+/* Not available yet: the same card, compact (ui-polish TP-17). */
+.topics-src--soon {
+  padding: var(--ref-spacing-xs);
+}
+
+/* The Brand-website sites, read-only while the source can't run (TP-11). */
+.topics-src__site-list--read .topics-src__site {
+  color: var(--sys-text-color-light);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
 }
 
 /* ── The Brand-website source's own options ─────────────────────────────────
@@ -314,4 +322,12 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--ref-spacing-xxs);
+}
+
+.topics-src--soon .topics-src__desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }

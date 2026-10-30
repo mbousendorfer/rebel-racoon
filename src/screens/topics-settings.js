@@ -29,22 +29,22 @@
 // now does — and a row cannot without turning the list into a form. No save bar:
 // every control commits immediately through updateFeed.
 
-import { html, raw } from "../utils.js?v=2566";
-import { navigate } from "../router.js?v=2566";
-import { parseHashParams } from "../url-state.js?v=2566";
-import { renderTopbar } from "../components/topbar.js?v=2566";
-import { renderEmptyState } from "../components/empty-state.js?v=2566";
-import { getContextById, getDefaultContext } from "../contexts-store.js?v=2566";
+import { html, raw } from "../utils.js?v=2568";
+import { navigate } from "../router.js?v=2568";
+import { parseHashParams } from "../url-state.js?v=2568";
+import { renderTopbar } from "../components/topbar.js?v=2568";
+import { renderEmptyState } from "../components/empty-state.js?v=2568";
+import { getContextById, getDefaultContext } from "../contexts-store.js?v=2568";
 import {
   getActivePlaybook,
   isWorkspaceMode,
   catalogueRoute,
   subscribe as subscribeScope,
-} from "../active-playbook.js?v=2566";
-import { editableContexts, visibleContexts, canEdit } from "../playbook-access.js?v=2566";
-import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2566";
-import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=2566";
-import { open as openFeedback } from "../components/feedback-modal.js?v=2566";
+} from "../active-playbook.js?v=2568";
+import { editableContexts, visibleContexts, canEdit } from "../playbook-access.js?v=2568";
+import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2568";
+import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=2568";
+import { open as openFeedback } from "../components/feedback-modal.js?v=2568";
 
 // Above this many Playbooks the picker earns a search field. Below it, a search
 // box over four rows is just noise.
@@ -170,10 +170,10 @@ function renderPage() {
   // page can no longer reach — it goes, and "Open the Playbook" stands alone.
   const differing = isWorkspaceMode() ? 0 : playbooks.filter((c) => c.id !== ctx.id && feedKey(c) !== mine).length;
 
+  const live = TOPIC_SOURCES.filter((s) => isLiveSource(s.id));
+  const soon = TOPIC_SOURCES.filter((s) => !isLiveSource(s.id));
   const count =
-    onCount === 0
-      ? "Nothing on yet. Turn one on and I'll start listening."
-      : `${onCount} of ${TOPIC_SOURCES.length} on`;
+    onCount === 0 ? "Nothing on yet. Turn one on and I'll start listening." : `${onCount} of ${live.length} on`;
 
   return html`
     <div class="topics-settings__content">
@@ -225,8 +225,19 @@ function renderPage() {
           <span class="topics-settings__count">${count}</span>
         </div>
         <div class="topics-settings__grid">
-          ${raw(TOPIC_SOURCES.map((s) => renderSourceCard(ctx, feed, s, enabled.has(s.id))).join(""))}
+          ${raw(live.map((s) => renderSourceCard(ctx, feed, s, enabled.has(s.id))).join(""))}
         </div>
+      </section>
+
+      <!-- The sources that can't run yet, apart and compact (ui-polish TP-17): six
+           full cards weighed as much as the two that work. -->
+      <section class="topics-settings__sources">
+        <div class="topics-settings__group">
+          <h2 class="ap-caption-bold topics-settings__group-title">Not available yet</h2>
+          <span aria-hidden="true">·</span>
+          <span class="topics-settings__count">${soon.length}</span>
+        </div>
+        <div class="topics-settings__grid">${raw(soon.map((s) => renderSourceCard(ctx, feed, s, false)).join(""))}</div>
       </section>
     </div>
   `;
@@ -356,7 +367,7 @@ function renderSourceCard(ctx, feed, source, on) {
   // The one source whose subject is a VALUE the feed holds, so its card shows
   // that value instead of only a description. A flag rather than an id check, so
   // a second value-carrying source would not need this renderer touched again.
-  const sites = source.showsWebsites && feed ? renderSiteList(feed) : "";
+  const sites = source.showsWebsites && feed ? renderSiteList(feed, live) : "";
 
   // The one thing a reader can do about a source that is not live yet: say how
   // they would use it. In the foot, so the header keeps its name on one line.
@@ -370,19 +381,29 @@ function renderSourceCard(ctx, feed, source, on) {
       ? html`<footer class="topics-src__foot">${raw(anchor)}${raw(sites)}${raw(need)}</footer>`
       : "";
 
+  // Not live: compact, under « Not available yet » — no switch and no tag, the
+  // group says it; the « Need this source? » stays.
+  if (!live)
+    return html`<article class="ap-card topics-src is-off topics-src--soon">
+      <header class="topics-src__head">
+        <span class="topic-badge topic-badge--${source.accent}" aria-hidden="true"><i class="${source.icon}"></i></span>
+        <h3 class="ap-card-title topics-src__name">${source.name}</h3>
+      </header>
+      <p class="topics-src__desc">${source.howItWorks}</p>
+      ${raw(foot)}
+    </article>`;
+
   return html`<article class="ap-card topics-src${raw(on ? "" : " is-off")}">
     <header class="topics-src__head">
       <span class="topic-badge topic-badge--lg topic-badge--${source.accent}" aria-hidden="true">
         <i class="${source.icon}"></i>
       </span>
       <h3 class="ap-card-title topics-src__name">${source.name}</h3>
-      ${raw(live ? "" : html`<span class="ap-tag grey mini topics-src__soon">Not available yet</span>`)}
       <label class="ap-toggle-container topics-src__switch">
         <input
           type="checkbox"
           data-settings-toggle="${`${feed ? feed.id : ""}::${source.id}`}"
           ${raw(on ? "checked" : "")}
-          ${raw(live ? "" : "disabled")}
           aria-label="${`${source.name} for ${ctx.name}`}"
         />
         <i aria-hidden="true"></i>
@@ -397,7 +418,23 @@ function renderSourceCard(ctx, feed, source, on) {
 // Playbook: the Playbook's own websiteUrl is the brand's canonical address, while
 // this is one feed's scan list, which may add a blog, a docs site or a regional
 // domain the brand record has no business holding.
-function renderSiteList(feed) {
+//
+// Read-only while the source can't run (ui-polish TP-11): editing a list
+// nothing reads said the opposite.
+function renderSiteList(feed, editable) {
+  if (!editable)
+    return html`<ul class="topics-src__site-list topics-src__site-list--read">
+      ${raw(
+        feed.websites
+          .map(
+            (url) =>
+              html`<li class="topics-src__site">
+                <i class="ap-icon-link" aria-hidden="true"></i><span>${url}</span>
+              </li>`,
+          )
+          .join(""),
+      )}
+    </ul>`;
   const rows = feed.websites
     .map(
       (url, i) =>

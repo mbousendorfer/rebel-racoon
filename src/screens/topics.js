@@ -32,17 +32,17 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=2566";
-import { conceptText } from "../concepts.js?v=2566";
-import { navigate, getPath } from "../router.js?v=2566";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2566";
-import { renderTopbar } from "../components/topbar.js?v=2566";
-import { showToast } from "../components/toast.js?v=2566";
-import { renderEmptyState } from "../components/empty-state.js?v=2566";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2566";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2566";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2566";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2566";
+import { html, raw, escapeAttr } from "../utils.js?v=2568";
+import { conceptText } from "../concepts.js?v=2568";
+import { navigate, getPath } from "../router.js?v=2568";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2568";
+import { renderTopbar } from "../components/topbar.js?v=2568";
+import { showToast } from "../components/toast.js?v=2568";
+import { renderEmptyState } from "../components/empty-state.js?v=2568";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2568";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2568";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2568";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2568";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -53,7 +53,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=2566";
+} from "../topics-store.js?v=2568";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -62,13 +62,13 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=2566";
-import { renderTopicCard } from "../components/topic-card.js?v=2566";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=2566";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2566";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=2566";
-import { useTopicInChat } from "../topic-flow.js?v=2566";
-import { canEdit } from "../playbook-access.js?v=2566";
+} from "../topics-catalog.js?v=2568";
+import { renderTopicCard } from "../components/topic-card.js?v=2568";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=2568";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2568";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=2568";
+import { useTopicInChat } from "../topic-flow.js?v=2568";
+import { canEdit } from "../playbook-access.js?v=2568";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -786,11 +786,13 @@ function renderList(shown, more, total, scanning, feed) {
 // Competitors. It is NOT a Topic and shares none of its anatomy (no source
 // line, no age, no verbs); it sits in the list like an in-feed ad.
 //
-// Shown whether or not the Playbook already has influencers: it says a source
-// exists, not that one is missing. Only to the owner (canEdit), since the
-// action edits the Playbook; "Not now" hides it until the next load.
+// Shown only while the Playbook follows no influencer (ui-polish TP-16: it
+// sat over a feed already full of influencer Topics). Only to the owner
+// (canEdit), since the action edits the Playbook; "Not now" hides it until
+// the next load.
 function shouldInvite(pb) {
   if (!pb || !canEdit(pb)) return false;
+  if ((pb.influencers || []).some((i) => !i.suggested)) return false;
   if (!isLiveSource("influencer-posts")) return false;
   return !dismissedInvites.has(pb.id);
 }
@@ -818,7 +820,8 @@ function renderInfluencerInvite() {
     </button>
     <div class="topic-card__invite-actions">
       <button type="button" class="ap-button ghost grey" data-topic-invite-dismiss>Not now</button>
-      <button type="button" class="ap-button primary blue" data-topic-invite-add>
+      <!-- Secondary: the feed's one primary stays the Topic's own verb (TP-16). -->
+      <button type="button" class="ap-button stroked blue" data-topic-invite-add>
         <i class="ap-icon-star"></i><span>Add influencers</span>
       </button>
     </div>
