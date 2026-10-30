@@ -887,7 +887,8 @@ Trois « studios » qui prennent tout le panneau assistant (states upload → an
 
 ## 9. Playbooks
 
-Un Playbook capture business summary, audience, goals, voice/style, brand identity — la **fiche d'identité d'un émetteur (marque ou voix) et de son cadrage éditorial**. Ce qu'il est et ce qui n'a jamais le droit d'y entrer : [`CONCEPTS.md` §1](CONCEPTS.md#1-le-playbook). Ci-dessous, ce qu'il fait. Stores/vues : [`contexts-store.js`](../../src/contexts-store.js), [`context-builder.js`](../../src/context-builder.js), [`playbook-view.js`](../../src/playbook-view.js), [`context-mock-analysis.js`](../../src/context-mock-analysis.js), [`languages.js`](../../src/languages.js).
+> **Redesign 2026-10-30** ([`design-plans/redesign-playbook.md`](../../design-plans/redesign-playbook.md)) : la fiche se lit comme un document — une colonne de 760 px, les sections sans boîte (`.pb2-block` sans bordure ni fond), un filet grey-20 entre elles ; la phrase « à quoi sert la section » (`hint` de `pb2Block`) passe derrière un (i) à côté du titre en lecture (`data-tooltip`), et reste écrite sous le titre en édition (`.pb2.is-editing`). Rien d'ajouté ni retiré.
+> Un Playbook capture business summary, audience, goals, voice/style, brand identity — la **fiche d'identité d'un émetteur (marque ou voix) et de son cadrage éditorial**. Ce qu'il est et ce qui n'a jamais le droit d'y entrer : [`CONCEPTS.md` §1](CONCEPTS.md#1-le-playbook). Ci-dessous, ce qu'il fait. Stores/vues : [`contexts-store.js`](../../src/contexts-store.js), [`context-builder.js`](../../src/context-builder.js), [`playbook-view.js`](../../src/playbook-view.js), [`context-mock-analysis.js`](../../src/context-mock-analysis.js), [`languages.js`](../../src/languages.js).
 
 ### Library (l'onglet **Playbooks** de `/home`, [`screens/home.js`](../../src/screens/home.js))
 
