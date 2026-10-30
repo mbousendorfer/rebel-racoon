@@ -48,25 +48,40 @@
 }
 
 /* Right-panel column width : default = (viewport − sidebar) / 3, floor
-   at 610px. Same formula for every mode (Ideas, Sources, Drafts,
+   at 610px, 380px under 1280px (ui-polish PN-20: at 610 the chat fell under
+   its 560px floor and the composer toolbar wrapped). Same formula for every mode (Ideas, Sources, Drafts,
    Context-form, Context-brief) so the panel reads as a stable surface
    instead of resizing aleatoirely between modes. The runtime override
    (set by the resize handle, `--app-right-panel-width-runtime`) wins
    when present, but is NOT persisted across reloads — the legacy
    `archie-rpanel-width` localStorage key from the pre-formula era is
    wiped on init (right-panel.js). */
+.app-shell {
+  --app-right-panel-floor: 610px;
+}
+@media (max-width: 1279px) {
+  .app-shell {
+    --app-right-panel-floor: 380px;
+  }
+}
 .app-shell.is-right-panel-open {
   grid-template-columns:
     var(--app-sidebar-width)
     minmax(0, 1fr)
-    var(--app-right-panel-width-runtime, max(610px, calc((100vw - var(--app-sidebar-width)) / 3)));
+    var(
+      --app-right-panel-width-runtime,
+      max(var(--app-right-panel-floor), calc((100vw - var(--app-sidebar-width)) / 3))
+    );
 }
 
 .app-shell.is-right-panel-open.is-sidebar-collapsed {
   grid-template-columns:
     var(--app-sidebar-width-collapsed)
     minmax(0, 1fr)
-    var(--app-right-panel-width-runtime, max(610px, calc((100vw - var(--app-sidebar-width-collapsed)) / 3)));
+    var(
+      --app-right-panel-width-runtime,
+      max(var(--app-right-panel-floor), calc((100vw - var(--app-sidebar-width-collapsed)) / 3))
+    );
 }
 
 /* ---------- Onboarding mode ----------

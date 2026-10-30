@@ -1693,3 +1693,12 @@ body.ui-idea-card .rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
 .app-right-panel .clip-card__thumb {
   max-height: 200px;
 }
+
+/* At the 380px floor (under 1280px, PN-20) the source name got three
+   characters: the Reference button drops its word and keeps its glyph
+   (aria-label and title already name it). */
+@container (max-width: 440px) {
+  .rpanel-sources__row-mention > span {
+    display: none;
+  }
+}

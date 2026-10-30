@@ -61,7 +61,7 @@ overlays : `sidebar | contenu | right panel`.
 ## Tailles
 
 11. **Largeur par défaut du panel** : **1/3 de l'espace disponible**
-    (viewport − sidebar), avec un **plancher de 610px**.
+    (viewport − sidebar), avec un **plancher de 610px**, **380px sous 1280px** (ui-polish PN-20, 2026-10-30 : à 1024, 610 laissait le chat sous son plancher de 560px de la règle 8 et la barre du composer passait à la ligne). Le plancher vit dans `--app-right-panel-floor` (`layout.css`), recopié par `panelFormulaFloor` (`right-panel.js`).
 12. **Redimensionnable à la souris** : une poignée sur le bord gauche du panel
     permet de l'élargir/rétrécir, entre **380px** minimum et **viewport − 400px**
     maximum (on garde toujours ≥400px pour la sidebar + le contenu).
