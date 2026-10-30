@@ -18,8 +18,8 @@
 //
 // Version pins MUST match session.js's so the composer-connector + connectors
 // store module instances are shared (ES modules are keyed by URL).
-import { setActiveConnector } from "./composer-connector.js?v=2556";
-import { findConnector } from "./connectors-store.js?v=2556";
+import { setActiveConnector } from "./composer-connector.js?v=2557";
+import { findConnector } from "./connectors-store.js?v=2557";
 
 export function askConnector(sessionId, connectorId) {
   const connector = findConnector(connectorId);
