@@ -29,12 +29,12 @@
 // The view repaints its whole DOM on most edits (a chip added…), so the sheet
 // is re-laid after every paint (a MutationObserver on the host).
 
-import { html, raw } from "../utils.js?v=2609";
-import { navigate } from "../router.js?v=2609";
-import { getDraft, patchDraft } from "../context-builder.js?v=2609";
-import { mount } from "../playbook-view.js?v=2609";
-import { parseHashParams } from "../url-state.js?v=2609";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2609";
+import { html, raw } from "../utils.js?v=2610";
+import { navigate } from "../router.js?v=2610";
+import { getDraft, patchDraft } from "../context-builder.js?v=2610";
+import { mount } from "../playbook-view.js?v=2610";
+import { parseHashParams } from "../url-state.js?v=2610";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2610";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -60,7 +60,9 @@ export function renderReview(target, sid, config, review) {
   // (2026-10-20: "Confirm Brief" read as admin).
   const looksGood = (id) => {
     const next = parts()[parts().findIndex((t) => t.id === id) + 1];
-    return next ? next.nextLabel || `Looks good, on to ${next.title}` : review.lastLabel || "Looks good, finish";
+    // The last part's confirm IS the step's way on (redesign 2026-10-30, the one
+    // CTA): it says where it leads, « Draft my first post », never « finish ».
+    return next ? next.nextLabel || `Looks good, on to ${next.title}` : review.lastLabel || review.next.label;
   };
 
   const isLast = () => parts().at(-1)?.id === current();
