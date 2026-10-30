@@ -86,6 +86,7 @@ for (const shot of shots) {
         if (action.click) await page.click(action.click);
         if (action.hover) await page.hover(action.hover);
         if (action.focus) await page.focus(action.focus);
+        if (action.type) await page.keyboard.type(action.type);
         if (action.press) await page.keyboard.press(action.press);
         if (action.waitFor) await page.waitForSelector(action.waitFor, { timeout: 15000 });
         if (action.sleep) await page.waitForTimeout(action.sleep);

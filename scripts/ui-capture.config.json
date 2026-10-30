@@ -363,6 +363,81 @@
       "mode": "new-alt",
       "url": "#/topics",
       "wait": "#app"
+    },
+    {
+      "id": "first-time-chat",
+      "surface": "new-chat",
+      "mode": "new-alt",
+      "url": "#/welcome-alt/brand",
+      "actions": [
+        {
+          "click": "text=Read my website"
+        },
+        {
+          "waitFor": "text=Use my website"
+        },
+        {
+          "click": "text=Use my website"
+        },
+        {
+          "waitFor": "text=Check what I learned"
+        },
+        {
+          "click": "text=Check my voice"
+        },
+        {
+          "sleep": 1500
+        },
+        {
+          "click": "text=Draft my first post"
+        },
+        {
+          "waitFor": "#app textarea"
+        },
+        {
+          "sleep": 1500
+        }
+      ],
+      "wait": "#app textarea",
+      "liveClock": true
+    },
+    {
+      "id": "chat-loading",
+      "surface": "chat",
+      "url": "#/session/s-acme-launch",
+      "wait": "#app textarea",
+      "actions": [
+        {
+          "focus": "#app textarea"
+        },
+        {
+          "type": "Draft 3 posts from the keynote"
+        },
+        {
+          "press": "Enter"
+        },
+        {
+          "waitFor": "#app .ap-loader"
+        }
+      ]
+    },
+    {
+      "id": "sidebar-collapsed",
+      "surface": "shell",
+      "url": "#/session/s-acme-launch",
+      "wait": "#app textarea",
+      "actions": [
+        {
+          "click": "[data-sidebar-toggle] >> nth=0"
+        },
+        {
+          "sleep": 500
+        }
+      ],
+      "viewports": [
+        [1440, 900],
+        [1024, 768]
+      ]
     }
   ]
 }

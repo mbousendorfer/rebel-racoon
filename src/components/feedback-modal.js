@@ -3,7 +3,7 @@
 // toggle its visibility. No persistence — submitting shows a success flash
 // and resets on close.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2571";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2572";
 
 const MODAL_ID = "feedback";
 
@@ -27,7 +27,7 @@ const HTML = `
 >
   <div class="ap-dialog-header">
     <span class="ap-dialog-title" id="feedbackTitle">Send feedback</span>
-    <span class="ap-dialog-subtitle feedback-modal__intro">I read every message. For urgent help,
+    <span class="ap-dialog-subtitle feedback-modal__intro">The team that builds me reads every message. For urgent help,
       <a href="mailto:support@agorapulse.com">contact the team directly</a> instead.</span>
   </div>
   <button class="ap-dialog-close" type="button" id="closeFeedbackBtn" aria-label="Close">
@@ -66,7 +66,7 @@ const HTML = `
       <i class="ap-icon-check" aria-hidden="true"></i>
     </div>
     <h3>Feedback sent</h3>
-    <p>Thanks. It goes straight into what I work on next.</p>
+    <p>Thanks. The team that builds me reads it.</p>
   </div>
 </aside>`;
 

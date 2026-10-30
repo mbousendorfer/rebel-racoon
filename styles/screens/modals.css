@@ -76,7 +76,7 @@ body.has-modal {
 }
 
 .feedback-modal {
-  width: min(calc(100% - 32px), 640px);
+  width: min(calc(100% - 32px), 560px);
 }
 
 .chat-picker-modal {
