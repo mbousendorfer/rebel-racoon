@@ -258,6 +258,19 @@ export const FLAGS = Object.freeze([
       "three Topics to review instead of six.",
   },
   {
+    id: "chatPreviewTool",
+    group: "Chat & drafts",
+    tip: "Shows « Admin: preview in chat » under the composer: every chat element and trigger, played in the current chat.",
+    label: "Admin: preview in chat",
+    // OFF: a prototype tool doesn't sit in the new chat's hero for everyone
+    // (UI polish 2026-10-30, To decide CH-17). ON: the link, as before.
+    default: false,
+    hides:
+      "When ON, the composer's hint row carries « Admin: preview in chat », the " +
+      "prototype's catalogue of chat elements and triggers (chat-gallery.js). " +
+      "OFF by default: it is a tool for whoever demos the prototype, not part of the product.",
+  },
+  {
     id: "demoMode",
     group: "Onboarding",
     tip: "From the first screen, try Archie on a made-up brand (Bramble & Bean) with pretend accounts — one wave of drafts, nothing can be scheduled.",

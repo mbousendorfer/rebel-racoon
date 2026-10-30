@@ -1722,7 +1722,9 @@ span.chat-bubble-choice-chip {
   gap: var(--ref-spacing-xxxs);
   padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
   border-radius: var(--ref-border-radius-sm);
-  background: var(--ref-color-electric-blue-100);
+  /* blue-150, not the DS primary blue-100: white on it is 4.86:1 against 3.35:1
+     (decided 2026-10-30, CH-09) until the DS darkens its primary fill. */
+  background: var(--ref-color-electric-blue-150);
   color: var(--ref-color-white);
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
@@ -1732,11 +1734,11 @@ span.chat-bubble-choice-chip {
 
 .source-chip .source-chip__action:hover,
 .source-chip .source-chip__action:focus-visible {
-  background: var(--ref-color-electric-blue-80);
+  background: var(--ref-color-electric-blue-100);
 }
 
 .source-chip .source-chip__action:active {
-  background: var(--ref-color-electric-blue-60);
+  background: var(--ref-color-electric-blue-80);
 }
 
 .source-chip .chat-bubble-source-intake__check {

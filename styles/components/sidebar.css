@@ -392,8 +392,10 @@
 .app-sidebar__row-color-dot--orange {
   --dot-color: var(--ref-color-orange-100);
 }
+/* A Playbook's « blue » is data, and electric blue is the interactive colour:
+   the dot takes the DS soft blue (decided 2026-10-30, CH-04). */
 .app-sidebar__row-color-dot--blue {
-  --dot-color: var(--ref-color-electric-blue-100);
+  --dot-color: var(--ref-color-soft-blue-100);
 }
 .app-sidebar__row-color-dot--green {
   --dot-color: var(--ref-color-green-100);

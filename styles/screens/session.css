@@ -803,7 +803,7 @@ body.playbook-revoked .session__composer-card {
 /* ── Flag newChatHero — workflow rows ────────────────────────────────────
    The usual wordmark + sub-line and composer, then the three workflows as rows
    in the composer's 740px column (instead of the 1040px card grid). The
-   Topics grid below keeps its own width. */
+   Topics row below takes the same 740px column (2026-10-30). */
 .starter-rows {
   display: flex;
   flex-direction: column;
@@ -1078,8 +1078,15 @@ archie-pixels.empty-chat__pixels {
 
 /* Flag newChatHero — Topics under the rows: a title and a one-line lede, the way out on the
    right of the same line; one row of three cards. */
+/* In the composer's 740px column, like the rows above: one left edge for the
+   whole hero (it ran 1016px wide, its own column; decided 2026-10-30, CH-16). */
 .empty-chat__topics--staged {
   margin-top: var(--ref-spacing-md);
+}
+
+/* Doubled class: the base .empty-chat__topics (1040px) comes later in this file. */
+.empty-chat__topics.empty-chat__topics--staged {
+  max-width: 740px;
 }
 
 @media (max-width: 900px) {

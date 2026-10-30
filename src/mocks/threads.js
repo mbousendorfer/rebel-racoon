@@ -118,7 +118,7 @@ export const threadsBySession = {
       role: "assistant",
       meta: "Archie",
       text: [
-        'I drafted 4 posts grounded in [[idea:idea-acme-1]], each sized for its network and following the "Acme · Q2 marketing" Playbook:',
+        "I drafted 4 posts grounded in [[idea:idea-acme-1]], each sized for its network and following the “Acme · Q2 marketing” Playbook:",
         "- [[post:post-acme-1]], ready",
         "- [[post:post-acme-3]], ready",
         "- [[post:post-acme-2]], needs an image before Instagram will publish it",
