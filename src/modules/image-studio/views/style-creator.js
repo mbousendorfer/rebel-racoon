@@ -9,22 +9,22 @@
 // active Playbook. (A three-subject "Test run" column was removed at the user's
 // request, 2026-10-06: "ça n'a pas de sens".)
 
-import { html, toString } from "../lib/html.js?v=2595";
-import { delegate } from "../lib/delegate.js?v=2595";
-import { getPath } from "../../../router.js?v=2595";
-import { setTopbarActions } from "../../../components/topbar.js?v=2595";
-import { renderFrame } from "./frame.js?v=2595";
-import { renderEmpty } from "../ui/empty.js?v=2595";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=2595";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2595";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=2595";
-import { toast } from "../ui/toast.js?v=2595";
-import { confirmDialog } from "../ui/dialog.js?v=2595";
-import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2595";
-import { copyService } from "../services/index.js?v=2595";
-import { lookFromColors } from "../render/visual.js?v=2595";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2595";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2595";
+import { html, toString } from "../lib/html.js?v=2597";
+import { delegate } from "../lib/delegate.js?v=2597";
+import { getPath } from "../../../router.js?v=2597";
+import { setTopbarActions } from "../../../components/topbar.js?v=2597";
+import { renderFrame } from "./frame.js?v=2597";
+import { renderEmpty } from "../ui/empty.js?v=2597";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=2597";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2597";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=2597";
+import { toast } from "../ui/toast.js?v=2597";
+import { confirmDialog } from "../ui/dialog.js?v=2597";
+import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2597";
+import { copyService } from "../services/index.js?v=2597";
+import { lookFromColors } from "../render/visual.js?v=2597";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2597";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2597";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -155,69 +155,75 @@ export function mount(target, params, ctx, { embed = null } = {}) {
       ${nameMissing ? fieldError("imst-st-name-msg", "Give the style a name.") : ""}
     </section>`;
     const refs = html` <section class="${card}" aria-labelledby="imst-src-images">
-        <div class="ap-form-field">
-          <label id="imst-src-images">Reference images</label>
-          ${dropzone({
-            id: "refs",
-            icon: "ap-icon-image",
-            title: state.uploading ? "Adding…" : "Drop images here or",
-            sub:
-              images.length >= CUSTOM_STYLE_LIMITS.images
-                ? `${CUSTOM_STYLE_LIMITS.images} images added, the most a style takes. Remove one to add another`
-                : `Up to ${CUSTOM_STYLE_LIMITS.images} images that share the look you want · ${images.length} added`,
-            compact: true,
-            filled: true,
-            // Full, the zone stays and says so: disabled, never hidden.
-            disabled: images.length >= CUSTOM_STYLE_LIMITS.images,
-          })}
-          ${imagesMissing
-            ? fieldError("imst-st-images-msg", "Add at least one image. I read the style's look from them.")
-            : ""}
-        </div>
-        ${images.length
-          ? html`<ul class="imst-sources">
-              ${images.map(([s, i]) => renderSource(s, i))}
-            </ul>`
+      <div class="ap-form-field">
+        <label id="imst-src-images">Reference images</label>
+        ${dropzone({
+          id: "refs",
+          icon: "ap-icon-image",
+          title: state.uploading
+            ? "Adding…"
+            : images.length
+              ? "Drop more images here or"
+              : "Drop a few images that share a look, or",
+          sub:
+            images.length >= CUSTOM_STYLE_LIMITS.images
+              ? `${CUSTOM_STYLE_LIMITS.images} images added, the most a style takes. Remove one to add another`
+              : `Up to ${CUSTOM_STYLE_LIMITS.images} images that share the look you want · ${images.length} added`,
+          // Empty, the drop is the whole page (redesign 2026-10-30): the big zone.
+          compact: images.length > 0,
+          filled: true,
+          // Full, the zone stays and says so: disabled, never hidden.
+          disabled: images.length >= CUSTOM_STYLE_LIMITS.images,
+        })}
+        ${imagesMissing
+          ? fieldError("imst-st-images-msg", "Add at least one image. I read the style's look from them.")
           : ""}
-      </section>
-      <section class="${card}">
-        <!-- The DS textarea field, its label inside it; Generate is a standalone link on the label's line. -->
-        <div class="ap-textarea-field resizable imst-prompt-field">
-          <!-- Without images, why Generate is off is said in the label's description,
-               where everyone reads it (a title reached the mouse only). -->
-          <label for="imst-st-prompt"
-            >Style prompt
-            <small id="imst-st-prompt-hint"
-              >(optional)${!images.length ? " · add an image to generate it from" : ""}</small
-            ></label
-          >
-          <button
-            type="button"
-            class="ap-link standalone imst-prompt-field__gen${!images.length || state.promptBusy ? " disabled" : ""}"
-            data-imst-action="generate-prompt"
-            aria-disabled="${!images.length || state.promptBusy}"
-            ${!images.length ? 'aria-describedby="imst-st-prompt-hint"' : ""}
-          >
-            <i class="ap-icon-sparkles" aria-hidden="true"></i
-            ><span
-              >${state.promptBusy
-                ? "Reading your images…"
-                : d.stylePrompt
-                  ? "Generate again"
-                  : "Generate from the images"}</span
-            >
-          </button>
-          <textarea
-            id="imst-st-prompt"
-            data-imst-field="stylePrompt"
-            rows="4"
-            placeholder="Generate the prompt from your images, then edit it if you like."
-            ${state.promptBusy ? "disabled" : ""}
-          >
+      </div>
+      ${images.length
+        ? html`<ul class="imst-sources">
+            ${images.map(([s, i]) => renderSource(s, i))}
+          </ul>`
+        : ""}
+    </section>`;
+    // What I read from the images (redesign 2026-10-30): the style prompt,
+    // written on its own as soon as there are images, shown as my read with the
+    // palette I sampled, and still the field you edit. No test run: nothing is
+    // generated but these words. Shown once there is something to read.
+    const palette = [...new Set(d.sources.flatMap((src) => src.colors || getAsset(src.ref)?.colors || []))].slice(0, 6);
+    const read = html`<section class="${card} imst-read" aria-labelledby="imst-read-title">
+      <div class="imst-read__head">
+        <span class="imst-read__mark" aria-hidden="true"><i class="ap-icon-sparkles"></i></span>
+        <h2 class="imst-read__title" id="imst-read-title">What I read from them</h2>
+      </div>
+      ${palette.length
+        ? html`<ul class="imst-read__palette" aria-label="Colours I sampled">
+            ${palette.map((c) => html`<li style="background:${c}" title="${c}"></li>`)}
+          </ul>`
+        : ""}
+      <!-- The DS textarea field, its label inside it; Read them again is a standalone link on the label's line. -->
+      <div class="ap-textarea-field resizable imst-prompt-field">
+        <label for="imst-st-prompt">The look, in words <small>I draw from this. Change anything.</small></label>
+        <button
+          type="button"
+          class="ap-link standalone imst-prompt-field__gen${!images.length || state.promptBusy ? " disabled" : ""}"
+          data-imst-action="generate-prompt"
+          aria-disabled="${!images.length || state.promptBusy}"
+          ${!images.length ? 'aria-describedby="imst-st-prompt-hint"' : ""}
+        >
+          <i class="ap-icon-sparkles" aria-hidden="true"></i
+          ><span>${state.promptBusy ? "Reading your images…" : "Read them again"}</span>
+        </button>
+        <textarea
+          id="imst-st-prompt"
+          data-imst-field="stylePrompt"
+          rows="4"
+          placeholder="Describe the look: the light, the colour, what's in the frame."
+          ${state.promptBusy ? "disabled" : ""}
+        >
 ${d.stylePrompt}</textarea
-          >
-        </div>
-      </section>`;
+        >
+      </div>
+    </section>`;
     target.innerHTML = toString(
       page(html`
         ${embed
@@ -229,7 +235,7 @@ ${d.stylePrompt}</textarea
         <div class="imst-creator${embed ? " imst-creator--embed" : ""}">
           <div class="imst-creator__form${embed ? "" : " ap-card imst-creator__card"}">
             <!-- The images ARE the style: they come first in both hosts, the name once the look is set. -->
-            ${refs}${identity}
+            ${refs}${images.length ? html`${read}${identity}` : ""}
           </div>
         </div>
         ${otherErrors.length
@@ -333,7 +339,10 @@ ${d.stylePrompt}</textarea
         }
       }
       state.uploading -= 1;
-      paint();
+      // The first images in: I read them straight away, no button to find.
+      const hasImages = state.draft.sources.some((src) => src.type === "image");
+      if (hasImages && !state.draft.stylePrompt.trim() && !state.promptBusy) generatePrompt();
+      else paint();
     }),
     delegate(target, "input", "[data-imst-field]", (_e, el) => {
       state.draft[el.dataset.imstField] = el.value;

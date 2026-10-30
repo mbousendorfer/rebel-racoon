@@ -743,3 +743,51 @@ button.imst-style-card {
   padding-top: var(--ref-spacing-lg);
   border-top: 1px solid var(--ref-color-grey-20);
 }
+
+/* ─── UI redesign 2026-10-30 (design-plans/redesign-image-studio.md) ─────────
+   What I read from the images: my mark (Archie = butter, olive glyph), a title,
+   the palette I sampled, then the look in words — the style prompt field. */
+.imst-read__head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.imst-read__mark {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--app-butter);
+}
+
+.imst-read__mark i {
+  width: 14px;
+  height: 14px;
+  background: var(--app-butter-accent);
+}
+
+.imst-read__title {
+  margin: 0;
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.imst-read__palette {
+  display: flex;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.imst-read__palette li {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--ref-color-grey-20);
+}
