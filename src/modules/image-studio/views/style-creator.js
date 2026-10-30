@@ -9,22 +9,22 @@
 // active Playbook. (A three-subject "Test run" column was removed at the user's
 // request, 2026-10-06: "ça n'a pas de sens".)
 
-import { html, toString } from "../lib/html.js?v=2604";
-import { delegate } from "../lib/delegate.js?v=2604";
-import { getPath } from "../../../router.js?v=2604";
-import { setTopbarActions } from "../../../components/topbar.js?v=2604";
-import { renderFrame } from "./frame.js?v=2604";
-import { renderEmpty } from "../ui/empty.js?v=2604";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=2604";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2604";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=2604";
-import { toast } from "../ui/toast.js?v=2604";
-import { confirmDialog } from "../ui/dialog.js?v=2604";
-import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2604";
-import { copyService } from "../services/index.js?v=2604";
-import { lookFromColors } from "../render/visual.js?v=2604";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2604";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2604";
+import { html, toString } from "../lib/html.js?v=2606";
+import { delegate } from "../lib/delegate.js?v=2606";
+import { getPath } from "../../../router.js?v=2606";
+import { setTopbarActions } from "../../../components/topbar.js?v=2606";
+import { renderFrame } from "./frame.js?v=2606";
+import { renderEmpty } from "../ui/empty.js?v=2606";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=2606";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2606";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=2606";
+import { toast } from "../ui/toast.js?v=2606";
+import { confirmDialog } from "../ui/dialog.js?v=2606";
+import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2606";
+import { copyService } from "../services/index.js?v=2606";
+import { lookFromColors } from "../render/visual.js?v=2606";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2606";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2606";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -156,7 +156,9 @@ export function mount(target, params, ctx, { embed = null } = {}) {
     </section>`;
     const refs = html` <section class="${card}" aria-labelledby="imst-src-images">
       <div class="ap-form-field">
-        <label id="imst-src-images">Reference images</label>
+        <!-- Empty, the drop zone's own line says what to do: the label stays
+             for screen readers only (redesign polish 2026-10-30). -->
+        <label id="imst-src-images" class="${images.length ? "" : "imst-sr-only"}">Reference images</label>
         ${dropzone({
           id: "refs",
           icon: "ap-icon-image",

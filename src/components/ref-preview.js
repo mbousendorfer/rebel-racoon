@@ -8,11 +8,11 @@
 // uses, so the preview IS what a click opens. The card is inert: a picture of
 // the object, not a second set of its controls.
 
-import { resolveRef } from "../chat-refs.js?v=2604";
-import { getIdeas, getSources } from "../library.js?v=2604";
-import { renderPostEchoRow } from "./top-post-card.js?v=2604";
-import { renderCompactIdeaCard } from "./idea-card-compact.js?v=2604";
-import { renderSourceCard } from "./source-card.js?v=2604";
+import { resolveRef } from "../chat-refs.js?v=2606";
+import { getIdeas, getSources } from "../library.js?v=2606";
+import { renderPostEchoRow } from "./top-post-card.js?v=2606";
+import { renderCompactIdeaCard } from "./idea-card-compact.js?v=2606";
+import { renderSourceCard } from "./source-card.js?v=2606";
 
 const ANCHOR_SEL = "[data-chat-ref]";
 const DELAY = 250;
