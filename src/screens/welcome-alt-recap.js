@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2568";
-import { catalogueRoute } from "../active-playbook.js?v=2568";
+import { navigate } from "../router.js?v=2571";
+import { catalogueRoute } from "../active-playbook.js?v=2571";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,11 +13,11 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2568";
-import { RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2568";
-import { renderReview } from "./welcome-alt-review.js?v=2568";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2568";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2568";
+} from "../context-builder.js?v=2571";
+import { RECAP_SECTIONS, editVoiceNetwork, networkVoiceFilled } from "../playbook-view.js?v=2571";
+import { renderReview } from "./welcome-alt-review.js?v=2571";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2571";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2571";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -27,15 +27,15 @@ import {
   playbookNetworks,
   voiceNetworks,
   onlyNetwork,
-} from "../voice-parts.js?v=2568";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2568";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2568";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2568";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2568";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2568";
-import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2568";
-import { showToast } from "../components/toast.js?v=2568";
-import { open as openConfirm } from "../components/confirm-modal.js?v=2568";
+} from "../voice-parts.js?v=2571";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2571";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2571";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2571";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2571";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2571";
+import { openVoiceInterview, openVoiceProposal } from "../components/voice-proposal-modal.js?v=2571";
+import { showToast } from "../components/toast.js?v=2571";
+import { open as openConfirm } from "../components/confirm-modal.js?v=2571";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -125,7 +125,6 @@ const playbookReview = () => ({
   parts: RECAP_SECTIONS.filter((t) => t.id !== "voice"),
   next: { label: "Check my voice", go: () => navigate("/welcome-alt/voice") },
   lastLabel: "Looks good, on to your voice",
-  done: { title: "Your Playbook is all set.", lead: "Next, check how you sound." },
   back: "/welcome-alt/ready",
 });
 
@@ -216,19 +215,33 @@ function voiceReview(sid, overrides = {}) {
       onConfirm: (accounts) => accounts.length && use(accounts),
     });
   };
-  // The default voice, rewritten from a source (the fiche's Learn from…).
+  // The default voice, rewritten from a source (the fiche's Learn from…): a
+  // proposal first, saved only on « Add to Voice profile », like a network's
+  // voice (ui-polish OB-17: it used to overwrite at once, with no undo).
   const learnDefault = (analysis, from, refresh) => {
     const p = sectionPatchFromAnalysis(analysis);
-    patchDraft(sid, {
-      voiceSummary: p.voiceSummary,
-      voiceAlways: p.voiceAlways,
-      voiceNever: p.voiceNever,
-      voiceByPost: p.voiceByPost,
-      voiceSometimes: p.voiceSometimes,
-      voiceMode: "guided",
+    const rules = [p.voiceAlways, p.voiceNever, p.voiceByPost, p.voiceSometimes].reduce(
+      (n, list) => n + (list?.length || 0),
+      0,
+    );
+    openConfirm({
+      title: `New default voice from ${from}`,
+      body: `${p.voiceSummary ? `« ${p.voiceSummary} » ` : ""}Plus ${rules} rule${rules === 1 ? "" : "s"} for how you write. Your current voice stays until you add this one.`,
+      confirmLabel: "Add to Voice profile",
+      cancelLabel: "Keep my voice",
+      onConfirm: () => {
+        patchDraft(sid, {
+          voiceSummary: p.voiceSummary,
+          voiceAlways: p.voiceAlways,
+          voiceNever: p.voiceNever,
+          voiceByPost: p.voiceByPost,
+          voiceSometimes: p.voiceSometimes,
+          voiceMode: "guided",
+        });
+        refresh();
+        showToast("Default voice updated.");
+      },
     });
-    refresh();
-    showToast(`Default voice rewritten from ${from}${from.endsWith(".") ? "" : "."}`);
   };
   const onWay = (partId, way, refresh) => {
     const net = netOf(partId);
@@ -243,6 +256,7 @@ function voiceReview(sid, overrides = {}) {
           ),
         );
       return openFillDocumentModal({
+        proposal: true,
         onConfirm: (doc) => learnDefault(analyzeDocument({ name: docName(doc) }), docName(doc), refresh),
       });
     }
@@ -274,7 +288,10 @@ function voiceReview(sid, overrides = {}) {
     if (way === "interview")
       return openVoiceInterview({ net, onDone: (answers) => propose({ choice: "interview", from: answers }) });
     if (way === "document")
-      return openFillDocumentModal({ onConfirm: (doc) => propose({ choice: "document", from: docName(doc) }) });
+      return openFillDocumentModal({
+        proposal: true,
+        onConfirm: (doc) => propose({ choice: "document", from: docName(doc) }),
+      });
     withAccounts(net, (accounts) => {
       const source = {
         from: accounts.map((a) => a.handle).join(", "),
@@ -302,7 +319,6 @@ function voiceReview(sid, overrides = {}) {
     parts,
     onWay,
     next: { label: finishLabel(), go: () => finishRun(sid) },
-    done: { title: "Your voice is set.", lead: "I start every draft from it." },
     back: "/welcome-alt/recap",
     ...overrides,
   };

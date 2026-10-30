@@ -22,7 +22,8 @@
 //     2026-10-29, asked: they repeated the left entry);
 //   - one button at the bottom confirms the part ("Looks good — on to …"): it
 //     checks it in the list and the next part's column cascades in. The last
-//     one ends on "all set".
+//     one goes straight on (ui-polish OB-18: an « all set » card in between
+//     was a step on a screen that says « Step 3 of 4 »).
 // The way on lives on the left, the whole time — never on a card: on to the
 // Voice from the Playbook, Draft my first post from the Voice.
 // (2026-10-20: this replaced the stack — one card at a time, a passing cover
@@ -32,12 +33,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2568";
-import { navigate } from "../router.js?v=2568";
-import { getDraft, patchDraft } from "../context-builder.js?v=2568";
-import { mount } from "../playbook-view.js?v=2568";
-import { parseHashParams } from "../url-state.js?v=2568";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2568";
+import { html, raw } from "../utils.js?v=2571";
+import { navigate } from "../router.js?v=2571";
+import { getDraft, patchDraft } from "../context-builder.js?v=2571";
+import { mount } from "../playbook-view.js?v=2571";
+import { parseHashParams } from "../url-state.js?v=2571";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2571";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -48,7 +49,7 @@ const GLIDE_MS = 720; // a card glides to the middle
 // `review`: { step, title, sub, parts (a list, or a function for parts that
 // come and go; a part's `open()` opens its tab in edit itself, its `badge` says
 // what's left to do, its `group` / `groupHint` head a run of parts —
-// what's left to do), next: { label, go }, done: { title, lead }, back, onWay?,
+// what's left to do), next: { label, go }, back, onWay?,
 // start? (the part to open first), progress? (false: no step dots) }.
 // `onWay(partId, way, refresh)`: a card's tile was picked (the voice review);
 // `refresh()` repaints the part with what it changed.
@@ -68,7 +69,6 @@ export function renderReview(target, sid, config, review) {
   };
 
   let index = 0; // the card in focus, within the current part
-  let allSet = false; // the "all set" card is up (it carries Draft my first post)
   let count = 0; // how many cards the current part has
   // The part just confirmed: its check pops in once, for the length of the pop
   // (the list can repaint twice in a frame). The list repaints on every move,
@@ -143,11 +143,11 @@ export function renderReview(target, sid, config, review) {
         <button type="button" class="ap-button ghost grey" data-flow-back>
           <i class="ap-icon-arrow-left"></i><span>Back</span>
         </button>
-        ${allSet /* the "all set" card offers it — once is enough */
-          ? ""
-          : raw(`<button type="button" class="ap-button primary orange" data-review-start>
-              <span>${review.next.label}</span><i class="ap-icon-arrow-right"></i>
-            </button>`)}
+        <!-- Secondary: the screen's one primary is the part's confirm, at the
+             bottom of the stage (ui-polish OB-08). -->
+        <button type="button" class="ap-button secondary blue" data-review-start>
+          <span>${review.next.label}</span><i class="ap-icon-arrow-right"></i>
+        </button>
       </div>
     `;
   };
@@ -155,11 +155,6 @@ export function renderReview(target, sid, config, review) {
   const shell = mountShell(target, { step: review.step, sid, left, sheet: true });
   shell.sheet.classList.add("is-scroll");
   const body = shell.sheet.querySelector("[data-flow-sheet-body]");
-  // The end of the run: "all set", over the stage.
-  const introEl = document.createElement("div");
-  introEl.className = "welcome-review__intro";
-  introEl.setAttribute("aria-live", "polite");
-  shell.sheet.append(introEl);
   // The part's tool strip (the voice's « Rewrite it from a source »), pinned
   // over the column: the view renders it, the stage shows a copy, a click on
   // the copy clicks the original (the view's own delegation stays the one).
@@ -425,40 +420,8 @@ export function renderReview(target, sid, config, review) {
     }, OUT_MS);
   };
 
-  // The end of the run: every part confirmed.
-  const doneCard = () => html`
-    <div class="welcome-review__intro-card is-done">
-      <span class="welcome-review__intro-tile is-all"><i class="ap-icon-check" aria-hidden="true"></i></span>
-      <span class="welcome-review__intro-title">${review.done.title}</span>
-      <span class="welcome-review__intro-lead">${review.done.lead}</span>
-      <span class="welcome-review__intro-actions">
-        <button type="button" class="ap-button stroked grey" data-review-again="${parts()[0].id}">
-          Review it again
-        </button>
-        <button type="button" class="ap-button primary orange" data-review-start>
-          <span>${review.next.label}</span><i class="ap-icon-arrow-right"></i>
-        </button>
-      </span>
-    </div>
-  `;
-  const showDone = () => {
-    allSet = true;
-    introEl.innerHTML = doneCard();
-    shell.sheet.classList.add("is-part-intro", "is-asking");
-    introEl.querySelector("[data-review-again]")?.focus({ preventScroll: true });
-    shell.paint();
-  };
-  const hideDone = () => {
-    shell.sheet.classList.remove("is-part-intro", "is-asking");
-    introEl.innerHTML = "";
-    if (allSet) {
-      allSet = false;
-      shell.paint();
-    }
-  };
-
   // Confirmed: the part is checked, and the next one cascades in (or, the
-  // last one, the Playbook is all set).
+  // last one, the way on).
   const confirmPart = (from) => {
     if (!reviewed().has(from)) {
       justChecked = from;
@@ -466,7 +429,7 @@ export function renderReview(target, sid, config, review) {
     }
     patchDraft(sid, { reviewedParts: [...new Set([...reviewed(), from])] });
     const to = parts()[parts().findIndex((t) => t.id === from) + 1];
-    if (!to) return showDone();
+    if (!to) return review.next.go();
     switchPart(to.id);
   };
 
@@ -489,19 +452,11 @@ export function renderReview(target, sid, config, review) {
   const onClick = (e) => {
     const part = e.target.closest("[data-review-part]")?.dataset.reviewPart;
     if (part) {
-      const asking = shell.sheet.classList.contains("is-asking");
-      if (asking) hideDone();
-      if (part !== current()) return switchPart(part);
-      if (asking) openPart(part);
+      if (part !== current()) switchPart(part);
       return;
     }
     const confirm = e.target.closest("[data-review-confirm]")?.dataset.reviewConfirm;
     if (confirm) return confirmPart(confirm);
-    const again = e.target.closest("[data-review-again]")?.dataset.reviewAgain;
-    if (again) {
-      hideDone();
-      return again === current() ? openPart(again) : switchPart(again);
-    }
     // A dimmed card comes into focus — the click still reaches its field.
     const dimmed = e.target.closest(".welcome-review__card:not(.is-active)");
     if (dimmed) {
@@ -522,7 +477,6 @@ export function renderReview(target, sid, config, review) {
     // Arrows inside a widget (a card's action menu, a radio group) belong to it.
     if (e.target.closest?.('[role="menu"], [role="listbox"], [role="radiogroup"], [role="tablist"]')) return;
     if (document.querySelector(".app-modal-backdrop:not([hidden]), body.has-modal")) return;
-    if (shell.sheet.classList.contains("is-asking")) return;
     e.preventDefault();
     move(e.key === "ArrowDown" ? 1 : -1);
   };

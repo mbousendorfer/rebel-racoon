@@ -14,19 +14,19 @@
 //   `giving` (« Give X its own voice » on a draft): asked even for a network on
 //   the default voice, without that answer.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2568";
-import { getContextById } from "../contexts-store.js?v=2568";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2568";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2571";
+import { getContextById } from "../contexts-store.js?v=2571";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2571";
 import {
   missingNetworkVoices,
   voiceChoices,
   useDefaultVoice,
   editNetworkVoiceInPlaybook,
   documentName,
-} from "../network-voice-flow.js?v=2568";
-import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2568";
-import { openVoiceProposal, openVoiceInterview } from "./voice-proposal-modal.js?v=2568";
-import { escapeHtml } from "../utils.js?v=2568";
+} from "../network-voice-flow.js?v=2571";
+import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2571";
+import { openVoiceProposal, openVoiceInterview } from "./voice-proposal-modal.js?v=2571";
+import { escapeHtml } from "../utils.js?v=2571";
 
 const MODAL_ID = "network-voice";
 
@@ -142,6 +142,7 @@ function giveVoices(p, [pick, ...rest]) {
   if (choice === "learn" || choice === "adapt") return propose();
   if (choice === "interview") return openVoiceInterview({ net, onDone: propose, onCancel: back });
   openFillDocumentModal({
+    proposal: true,
     onConfirm: ({ file, url }) => propose(file?.name || documentName(url)),
     onDismiss: back,
   });

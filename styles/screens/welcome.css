@@ -1064,102 +1064,10 @@ body:not(.onboarding) .welcome-intro__wordmark {
 }
 
 /* Changing part: the column and its nav leave downwards, then the new part's
-   column cascades in. While "all set" is up, they're hidden under it. */
+   column cascades in. */
 .welcome-flow__sheet.is-part-out .welcome-flow__sheet-body,
 .welcome-flow__sheet.is-part-out .welcome-review__nav {
   animation: welcome-review-part-out 0.24s ease-in both;
-}
-
-.welcome-flow__sheet.is-part-intro .welcome-flow__sheet-body,
-.welcome-flow__sheet.is-part-intro .welcome-review__nav {
-  visibility: hidden;
-}
-
-.welcome-review__intro {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-xs);
-  text-align: center;
-  pointer-events: none;
-}
-
-.welcome-flow__sheet.is-part-intro .welcome-review__intro {
-  display: flex;
-}
-
-/* The part's cover: one card, its tint as a wash at the top, the tile, the
-   name, the sentence — then it gives way to the part's own cards. */
-.welcome-review__intro-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  width: min(420px, 100%);
-  padding: var(--ref-spacing-xl) var(--ref-spacing-lg) var(--ref-spacing-lg);
-  background: linear-gradient(180deg, var(--part-tint) 0, var(--app-surface) 120px);
-  border-radius: 20px;
-  box-shadow: var(--app-shadow-popover-lg);
-  animation: welcome-review-intro 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-
-.welcome-review__intro-tile {
-  display: grid;
-  place-items: center;
-  width: 72px;
-  height: 72px;
-  border-radius: 22px;
-  background: var(--app-surface);
-  color: var(--part-ink);
-  font-size: 32px;
-  box-shadow: var(--app-shadow-popover-md);
-}
-
-.welcome-review__intro-title {
-  margin-top: var(--ref-spacing-xs);
-  font-family: var(--sys-text-style-marketing-font-family);
-  font-size: var(--sys-text-style-marketing-size);
-  line-height: var(--sys-text-style-marketing-line-height);
-  font-weight: var(--sys-text-style-marketing-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.welcome-review__intro-lead {
-  max-width: 36ch;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-80);
-}
-
-/* The end of the run — "all set" — takes clicks. */
-.welcome-review__intro-card.is-done {
-  pointer-events: auto;
-  width: min(460px, 100%);
-}
-
-.welcome-review__intro-tile {
-  position: relative;
-}
-
-.welcome-review__intro-tile.is-all {
-  background: var(--app-butter);
-  color: var(--app-butter-accent);
-}
-
-.welcome-review__intro-card.is-done {
-  background: linear-gradient(180deg, var(--app-butter) 0, var(--app-surface) 120px);
-}
-
-.welcome-review__intro-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--ref-spacing-xs);
-  margin-top: var(--ref-spacing-sm);
 }
 
 /* A new part's nav lands with its column. */
@@ -1171,13 +1079,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
   to {
     opacity: 0;
     transform: translateY(48px) scale(0.95);
-  }
-}
-
-@keyframes welcome-review-intro {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.9);
   }
 }
 
@@ -1626,10 +1527,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
 
 .welcome-flow__sheet.is-part-out .welcome-review__bar {
   animation: welcome-review-part-out 0.24s ease-in both;
-}
-
-.welcome-flow__sheet.is-part-intro .welcome-review__bar {
-  visibility: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3362,9 +3259,6 @@ button.recap__logotile:hover {
 }
 .welcome-flow__sheet.is-part-out .welcome-review__tools {
   animation: welcome-review-part-out 0.24s ease-in both;
-}
-.welcome-flow__sheet.is-part-intro .welcome-review__tools {
-  visibility: hidden;
 }
 
 /* Website field, empty submit — the line under the field (DS gap: no error-text

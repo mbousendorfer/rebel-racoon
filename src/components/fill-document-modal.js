@@ -13,9 +13,9 @@
 //     it fires onConfirm({ file, url }) then closes. A warning notes the
 //     overwrite. Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2568";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2568";
-import { detectUrlService } from "../url-services.js?v=2568";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2571";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2571";
+import { detectUrlService } from "../url-services.js?v=2571";
 
 const MODAL_ID = "fill-document";
 const ACCEPT = ".pdf,.doc,.docx,.txt,.md,.rtf,.pptx,.csv";
@@ -185,9 +185,15 @@ export function init() {
   injectOnce();
 }
 
-export function open({ onConfirm = null, onDismiss = null } = {}) {
+// `proposal`: what I read is shown before anything is saved (the onboarding's
+// default and network voices), so the « This replaces » warning would lie.
+export function open({ onConfirm = null, onDismiss = null, proposal = false } = {}) {
   injectOnce();
   requestOpen(MODAL_ID, close);
+  modal.querySelector(".fill-document-modal__warn").hidden = proposal;
+  modal.querySelector(".fill-document-modal__lead").textContent = proposal
+    ? "Drop a brand doc or paste a link. I'll read it and show you the voice I'd write."
+    : "Drop a brand doc or paste a link. I'll read it and rewrite your Voice profile.";
 
   pendingOnConfirm = onConfirm;
   pendingOnDismiss = onDismiss;

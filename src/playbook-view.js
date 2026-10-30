@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2568";
-import { conceptHint } from "./concepts.js?v=2568";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2571";
+import { conceptHint } from "./concepts.js?v=2571";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2568";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2568";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2568";
-import { isFlagOn } from "./feature-flags.js?v=2568";
-import { clipLookOf } from "./videos-store.js?v=2568";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2568";
-import { parseHashParams } from "./url-state.js?v=2568";
+} from "./playbook-brand-kit.js?v=2571";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2571";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2571";
+import { isFlagOn } from "./feature-flags.js?v=2571";
+import { clipLookOf } from "./videos-store.js?v=2571";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2571";
+import { parseHashParams } from "./url-state.js?v=2571";
 import {
   isListPart,
   voiceParts,
@@ -55,13 +55,13 @@ import {
   canLearnFrom,
   ADAPTED_FROM,
   voiceHasRules,
-} from "./voice-parts.js?v=2568";
-import { showToast } from "./components/toast.js?v=2568";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2568";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2568";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2568";
-import { consumeHandoff } from "./handoff.js?v=2568";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2568";
+} from "./voice-parts.js?v=2571";
+import { showToast } from "./components/toast.js?v=2571";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2571";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2571";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2571";
+import { consumeHandoff } from "./handoff.js?v=2571";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2571";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2568";
+} from "./social-profiles.js?v=2571";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2367,15 +2367,16 @@ function renderGoalsEdit2(data) {
 }
 
 function renderVoiceEdit2(data) {
-  // The voice's traits and how it's written (guided parts, or your own words)
-  // ride on the first block; the parts follow, the same blocks as in read.
+  // How it's written (guided parts, or your own words) heads the first card it
+  // switches (ui-polish OB2-03: at the bottom of « The voice » it read as a
+  // header over nothing); the parts follow, the same blocks as in read.
   const mode = `<div><span class="pb2-sub">Describe it</span>${renderVoiceModeToggle(data.voiceMode)}</div>`;
   if (data.voiceMode === "manual")
     return pb2EditGrid("voice", [
-      pb2Block("The voice", `${pb2Traits(data)}${mode}`, { wide: true, index: 0, icon: "ap-icon-quote" }),
+      pb2Block("The voice", pb2Traits(data), { wide: true, index: 0, icon: "ap-icon-quote" }),
       pb2Block(
         "In your own words",
-        `<div class="ap-textarea-field resizable">
+        `${mode}<div class="ap-textarea-field resizable">
            <textarea data-recap-text="voiceManual" rows="10" placeholder="How you open, your tone, formatting, what to avoid">${esc(data.voiceManual || "")}</textarea>
          </div>`,
         { wide: true, index: 1, icon: "ap-icon-quote" },
@@ -2620,7 +2621,7 @@ function pb2VoiceParts(data, { edit = false, lead = "", index = 2, brand = data,
     let body = edit
       ? renderPartEditor(field, field === "voiceSummary" ? baseValue(data, field) : data[field])
       : pb2PartBody(field, baseValue(data, field), tag);
-    if (field === "voiceSummary" && !net) body = pb2Traits(data) + body + (i === 0 ? lead : "");
+    if (field === "voiceSummary" && !net) body = (i === 0 ? lead : "") + pb2Traits(data) + body;
     if (field === "voiceNever" && !(net && edit)) body += pb2AvoidRow(brand, { edit: edit && !net });
     const ownSummary = net && field === "voiceSummary" && baseValue(data, field) !== baseValue(brand, field);
     return pb2Block(title, body, {
