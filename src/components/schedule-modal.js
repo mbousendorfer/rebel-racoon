@@ -1,17 +1,17 @@
-import { html, raw, escapeText, escapeAttr, formatTimeOfDay, formatClock } from "../utils.js?v=2554";
-import { showToast } from "./toast.js?v=2554";
-import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=2554";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2554";
+import { html, raw, escapeText, escapeAttr, formatTimeOfDay, formatClock } from "../utils.js?v=2556";
+import { showToast } from "./toast.js?v=2556";
+import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=2556";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2556";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
   normalizeNetwork,
-} from "../social-profiles.js?v=2554";
-import { getContextById } from "../contexts-store.js?v=2554";
-import { canEdit } from "../playbook-access.js?v=2554";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=2554";
+} from "../social-profiles.js?v=2556";
+import { getContextById } from "../contexts-store.js?v=2556";
+import { canEdit } from "../playbook-access.js?v=2556";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=2556";
 import {
   CADENCES,
   startOfDay,
@@ -21,7 +21,7 @@ import {
   planSlots,
   queueEntries,
   firstLine as extractFirstLine,
-} from "../schedule-engine.js?v=2554";
+} from "../schedule-engine.js?v=2556";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -419,7 +419,15 @@ function render() {
   modal.hidden = false;
   // The reveal re-renders while the user may have a select open — keep it open.
   const openSelect = modal.querySelector("details.ap-select[open]")?.dataset.selectKey;
+  // The reveal re-renders the whole dialog: keep keyboard focus inside it, on the
+  // same control when it is still there (its first data-* hook), else the first one.
+  const focused = modal.contains(document.activeElement) ? document.activeElement : null;
+  const hook = focused && [...focused.attributes].find((a) => a.name.startsWith("data-"));
   modal.innerHTML = renderInner();
+  if (focused && !modal.contains(document.activeElement)) {
+    const twin = hook && modal.querySelector(`[${hook.name}="${CSS.escape(hook.value)}"]`);
+    (twin || modal.querySelector("button:not([disabled]):not(.ap-dialog-close)"))?.focus({ preventScroll: true });
+  }
   if (state.peekId) {
     placePeek(modal);
     // The popover is pinned to the dialog, not the scroller — scrolling

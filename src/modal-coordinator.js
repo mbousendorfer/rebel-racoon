@@ -5,7 +5,7 @@
 // two modals (with z-index races and Esc behaviour undefined).
 //
 // Usage:
-//   import { requestOpen, notifyClose } from "./modal-coordinator.js?v=2554";
+//   import { requestOpen, notifyClose } from "./modal-coordinator.js?v=2556";
 //
 //   export function open() {
 //     requestOpen("bugReport", close);   // closes the active overlay first
@@ -46,15 +46,16 @@ function releaseInert() {
 
 function engage(id) {
   if (activeId !== id) return;
-  const dialog = [...document.querySelectorAll('[aria-modal="true"].open')]
-    .filter((el) => el.getClientRects().length)
+  // Visible is what counts, not `.open`: the schedule modal shows through `hidden`.
+  const dialog = [...document.querySelectorAll('[aria-modal="true"]')]
+    .filter((el) => !el.hidden && el.getClientRects().length)
     .pop();
   if (!dialog) return;
   let top = dialog;
   while (top.parentElement && top.parentElement !== document.body) top = top.parentElement;
   // The open overlay's backdrop stays live: most backdrops are body children
   // apart from their dialog, and an inert one swallowed the click-outside-to-close.
-  const isOpenBackdrop = (node) => node.classList.contains("app-modal-backdrop") && !node.hidden;
+  const isOpenBackdrop = (node) => /backdrop|scrim/.test(node.className) && !node.hidden;
   inertNodes = [...document.body.children].filter(
     (node) =>
       node !== top && node.id !== "toastRegion" && node.tagName !== "SCRIPT" && !node.inert && !isOpenBackdrop(node),
