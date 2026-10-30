@@ -1,21 +1,21 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2594";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2594";
-import { getContextById } from "../../contexts-store.js?v=2594";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2594";
-import { renderTopicCard } from "../../components/topic-card.js?v=2594";
-import { findTopicSource } from "../../topics-catalog.js?v=2594";
-import { html, raw } from "../../utils.js?v=2594";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2594";
-import { renderStarterCards } from "../../components/starter-card.js?v=2594";
-import { isFlagOn } from "../../feature-flags.js?v=2594";
-import { isDemo } from "../../demo-mode.js?v=2594";
-import { voicesToFinish } from "../../voice-parts.js?v=2594";
-import { networkLabel, networkIcon } from "../../social-profiles.js?v=2594";
-import { parseHashParams } from "../../url-state.js?v=2594";
-import "../../archie-pixels.js?v=2594";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2595";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2595";
+import { getContextById } from "../../contexts-store.js?v=2595";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2595";
+import { renderTopicCard } from "../../components/topic-card.js?v=2595";
+import { findTopicSource } from "../../topics-catalog.js?v=2595";
+import { html, raw } from "../../utils.js?v=2595";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2595";
+import { renderStarterCards } from "../../components/starter-card.js?v=2595";
+import { isFlagOn } from "../../feature-flags.js?v=2595";
+import { isDemo } from "../../demo-mode.js?v=2595";
+import { voicesToFinish } from "../../voice-parts.js?v=2595";
+import { networkLabel, networkIcon } from "../../social-profiles.js?v=2595";
+import { parseHashParams } from "../../url-state.js?v=2595";
+import "../../archie-pixels.js?v=2595";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the

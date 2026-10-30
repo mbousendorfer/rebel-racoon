@@ -1370,3 +1370,12 @@
 .topics-view__group-cards .topic-card--feed .topic-card__body:focus-visible {
   border-radius: 0;
 }
+
+/* A row's kebab shows where you are: on hover, on focus (keyboard), on the open
+   row, never as a column of eleven « … » down the inbox. Always there on a
+   touch screen, which has no hover. */
+@media (hover: hover) {
+  .topics-view__group-cards > .topic-card--feed:not(:hover, :focus-within, .is-reading) .topic-card__more {
+    opacity: 0;
+  }
+}
