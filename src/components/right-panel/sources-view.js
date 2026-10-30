@@ -3,15 +3,13 @@
 // the panel shell (open / close / resize / URL state / delegated listeners)
 // stays there.
 
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2581";
-import { isFlagOn } from "../../feature-flags.js?v=2581";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2581";
-import { escapeAttr, escapeText } from "../../utils.js?v=2581";
-import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2581";
-import { conceptText } from "../../concepts.js?v=2581";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2581";
-import { renderTopPostEcho } from "../top-post-card.js?v=2581";
-import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2581";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2582";
+import { isFlagOn } from "../../feature-flags.js?v=2582";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2582";
+import { escapeAttr, escapeText } from "../../utils.js?v=2582";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2582";
+import { renderTopPostEcho } from "../top-post-card.js?v=2582";
+import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2582";
 
 // Sources mode view — list of source rows for the active session + a
 // trailing "+ Attach" button. Each row carries kind icon, filename,
@@ -38,7 +36,6 @@ export function renderSourcesView() {
     <div class="rpanel-sources__head">
       <div class="rpanel-sources__head-text">
         ${isFlagOn("contentPanel") ? "" : `<div class="rpanel-sources__count">${sources.length} source${sources.length === 1 ? "" : "s"} in this chat</div>`}
-        <div class="rpanel-sources__sub concept-lead">${escapeText(conceptText("source"))}</div>
       </div>
       ${renderAttachMenu("stroked grey", "Attach a source")}
       ${closeInline()}
@@ -198,7 +195,7 @@ function renderSourceRow(src) {
                     !i.kind
                       ? ""
                       : isFlagOn("contentPanel")
-                        ? `<span class="ap-tag ${IDEA_KIND_TAG[i.kind] || "grey"} rpanel-ideas__kind rpanel-sources__idea-tag">${escapeText(i.kind.charAt(0).toUpperCase() + i.kind.slice(1))}</span>`
+                        ? `<span class="rpanel-ideas__kind-word rpanel-sources__idea-tag">${escapeText(i.kind.charAt(0).toUpperCase() + i.kind.slice(1))}</span>`
                         : `<span class="rpanel-sources__idea-kind muted">${escapeText(i.kind.charAt(0).toUpperCase() + i.kind.slice(1))}</span>`
                   }
                   <i class="ap-icon-chevron-right rpanel-sources__idea-chevron" aria-hidden="true"></i>

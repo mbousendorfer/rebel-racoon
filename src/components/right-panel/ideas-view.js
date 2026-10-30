@@ -2,12 +2,13 @@
 // the per-card feedback and "why this idea" state. Moved out of right-panel.js,
 // unchanged; the filter state it reads is owned (and written) by the shell.
 
-import { html, raw } from "../../utils.js?v=2581";
-import { conceptText } from "../../concepts.js?v=2581";
-import { isFlagOn } from "../../feature-flags.js?v=2581";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2581";
-import { renderClipCard } from "../clip-card.js?v=2581";
-import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2581";
+import { html, raw, escapeAttr, escapeText } from "../../utils.js?v=2582";
+import { getPosts } from "../../posts-store.js?v=2582";
+import { conceptText } from "../../concepts.js?v=2582";
+import { isFlagOn } from "../../feature-flags.js?v=2582";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2582";
+import { renderClipCard } from "../clip-card.js?v=2582";
+import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2582";
 import {
   closeInline,
   activeSessionId,
@@ -15,7 +16,7 @@ import {
   ideasFilter,
   outputsView,
   sessionIdeas,
-} from "../right-panel.js?v=2581";
+} from "../right-panel.js?v=2582";
 
 // Idea kind taxonomy — handoff Ideas filter rail (§ 2.6). Order is the order
 // shown in the chip row. Each kind's tag colour is IDEA_KIND_TAG
@@ -264,7 +265,41 @@ function renderIdeasList() {
     `;
   }
 
-  return `<div class="rpanel-ideas__grid">${sorted.map((i) => renderIdeaCompact(i)).join("")}</div>`;
+  // Two sections, the Drafts panel's grammar (redesign 2026-10-30): the ideas
+  // still to draft as full cards with their verbs, then the drafted ones, one
+  // line each, whose "N drafts" opens those drafts.
+  const toDraft = sorted.filter((i) => !(i.used > 0));
+  const drafted = sorted.filter((i) => i.used > 0);
+  const section = (label, items, body) =>
+    items.length
+      ? `<section class="rpanel-ideas__section">
+           <h3 class="rpanel-ideas__section-title">${label}<span class="rpanel-ideas__section-count"> · ${items.length}</span></h3>
+           ${body}
+         </section>`
+      : "";
+  return `
+    ${section("To draft", toDraft, `<div class="rpanel-ideas__grid">${toDraft.map((i) => renderIdeaCompact(i)).join("")}</div>`)}
+    ${section("Drafted", drafted, `<div class="rpanel-ideas__done-list">${drafted.map(renderDraftedRow).join("")}</div>`)}
+  `;
+}
+
+// A drafted idea, folded to one line: what it is, its title, and a link to the
+// drafts it became. A draft names its idea in its provenance
+// (generationContext.source.detail: the idea's title or body); none found
+// still opens the Drafts tab.
+function renderDraftedRow(idea) {
+  const sid = activeSessionId();
+  const ids = (sid ? getPosts(sid) : [])
+    .filter((p) => p.status !== "scheduled" && [idea.title, idea.body].includes(p.generationContext?.source?.detail))
+    .map((p) => p.id);
+  const kind = idea.kind || "insight";
+  const label = ids.length ? `${ids.length} draft${ids.length === 1 ? "" : "s"}` : "Open drafts";
+  return `
+    <div class="rpanel-ideas__done" data-idea-id="${escapeAttr(idea.id)}">
+      <span class="rpanel-ideas__kind-word">${kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
+      <span class="rpanel-ideas__done-title">${escapeText(idea.title || idea.body || "")}</span>
+      <button type="button" class="ap-button ghost blue" data-rpanel-idea-drafts="${escapeAttr(ids.join(","))}" data-rpanel-idea-drafts-key="idea-drafts:${escapeAttr(idea.id)}">${label}</button>
+    </div>`;
 }
 
 function renderIdeasBodyOnly() {
