@@ -9,3 +9,5 @@ video/
 
 # UI polish loop captures (scripts/ui-capture.mjs)
 .ui-review/
+# UI redesign loop (.claude/ui-redesign/MISSION.md): state, captures, explorations
+.ui-redesign/
