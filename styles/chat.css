@@ -1882,6 +1882,7 @@ span.chat-bubble-choice-chip {
 
 .draft-batch__issue {
   display: flex;
+  flex: 1;
   align-items: flex-start;
   gap: var(--ref-spacing-xxs);
   font-size: var(--sys-text-style-caption-size);
@@ -1896,10 +1897,18 @@ span.chat-bubble-choice-chip {
   background: var(--ref-color-orange-100);
 }
 
+/* What blocks it, left; the verb that moves it on, right: every card ends on
+   the same row, so a ready card has no dead band where a neighbour's issue is. */
 .draft-batch__foot {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: var(--ref-spacing-xs);
   margin-top: auto;
+}
+
+.draft-batch__foot .ap-button {
+  flex-shrink: 0;
 }
 
 /* What Archie made of a source, on its chip: a text link, not a filled
