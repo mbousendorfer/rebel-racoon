@@ -482,3 +482,7 @@ Partout où un draft est bloqué par la validation (`validatePost` : limite, mé
 ## Le verbe d'une carte : un seul traitement (cohérence 2026-10-30)
 
 Le verbe qui fait avancer un objet sur sa carte — **Draft post** sur une idea ou un clip, **Schedule** / **Shorten it** / **Add an image** sur un draft (fil et panel) — est un `.ap-button stroked blue`, aligné à droite au pied de la carte. Une icône peut le préciser (l'étincelle de Draft post dit qu'Archie écrit), le niveau ne change pas. Le `secondary blue` teinté que portait Draft post est parti : deux traitements pour le même rôle se lisaient comme deux importances. Le primaire plein reste réservé à l'action d'une section ou d'une page (« Schedule N », Use in chat dans l'article d'un Topic).
+
+## Ce que je propose : ma marque, jamais des pointillés (cohérence 2026-10-30)
+
+Ce qu'Archie propose et que l'utilisateur n'a pas encore pris — les concurrents suggérés, ma lecture des images d'un style, une proposition de voix — porte **ma marque** : une tuile butter (`--app-butter`) au glyphe olive (`--app-butter-accent`), à côté du titre du groupe. Les cartes proposées gardent une **bordure pleine** grey-20 : un bord en pointillés se lit comme une zone de dépôt et doit en accepter un (les suggestions de concurrents en avaient un, retiré). Les deux faits pêche de l'article d'un Topic restent une exception argumentée (`topics.css`), listée dans le rapport de redesign.

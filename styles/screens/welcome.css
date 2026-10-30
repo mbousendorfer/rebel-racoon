@@ -2104,9 +2104,23 @@ button.recap__logotile:hover {
   color: var(--ref-color-grey-80);
 }
 
-.recap__cmpgroup--suggested .recap__cmpgroup-title > i {
-  color: var(--ref-color-orange-100);
-  font-size: var(--ref-font-size-md);
+/* My proposals wear my mark, as everywhere I propose something (the voice
+   edit block, my read of a style's images): a butter tile, an olive glyph. */
+.recap__cmpgroup-mark {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--app-butter);
+}
+
+/* An ap-icon is a mask on its own element: its colour is its background. */
+.recap__cmpgroup-mark > i {
+  width: 14px;
+  height: 14px;
+  background: var(--app-butter-accent);
 }
 
 .recap__cmpgroup-count {
@@ -2134,12 +2148,13 @@ button.recap__logotile:hover {
   min-width: 0;
 }
 
-/* A pending proposal reads as an offer, not an entry: dashed edge and a
-   surface that doesn't look committed. The dashed border sits on the CARD, not
-   on the inner open-button, so the Add / Dismiss row is enclosed by it — the
-   actions belong to this proposal, not to the tray around it. */
+/* A pending proposal reads as an offer, not an entry: it sits in my tray,
+   under my mark, with its Add / Dismiss. Its edge is SOLID (coherence
+   2026-10-30): a dashed box reads as a drop target and must accept a drop —
+   this one never did. The border sits on the CARD, so the Add / Dismiss row is
+   enclosed by it — the actions belong to this proposal, not to the tray. */
 .recap__cmpcard--suggested {
-  border: 1px dashed var(--app-border);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-md);
   background: var(--app-surface);
   transition: border-color var(--ref-animation-short) var(--app-ease-out);
