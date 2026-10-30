@@ -9,42 +9,37 @@
 //
 // Every block, part by part. Each part opens straight in edit — the
 // real Playbook view, playbook-view, its hero, tabs, tab head and panel
-// Cancel / Save hidden — and its blocks line up one under the other in a
-// column that scrolls over the stage. Everything is already filled in by me,
-// so it's browsing, not validating:
+// Cancel / Save hidden — and its blocks read as ONE sheet over the stage, one
+// under the other, that scrolls (redesign 2026-10-30, design-plans/
+// redesign-onboarding.md). Everything is already filled in by me, so it's
+// browsing, not validating:
 //   - edits apply as you type (the draft is the live source);
-//   - the card at the reading line (the middle of the stage) is in focus, the
-//     others a step back — a dimming that follows the scroll (--focus);
-//   - the nav stands in the middle of the stage, right of the column — one
-//     compact capsule, ↑ · the dots · ↓ (and the keyboard's ↑ / ↓, outside a
-//     field) glide the next card to the middle; the index follows the scroll;
-//   - no cover card: the list on the left names the part (covers removed
-//     2026-10-29, asked: they repeated the left entry);
-//   - one button at the bottom confirms the part ("Looks good — on to …"): it
-//     checks it in the list and the next part's column cascades in. The last
-//     one goes straight on (ui-polish OB-18: an « all set » card in between
-//     was a step on a screen that says « Step 3 of 4 »).
-// The way on lives on the left, the whole time — never on a card: on to the
-// Voice from the Playbook, Draft my first post from the Voice.
-// (2026-10-20: this replaced the stack — one card at a time, a passing cover
-// and a confirm interstitial between parts — deleted with its flag.)
+//   - no card in focus, no nav capsule, no keyboard glide: the list on the
+//     left is the part's navigation, the sheet just scrolls;
+//   - the part's band (its icon + name) heads the sheet once;
+//   - ONE way on, in the left column, always in the same place: the part's
+//     confirm (« Looks good, on to … »). It checks it in the list and the next
+//     part's sheet comes in; the last one goes straight on. Before the last
+//     part, the step's own way on (« Check my voice ») stays as a quiet
+//     second door. (2026-10-20: this replaced the stack — one card at a time —
+//     deleted with its flag; 2026-10-30: the floating confirm at the foot of
+//     the stage and the ↑ · dots · ↓ capsule, two navigations over a list that
+//     already navigates, went.)
 //
-// The view repaints its whole DOM on most edits (a chip added…), so the column
-// is re-applied after every paint (a MutationObserver on the host) — the card
-// index lives here, not in the DOM.
+// The view repaints its whole DOM on most edits (a chip added…), so the sheet
+// is re-laid after every paint (a MutationObserver on the host).
 
-import { html, raw } from "../utils.js?v=2584";
-import { navigate } from "../router.js?v=2584";
-import { getDraft, patchDraft } from "../context-builder.js?v=2584";
-import { mount } from "../playbook-view.js?v=2584";
-import { parseHashParams } from "../url-state.js?v=2584";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2584";
+import { html, raw } from "../utils.js?v=2586";
+import { navigate } from "../router.js?v=2586";
+import { getDraft, patchDraft } from "../context-builder.js?v=2586";
+import { mount } from "../playbook-view.js?v=2586";
+import { parseHashParams } from "../url-state.js?v=2586";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2586";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
 // says which part you're in (asked for explicitly, 2026-10-19).
 const OUT_MS = 240; // the part's column leaves
-const GLIDE_MS = 720; // a card glides to the middle
 
 // `review`: { step, title, sub, parts (a list, or a function for parts that
 // come and go; a part's `open()` opens its tab in edit itself, its `badge` says
@@ -68,8 +63,7 @@ export function renderReview(target, sid, config, review) {
     return next ? next.nextLabel || `Looks good, on to ${next.title}` : review.lastLabel || "Looks good, finish";
   };
 
-  let index = 0; // the card in focus, within the current part
-  let count = 0; // how many cards the current part has
+  const isLast = () => parts().at(-1)?.id === current();
   // The part just confirmed: its check pops in once, for the length of the pop
   // (the list can repaint twice in a frame). The list repaints on every move,
   // so a check that always animated replayed on every click (2026-10-20).
@@ -96,9 +90,7 @@ export function renderReview(target, sid, config, review) {
               : "";
           const mark = done.has(t.id)
             ? `<span class="welcome-review__check${t.id === justChecked ? " is-new" : ""}" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
-            : here && count > 1
-              ? `<span class="welcome-review__count">${index + 1} of ${count}</span>`
-              : "";
+            : "";
           // A part that adds rather than reviews (`action`: the voice review's
           // networks) is a + button, not a row like the parts (2026-10-29, asked:
           // « plutôt un genre de "bouton +" »).
@@ -143,12 +135,22 @@ export function renderReview(target, sid, config, review) {
         <button type="button" class="ap-button ghost grey" data-flow-back>
           <i class="ap-icon-arrow-left"></i><span>Back</span>
         </button>
-        <!-- Secondary: the screen's one primary is the part's confirm, at the
-             bottom of the stage (ui-polish OB-08). -->
-        <button type="button" class="ap-button secondary blue" data-review-start>
-          <span>${review.next.label}</span><i class="ap-icon-arrow-right"></i>
+        <!-- The screen's one way on, always here (redesign 2026-10-30): the
+             part's confirm, which says where it leads. Before the last part,
+             the step's way on stays a quieter second door (skip to it). -->
+        <button type="button" class="ap-button primary blue" data-review-confirm="${current()}">
+          <span>${looksGood(current())}</span><i class="ap-icon-arrow-right"></i>
         </button>
       </div>
+      ${isLast()
+        ? ""
+        : raw(
+            html`<div class="welcome-review__skip">
+              <button type="button" class="ap-button ghost blue" data-review-start>
+                <span>${review.next.label}</span>
+              </button>
+            </div>`,
+          )}
     `;
   };
 
@@ -170,14 +172,6 @@ export function renderReview(target, sid, config, review) {
       )
       ?.click();
   });
-  const navEl = document.createElement("nav");
-  navEl.className = "welcome-review__nav";
-  navEl.setAttribute("aria-label", "Cards");
-  shell.sheet.append(navEl);
-  // The part's confirm, at the bottom of the stage.
-  const barEl = document.createElement("div");
-  barEl.className = "welcome-review__bar";
-  shell.sheet.append(barEl);
   const unmount = mount(body, {
     ...config,
     // A way to fill the part, picked on a card's tile (the voice review):
@@ -218,9 +212,6 @@ export function renderReview(target, sid, config, review) {
     return panel ? [panel] : [];
   };
 
-  // A card's own name: its block title, else (a roster panel) its part's.
-  const cardTitle = (el) => el?.querySelector(".pb2-block__title")?.textContent.trim() || partOf(current()).title;
-
   // The card's head: its part — icon + name, the list's tile.
   const kicker = () => {
     const part = partOf(current());
@@ -232,72 +223,23 @@ export function renderReview(target, sid, config, review) {
     `;
   };
 
-  // The nav: one compact white capsule — ↑ · the part's progress (page dots,
-  // the one indicator) · ↓. ↓ goes dark on the part's last card: the confirm,
-  // below, is the way on.
-  const nav = (list) => {
-    const at = parts().findIndex((t) => t.id === current());
-    const upNext = index < count - 1 ? cardTitle(list[index + 1]) : "";
-    const atStart = index === 0 && at === 0;
-    return html`
-      <button
-        type="button"
-        class="welcome-review__navbtn"
-        data-review-prev
-        aria-label="Previous card"
-        ${atStart ? raw("disabled") : ""}
-      >
-        <i class="ap-icon-arrow-up" aria-hidden="true"></i>
-      </button>
-      ${count > 1 /* one card has no progress to show */
-        ? raw(html`
-            <ol class="welcome-review__dots" aria-label="Card ${index + 1} of ${count} in ${partOf(current()).title}">
-              ${Array.from(
-                { length: count },
-                (_, i) => html`<li class="${i < index ? "is-done" : i === index ? "is-current" : ""}"></li>`,
-              )}
-            </ol>
-          `)
-        : ""}
-      <button
-        type="button"
-        class="welcome-review__navbtn"
-        data-review-next
-        aria-label="${upNext ? `Next: ${upNext}` : "Next card"}"
-        ${upNext ? "" : raw("disabled")}
-      >
-        <i class="ap-icon-arrow-down" aria-hidden="true"></i>
-      </button>
-    `;
-  };
-
-  // Lay the column out: every card wears its part's band, the one in focus is
-  // marked, the cover heads the column (re-laid after a repaint, swapped with
-  // the part), the nav and the confirm follow the index.
+  // Lay the part out as one sheet (redesign 2026-10-30): its blocks one under
+  // the other, the part's band on the first only (re-laid after a repaint,
+  // swapped with the part). No card in focus, no nav: the sheet scrolls.
   let applying = false;
   const applyColumn = () => {
     applying = true;
-    // The nav, the confirm and the left list are rebuilt below, which destroys a
+    // The left list (and its confirm) is rebuilt below, which destroys a
     // focused button: note its data-* hook and focus its twin after (WCAG 2.4.3).
     // The confirm's value names the part, so a twin by hook name alone also counts.
     const focused = target.contains(document.activeElement) ? document.activeElement : null;
     const hook = focused && [...focused.attributes].find((a) => a.name.startsWith("data-"));
-    const list = cards();
-    count = list.length;
-    index = Math.min(index, Math.max(0, count - 1));
-    list.forEach((el, i) => {
+    cards().forEach((el, i) => {
       el.classList.add("welcome-review__card");
-      el.classList.toggle("is-active", i === index);
-      if (!el.querySelector(":scope > .welcome-review__kicker")) el.insertAdjacentHTML("afterbegin", kicker());
-      if (!el.style.getPropertyValue("--focus")) el.style.setProperty("--focus", i === index ? "1" : "0");
+      const band = el.querySelector(":scope > .welcome-review__kicker");
+      if (i === 0 && !band) el.insertAdjacentHTML("afterbegin", kicker());
+      if (i > 0) band?.remove();
     });
-    navEl.innerHTML = count ? nav(list) : "";
-    const part = partOf(current());
-    barEl.innerHTML = html`
-      <button type="button" class="ap-button primary blue" data-review-confirm="${part.id}">
-        <i class="ap-icon-check"></i><span>${looksGood(part.id)}</span>
-      </button>
-    `;
     applying = false;
     shell.paint();
     if (hook && !target.contains(document.activeElement)) {
@@ -309,113 +251,41 @@ export function renderReview(target, sid, config, review) {
   // A repaint (a box ticked, a chip added) rebuilds the column: the card being
   // edited stays where it was instead of the column jumping back to the top.
   const observer = new MutationObserver(() => {
-    if (applying) return;
-    applyColumn();
-    centre({ instant: true });
+    if (!applying) applyColumn();
   });
   observer.observe(body, { childList: true });
 
-  // Open a part: its tab, in edit, from its first card (or its last, going back).
-  const openPart = (id, { fromEnd = false } = {}) => {
+  // Open a part: its tab, in edit, the sheet at its top.
+  const openPart = (id) => {
     currentId = partOf(id).id;
     if (body.querySelector(".pb2.is-editing")) body.querySelector("[data-recap-save]")?.click();
     body.querySelector(`[data-pb2-tab="${partOf(id).tab || currentId}"]`)?.click();
     // A part may open its tab in edit itself (the voice review: a network's rules).
     if (partOf(id).open) partOf(id).open();
     else body.querySelector("[data-recap-edit-card]")?.click();
-    index = fromEnd ? Number.MAX_SAFE_INTEGER : 0;
     applyColumn();
-    centre({ instant: true });
+    body.scrollTop = 0;
   };
-
-  // Bring the current card to the reading line — the middle of the stage,
-  // where the nav stands (2026-10-20: at 45% the nav read as off-centre). A
-  // card taller than the scroll starts at its top. The glide is ours, not the
-  // browser's smooth scroll (too short, too abrupt): a slow ease-in-out. While it
-  // glides, the scroll doesn't pick the index.
-  const easeInOut = (p) => (p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2);
-  let gliding = false;
-  let glideFrame = 0;
-  const centre = ({ instant = false } = {}) => {
-    const el = cards()[index];
-    if (!el) return;
-    const box = body.getBoundingClientRect();
-    const r = el.getBoundingClientRect();
-    const room = body.clientHeight * 0.5;
-    const max = body.scrollHeight - body.clientHeight;
-    const to = Math.max(0, Math.min(max, body.scrollTop + r.top - box.top - Math.max(24, room - r.height / 2)));
-    window.cancelAnimationFrame(glideFrame);
-    if (instant || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      gliding = false;
-      body.scrollTop = to;
-      return focus();
-    }
-    const from = body.scrollTop;
-    const t0 = performance.now();
-    gliding = true;
-    const step = (now) => {
-      const p = Math.min(1, (now - t0) / GLIDE_MS);
-      body.scrollTop = from + (to - from) * easeInOut(p);
-      if (p < 1) glideFrame = window.requestAnimationFrame(step);
-      else {
-        gliding = false;
-      }
-    };
-    glideFrame = window.requestAnimationFrame(step);
-  };
-
-  // How in focus each card is — 1 on the reading line, easing to 0 a card's
-  // height away — drives its dimming continuously (--focus), so it follows the
-  // scroll instead of switching. The card under the line is the current one.
-  const focusOf = (el, line) => {
-    const r = el.getBoundingClientRect();
-    const d = line < r.top ? r.top - line : line > r.bottom ? line - r.bottom : 0;
-    el.style.setProperty("--focus", (1 - Math.min(1, d / 280)).toFixed(3));
-    return d;
-  };
-  const focus = () => {
-    const line = body.getBoundingClientRect().top + body.clientHeight * 0.5;
-    let best = index;
-    let dist = Infinity;
-    cards().forEach((el, i) => {
-      const d = focusOf(el, line);
-      if (d < dist) [best, dist] = [i, d];
-    });
-    if (gliding || best === index) return;
-    index = best;
-    applyColumn();
-  };
-  let frame = 0;
-  const onScroll = () => {
-    if (frame) return;
-    frame = window.requestAnimationFrame(() => {
-      frame = 0;
-      focus();
-    });
-  };
-  body.addEventListener("scroll", onScroll, { passive: true });
 
   // A part's column arrives: its cards cascade in, the nearest first, the cover
   // with them.
   const deal = () => {
     cards().forEach((el, i) => {
-      el.style.setProperty("--deal", Math.abs(i - index));
+      el.style.setProperty("--deal", i);
       el.classList.add("is-dealt");
     });
   };
 
   // Changing part: the column leaves, the new one cascades in.
   let moving = false;
-  const switchPart = (id, opts = {}) => {
+  const switchPart = (id) => {
     if (moving) return;
     moving = true;
     shell.sheet.classList.add("is-part-out");
     window.setTimeout(() => {
-      openPart(id, opts);
+      openPart(id);
       shell.sheet.classList.remove("is-part-out");
       deal();
-      navEl.classList.add("is-dealt");
-      window.setTimeout(() => navEl.classList.remove("is-dealt"), 500);
       moving = false;
     }, OUT_MS);
   };
@@ -433,22 +303,6 @@ export function renderReview(target, sid, config, review) {
     switchPart(to.id);
   };
 
-  // ↑ / ↓: the neighbour glides to the middle. Above a part's first card is
-  // the previous part (from its end); below its last, nothing — the confirm is
-  // the way on.
-  const move = (step) => {
-    if (moving) return;
-    const at = parts().findIndex((t) => t.id === current());
-    if (step < 0 && index === 0) {
-      if (at > 0) switchPart(parts()[at - 1].id, { fromEnd: true });
-      return;
-    }
-    if (step > 0 && index >= count - 1) return;
-    index += step;
-    applyColumn();
-    centre();
-  };
-
   const onClick = (e) => {
     const part = e.target.closest("[data-review-part]")?.dataset.reviewPart;
     if (part) {
@@ -457,41 +311,16 @@ export function renderReview(target, sid, config, review) {
     }
     const confirm = e.target.closest("[data-review-confirm]")?.dataset.reviewConfirm;
     if (confirm) return confirmPart(confirm);
-    // A dimmed card comes into focus — the click still reaches its field.
-    const dimmed = e.target.closest(".welcome-review__card:not(.is-active)");
-    if (dimmed) {
-      index = cards().indexOf(dimmed);
-      applyColumn();
-      centre();
-    }
-    if (e.target.closest("[data-review-next]")) return move(1);
-    if (e.target.closest("[data-review-prev]")) return move(-1);
     if (e.target.closest("[data-review-start]")) return review.next.go();
     if (e.target.closest("[data-flow-back]")) return navigate(review.back);
   };
   target.addEventListener("click", onClick);
-  // The keyboard's ↑ / ↓ browse too — unless you're typing in a field.
-  const onKey = (e) => {
-    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-    if (e.target.closest?.("input, textarea, select, [contenteditable]")) return;
-    // Arrows inside a widget (a card's action menu, a radio group) belong to it.
-    if (e.target.closest?.('[role="menu"], [role="listbox"], [role="radiogroup"], [role="tablist"]')) return;
-    if (document.querySelector(".app-modal-backdrop:not([hidden]), body.has-modal")) return;
-    e.preventDefault();
-    move(e.key === "ArrowDown" ? 1 : -1);
-  };
-  document.addEventListener("keydown", onKey);
-
   openPart(current());
 
   return () => {
     observer.disconnect();
-    body.removeEventListener("scroll", onScroll);
-    window.cancelAnimationFrame(frame);
-    window.cancelAnimationFrame(glideFrame);
     unmount?.();
     shell.cleanup();
     target.removeEventListener("click", onClick);
-    document.removeEventListener("keydown", onKey);
   };
 }
