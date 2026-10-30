@@ -4,7 +4,7 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta } from "../../social-profiles.js?v=2573";
+import { networkMeta } from "../../social-profiles.js?v=2610";
 import {
   getPosts,
   removePost,
@@ -12,24 +12,24 @@ import {
   updatePostContent,
   attachImageToDraft,
   attachCarouselToDraft,
-} from "../../posts-store.js?v=2573";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2573";
-import { getSessionById } from "../../sessions-store.js?v=2573";
-import { renderPostCard } from "../post-card.js?v=2573";
-import { isPostValid } from "../../post-validation.js?v=2573";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2573";
-import { html, raw } from "../../utils.js?v=2573";
-import { isFlagOn } from "../../feature-flags.js?v=2573";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2573";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2573";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2573";
-import { open as openAssignModal } from "../assign-modal.js?v=2573";
-import { showToast } from "../toast.js?v=2573";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2573";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2573";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2573";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2573";
-import { blockInDemo } from "../../demo-flow.js?v=2573";
+} from "../../posts-store.js?v=2610";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2610";
+import { getSessionById } from "../../sessions-store.js?v=2610";
+import { renderPostCard } from "../post-card.js?v=2610";
+import { isPostValid } from "../../post-validation.js?v=2610";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2610";
+import { html, raw } from "../../utils.js?v=2610";
+import { isFlagOn } from "../../feature-flags.js?v=2610";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2610";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2610";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2610";
+import { open as openAssignModal } from "../assign-modal.js?v=2610";
+import { showToast } from "../toast.js?v=2610";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2610";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2610";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2610";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2610";
+import { blockInDemo } from "../../demo-flow.js?v=2610";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -220,30 +220,22 @@ export function renderDraftsView() {
   }
   const selectedCount = selectedDraftIds.size;
 
-  // Feed grouped by network with a separator header per group. Each header
-  // carries a per-network "Select all" so a bulk selection naturally stays
-  // within one network (the gate for scheduling). Groups follow
-  // NETWORK_ORDER; any unknown network falls in after the known ones.
-  const feedGroups = [
-    ...NETWORK_ORDER.filter((n) => filtered.some((p) => p.network === n)),
-    ...[...new Set(filtered.map((p) => p.network))].filter((n) => !NETWORK_ORDER.includes(n)),
-  ];
-
-  // Each network section is self-contained: the separator IS the section
-  // header AND its bulk-action surface, in two states that share one row
-  // (so there's no layout jump on selection):
-  //   • Idle      — a calm divider: brand chip + draft count on a hairline,
-  //                 no controls. The whole band is click-to-select-all.
-  //   • Selecting — the divider fills into a solid contextual toolbar with
-  //                 the network's bulk actions. Because every action is
-  //                 scoped to one network, scheduling is always valid — so
-  //                 there are never dead/disabled buttons sitting idle.
+  // Feed in two sections by what the draft needs: "Needs a fix", then "Ready
+  // to schedule" (redesign 2026-10-30, design-plans/redesign-drafts.md). The
+  // network stays on every card (its preview) and in the network filter.
+  // Each section header is also its bulk-action surface, in two states that
+  // share one row (no layout jump on selection):
+  //   • Idle      — label + count; "ready" carries « Schedule N », everything
+  //                 ready in one go. The whole band is click-to-select-all.
+  //   • Selecting — the band fills into a toolbar with the section's bulk
+  //                 actions. A section never mixes statuses, so "ready"
+  //                 always schedules and "fix" never offers to.
   // The header is sticky so the toolbar stays reachable while scrolling.
-  const renderGroup = (network) => {
-    const meta = networkMetaFor(network);
-    const groupPosts = filtered.filter((p) => p.network === network);
+  const renderSection = ({ key, label }) => {
+    const groupPosts = filtered.filter((p) => inSection(key, p));
+    if (!groupPosts.length) return "";
     const groupSelected = groupPosts.filter((p) => selectedDraftIds.has(p.id)).length;
-    const allGroupSelected = groupPosts.length > 0 && groupSelected === groupPosts.length;
+    const allGroupSelected = groupSelected === groupPosts.length;
     const indeterminate = groupSelected > 0 && !allGroupSelected;
     const selecting = groupSelected > 0;
     const cards = groupPosts
@@ -256,6 +248,9 @@ export function renderDraftsView() {
           justFixed: justFixed.has(p.id),
           brandGaps: p.id === firstGapPostId ? brandGaps : [],
           playbookId,
+          // The next step is named under the card; Schedule leaves the rail.
+          verb: true,
+          railActions: ["mention", "save", "assign"],
           // Which voice wrote it (flag voicePerNetwork) — resolved here, once
           // per card, from the Playbook already in hand.
           voice: draftVoice(ctx, p.network),
@@ -268,49 +263,36 @@ export function renderDraftsView() {
         }),
       )
       .join("");
-    const draftWord = groupPosts.length === 1 ? "draft" : "drafts";
-
-    const countLabel = selecting ? `· ${groupSelected} selected` : `· ${groupPosts.length} ${draftWord}`;
-    const delAria = `Delete ${groupSelected} selected ${meta.label} ${groupSelected === 1 ? "draft" : "drafts"}`;
-
-    // Bulk actions live in the band and only render while a selection
-    // exists (per Figma 1007:3335): Save = ghost-blue link, Schedule =
-    // primary orange with calendar — the pipeline's final action, same
-    // fill as the schedule modal's confirm — Delete = grey icon button. No idle
-    // controls — no hairline, no "Select all" hint.
-    // A selection holding a draft that won't publish can't be scheduled: the
-    // button is disabled and its wrapper (a disabled button doesn't hover)
-    // says how many to fix.
-    const blocked = groupPosts.filter((p) => selectedDraftIds.has(p.id) && !isPostValid(p)).length;
-    const blockedTip = `${blocked} selected ${blocked === 1 ? "draft needs" : "drafts need"} fixing first. Fix or unselect ${blocked === 1 ? "it" : "them"} to continue.`;
-    const gate = (button) => (blocked ? `<span data-tooltip="${blockedTip}">${button}</span>` : button);
-    const scheduleBtn = `<button type="button" class="ap-button primary orange" data-rpanel-section-schedule="${network}" ${blocked ? "disabled" : ""}>
-              <i class="ap-icon-calendar" aria-hidden="true"></i> Schedule
+    const draftWord = (n) => (n === 1 ? "draft" : "drafts");
+    const countLabel = selecting ? `· ${groupSelected} selected` : `· ${groupPosts.length}`;
+    const delAria = `Delete ${groupSelected} selected ${draftWord(groupSelected)}`;
+    const scheduleBtn = (
+      n,
+    ) => `<button type="button" class="ap-button primary orange" data-rpanel-section-schedule="${key}">
+              <i class="ap-icon-calendar" aria-hidden="true"></i> Schedule ${n}
             </button>`;
     const actions = selecting
       ? `
           <div class="rpanel-drafts__group-actions">
-            <button type="button" class="ap-button ghost blue" data-rpanel-section-save="${network}">Save as drafts</button>
-            ${gate(scheduleBtn)}
-            <button type="button" class="ap-icon-button" data-rpanel-section-delete="${network}" aria-label="${delAria}" title="Delete selected drafts">
+            <button type="button" class="ap-button ghost blue" data-rpanel-section-save="${key}">Save as drafts</button>
+            ${key === "ready" ? scheduleBtn(groupSelected) : ""}
+            <button type="button" class="ap-icon-button" data-rpanel-section-delete="${key}" aria-label="${delAria}" title="Delete selected drafts">
               <i class="ap-icon-trash" aria-hidden="true"></i>
             </button>
           </div>`
-      : "";
+      : key === "ready"
+        ? `<div class="rpanel-drafts__group-actions">${scheduleBtn(groupPosts.length)}</div>`
+        : "";
 
-    // The band IS the bar: the select-all checkbox sits inside it (left),
-    // then the network identity, then (when selecting) the action cluster.
-    // Idle is flat/white; hover and selecting tint with the accent wash.
     return `
-      <div class="rpanel-drafts__group-header${selecting ? " is-selecting" : ""}">
-        <div class="rpanel-drafts__group-band" data-rpanel-drafts-band="${network}">
-          <label class="ap-checkbox-container ${indeterminate ? "indeterminate" : ""}" aria-label="Select all ${meta.label} drafts">
-            <input type="checkbox" data-rpanel-drafts-select-network="${network}" ${allGroupSelected ? "checked" : ""} />
+      <div class="rpanel-drafts__group-header rpanel-drafts__group-header--${key}${selecting ? " is-selecting" : ""}">
+        <div class="rpanel-drafts__group-band" data-rpanel-drafts-band="${key}">
+          <label class="ap-checkbox-container ${indeterminate ? "indeterminate" : ""}" aria-label="Select all ${label.toLowerCase()} drafts">
+            <input type="checkbox" data-rpanel-drafts-select-network="${key}" ${allGroupSelected ? "checked" : ""} />
             <i></i>
           </label>
           <div class="rpanel-drafts__group-identity">
-            <i class="${meta.icon} rpanel-drafts__group-icon" aria-hidden="true"></i>
-            <span class="rpanel-drafts__group-label">${meta.label}</span>
+            <span class="rpanel-drafts__group-label">${label}</span>
             <span class="rpanel-drafts__group-count">${countLabel}</span>
           </div>
           ${actions}
@@ -321,7 +303,7 @@ export function renderDraftsView() {
   };
 
   const feed = filtered.length
-    ? feedGroups.map((n) => renderGroup(n)).join("")
+    ? SECTIONS.map(renderSection).join("")
     : `<div class="app-right-panel__empty">
          <div class="app-right-panel__empty-icon"><i class="ap-icon-search ap-icon-xl"></i></div>
          <div class="app-right-panel__empty-title">No drafts match this filter</div>
@@ -385,46 +367,57 @@ export function onPostSchedule(postId) {
   });
 }
 
-// The drafts of one network currently visible under the active filters —
-// the scope a section's "Select all" (checkbox or band click) acts on.
-export function visibleNetworkPosts(network) {
+// The feed's two sections, by what the draft needs (redesign 2026-10-30): the
+// ones to fix first, then the ones ready to go. A section never mixes the two,
+// so a selection in "ready" always schedules — the guarantee the network
+// grouping used to give, stronger.
+export const SECTIONS = [
+  { key: "fix", label: "Needs a fix", has: (p) => needsFixes(p) },
+  { key: "ready", label: "Ready to schedule", has: (p) => !needsFixes(p) },
+];
+const inSection = (key, p) => SECTIONS.find((sec) => sec.key === key)?.has(p) ?? false;
+
+// The drafts of one section currently visible under the active filters —
+// the scope its "Select all" (checkbox or band click) acts on.
+export function visibleSectionPosts(key) {
   const sid = activeSessionId();
   if (!sid) return [];
   return getPosts(sid).filter((p) => {
     if (p.status === "scheduled") return false;
-    if (p.network !== network) return false;
+    if (!inSection(key, p)) return false;
     if (draftsFilter === "needs_fixes" && !needsFixes(p)) return false;
     if (draftsNetwork !== "all" && p.network !== draftsNetwork) return false;
     return true;
   });
 }
 
-// Select or clear every visible draft of one network, then repaint.
-export function setNetworkSelection(network, shouldSelect) {
-  const visible = visibleNetworkPosts(network);
-  for (const p of visible) {
+// Select or clear every visible draft of one section, then repaint.
+export function setSectionSelection(key, shouldSelect) {
+  for (const p of visibleSectionPosts(key)) {
     if (shouldSelect) selectedDraftIds.add(p.id);
     else selectedDraftIds.delete(p.id);
   }
   renderPanel();
 }
 
-// The target for a section's bulk action: the network's selected drafts.
+// The target for a section's bulk action: its selected drafts — or, for
+// "ready" with nothing selected, every visible one (its idle « Schedule N »).
 // Snapshotted with the original feed index so a toast Undo can restore
-// them in place. (Buttons are disabled when nothing is selected, so this
-// is only ever called with a non-empty selection.)
-function sectionTargetSnapshot(sid, network) {
-  return getPosts(sid)
-    .map((post, idx) => ({ post, idx }))
-    .filter(({ post }) => post.network === network && selectedDraftIds.has(post.id));
+// them in place.
+function sectionTargetSnapshot(sid, key) {
+  const all = getPosts(sid).map((post, idx) => ({ post, idx }));
+  const selected = all.filter(({ post }) => inSection(key, post) && selectedDraftIds.has(post.id));
+  if (selected.length || key !== "ready") return selected;
+  const visible = new Set(visibleSectionPosts(key).map((p) => p.id));
+  return all.filter(({ post }) => visible.has(post.id));
 }
 
-// Per-network bulk delete — confirm-modal gate (destructive), then drop
-// the selected drafts of that network with an Undo toast.
-export function onSectionDelete(network) {
+// A section's bulk delete — confirm-modal gate (destructive), then drop
+// its selected drafts with an Undo toast.
+export function onSectionDelete(key) {
   const sid = activeSessionId();
   if (!sid) return;
-  const snapshot = sectionTargetSnapshot(sid, network);
+  const snapshot = sectionTargetSnapshot(sid, key);
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
@@ -453,13 +446,13 @@ export function onSectionDelete(network) {
   });
 }
 
-// Per-network schedule — opens the modal seeded with the section's target
-// drafts (selection, or all of the network when nothing is checked).
-// Single-network by construction, so always valid.
-export function onSectionSchedule(network) {
+// A section's schedule — opens the modal seeded with its target drafts
+// (selection, or every ready draft when nothing is checked). Only the "ready"
+// section offers it, so the batch is always valid.
+export function onSectionSchedule(key) {
   const sid = activeSessionId();
   if (!sid) return;
-  const target = sectionTargetSnapshot(sid, network).map(({ post }) => post);
+  const target = sectionTargetSnapshot(sid, key).map(({ post }) => post);
   if (target.length === 0 || !target.every(isPostValid)) return;
   openScheduleModal({
     posts: target,
@@ -547,14 +540,14 @@ function commitScheduled(sid, posts) {
 // into a new Agorapulse folder, or into an existing one. Whatever the user
 // picks, the drafts leave the workspace with an Undo toast that restores the
 // batch in place (and reverses the folder count for the folder choices).
-export function onSectionSave(network) {
+export function onSectionSave(key) {
   const sid = activeSessionId();
   if (!sid) return;
-  const snapshot = sectionTargetSnapshot(sid, network);
+  const snapshot = sectionTargetSnapshot(sid, key);
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2573"), import("../../folders-store.js?v=2573")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2610"), import("../../folders-store.js?v=2610")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,

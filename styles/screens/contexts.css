@@ -382,26 +382,10 @@
 }
 
 .contexts-card__counters {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs) var(--ref-spacing-sm);
-  min-width: 0;
-}
-
-.contexts-card__counter {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
+  margin: 0;
+  color: var(--ref-color-grey-80);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-80);
-}
-
-.contexts-card__counter > i {
-  font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-80);
 }
 
 /* Brand palette preview — tiny colored dots from the analysed
@@ -440,4 +424,15 @@
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
   color: var(--ref-color-grey-80);
+}
+
+/* The catalogue says « Playbooks » once, in the topbar (redesign 2026-10-30):
+   the page h1 below it stays for screen readers only. */
+.contexts-view__title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

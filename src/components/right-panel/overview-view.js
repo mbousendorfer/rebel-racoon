@@ -7,18 +7,17 @@
 // numbers in words and links to its tab. Render-only; the shell
 // (right-panel.js) owns the delegated clicks (data-rpanel-goto / -focus).
 
-import { escapeAttr, escapeText, formatClock } from "../../utils.js?v=2573";
-import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2573";
-import { getThread } from "../../assistant.js?v=2573";
-import { getSources } from "../../sources-stream.js?v=2573";
-import { getIdeas } from "../../library.js?v=2573";
-import { getPosts } from "../../posts-store.js?v=2573";
-import { isPostValid } from "../../post-validation.js?v=2573";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2573";
-import { iconFor } from "../../file-kinds.js?v=2573";
-import { thumbBackground } from "../clip-card.js?v=2573";
-import { pendingProcesses } from "../conversation-status-card.js?v=2573";
-import { activeSessionId } from "../right-panel.js?v=2573";
+import { escapeAttr, escapeText, formatClock } from "../../utils.js?v=2610";
+import { getThread } from "../../assistant.js?v=2610";
+import { getSources } from "../../sources-stream.js?v=2610";
+import { getIdeas } from "../../library.js?v=2610";
+import { getPosts } from "../../posts-store.js?v=2610";
+import { isPostValid } from "../../post-validation.js?v=2610";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2610";
+import { iconFor } from "../../file-kinds.js?v=2610";
+import { thumbBackground } from "../clip-card.js?v=2610";
+import { pendingProcesses } from "../conversation-status-card.js?v=2610";
+import { activeSessionId } from "../right-panel.js?v=2610";
 
 // Live drafts only — the Drafts tab hides scheduled ones, so does its count.
 const liveDrafts = (sid) => getPosts(sid).filter((p) => p.status !== "scheduled");
@@ -179,7 +178,7 @@ function renderIdeas(ideas) {
       return `
         <li>
           <button type="button" class="rpanel-ov__item rpanel-ov__item--idea" data-rpanel-focus="idea:${escapeAttr(i.id)}">
-            <span class="ap-tag ${IDEA_KIND_TAG[kind] || "grey"} rpanel-ideas__kind rpanel-ov__kind">${kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
+            <span class="rpanel-ideas__kind-word rpanel-ov__kind">${kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
             <span class="rpanel-ov__item-title">${escapeText(i.title)}</span>
             ${i.used > 0 ? `<span class="ap-status green rpanel-ov__state">Drafted</span>` : ""}
           </button>

@@ -24,12 +24,12 @@
 // card (defined in right-panel.css). Classes prefixed `clip-card__*`
 // own clip-specific bits (thumbnail, timeframe overlay).
 
-import { iconFor } from "../file-kinds.js?v=2573";
-import { escapeText, escapeAttr, formatClock } from "../utils.js?v=2573";
-import { installMoreMenu } from "./more-menu.js?v=2573";
-import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=2573";
-import { videoForClip } from "../clip-captions.js?v=2573";
-import { FORMATS } from "../clip-formats.js?v=2573";
+import { iconFor } from "../file-kinds.js?v=2610";
+import { escapeText, escapeAttr, formatClock } from "../utils.js?v=2610";
+import { installMoreMenu } from "./more-menu.js?v=2610";
+import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=2610";
+import { videoForClip } from "../clip-captions.js?v=2610";
+import { FORMATS } from "../clip-formats.js?v=2610";
 
 const fmtTime = (s) => formatClock(s);
 
@@ -143,10 +143,10 @@ export function renderClipCard(
 
       <div class="rpanel-ideas__card-content">
         <div class="clip-card__source-line">
-          <span class="ap-tag grey rpanel-ideas__kind clip-card__kind">Clip</span>
+          <span class="rpanel-ideas__kind-word clip-card__kind">Clip</span>
           ${
             sourceName
-              ? `<span class="ap-tag grey clip-card__source-name" title="${escapeAttr(sourceName)}">
+              ? `<span class="rpanel-ideas__source clip-card__source-name" title="${escapeAttr(sourceName)}">
                   <i class="${iconFor(sourceKind)}" aria-hidden="true"></i>
                   <span>${escapeText(sourceName)}</span>
                 </span>`
@@ -212,7 +212,7 @@ export function renderClipCard(
           ${mentionBtn}
           <button
             type="button"
-            class="ap-button secondary blue rpanel-ideas__use"
+            class="ap-button stroked blue rpanel-ideas__use"
             data-clip-draft="${escapeAttr(clip.id)}"
           >
             <i class="ap-icon-sparkles"></i>

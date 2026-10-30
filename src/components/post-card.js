@@ -19,21 +19,21 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2573";
-import { isPortraitFormat } from "../clip-formats.js?v=2573";
-import { presetById } from "../clip-captions.js?v=2573";
-import { renderFeedbackControl } from "./feedback-control.js?v=2573";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2610";
+import { isPortraitFormat } from "../clip-formats.js?v=2610";
+import { presetById } from "../clip-captions.js?v=2610";
+import { renderFeedbackControl } from "./feedback-control.js?v=2610";
 import {
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=2573";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2573";
-import { REVEAL_MS } from "../archie-pixels.js?v=2573";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2573";
-import { languageOf } from "../draft-rewrite.js?v=2573";
+} from "../social-profiles.js?v=2610";
+import { validatePost, usedCharacters, youtubeTitle, nextStep } from "../post-validation.js?v=2610";
+import { REVEAL_MS } from "../archie-pixels.js?v=2610";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2610";
+import { languageOf } from "../draft-rewrite.js?v=2610";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -325,18 +325,26 @@ export function renderPostCard(post, opts = {}) {
   // the row without any JS wiring. When the draft has no provenance, the
   // feedback strip renders on its own.
   const gcBody = !editing && !regenerating ? renderGenerationContextBody(post) : "";
+  // The draft's next step ends the foot row (opts.verb): one row under the
+  // card for what you think of it, why it was written, and what to do next.
+  const nextStep = renderNextStep(post, opts, editing || regenerating);
   const belowCard = gcBody
     ? `<input type="checkbox" id="gc-${post.id}" class="posts__gencontext-check" hidden />
        <div class="posts__card-footrow">
          ${feedbackStrip}
-         <label class="posts__gencontext-toggle" for="gc-${post.id}">
-           <i class="ap-icon-information-circle posts__gencontext-info" aria-hidden="true"></i>
-           <span class="posts__gencontext-toggle-label">Why this draft</span>
-           <i class="ap-icon-chevron-down posts__gencontext-chevron" aria-hidden="true"></i>
-         </label>
+         <span class="posts__card-footend">
+           <label class="posts__gencontext-toggle" for="gc-${post.id}">
+             <i class="ap-icon-information-circle posts__gencontext-info" aria-hidden="true"></i>
+             <span class="posts__gencontext-toggle-label">Why this draft</span>
+             <i class="ap-icon-chevron-down posts__gencontext-chevron" aria-hidden="true"></i>
+           </label>
+           ${nextStep}
+         </span>
        </div>
        <div class="posts__gencontext-panel">${gcBody}</div>`
-    : feedbackStrip;
+    : nextStep
+      ? `<div class="posts__card-footrow">${feedbackStrip}<span class="posts__card-footend">${nextStep}</span></div>`
+      : feedbackStrip;
 
   const stats = post.stats || {};
   const engagement =
@@ -585,6 +593,19 @@ function renderFirstComment(post, { hidden = false } = {}) {
 // would publish to (renderProfileTag), since the rule is that network's. A
 // draft fixed a moment ago (`opts.justFixed`, held by the drafts panel) says so
 // in green before it settles back among the ready ones.
+// The draft's next step, named, under its card (opts.verb — the chat's Drafts
+// panel): Schedule, or the one-click fix. Schedule then leaves the icon rail
+// (the host drops it with railActions): the pipeline's last verb is a word.
+function renderNextStep(post, opts, busy) {
+  if (!opts.verb || busy) return "";
+  const { action, label } = nextStep(post);
+  // An image fix is already offered by the card's own empty media slot
+  // (Generate an image · Image Studio · Add image): a fourth door is noise.
+  if (!action || action === "image") return "";
+  const attr = { schedule: "data-post-schedule", shorten: "data-post-shorten", image: "data-post-image" }[action];
+  return `<button type="button" class="ap-button stroked blue posts__card-next" ${attr}="${escapeAttr(post.id)}">${label}</button>`;
+}
+
 function renderPostIssues(post, opts = {}) {
   if (opts.justFixed) return infobox("success", "ap-icon-rounded-check_fill", "Fixed. Ready to publish.", "status");
   const { errors, warnings } = validatePost(post);

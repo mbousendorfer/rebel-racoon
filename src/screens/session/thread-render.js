@@ -13,12 +13,12 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2573";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2573";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2573";
-import { getTopPost } from "../../top-posts-store.js?v=2573";
-import { getTopicById } from "../../topics-store.js?v=2573";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2573";
+} from "./thread-turns.js?v=2610";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2610";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2610";
+import { getTopPost } from "../../top-posts-store.js?v=2610";
+import { getTopicById } from "../../topics-store.js?v=2610";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2610";
 import {
   renderProfileEchoCard,
   networkLabel,
@@ -26,23 +26,24 @@ import {
   profileForNetwork,
   renderProfileTag,
   networkMeta,
-} from "../../social-profiles.js?v=2573";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2573";
-import { getIdeas } from "../../library.js?v=2573";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2573";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2573";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2573";
-import { getPlans } from "../../post-plan-store.js?v=2573";
-import { isFlagOn } from "../../feature-flags.js?v=2573";
-import { CURRENT_USER } from "../../org.js?v=2573";
-import { getSessionById } from "../../sessions-store.js?v=2573";
-import { getContextById } from "../../contexts-store.js?v=2573";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2573";
-import { getFocusKey } from "../../components/right-panel.js?v=2573";
-import { getPosts } from "../../posts-store.js?v=2573";
-import { diffWords, diffParagraphs, changeRatio, wordCounts } from "../../word-diff.js?v=2573";
-import { revisionSummary, revisionGroupSummary, revisionState, languageOf } from "../../draft-rewrite.js?v=2573";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2573";
+} from "../../social-profiles.js?v=2610";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2610";
+import { getIdeas } from "../../library.js?v=2610";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2610";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2610";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2610";
+import { getPlans } from "../../post-plan-store.js?v=2610";
+import { isFlagOn } from "../../feature-flags.js?v=2610";
+import { CURRENT_USER } from "../../org.js?v=2610";
+import { getSessionById } from "../../sessions-store.js?v=2610";
+import { getContextById } from "../../contexts-store.js?v=2610";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2610";
+import { getFocusKey } from "../../components/right-panel.js?v=2610";
+import { getPosts } from "../../posts-store.js?v=2610";
+import { nextStep } from "../../post-validation.js?v=2610";
+import { diffWords, diffParagraphs, changeRatio, wordCounts } from "../../word-diff.js?v=2610";
+import { revisionSummary, revisionGroupSummary, revisionState, languageOf } from "../../draft-rewrite.js?v=2610";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2610";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -216,7 +217,7 @@ function renderTurn(message, sessionId) {
   // look yet carries a line offering to pick one — derived, so it is gone the
   // moment a look exists, from here or from the Playbook.
   if (message.role === "assistant" && message.variant === "draft") {
-    return (contentCards() ? renderDraftsCardTurn(message) : "") + renderImageLookNudge(message, sessionId);
+    return (contentCards() ? renderDraftsCardTurn(message, sessionId) : "") + renderImageLookNudge(message, sessionId);
   }
 
   if (message.role === "assistant" && message.variant === "revision") {
@@ -579,11 +580,50 @@ export const extractionVerdict = new Map();
 // ideaId → 'up' | 'down'
 export const extractionWhyOpen = new Set();
 
-// A drafts batch as one card: how many, on which networks (icon + name).
-function renderDraftsCardTurn(message) {
+// A drafts batch, shown where it was asked for: one card per draft that is
+// still a draft — its network, where it stands, its first lines, what blocks
+// it in words, and the one verb that moves it on (Schedule, or the fix).
+// The card opens the panel on that draft; "Review all" on the batch. Once
+// none is left to act on (all scheduled or deleted), the batch folds back
+// into the one summary card below.
+function renderDraftsCardTurn(message, sessionId) {
   const drafts = message.drafts || [];
   const count = message.count ?? drafts.length;
   if (!count) return "";
+  const ids = drafts.map((d) => d.id);
+  const live = getPosts(sessionId).filter((p) => ids.includes(p.id) && p.status !== "scheduled");
+  if (live.length) {
+    const key = `drafts:${message.id}`;
+    const card = (p) => {
+      const { action, label, error: err } = nextStep(p);
+      const id = escapeHtml(p.id);
+      const verb = action ? [label, `data-thread-draft-${action}="${id}"`] : null;
+      return `
+        <div class="draft-batch__card ap-card${getFocusKey() === `post:${p.id}` ? " is-active" : ""}" data-content-card="post" data-content-key="post:${id}" data-content-ids="${id}">
+          <span class="draft-batch__head">
+            <i class="${networkIcon(p.network)} draft-batch__network" aria-hidden="true"></i>
+            <!-- The keyboard way in: the card is no role=button wrapping its own
+                 verb (ARIA nested interactive). A click anywhere on the card
+                 still opens it (delegated on data-content-card). -->
+            <button type="button" class="draft-batch__name" aria-label="Open the ${escapeHtml(networkLabel(p.network))} draft">${escapeHtml(networkLabel(p.network))}</button>
+            <span class="ap-status ${err ? "red" : "green"}">${err ? "Needs a fix" : "Ready"}</span>
+          </span>
+          <span class="draft-batch__text">${escapeHtml((p.text || []).join(" "))}</span>
+          <span class="draft-batch__foot">
+            ${err ? `<span class="draft-batch__issue"><i class="ap-icon-error_fill" aria-hidden="true"></i>${escapeHtml(err.message)}</span>` : ""}
+            ${verb ? `<button type="button" class="ap-button stroked blue" ${verb[1]}>${verb[0]}</button>` : ""}
+          </span>
+        </div>`;
+    };
+    return `
+      <div class="chat-turn chat-turn--ai chat-turn--drafts">
+        <div class="draft-batch">
+          <div class="draft-batch__grid">${live.map(card).join("")}</div>
+          <button type="button" class="ap-button ghost blue draft-batch__all${getFocusKey() === key ? " is-active" : ""}" data-content-card="post" data-content-key="${key}" data-content-ids="${escapeHtml(ids.join(","))}">Review all ${live.length}</button>
+        </div>
+      </div>
+    `;
+  }
   const networks = [...new Set(drafts.map((d) => d.network).filter(Boolean))];
   return `
     <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
@@ -799,6 +839,15 @@ function renderRevisionGroupTurn(message, sessionId) {
 
 function renderExtractionTurn(message, sessionId) {
   const count = message.count ?? (message.ideas ? message.ideas.length : 0);
+  // A source's ideas are announced once: on its own chip, whose "N ideas"
+  // link opens the same place. The card only stands in when no chip says it.
+  if (
+    contentCards() &&
+    isFlagOn("newConversationStyles") &&
+    message.status !== "loading" &&
+    getStreamSources(sessionId).some((src) => src.filename === message.filename && src.ideaCount > 0)
+  )
+    return "";
   if (contentCards() && message.status !== "loading" && count) {
     return `
       <div class="chat-turn chat-turn--ai chat-turn--extraction">

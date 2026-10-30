@@ -11,18 +11,18 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=2573";
-import { isFlagOn } from "../../feature-flags.js?v=2573";
-import { escapeAttr, escapeText } from "../../utils.js?v=2573";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2573";
-import { getSessions } from "../../sessions-store.js?v=2573";
-import { renderEmptyState } from "../../components/empty-state.js?v=2573";
-import { getSources, getIdeas } from "../../library.js?v=2573";
-import { getPosts } from "../../posts-store.js?v=2573";
-import { getContextById } from "../../contexts-store.js?v=2573";
-import { voicesToFinish } from "../../voice-parts.js?v=2573";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2573";
-import { pageState } from "../home.js?v=2573";
+} from "../../playbook-access.js?v=2610";
+import { isFlagOn } from "../../feature-flags.js?v=2610";
+import { escapeAttr, escapeText } from "../../utils.js?v=2610";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2610";
+import { getSessions } from "../../sessions-store.js?v=2610";
+import { renderEmptyState } from "../../components/empty-state.js?v=2610";
+import { getSources, getIdeas } from "../../library.js?v=2610";
+import { getPosts } from "../../posts-store.js?v=2610";
+import { getContextById } from "../../contexts-store.js?v=2610";
+import { voicesToFinish } from "../../voice-parts.js?v=2610";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2610";
+import { pageState } from "../home.js?v=2610";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -455,16 +455,20 @@ export function renderContextCard(ctx) {
   const briefHtml = summary
     ? `<p class="contexts-card__brief">${escapeText(summary)}</p>`
     : `<p class="contexts-card__brief contexts-card__brief--empty">${escapeText(playbookBrief(ctx))}</p>`;
-  // Each figure names what it counts: an icon beside a number never did.
-  const counter = (icon, n, one, many) =>
-    `<span class="contexts-card__counter"><i class="${icon}" aria-hidden="true"></i><span>${n} ${n === 1 ? one : many}</span></span>`;
+  // Each figure names what it counts, and they read as one line of text
+  // (redesign 2026-10-30): four icon + number pairs wrapped onto two rows.
+  const counted = (n, one, many) => (n ? `${n} ${n === 1 ? one : many}` : "");
   const countersHtml = `
-    <div class="contexts-card__counters">
-      ${counter("ap-icon-single-chat-bubble", usedIn, "chat", "chats")}
-      ${audienceCount ? counter("ap-icon-target", audienceCount, "audience", "audiences") : ""}
-      ${competitorCount ? counter("ap-icon-buildings", competitorCount, "competitor", "competitors") : ""}
-      ${influencerCount ? counter("ap-icon-star", influencerCount, "influencer", "influencers") : ""}
-    </div>
+    <p class="contexts-card__counters">${escapeText(
+      [
+        `${usedIn} ${usedIn === 1 ? "chat" : "chats"}`,
+        counted(audienceCount, "audience", "audiences"),
+        counted(competitorCount, "competitor", "competitors"),
+        counted(influencerCount, "influencer", "influencers"),
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    )}</p>
   `;
   // Voices to finish (2026-10-29, asked: « une indication quand une voice n'est
   // pas complète ou manquante sur la card d'un playbook »): how many, and on

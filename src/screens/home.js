@@ -1,27 +1,27 @@
-import { html, raw, escapeAttr } from "../utils.js?v=2573";
-import { conceptText } from "../concepts.js?v=2573";
-import { renderTopbar } from "../components/topbar.js?v=2573";
+import { html, raw, escapeAttr } from "../utils.js?v=2610";
+import { conceptText } from "../concepts.js?v=2610";
+import { renderTopbar } from "../components/topbar.js?v=2610";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=2573";
-import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=2573";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2573";
-import { closePanel as closeRightPanel } from "../components/right-panel.js?v=2573";
-import { navigate, getPath } from "../router.js?v=2573";
-import { isFlagOn } from "../feature-flags.js?v=2573";
-import { setHandoff } from "../handoff.js?v=2573";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2573";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2573";
-import { visibleContexts, usableContexts } from "../playbook-access.js?v=2573";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2573";
-import { voicesToFinish } from "../voice-parts.js?v=2573";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2573";
-import { installMoreMenu } from "../components/more-menu.js?v=2573";
-import { showToast } from "../components/toast.js?v=2573";
-import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=2573";
+} from "../contexts-store.js?v=2610";
+import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=2610";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2610";
+import { closePanel as closeRightPanel } from "../components/right-panel.js?v=2610";
+import { navigate, getPath } from "../router.js?v=2610";
+import { isFlagOn } from "../feature-flags.js?v=2610";
+import { setHandoff } from "../handoff.js?v=2610";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2610";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2610";
+import { visibleContexts, usableContexts } from "../playbook-access.js?v=2610";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2610";
+import { voicesToFinish } from "../voice-parts.js?v=2610";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2610";
+import { installMoreMenu } from "../components/more-menu.js?v=2610";
+import { showToast } from "../components/toast.js?v=2610";
+import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=2610";
 import {
   chatPlaybook,
   renderChatsTab,
@@ -29,7 +29,7 @@ import {
   renderContextsEmpty,
   renderGhostCard,
   renderPlaybooksTable,
-} from "./home/lists.js?v=2573";
+} from "./home/lists.js?v=2610";
 
 // The account HOME — and the Playbooks catalogue it merged with.
 //
@@ -193,6 +193,8 @@ function renderPage() {
       <div class="contexts-view__page">
         <header class="contexts-view__head">
           <div class="contexts-view__head-text">
+            <!-- No h1 « Playbooks »: the topbar names the page one line above
+                 (redesign 2026-10-30). The heading stays for screen readers. -->
             <h1 class="contexts-view__title">Playbooks</h1>
             <p class="contexts-view__sub concept-lead">${conceptText("playbook")}</p>
           </div>

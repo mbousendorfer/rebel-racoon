@@ -229,15 +229,6 @@
   gap: var(--ref-spacing-xxs);
   min-width: 0;
 }
-
-.rpanel-ideas__source-label {
-  flex: 0 0 auto;
-  font-size: var(--sys-text-style-caption-bold-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  color: var(--ref-color-grey-100);
-}
-
 /* Zone 1 — content block (Figma "content" frame). Kind tag, H3 title,
    body, and the Why panel stack here. 12px padding all around with
    8px vertical rhythm matching the design's --ref-spacing-xxs gap. */
@@ -481,7 +472,7 @@ body.ui-idea-card .rpanel-ideas__primary {
 /* The whole idea card drafts: while it's hovered, its Draft button shows its
    own DS hover fill, so the card says which action the click will run. */
 body.ui-idea-card .rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
-  background-color: var(--ref-color-electric-blue-20);
+  background-color: var(--ref-color-electric-blue-05);
 }
 
 /* ── Drafts mode (Lot 21) — rich PostCard feed ──────────────────────
@@ -835,13 +826,6 @@ body.ui-idea-card .rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
   font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--ref-color-grey-100);
 }
-
-.rpanel-sources__sub {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-}
-
 .rpanel-sources__list {
   display: flex;
   flex-direction: column;
@@ -1539,14 +1523,6 @@ body.ui-idea-card .rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
   padding: 0 0 var(--ref-spacing-xxs);
   border-bottom: 0;
 }
-
-.app-right-panel.is-content .rpanel-sources__sub {
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-80);
-  text-wrap: pretty;
-}
-
 .app-right-panel.is-content .rpanel-sources__row {
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-md);
@@ -1632,11 +1608,6 @@ body.ui-idea-card .rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
   max-width: none;
   border-color: var(--ref-color-grey-20);
 }
-
-.app-right-panel.is-content .rpanel-ideas__source-label {
-  display: none;
-}
-
 .app-right-panel.is-content .rpanel-ideas__why {
   padding: 0;
   background: transparent;
@@ -1701,4 +1672,99 @@ body.ui-idea-card .rpanel-ideas__card:hover .rpanel-ideas__use:not(:disabled) {
   .rpanel-sources__row-mention > span {
     display: none;
   }
+}
+
+/* ─── UI redesign 2026-10-30 (design-plans/redesign-panel.md) ────────────────
+   An idea's kind is a word, then where it comes from: one line of facts. A
+   bordered tag read as a control. */
+.rpanel-ideas__kind-word {
+  flex-shrink: 0;
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-caption-bold-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+}
+
+.rpanel-ideas__card-head .rpanel-ideas__head-source::before {
+  content: "·";
+  color: var(--ref-color-grey-80);
+}
+
+.rpanel-ideas__source {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
+.rpanel-ideas__source span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rpanel-ideas__source i {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.rpanel-ideas__card-head .ap-status {
+  margin-left: auto;
+}
+
+/* Two sections, the Drafts panel's grammar: "To draft", then "Drafted". */
+.rpanel-ideas__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.rpanel-ideas__section + .rpanel-ideas__section {
+  margin-top: var(--ref-spacing-md);
+}
+
+.rpanel-ideas__section-title {
+  margin: 0;
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-body-bold-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  line-height: var(--sys-text-style-body-bold-line-height);
+}
+
+.rpanel-ideas__section-count {
+  font-weight: var(--sys-text-style-body-weight);
+}
+
+/* A drafted idea folds to one line in a single list: kind, title, its drafts. */
+.rpanel-ideas__done-list {
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-white);
+}
+
+.rpanel-ideas__done {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-sm);
+}
+
+.rpanel-ideas__done + .rpanel-ideas__done {
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.rpanel-ideas__done-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rpanel-ideas__done .ap-button {
+  flex-shrink: 0;
 }

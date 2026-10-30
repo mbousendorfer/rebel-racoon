@@ -1053,10 +1053,10 @@ body:not(.onboarding) .welcome-intro__wordmark {
   gap: 0;
   /* Each card is as tall as its content — never a scroll inside a card. */
   padding: var(--ref-spacing-md); /* 24 — the review's compact rhythm (2026-10-20) */
-  background: var(--app-surface);
+  background: none;
   border: none;
-  border-radius: var(--app-radius-card);
-  box-shadow: var(--app-shadow-popover-lg);
+  border-radius: 0;
+  box-shadow: none;
   /* The view repaints its whole DOM on most edits (a radio, a chip…): the
      block's own entrance (pb2-rise) would replay and the card jump. A new
      part's cascade is the only motion a card has. */
@@ -1065,14 +1065,8 @@ body:not(.onboarding) .welcome-intro__wordmark {
 
 /* Changing part: the column and its nav leave downwards, then the new part's
    column cascades in. */
-.welcome-flow__sheet.is-part-out .welcome-flow__sheet-body,
-.welcome-flow__sheet.is-part-out .welcome-review__nav {
+.welcome-flow__sheet.is-part-out .welcome-flow__sheet-body {
   animation: welcome-review-part-out 0.24s ease-in both;
-}
-
-/* A new part's nav lands with its column. */
-.welcome-review__nav.is-dealt {
-  animation: welcome-intro-land 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
 }
 
 @keyframes welcome-review-part-out {
@@ -1080,90 +1074,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
     opacity: 0;
     transform: translateY(48px) scale(0.95);
   }
-}
-
-/* The nav stands in the middle of the stage — vertically on the reading line
-   (50%, the focused card's centre), horizontally in the middle of the margin
-   right of the column (on the left it sat between the list and the cards,
-   2026-10-20). One compact white capsule, 28px wide: ↑ · the dots · ↓. */
-.welcome-review__nav {
-  position: absolute;
-  inset: 0 max(var(--ref-spacing-lg), calc(((100% - 720px) / 2 - 28px) / 2)) 0 auto;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: fit-content;
-  margin: auto 0;
-  padding: 2px 0;
-  background: var(--app-surface);
-  border-radius: var(--app-radius-pill);
-  box-shadow: var(--app-shadow-popover-md);
-}
-
-.welcome-review__nav:empty {
-  display: none;
-}
-
-/* Its arrows: bare, grey ink, blue on hover — the interactive colour. */
-.welcome-review__navbtn {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: none;
-  border-radius: var(--app-radius-pill);
-  background: none;
-  color: var(--ref-color-grey-100);
-  font-size: var(--sys-icon-css-sm);
-  cursor: pointer;
-}
-
-.welcome-review__navbtn:hover:not(:disabled) {
-  color: var(--ref-color-electric-blue-100);
-}
-
-.welcome-review__navbtn:focus-visible {
-  outline: 2px solid var(--ref-color-electric-blue-100);
-  outline-offset: 2px;
-}
-
-.welcome-review__navbtn:disabled {
-  cursor: default;
-  opacity: 0.45;
-}
-
-/* Page dots, vertical: seen = olive, here = a tall butter capsule, ahead = grey. */
-.welcome-review__dots {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  width: 28px;
-  margin: 0;
-  padding: var(--ref-spacing-xxs) 0;
-  list-style: none;
-}
-
-.welcome-review__dots li {
-  width: 6px;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--ref-color-grey-20);
-  transition:
-    height 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 0.3s ease;
-}
-
-.welcome-review__dots li.is-done {
-  background: var(--app-butter-accent);
-}
-
-.welcome-review__dots li.is-current {
-  height: 18px;
-  background: var(--app-butter);
-  box-shadow: inset 0 0 0 1px var(--app-butter-accent);
 }
 
 /* The card's hierarchy, top to bottom:
@@ -1410,15 +1320,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
   color: var(--ref-color-grey-80);
 }
 
-.welcome-review__count {
-  flex-shrink: 0;
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-100);
-  white-space: nowrap;
-}
-
 /* A part the user said looks good: the run's own done mark. */
 .welcome-review__check {
   display: grid;
@@ -1467,41 +1368,35 @@ body:not(.onboarding) .welcome-intro__wordmark {
      a viewport unit here overflowed the stage and pushed every card off the
      middle. */
   container-type: size;
-  /* Each side keeps room for the nav's column (28px + air), so it never sits
-     on a card, and the column stays centred. */
-  padding: 0 max(calc(28px + 2 * var(--ref-spacing-lg)), calc((100% - 720px) / 2));
-  /* Fully gone under the confirm bar (bottom lg + 36px): half-faded rows on both
-     sides of the button read as clipped. */
-  mask-image: linear-gradient(180deg, transparent 0, #000 96px, #000 calc(100% - 160px), transparent calc(100% - 64px));
+  /* The sheet stays centred, 720px at most. */
+  padding: 0 max(var(--ref-spacing-lg), calc((100% - 720px) / 2));
+  /* The scroll's edges dissolve into the stage, never a hard cut. */
+  mask-image: linear-gradient(180deg, transparent 0, #000 32px, #000 calc(100% - 32px), transparent 100%);
 }
 
 .welcome-flow__sheet.is-scroll .welcome-flow__sheet-body::-webkit-scrollbar {
   display: none;
 }
 
+/* The part is ONE sheet (redesign 2026-10-30): a white surface on the stage,
+   its blocks one under the other, a hairline between them. */
 .welcome-flow__sheet.is-scroll .pb2-grid {
-  /* Half the scroll above the first card and below the last: both can reach the middle. */
-  padding-block: 50cqh;
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-md);
+  margin-block: var(--ref-spacing-xl);
+  background: var(--app-surface);
+  border-radius: var(--app-radius-card);
+  box-shadow: var(--app-shadow-popover-lg);
 }
 
-/* Dimming follows the scroll, frame by frame (--focus, 0 → 1, set by the
-   JS from the distance to the reading line): no transition, no switch. A card
-   out of focus only steps back a little — it stays readable. */
-.welcome-flow__sheet.is-scroll .welcome-review__card {
-  opacity: calc(0.82 + 0.18 * var(--focus, 1));
-  transform: scale(calc(0.985 + 0.015 * var(--focus, 1)));
+.welcome-flow__sheet.is-scroll .welcome-review__card:not([hidden]) ~ .welcome-review__card:not([hidden]) {
+  border-top: 1px solid var(--ref-color-grey-20);
 }
 
-.welcome-flow__sheet.is-scroll .welcome-review__card:not(.is-active) {
-  cursor: pointer;
-}
-
-/* A part's cards arrive in a cascade, the nearest first. */
-.welcome-flow__sheet.is-scroll .welcome-review__card.is-dealt {
-  animation: welcome-review-cascade 0.55s cubic-bezier(0.22, 1, 0.36, 1) calc(min(var(--deal, 0), 4) * 70ms) both;
+/* A part's sheet arrives whole (redesign 2026-10-30: its blocks cascaded one
+   by one, a stack's motion on what is now one surface). */
+.welcome-flow__sheet.is-scroll .pb2-grid.is-dealt {
+  animation: welcome-review-cascade 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes welcome-review-cascade {
@@ -1511,26 +1406,8 @@ body:not(.onboarding) .welcome-intro__wordmark {
   }
 }
 
-/* The part's confirm: one button at the bottom of the stage, over the scroll. */
-.welcome-review__bar {
-  position: absolute;
-  inset: auto 0 var(--ref-spacing-lg);
-  z-index: 2;
-  display: flex;
-  justify-content: center;
-  pointer-events: none;
-}
-
-.welcome-review__bar > * {
-  pointer-events: auto;
-}
-
-.welcome-flow__sheet.is-part-out .welcome-review__bar {
-  animation: welcome-review-part-out 0.24s ease-in both;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .welcome-flow__sheet.is-scroll .welcome-review__card.is-dealt {
+  .welcome-flow__sheet.is-scroll .pb2-grid.is-dealt {
     animation: none;
   }
 }
@@ -2227,9 +2104,23 @@ button.recap__logotile:hover {
   color: var(--ref-color-grey-80);
 }
 
-.recap__cmpgroup--suggested .recap__cmpgroup-title > i {
-  color: var(--ref-color-orange-100);
-  font-size: var(--ref-font-size-md);
+/* My proposals wear my mark, as everywhere I propose something (the voice
+   edit block, my read of a style's images): a butter tile, an olive glyph. */
+.recap__cmpgroup-mark {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--app-butter);
+}
+
+/* An ap-icon is a mask on its own element: its colour is its background. */
+.recap__cmpgroup-mark > i {
+  width: 14px;
+  height: 14px;
+  background: var(--app-butter-accent);
 }
 
 .recap__cmpgroup-count {
@@ -2257,12 +2148,13 @@ button.recap__logotile:hover {
   min-width: 0;
 }
 
-/* A pending proposal reads as an offer, not an entry: dashed edge and a
-   surface that doesn't look committed. The dashed border sits on the CARD, not
-   on the inner open-button, so the Add / Dismiss row is enclosed by it — the
-   actions belong to this proposal, not to the tray around it. */
+/* A pending proposal reads as an offer, not an entry: it sits in my tray,
+   under my mark, with its Add / Dismiss. Its edge is SOLID (coherence
+   2026-10-30): a dashed box reads as a drop target and must accept a drop —
+   this one never did. The border sits on the CARD, so the Add / Dismiss row is
+   enclosed by it — the actions belong to this proposal, not to the tray. */
 .recap__cmpcard--suggested {
-  border: 1px dashed var(--app-border);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-md);
   background: var(--app-surface);
   transition: border-color var(--ref-animation-short) var(--app-ease-out);
@@ -3268,4 +3160,12 @@ button.recap__logotile:hover {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--sys-text-color-error);
+}
+
+/* The step's own way on, before the review's last part: a quiet second door
+   under the confirm, on the confirm's side (redesign 2026-10-30). */
+.welcome-review__skip {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--ref-spacing-xxs);
 }

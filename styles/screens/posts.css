@@ -862,13 +862,23 @@
 .posts__card-footrow > .fb--strip {
   padding-top: 0;
 }
-.posts__card-footrow > .posts__gencontext-toggle {
+.posts__card-footrow > .posts__gencontext-toggle,
+.posts__card-footend {
   position: absolute;
   top: 0;
   right: 0;
   /* Match the feedback row's icon-button height so the toggle centres on the
      same line as "How's this draft?". */
   min-height: var(--sys-icon-button-height);
+}
+
+/* The row's right end: "Why this draft", then the draft's next step. Pinned
+   like the toggle alone was, so the feedback panel still opens full width
+   beneath; centred on the "How's this draft?" line. */
+.posts__card-footend {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
 }
 
 .posts__gencontext-toggle {
@@ -1072,4 +1082,11 @@
 /* A disabled rail action keeps a hoverable wrapper for its tooltip. */
 .posts__row-action-blocked {
   display: inline-flex;
+}
+
+/* The draft's next step, named, at the end of the card's foot row (redesign
+   2026-10-30): Schedule, or the one-click fix. Hugs its label, never the
+   row's width (house rule); the row's own gap spaces it. */
+.posts__card-next {
+  flex-shrink: 0;
 }

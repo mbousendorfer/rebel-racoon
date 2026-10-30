@@ -17,9 +17,9 @@
 //     showMention — render the Mention button (default true; false where there
 //                   is no composer, e.g. the standalone Ideas page)
 
-import { iconFor } from "../file-kinds.js?v=2573";
-import { escapeText, escapeAttr } from "../utils.js?v=2573";
-import { isFlagOn } from "../feature-flags.js?v=2573";
+import { iconFor } from "../file-kinds.js?v=2610";
+import { escapeText, escapeAttr } from "../utils.js?v=2610";
+import { isFlagOn } from "../feature-flags.js?v=2610";
 
 // Each idea kind → its DS `.ap-tag` colour variant. The one table: every kind
 // tag (this card, the panel's Overview and Sources, the full idea card, the
@@ -94,7 +94,7 @@ export function renderCompactIdeaCard(
     ? linkedSources
         .map(
           (s) => `
-            <span class="ap-tag grey" title="${escapeAttr(s.filename)}">
+            <span class="rpanel-ideas__source" title="${escapeAttr(s.filename)}">
               <i class="${iconFor(s.kind)}" aria-hidden="true"></i>
               <span>${escapeText(s.filename)}</span>
             </span>
@@ -102,7 +102,7 @@ export function renderCompactIdeaCard(
         )
         .join("")
     : idea.ref
-      ? `<span class="ap-tag grey" title="${escapeAttr(idea.ref)}">
+      ? `<span class="rpanel-ideas__source" title="${escapeAttr(idea.ref)}">
            <i class="ap-icon-file" aria-hidden="true"></i>
            <span>${escapeText(idea.ref)}</span>
          </span>`
@@ -131,16 +131,11 @@ export function renderCompactIdeaCard(
 
   const cardHead = `
     <div class="rpanel-ideas__card-head">
-      <span class="ap-tag ${IDEA_KIND_TAG[kind] || "grey"} rpanel-ideas__kind">${kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
+      <!-- What it is, then where it comes from, as one line of words (redesign
+           2026-10-30): a bordered tag read as a control, not as a fact. -->
+      <span class="rpanel-ideas__kind-word">${kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
+      ${sourceTags ? `<span class="rpanel-ideas__head-source">${sourceTags}</span>` : ""}
       ${/* Same reading as the Overview: an idea already drafted says so here too. */ idea.used > 0 ? `<span class="ap-status green">Drafted</span>` : ""}
-      ${
-        sourceTags
-          ? `<div class="rpanel-ideas__head-source">
-              <span class="rpanel-ideas__source-label">Source:</span>
-              ${sourceTags}
-            </div>`
-          : ""
-      }
     </div>
   `;
 
@@ -166,7 +161,7 @@ export function renderCompactIdeaCard(
         </div>
         <div class="rpanel-ideas__primary">
           ${mentionBtn}
-          <button type="button" class="ap-button secondary blue rpanel-ideas__use" data-rpanel-use-idea="${escapeAttr(idea.id)}">
+          <button type="button" class="ap-button stroked blue rpanel-ideas__use" data-rpanel-use-idea="${escapeAttr(idea.id)}">
             <i class="ap-icon-sparkles"></i>
             <span>Draft post</span>
           </button>
@@ -274,7 +269,7 @@ function renderClearIdeaCard(idea, sources = [], { verdict = null, whyOpen = fal
       <footer class="rpanel-ideas__card-actions">
         <div class="rpanel-ideas__primary">
           ${mentionBtn}
-          <button type="button" class="ap-button secondary blue rpanel-ideas__use" data-rpanel-use-idea="${escapeAttr(idea.id)}" title="Write a post from this idea">
+          <button type="button" class="ap-button stroked blue rpanel-ideas__use" data-rpanel-use-idea="${escapeAttr(idea.id)}" title="Write a post from this idea">
             <i class="ap-icon-sparkles"></i>
             <span>Draft post</span>
           </button>

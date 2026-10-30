@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2573";
-import { conceptHint } from "./concepts.js?v=2573";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2610";
+import { conceptHint } from "./concepts.js?v=2610";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2573";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2573";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2573";
-import { isFlagOn } from "./feature-flags.js?v=2573";
-import { clipLookOf } from "./videos-store.js?v=2573";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2573";
-import { parseHashParams } from "./url-state.js?v=2573";
+} from "./playbook-brand-kit.js?v=2610";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2610";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2610";
+import { isFlagOn } from "./feature-flags.js?v=2610";
+import { clipLookOf } from "./videos-store.js?v=2610";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2610";
+import { parseHashParams } from "./url-state.js?v=2610";
 import {
   isListPart,
   voiceParts,
@@ -55,13 +55,13 @@ import {
   canLearnFrom,
   ADAPTED_FROM,
   voiceHasRules,
-} from "./voice-parts.js?v=2573";
-import { showToast } from "./components/toast.js?v=2573";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2573";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2573";
-import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2573";
-import { consumeHandoff } from "./handoff.js?v=2573";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2573";
+} from "./voice-parts.js?v=2610";
+import { showToast } from "./components/toast.js?v=2610";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2610";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2610";
+import { openVoiceProposal, openVoiceInterview } from "./components/voice-proposal-modal.js?v=2610";
+import { consumeHandoff } from "./handoff.js?v=2610";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2610";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -70,7 +70,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   renderProfileTag,
-} from "./social-profiles.js?v=2573";
+} from "./social-profiles.js?v=2610";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1486,7 +1486,7 @@ function renderRosterPanel(data, r, edit) {
     ? `<section class="recap__cmpgroup recap__cmpgroup--suggested">
          <header class="recap__cmpgroup-head">
            <span class="recap__cmpgroup-title">
-             <i class="ap-icon-sparkles" aria-hidden="true"></i>
+             <span class="recap__cmpgroup-mark" aria-hidden="true"><i class="ap-icon-sparkles"></i></span>
              <span>My suggestions</span>
              <span class="ap-tag grey mini recap__cmpgroup-count">${pending.length}</span>
            </span>
@@ -2288,6 +2288,14 @@ function pb2Block(
       <header class="pb2-block__head">
         ${icon ? `<i class="${icon} pb2-block__icon" aria-hidden="true"></i>` : ""}
         <h3 class="pb2-block__title">${esc(title)}</h3>
+        ${
+          /* What the section is for: written under its title while editing, where
+             it helps; behind an (i) while reading, so the brand's content is
+             what the page shows (redesign 2026-10-30). */
+          hint
+            ? `<i class="ap-icon-information-circle pb2-block__info" role="img" tabindex="0" aria-label="${esc(hint)}" data-tooltip="${esc(hint)}"></i>`
+            : ""
+        }
         ${caption ? `<span class="pb2-block__caption">${esc(caption)}</span>` : ""}
         ${aside}
       </header>

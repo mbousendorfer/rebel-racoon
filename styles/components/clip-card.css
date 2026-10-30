@@ -219,11 +219,17 @@
   flex: 0 0 auto;
 }
 
-/* The source is the idea card's chip (a DS grey tag): only its room in the row
-   here, the tag draws itself and truncates its own text. */
+/* What it is, then where it comes from, in words like the idea card
+   (redesign 2026-10-30): "Clip · founder-keynote.mp4". */
 .clip-card__source-name {
   flex: 0 1 auto;
   min-width: 0;
+}
+
+.clip-card__source-name::before {
+  content: "·";
+  margin-right: var(--ref-spacing-xxxs);
+  color: var(--ref-color-grey-80);
 }
 
 /* Kebab menu — anchored top-right of the content zone, holds Edit

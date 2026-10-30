@@ -1988,6 +1988,14 @@ archie-pixels.empty-chat__pixels {
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-xxs);
 }
 
+/* The meta line is too narrow here for the source, the age AND a signal chip:
+   the chip wraps under them. Its row is kept on every card, chip or not, so the
+   three headlines start on one line (one card's sat a row higher). */
+.empty-chat__topics-grid .topic-card__meta {
+  align-content: flex-start;
+  min-height: calc(2 * var(--ref-spacing-md) + var(--ref-spacing-xxxs));
+}
+
 .empty-chat__topics-grid .topic-card__act {
   padding: var(--ref-spacing-xxs) var(--ref-spacing-sm) var(--ref-spacing-xs);
 }
