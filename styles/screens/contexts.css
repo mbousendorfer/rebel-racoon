@@ -1,7 +1,6 @@
 /* Contexts library — standalone page (Lot 8.1).
-   Header → search → grid of ContextCards. Each card has a colored swatch
-   strip on its top edge (palette derived from the context's `color`
-   field), a brand + brief preview, a tone chip row, and Do/Don't
+   Header → search → grid of ContextCards. Each card opens on the brand mark
+   (the table view's), then a brand + brief preview, a tone chip row, and Do/Don't
    summaries side-by-side. */
 
 .contexts-view {
@@ -251,48 +250,12 @@
   outline: none;
 }
 
-/* Swatch strip — top edge, full-width, colored per ctx.color. */
-.contexts-card__swatch {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-}
-
-/* The brand's colour, declared once per modifier and read by both shapes —
-   the grid card's top strip and the row's dot. It used to be six rules that
-   each set the strip's background, which is how a second shape ends up with a
-   fifth colour nobody updated. */
-.contexts-card--orange {
-  --card-accent: var(--ref-color-orange-100);
-}
-.contexts-card--blue {
-  --card-accent: var(--ref-color-electric-blue-100);
-}
-.contexts-card--green {
-  --card-accent: var(--ref-color-green-100);
-}
-.contexts-card--purple {
-  --card-accent: var(--ref-color-purple-100);
-}
-.contexts-card--red {
-  --card-accent: var(--ref-color-red-100);
-}
-.contexts-card--yellow {
-  --card-accent: var(--ref-color-yellow-100);
-}
-
-.contexts-card__swatch {
-  background: var(--card-accent, var(--ref-color-grey-40));
-}
-
 /* Hover-reveal action toolbar — sits in the top-right corner, hidden
    by default. Matches Claude / Linear / Notion's "actions appear on
    hover" pattern so the card body stays clean to scan. */
 .contexts-card__actions {
   position: absolute;
-  top: calc(var(--ref-spacing-xs) + 4px); /* +4 = color-strip height */
+  top: var(--ref-spacing-xs);
   right: var(--ref-spacing-xs);
   display: flex;
   align-items: center;
@@ -322,8 +285,7 @@
 
 .contexts-card__head {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
   gap: var(--ref-spacing-xs);
   /* Reserve horizontal space for the hover-reveal action toolbar so
      long names don't crash into it on hover. */

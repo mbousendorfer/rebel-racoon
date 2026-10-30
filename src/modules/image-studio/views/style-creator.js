@@ -9,21 +9,22 @@
 // active Playbook. (A three-subject "Test run" column was removed at the user's
 // request, 2026-10-06: "ça n'a pas de sens".)
 
-import { html, toString } from "../lib/html.js?v=2564";
-import { delegate } from "../lib/delegate.js?v=2564";
-import { getPath } from "../../../router.js?v=2564";
-import { setTopbarActions } from "../../../components/topbar.js?v=2564";
-import { renderFrame } from "./frame.js?v=2564";
-import { renderEmpty } from "../ui/empty.js?v=2564";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=2564";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2564";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=2564";
-import { toast } from "../ui/toast.js?v=2564";
-import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2564";
-import { copyService } from "../services/index.js?v=2564";
-import { lookFromColors } from "../render/visual.js?v=2564";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2564";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2564";
+import { html, toString } from "../lib/html.js?v=2566";
+import { delegate } from "../lib/delegate.js?v=2566";
+import { getPath } from "../../../router.js?v=2566";
+import { setTopbarActions } from "../../../components/topbar.js?v=2566";
+import { renderFrame } from "./frame.js?v=2566";
+import { renderEmpty } from "../ui/empty.js?v=2566";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=2566";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2566";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=2566";
+import { toast } from "../ui/toast.js?v=2566";
+import { confirmDialog } from "../ui/dialog.js?v=2566";
+import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2566";
+import { copyService } from "../services/index.js?v=2566";
+import { lookFromColors } from "../render/visual.js?v=2566";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2566";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2566";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -69,6 +70,19 @@ export function mount(target, params, ctx, { embed = null } = {}) {
   };
 
   const fiche = `/playbook/${encodeURIComponent(params.id)}`;
+
+  // Leaving with changes asks first (ui-polish): a typed name and up to six
+  // images used to vanish on Cancel or Back.
+  const initial = JSON.stringify(state.draft);
+  const leave = (go) => {
+    if (JSON.stringify(state.draft) === initial) return go();
+    confirmDialog({
+      title: editing ? "Discard your changes?" : "Discard this style?",
+      body: editing ? `${editing.label} stays as it was.` : "The name and images you added won't be kept.",
+      confirmLabel: "Discard",
+      danger: true,
+    }).then((ok) => ok && go());
+  };
 
   // A reference image as a tile: the picture, and a way to take it out. Every
   // image counts the same (no weights: removed at the user's request, 2026-10-02).
@@ -285,10 +299,21 @@ ${d.stylePrompt}</textarea
       ? delegate(topbar, "click", "[data-imst-creator]", (_e, el) => {
           if (el.dataset.imstCreator === "save") {
             if (!el.disabled) save();
-          } else if (embed) embed.onCancel();
-          else ctx.navigate(fiche);
+          } else leave(() => (embed ? embed.onCancel() : ctx.navigate(fiche)));
         })
       : () => {},
+    // The topbar's back, caught before its own handler.
+    (() => {
+      if (embed || !topbar) return () => {};
+      const onBack = (event) => {
+        const back = event.target.closest("[data-topbar-back]");
+        if (!back || JSON.stringify(state.draft) === initial) return;
+        event.stopPropagation();
+        leave(() => ctx.navigate(back.dataset.topbarBack));
+      };
+      topbar.addEventListener("click", onBack, true);
+      return () => topbar.removeEventListener("click", onBack, true);
+    })(),
     bindDropzones(target, async (_id, files) => {
       const room = CUSTOM_STYLE_LIMITS.images - state.draft.sources.filter((s) => s.type === "image").length;
       const images = files.filter((f) => f.type.startsWith("image/"));

@@ -11,18 +11,18 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=2564";
-import { isFlagOn } from "../../feature-flags.js?v=2564";
-import { escapeAttr, escapeText } from "../../utils.js?v=2564";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2564";
-import { getSessions } from "../../sessions-store.js?v=2564";
-import { renderEmptyState } from "../../components/empty-state.js?v=2564";
-import { getSources, getIdeas } from "../../library.js?v=2564";
-import { getPosts } from "../../posts-store.js?v=2564";
-import { getContextById } from "../../contexts-store.js?v=2564";
-import { voicesToFinish } from "../../voice-parts.js?v=2564";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2564";
-import { pageState } from "../home.js?v=2564";
+} from "../../playbook-access.js?v=2566";
+import { isFlagOn } from "../../feature-flags.js?v=2566";
+import { escapeAttr, escapeText } from "../../utils.js?v=2566";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2566";
+import { getSessions } from "../../sessions-store.js?v=2566";
+import { renderEmptyState } from "../../components/empty-state.js?v=2566";
+import { getSources, getIdeas } from "../../library.js?v=2566";
+import { getPosts } from "../../posts-store.js?v=2566";
+import { getContextById } from "../../contexts-store.js?v=2566";
+import { voicesToFinish } from "../../voice-parts.js?v=2566";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2566";
+import { pageState } from "../home.js?v=2566";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -362,7 +362,6 @@ export function renderGhostCard() {
 }
 
 export function renderContextCard(ctx) {
-  const color = ctx.color || "orange";
   const summary = (ctx.businessSummary || ctx.briefSummary || "").trim();
   const voiceHeadline =
     ctx.voiceProfile?.headline ||
@@ -487,18 +486,19 @@ export function renderContextCard(ctx) {
       ${cardTitle ? `title="${escapeAttr(cardTitle)}"` : ""}`;
 
   // ── The tile ────────────────────────────────────────────────────────────
-  // The catalogue's own shape, flag OFF: a colour strip, the voice chip, three
+  // The catalogue's own shape, flag OFF: the brand mark (the table's, never
+  // a colour strip, which read as an edge-accent bar — ui-polish PB-01), the voice chip, three
   // counters, the palette, the hover toolbar. A Playbook is an OBJECT you
   // browse here. On the home the same Playbook is a row you pick from
   // (renderPlaybookRow), which is why the two shapes differ in everything but
   // the words they say.
   return `
-    <article class="contexts-card contexts-card--${color}"${openAttrs}>
-      <span class="contexts-card__swatch" aria-hidden="true"></span>
+    <article class="contexts-card"${openAttrs}>
 
       <div class="contexts-card__actions" data-contexts-card-actions>${actions}</div>
 
       <header class="contexts-card__head">
+        ${playbookThumb(ctx)}
         <h3 class="contexts-card__name">
           <!-- The keyboard way in: the tile is no longer a role=button wrapping
                its own action buttons (ARIA nested interactive). A click anywhere

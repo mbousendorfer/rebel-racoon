@@ -17,17 +17,17 @@ import {
   getContexts,
   subscribe as subscribeContexts,
   updateContext,
-} from "../../../contexts-store.js?v=2564";
-import { createStyle } from "../model/schema.js?v=2564";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=2564";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=2564";
+} from "../../../contexts-store.js?v=2566";
+import { createStyle } from "../model/schema.js?v=2566";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=2566";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=2566";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=2564";
-import { storageService as storage } from "../services/index.js?v=2564";
+} from "../../../active-playbook.js?v=2566";
+import { storageService as storage } from "../services/index.js?v=2566";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -198,14 +198,13 @@ export function addPlaybookReferences(id, images) {
   return true;
 }
 
+/** Deletes one reference image; returns the undo (puts it back in its place), or null. */
 export function deletePlaybookReference(id, refId) {
   const ctx = getContextById(id);
-  if (!ctx || !canEdit(ctx)) return false;
-  updateContext(id, {
-    referenceImages: (ctx.referenceImages || []).filter((r) => r.id !== refId),
-    updatedAt: "just now",
-  });
-  return true;
+  if (!ctx || !canEdit(ctx)) return null;
+  const before = ctx.referenceImages || [];
+  updateContext(id, { referenceImages: before.filter((r) => r.id !== refId), updatedAt: "just now" });
+  return () => updateContext(id, { referenceImages: before, updatedAt: "just now" });
 }
 
 export function getPlaybookDefaultLook(id) {

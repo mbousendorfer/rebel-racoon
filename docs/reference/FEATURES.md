@@ -890,7 +890,7 @@ Un Playbook capture business summary, audience, goals, voice/style, brand identi
 
 ### Library (l'onglet **Playbooks** de `/home`, [`screens/home.js`](../../src/screens/home.js))
 
-Header **« Playbooks »** + _« N Playbooks · applied across N chats »_ + search + **« Create a Playbook »**. Grille de cartes + ghost card. Carte : swatch couleur, nom (+ ★ default), voice headline, brief summary, compteurs, palette dots, _« Updated {when} »_. Hover : **Edit / Duplicate / Delete**. Garde : impossible de supprimer le dernier (_« Can't delete the last Playbook… »_).
+Header **« Playbooks »** + _« N Playbooks · applied across N chats »_ + search + **« Create a Playbook »**. Grille de cartes + ghost card. Carte : la vignette de la marque (celle du tableau : logo, sinon initiales ; plus de bande de couleur, qui se lisait comme une barre d'accent de bord, ui-polish PB-01, 2026-10-30), nom (+ ★ default), voice headline, brief summary, compteurs, palette dots, _« Updated {when} »_. Hover : **Edit / Duplicate / Delete**. Garde : impossible de supprimer le dernier (_« Can't delete the last Playbook… »_).
 
 **Sous `playbookWorkspace` (§14), cette page quitte le shell et devient un onglet.** Le catalogue est l'onglet **Playbooks** de la home du compte (§12) : son `h1` « Playbooks » et son sous-titre disparaissent — le héro porte le seul `h1`, et l'onglet dit déjà « Playbooks 8 » — la recherche et **Create a Playbook** passent dans la barre d'outils sous les onglets, et « Applied across N chats » y survit en ligne discrète. **Les cartes ne changent pas d'un octet** : verbes au survol, `Current`, `Switch`, garde de suppression, ghost card. Flag OFF, `/contexts` rend toujours cette page seule, avec son entête. Elle parle des marques où l'on n'est **pas** : la porter dans le chrome d'une seule était la contradiction que le switcher a créée. Donc `body.account-scope` ([`ROUTES.md`](ROUTES.md) § Deux niveaux de chrome) — pas de rail, une colonne, topbar réduite à **« ‹ Back to <marque> »** — et une seule porte d'entrée : le footer du switcher (**All playbooks**). La ligne de nav, elle, ne mène plus ici : elle est passée au singulier et pointe la fiche de la marque active (§12).
 
@@ -912,7 +912,7 @@ Trois choses que la tuile porte et que la ligne ne porte pas : les **compteurs**
 
 ⚠️ **Pas de ghost card** : `Create a Playbook` est le primaire de la barre d'outils juste au-dessus.
 
-**La tuile survit sur `/contexts` flag OFF**, avec son bandeau de couleur, son chip, ses compteurs, sa palette, sa barre de verbes au survol et sa ghost card : là, un Playbook est un **objet qu'on parcourt**, pas une ligne dans laquelle on pioche.
+**La tuile survit sur `/contexts` flag OFF**, avec sa vignette de marque, son chip, ses compteurs, sa palette, sa barre de verbes au survol et sa ghost card : là, un Playbook est un **objet qu'on parcourt**, pas une ligne dans laquelle on pioche.
 
 **Sous le flag, la carte EST le workspace** : cliquer dessus bascule sur cette marque et ouvre un **chat neuf** dedans (`?contextId=`, pas `/` — la home est un lanceur, le geste est « démarrer », pas « reprendre »). La fiche garde le crayon, avec les autres verbes au survol, et la marque active porte un tag **`Current`** dans le coin métadonnées.
 
@@ -945,7 +945,7 @@ Sections éditables inline (une à la fois, Save/Cancel avec snapshot) :
 
 1. **Brief** — Language(s), Business, Primary audience, Content style, Primary goal, Content action, CTA links.
 2. **Voice profile** — toggle **Guided ⇄ Write it yourself**. Guided = les cinq parties (`voiceSummary` · `voiceAlways` · `voiceNever` + `voiceAvoid` · `voiceByPost` · `voiceSometimes`), chaque liste éditée règle par règle (un cas = « Kind of post » + la règle ; les exemples tirés des posts restent affichés sous la règle, non éditables). ⚠️ Remplace Signature hooks + Closing patterns + Formatting + Emoji & casing (2026-10-15). Plus de switcher par langue sur Voice : les cinq parties sont agnostiques de la langue (limite assumée) ; seul le CTA reste par langue. Dropdown « Learn from… ».
-3. **Branding** — **Logo** (galerie + un défaut), Brand colors (hex swatches), Typography, Personality, Reference images, **Default look**.
+3. **Branding** — **Logo** (galerie + un défaut), Brand colors (hex swatches), Typography, Personality, Reference images (supprimer une image ne demande rien : le toast offre **Undo**, qui la remet à sa place, ui-polish PB-16), **Default look**. Le créateur de style demande _« Discard this style? »_ (_« Discard your changes? »_ en édition) sur Cancel ou le retour de la topbar quand quelque chose a changé.
 4. **Competitors** — voir ci-dessous.
 5. **Influencers** — même mécanique que Competitors, voir ci-dessous.
 

@@ -15,14 +15,14 @@
 // Styles and reference images save as they change, like the styles always did:
 // no Edit. The Generate block's look and formats wait for its Save changes.
 
-import { html, raw, toString } from "../lib/html.js?v=2564";
-import { navigate } from "../../../router.js?v=2564";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=2564";
-import { toast } from "../ui/toast.js?v=2564";
-import { renderEmpty } from "../ui/empty.js?v=2564";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=2564";
-import { shapesFor } from "../config/formats.js?v=2564";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=2564";
+import { html, raw, toString } from "../lib/html.js?v=2566";
+import { navigate } from "../../../router.js?v=2566";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=2566";
+import { toast } from "../ui/toast.js?v=2566";
+import { renderEmpty } from "../ui/empty.js?v=2566";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=2566";
+import { shapesFor } from "../config/formats.js?v=2566";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=2566";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -31,8 +31,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=2564";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=2564";
+} from "../state/playbook-brand.js?v=2566";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=2566";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -437,9 +437,20 @@ export function handlePlaybookImagesClick(event, playbookId, { onChange = () => 
     } else if (action === "new-style") navigate(creatorPath(playbookId, "new"));
     else if (action === "add-reference") addReferences(playbookId, onChange);
     else if (action === "delete-reference") {
-      deletePlaybookReference(playbookId, el.dataset.imstItem);
-      toast("Reference image deleted.");
-      onChange();
+      // No confirm, an Undo instead (ui-polish PB-16): one click to delete, one to take it back.
+      const undo = deletePlaybookReference(playbookId, el.dataset.imstItem);
+      if (undo) {
+        toast("Reference image deleted.", {
+          action: {
+            label: "Undo",
+            onClick: () => {
+              undo();
+              onChange();
+            },
+          },
+        });
+        onChange();
+      }
     }
     return true;
   }

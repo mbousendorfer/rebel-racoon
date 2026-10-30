@@ -15,32 +15,32 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=2564";
-import { delegate } from "../lib/delegate.js?v=2564";
-import { hashString } from "../lib/prng.js?v=2564";
-import { renderEmpty } from "../ui/empty.js?v=2564";
-import { preserveFocus } from "../ui/fields.js?v=2564";
-import { toast } from "../ui/toast.js?v=2564";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=2564";
-import { styleThumb } from "../ui/style-thumb.js?v=2564";
-import { openDialog } from "../ui/dialog.js?v=2564";
-import { menu } from "../ui/menu.js?v=2564";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=2564";
-import { QUICK_PRESETS, STYLE_PRESETS } from "../config/style-presets.js?v=2564";
-import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=2564";
-import { networkById } from "../config/networks.js?v=2564";
-import { copyService, imageGenerationService } from "../services/index.js?v=2564";
-import { unbranded, getPlaybookReferences } from "../state/playbook-brand.js?v=2564";
-import { resolveLayers } from "../render/layout.js?v=2564";
-import { svgToDataUrl } from "../render/visual.js?v=2564";
-import { REVEAL_MS } from "../../../archie-pixels.js?v=2564";
-import { splitVisual } from "../render/split.js?v=2564";
-import { bakeDoc } from "../render/edit-export.js?v=2564";
-import { subjectKindFor } from "../render/subjects.js?v=2564";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=2564";
-import { createEditor } from "./edit/editor.js?v=2564";
-import { mount as mountStyleCreator } from "./style-creator.js?v=2564";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=2564";
+import { html, raw, toString } from "../lib/html.js?v=2566";
+import { delegate } from "../lib/delegate.js?v=2566";
+import { hashString } from "../lib/prng.js?v=2566";
+import { renderEmpty } from "../ui/empty.js?v=2566";
+import { preserveFocus } from "../ui/fields.js?v=2566";
+import { toast } from "../ui/toast.js?v=2566";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=2566";
+import { styleThumb } from "../ui/style-thumb.js?v=2566";
+import { openDialog } from "../ui/dialog.js?v=2566";
+import { menu } from "../ui/menu.js?v=2566";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=2566";
+import { QUICK_PRESETS, STYLE_PRESETS } from "../config/style-presets.js?v=2566";
+import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=2566";
+import { networkById } from "../config/networks.js?v=2566";
+import { copyService, imageGenerationService } from "../services/index.js?v=2566";
+import { unbranded, getPlaybookReferences } from "../state/playbook-brand.js?v=2566";
+import { resolveLayers } from "../render/layout.js?v=2566";
+import { svgToDataUrl } from "../render/visual.js?v=2566";
+import { REVEAL_MS } from "../../../archie-pixels.js?v=2566";
+import { splitVisual } from "../render/split.js?v=2566";
+import { bakeDoc } from "../render/edit-export.js?v=2566";
+import { subjectKindFor } from "../render/subjects.js?v=2566";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=2566";
+import { createEditor } from "./edit/editor.js?v=2566";
+import { mount as mountStyleCreator } from "./style-creator.js?v=2566";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=2566";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -51,15 +51,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=2564";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=2564";
+} from "../state/store.js?v=2566";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=2566";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=2564";
+} from "../state/creation-actions.js?v=2566";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 const MAX_SLIDES = 10;
