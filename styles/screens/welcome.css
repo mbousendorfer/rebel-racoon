@@ -1393,9 +1393,10 @@ body:not(.onboarding) .welcome-intro__wordmark {
   border-top: 1px solid var(--ref-color-grey-20);
 }
 
-/* A part's cards arrive in a cascade, the nearest first. */
-.welcome-flow__sheet.is-scroll .welcome-review__card.is-dealt {
-  animation: welcome-review-cascade 0.55s cubic-bezier(0.22, 1, 0.36, 1) calc(min(var(--deal, 0), 4) * 70ms) both;
+/* A part's sheet arrives whole (redesign 2026-10-30: its blocks cascaded one
+   by one, a stack's motion on what is now one surface). */
+.welcome-flow__sheet.is-scroll .pb2-grid.is-dealt {
+  animation: welcome-review-cascade 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes welcome-review-cascade {
@@ -1406,7 +1407,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .welcome-flow__sheet.is-scroll .welcome-review__card.is-dealt {
+  .welcome-flow__sheet.is-scroll .pb2-grid.is-dealt {
     animation: none;
   }
 }

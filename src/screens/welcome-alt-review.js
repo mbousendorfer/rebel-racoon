@@ -29,12 +29,12 @@
 // The view repaints its whole DOM on most edits (a chip added…), so the sheet
 // is re-laid after every paint (a MutationObserver on the host).
 
-import { html, raw } from "../utils.js?v=2586";
-import { navigate } from "../router.js?v=2586";
-import { getDraft, patchDraft } from "../context-builder.js?v=2586";
-import { mount } from "../playbook-view.js?v=2586";
-import { parseHashParams } from "../url-state.js?v=2586";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2586";
+import { html, raw } from "../utils.js?v=2587";
+import { navigate } from "../router.js?v=2587";
+import { getDraft, patchDraft } from "../context-builder.js?v=2587";
+import { mount } from "../playbook-view.js?v=2587";
+import { parseHashParams } from "../url-state.js?v=2587";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2587";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -267,16 +267,12 @@ export function renderReview(target, sid, config, review) {
     body.scrollTop = 0;
   };
 
-  // A part's column arrives: its cards cascade in, the nearest first, the cover
-  // with them.
-  const deal = () => {
-    cards().forEach((el, i) => {
-      el.style.setProperty("--deal", i);
-      el.classList.add("is-dealt");
-    });
-  };
+  // A part's sheet arrives whole: one surface, one entrance (its blocks no
+  // longer cascade one by one). A repaint builds a new grid, without the class:
+  // the entrance never replays on an edit.
+  const deal = () => cards()[0]?.parentElement?.classList.add("is-dealt");
 
-  // Changing part: the column leaves, the new one cascades in.
+  // Changing part: the sheet leaves, the new one comes in.
   let moving = false;
   const switchPart = (id) => {
     if (moving) return;
