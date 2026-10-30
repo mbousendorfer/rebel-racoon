@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UI polish: before / after</title>
+    <style>
+      :root {
+        --ink: #1a2433;
+        --ink-2: #5d6a82;
+        --line: #d6dae0;
+        --bg: #f5f5f7;
+        --accent: #178dfe;
+        --surface: #fff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --ink: #eef0f3;
+          --ink-2: #aeb5c1;
+          --line: #3a4352;
+          --bg: #12161d;
+          --surface: #1b2029;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font:
+          14px/1.45 system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+      }
+      header {
+        padding: 24px 16px 8px;
+        max-width: 1320px;
+        margin: 0 auto;
+      }
+      h1 {
+        margin: 0 0 4px;
+        font-size: 22px;
+      }
+      p {
+        margin: 0 0 12px;
+        color: var(--ink-2);
+      }
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0 0;
+      }
+      .filters button {
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--ink);
+        border-radius: 999px;
+        padding: 6px 12px;
+        font: inherit;
+        cursor: pointer;
+      }
+      .filters button[aria-pressed="true"] {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .filters button:focus-visible,
+      input[type="range"]:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      main {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 8px 16px 48px;
+        display: grid;
+        gap: 24px;
+      }
+      figure {
+        margin: 0;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+      }
+      figcaption {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin: 0 0 8px;
+        font-weight: 600;
+      }
+      figcaption span {
+        font-weight: 400;
+        color: var(--ink-2);
+      }
+      .stage {
+        position: relative;
+        overflow: hidden;
+        border-radius: 4px;
+        line-height: 0;
+      }
+      .stage img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .stage .after {
+        position: absolute;
+        inset: 0;
+        clip-path: inset(0 0 0 var(--pos, 50%));
+      }
+      .stage .bar {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: var(--pos, 50%);
+        width: 2px;
+        background: var(--accent);
+      }
+      .labels {
+        display: flex;
+        justify-content: space-between;
+        color: var(--ink-2);
+        font-size: 12px;
+        margin-top: 6px;
+      }
+      input[type="range"] {
+        width: 100%;
+        margin: 8px 0 0;
+        accent-color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>UI polish: before / after</h1>
+      <p>
+        2026-10-29 → 30 · 38 changed screens (1440, and 1024 for the shell). Drag a slider: left of the line is before,
+        right is after. The write-up is in <a href="README.md">README.md</a>.
+      </p>
+      <div class="filters" role="group" aria-label="Filter by surface"></div>
+    </header>
+    <main></main>
+    <script>
+      const PAIRS = [
+        { shot: "chat@1024", surface: "Chat", file: "chat@1024.jpg" },
+        { shot: "chat@1440", surface: "Chat", file: "chat@1440.jpg" },
+        { shot: "draft-edit@1440", surface: "Draft card", file: "draft-edit@1440.jpg" },
+        { shot: "draft-feedback@1440", surface: "Draft card", file: "draft-feedback@1440.jpg" },
+        { shot: "empty-playbooks@1440", surface: "Playbooks catalogue", file: "empty-playbooks@1440.jpg" },
+        { shot: "empty-topics@1440", surface: "Topic Feed", file: "empty-topics@1440.jpg" },
+        { shot: "image-studio@1440", surface: "Image Studio", file: "image-studio@1440.jpg" },
+        { shot: "modal-add-source@1440", surface: "Dialogs", file: "modal-add-source@1440.jpg" },
+        { shot: "modal-analyze-profiles@1440", surface: "Dialogs", file: "modal-analyze-profiles@1440.jpg" },
+        { shot: "modal-bug@1440", surface: "Dialogs", file: "modal-bug@1440.jpg" },
+        { shot: "modal-chat-picker@1440", surface: "Dialogs", file: "modal-chat-picker@1440.jpg" },
+        { shot: "modal-connect-account@1440", surface: "Dialogs", file: "modal-connect-account@1440.jpg" },
+        { shot: "modal-feedback@1440", surface: "Dialogs", file: "modal-feedback@1440.jpg" },
+        { shot: "modal-fill-document@1440", surface: "Dialogs", file: "modal-fill-document@1440.jpg" },
+        { shot: "modal-save-folder@1440", surface: "Dialogs", file: "modal-save-folder@1440.jpg" },
+        { shot: "modal-search@1440", surface: "Dialogs", file: "modal-search@1440.jpg" },
+        { shot: "modal-shortcuts@1440", surface: "Dialogs", file: "modal-shortcuts@1440.jpg" },
+        { shot: "new-chat@1440", surface: "New chat", file: "new-chat@1440.jpg" },
+        { shot: "panel-clips@1440", surface: "Side panel", file: "panel-clips@1440.jpg" },
+        { shot: "panel-drafts@1440", surface: "Side panel", file: "panel-drafts@1440.jpg" },
+        { shot: "panel-ideas@1440", surface: "Side panel", file: "panel-ideas@1440.jpg" },
+        { shot: "panel-overview@1440", surface: "Side panel", file: "panel-overview@1440.jpg" },
+        { shot: "panel-sources@1024", surface: "Side panel", file: "panel-sources@1024.jpg" },
+        { shot: "panel-sources@1440", surface: "Side panel", file: "panel-sources@1440.jpg" },
+        { shot: "playbook-brand@1440", surface: "Playbook page", file: "playbook-brand@1440.jpg" },
+        { shot: "playbook-competitors@1440", surface: "Playbook page", file: "playbook-competitors@1440.jpg" },
+        { shot: "playbook-goals@1440", surface: "Playbook page", file: "playbook-goals@1440.jpg" },
+        { shot: "playbook-images@1440", surface: "Playbook page", file: "playbook-images@1440.jpg" },
+        { shot: "playbook-influencers@1440", surface: "Playbook page", file: "playbook-influencers@1440.jpg" },
+        { shot: "playbook-voice@1440", surface: "Playbook page", file: "playbook-voice@1440.jpg" },
+        { shot: "playbooks@1440", surface: "Playbooks catalogue", file: "playbooks@1440.jpg" },
+        { shot: "schedule-modal@1440", surface: "Schedule modal", file: "schedule-modal@1440.jpg" },
+        { shot: "topics-settings@1440", surface: "Topic Feed", file: "topics-settings@1440.jpg" },
+        { shot: "topics@1440", surface: "Topic Feed", file: "topics@1440.jpg" },
+        { shot: "welcome-intro@1440", surface: "Onboarding", file: "welcome-intro@1440.jpg" },
+        { shot: "welcome-ready@1440", surface: "Onboarding", file: "welcome-ready@1440.jpg" },
+        { shot: "welcome-recap@1440", surface: "Onboarding", file: "welcome-recap@1440.jpg" },
+        { shot: "welcome-voice@1440", surface: "Onboarding", file: "welcome-voice@1440.jpg" },
+      ];
+      const main = document.querySelector("main");
+      const filters = document.querySelector(".filters");
+      const surfaces = ["All", ...new Set(PAIRS.map((p) => p.surface))];
+      let current = "All";
+      function render() {
+        main.innerHTML = "";
+        for (const p of PAIRS.filter((x) => current === "All" || x.surface === current)) {
+          const fig = document.createElement("figure");
+          fig.innerHTML = `<figcaption>${p.shot}<span>${p.surface}</span></figcaption>
+      <div class="stage"><img src="before/${p.file}" alt="${p.shot}, before" loading="lazy" />
+      <img class="after" src="after/${p.file}" alt="${p.shot}, after" loading="lazy" /><div class="bar"></div></div>
+      <input type="range" min="0" max="100" value="50" aria-label="Before / after split for ${p.shot}" />
+      <div class="labels"><span>Before</span><span>After</span></div>`;
+          const stage = fig.querySelector(".stage");
+          fig
+            .querySelector("input")
+            .addEventListener("input", (e) => stage.style.setProperty("--pos", e.target.value + "%"));
+          main.append(fig);
+        }
+      }
+      for (const s of surfaces) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = s;
+        b.setAttribute("aria-pressed", String(s === current));
+        b.addEventListener("click", () => {
+          current = s;
+          filters
+            .querySelectorAll("button")
+            .forEach((x) => x.setAttribute("aria-pressed", String(x.textContent === s)));
+          render();
+        });
+        filters.append(b);
+      }
+      render();
+    </script>
+  </body>
+</html>

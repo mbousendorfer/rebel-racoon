@@ -39,12 +39,13 @@ Critères d'acceptation écrits **depuis l'app tournante** : chacun dit ce que l
 
 ## 🔍 Audits — instantanés datés
 
-| Document                                                                   | Date            | Sujet                                                                                                      |
-| -------------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------- |
-| [`audits/PROD-VS-PROTOTYPE.md`](audits/PROD-VS-PROTOTYPE.md)               | 2026-06-04      | Comparaison Studio (prod) ↔ Archie (proto) en 4 dimensions (visuel / fonctionnel / UX-copy / archi)        |
-| [`audits/PROD-CHANGES.md`](audits/PROD-CHANGES.md)                         | 2026-06-05      | Plan priorisé des changements à appliquer côté prod pour se rapprocher du proto                            |
-| [`audits/ALPHA-FEEDBACK.md`](audits/ALPHA-FEEDBACK.md)                     | 2026-06-10      | Retours des 12 sessions alpha (Mike Allton) : issues numérotées, statut dans le proto, solutions à choisir |
-| [`audits/image-studio-integration.md`](audits/image-studio-integration.md) | 2026-09-25 → 28 | L'Image Generator : rapport de phase 0 puis son journal (§9-12 = l'état courant, cf. FEATURES §18)         |
+| Document                                                                   | Date            | Sujet                                                                                                                                                                            |
+| -------------------------------------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`audits/PROD-VS-PROTOTYPE.md`](audits/PROD-VS-PROTOTYPE.md)               | 2026-06-04      | Comparaison Studio (prod) ↔ Archie (proto) en 4 dimensions (visuel / fonctionnel / UX-copy / archi)                                                                              |
+| [`audits/PROD-CHANGES.md`](audits/PROD-CHANGES.md)                         | 2026-06-05      | Plan priorisé des changements à appliquer côté prod pour se rapprocher du proto                                                                                                  |
+| [`audits/ALPHA-FEEDBACK.md`](audits/ALPHA-FEEDBACK.md)                     | 2026-06-10      | Retours des 12 sessions alpha (Mike Allton) : issues numérotées, statut dans le proto, solutions à choisir                                                                       |
+| [`audits/image-studio-integration.md`](audits/image-studio-integration.md) | 2026-09-25 → 28 | L'Image Generator : rapport de phase 0 puis son journal (§9-12 = l'état courant, cf. FEATURES §18)                                                                               |
+| [`audits/2026-10-30-ui-polish/`](audits/2026-10-30-ui-polish/README.md)    | 2026-10-29 → 30 | UI polish en boucle : 13 surfaces sur 78 captures reproductibles, 61 batches, score 7.08 → 8.37 ; avant / après (`compare.html`), régressions corrigées, 36 décisions à arbitrer |
 
 Les trois premiers précèdent le workspace Playbook, le Topic Feed, le partage, Insights et l'Image Generator ; `PROD-VS-PROTOTYPE` décrit encore `/settings`, supprimé depuis.
 
