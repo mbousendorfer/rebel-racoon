@@ -1365,6 +1365,100 @@
   margin: var(--ref-spacing-lg) 0 var(--ref-spacing-md);
 }
 
+/* A network's voice being learned, in its card (the run's voice review): the
+   Archie mark, the title, then the steps — done (check), under way (bold,
+   an orange dot that breathes: orange = AI), to come. On the ground like the
+   empty state it replaces, no card. */
+.pb2-block.pb2-voice-learning {
+  align-items: center;
+  gap: 0;
+  padding: var(--ref-spacing-lg) 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  text-align: center;
+}
+.pb2-voice-learning__mark {
+  --archie-loader-size: 56px;
+}
+.pb2-voice-learning__title {
+  margin: var(--ref-spacing-md) 0 var(--ref-spacing-md);
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+}
+.pb2-voice-learning__steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: start;
+}
+.pb2-voice-learning__steps li {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+}
+.pb2-voice-learning__steps li > i,
+.pb2-voice-learning__dot {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  font-size: var(--sys-icon-css-sm);
+  color: var(--ref-color-grey-100);
+}
+.pb2-voice-learning__dot::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ref-color-grey-20);
+}
+.pb2-voice-learning__steps li.is-current {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+.pb2-voice-learning__steps li.is-current .pb2-voice-learning__dot::before {
+  width: 8px;
+  height: 8px;
+  background: var(--app-archie-mark);
+  animation: pb2-voice-breathe 1.2s ease-in-out infinite;
+}
+@keyframes pb2-voice-breathe {
+  50% {
+    transform: scale(1.5);
+    opacity: 0.6;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pb2-voice-learning__steps li.is-current .pb2-voice-learning__dot::before {
+    animation: none;
+  }
+}
+
+/* What I propose, in the card: the rules (learnedVoiceHtml's own frame), then
+   its two answers, right-grouped. */
+.pb2-block.pb2-voice-proposal {
+  border: 0;
+  background: none;
+  box-shadow: none;
+  padding: 0;
+}
+.pb2-voice-proposal__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-md);
+}
+
 .pb2-voice-empty__title {
   margin: 0;
   font-size: var(--sys-text-style-h3-size);

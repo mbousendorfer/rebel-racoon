@@ -33,12 +33,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2700";
-import { navigate } from "../router.js?v=2700";
-import { getDraft, patchDraft } from "../context-builder.js?v=2700";
-import { mount } from "../playbook-view.js?v=2700";
-import { parseHashParams } from "../url-state.js?v=2700";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2700";
+import { html, raw } from "../utils.js?v=2701";
+import { navigate } from "../router.js?v=2701";
+import { getDraft, patchDraft } from "../context-builder.js?v=2701";
+import { mount } from "../playbook-view.js?v=2701";
+import { parseHashParams } from "../url-state.js?v=2701";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2701";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -355,16 +355,20 @@ export function renderReview(target, sid, config, review) {
     // has no « Looks good » to give: its way on is a ghost grey button under
     // the card's options, not the bar's primary (2026-11-04, asked: « the
     // button should be under the options, but more as a grey ghost button »).
-    const skip = part.skipLabel?.();
-    barEl.hidden = !!skip;
-    barEl.innerHTML = skip
-      ? ""
-      : html`
-          <button type="button" class="ap-button primary blue" data-review-confirm="${part.id}">
-            <i class="ap-icon-check"></i><span>${looksGood(part.id)}</span>
-          </button>
-        `;
+    // A card with its own answers (`data-review-own-actions`: a voice being
+    // learned or proposed) gets neither.
     const card = list[index];
+    const own = !!card?.matches("[data-review-own-actions]");
+    const skip = !own && part.skipLabel?.();
+    barEl.hidden = !!skip || own;
+    barEl.innerHTML =
+      skip || own
+        ? ""
+        : html`
+            <button type="button" class="ap-button primary blue" data-review-confirm="${part.id}">
+              <i class="ap-icon-check"></i><span>${looksGood(part.id)}</span>
+            </button>
+          `;
     if (skip && card && !card.querySelector(":scope > .welcome-review__skip"))
       card.insertAdjacentHTML(
         "beforeend",
