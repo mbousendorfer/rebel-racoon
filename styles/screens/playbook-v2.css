@@ -1365,82 +1365,277 @@
   margin: var(--ref-spacing-lg) 0 var(--ref-spacing-md);
 }
 
-/* A network's voice being learned, in its card (the run's voice review): the
-   Archie mark, the title, then the steps — done (check), under way (bold,
-   an orange dot that breathes: orange = AI), to come. On the ground like the
-   empty state it replaces, no card. */
+/* A network's voice being learned, in its card (the run's voice review): a
+   scene in the run's language (welcome-explainer.css's objects, its olive
+   thread, its butter seam). On the ground like the empty state it replaces. */
 .pb2-block.pb2-voice-learning {
   align-items: center;
-  gap: 0;
-  padding: var(--ref-spacing-lg) 0;
+  padding: var(--ref-spacing-md) 0;
   border: 0;
   background: none;
   box-shadow: none;
-  text-align: center;
 }
-.pb2-voice-learning__mark {
-  --archie-loader-size: 56px;
-}
-.pb2-voice-learning__title {
-  margin: var(--ref-spacing-md) 0 var(--ref-spacing-md);
-  font-size: var(--sys-text-style-h3-size);
-  line-height: var(--sys-text-style-h3-line-height);
-  font-weight: var(--sys-text-style-h3-weight);
-  color: var(--ref-color-grey-100);
-}
-.pb2-voice-learning__steps {
+.pb2-vl {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* What I read: on top, lifted while I read it, a butter scan sweeping it;
+   it steps back once read. */
+.pb2-vl__source {
+  position: relative;
+  width: 100%;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+.is-step-0 .pb2-vl__source {
+  animation: wx-pop 0.5s ease both;
+}
+.pb2-voice-learning:not(.is-step-0) .pb2-vl__source {
+  opacity: 0.55;
+  transform: scale(0.96);
+}
+.pb2-vl__scan {
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  top: 0;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--app-butter-accent);
+  box-shadow: 0 0 12px 2px var(--app-butter);
+  opacity: 0;
+  pointer-events: none;
+}
+.is-step-0 .pb2-vl__scan {
+  animation: pb2-vl-scan 2.2s ease-in-out infinite;
+}
+@keyframes pb2-vl-scan {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  15%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* The account's posts, fanned: the front one readable, two behind it. */
+.pb2-vl__fan {
+  display: grid;
+  padding: 10px 24px 0;
+}
+.pb2-vl__post {
+  grid-area: 1 / 1;
+  display: grid;
+  gap: 8px;
   text-align: start;
 }
-.pb2-voice-learning__steps li {
+.pb2-vl__post.is-side:nth-child(2) {
+  transform: translate(-18px, -8px) rotate(-4deg);
+}
+.pb2-vl__post.is-side:nth-child(3) {
+  transform: translate(18px, -8px) rotate(4deg);
+}
+.pb2-vl__post.is-front {
+  z-index: 1;
+}
+.pb2-vl__post,
+.pb2-vl__doc,
+.pb2-vl__print {
+  gap: 8px;
+}
+/* An object's head: its mark, then a line for a name. */
+.pb2-vl__head {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-80);
+  gap: 8px;
 }
-.pb2-voice-learning__steps li > i,
-.pb2-voice-learning__dot {
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: 16px;
+.pb2-vl__head .pb2-vl__bar {
+  background: var(--ref-color-grey-20);
+}
+.pb2-vl__pills {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.pb2-vl__pills i {
+  width: 48px;
   height: 16px;
-  font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-100);
+  border-radius: 999px;
+  background: var(--ref-color-purple-10);
 }
-.pb2-voice-learning__dot::before {
-  content: "";
+.pb2-vl__doc {
+  height: auto;
+  margin: 0 24px;
+}
+.pb2-vl__print {
+  margin: 0 12px;
+  text-align: center;
+}
+.pb2-vl__print .wx-print__head {
+  text-align: start;
+}
+
+/* Placeholder lines (the document's text, the voice not written yet). */
+.pb2-vl__bar {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--ref-color-grey-10);
+}
+
+/* The olive thread, a particle running down it. */
+.pb2-vl__thread {
+  position: relative;
+  width: 2px;
+  height: 28px;
+  background: var(--app-butter-accent);
+  opacity: 0.8;
+}
+.pb2-vl__thread i {
+  position: absolute;
+  left: -2px;
+  top: 0;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--ref-color-grey-20);
+  background: var(--app-butter-accent);
+  animation: pb2-vl-run 1.6s ease-in-out infinite;
 }
-.pb2-voice-learning__steps li.is-current {
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-.pb2-voice-learning__steps li.is-current .pb2-voice-learning__dot::before {
-  width: 8px;
-  height: 8px;
-  background: var(--app-archie-mark);
-  animation: pb2-voice-breathe 1.2s ease-in-out infinite;
-}
-@keyframes pb2-voice-breathe {
-  50% {
-    transform: scale(1.5);
-    opacity: 0.6;
+@keyframes pb2-vl-run {
+  from {
+    transform: translateY(-3px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  to {
+    transform: translateY(25px);
+    opacity: 0;
   }
 }
+
+/* My seam: what I'm doing now, and where I am in the three steps. */
+.pb2-vl__seam-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+.pb2-vl__seam {
+  color: var(--ref-color-grey-100);
+  animation: wx-pop 0.4s ease both;
+}
+.pb2-vl__pips {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pb2-vl__pips li {
+  width: 16px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ref-color-grey-20);
+}
+.pb2-vl__pips li.is-done {
+  background: var(--ref-color-grey-100);
+}
+.pb2-vl__pips li.is-current {
+  width: 28px;
+  background: var(--app-archie-mark);
+}
+
+/* The network's voice, taking shape: it rises as it's written. */
+.pb2-vl__result {
+  box-sizing: border-box;
+  display: grid;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: 14px;
+  background: var(--ref-color-white);
+  box-shadow: var(--app-shadow-card), var(--app-shadow-popover-md);
+  text-align: start;
+  transition:
+    opacity 0.4s ease,
+    box-shadow 0.4s ease;
+}
+.is-step-0 .pb2-vl__result {
+  opacity: 0.6;
+}
+.is-step-2 .pb2-vl__result {
+  border-color: transparent;
+  box-shadow: var(--app-shadow-subtle), var(--app-shadow-modal);
+}
+.pb2-vl__result-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-body-bold-size);
+  color: var(--ref-color-grey-100);
+}
+.pb2-vl__result-head i {
+  font-size: var(--sys-icon-css-md);
+}
+.pb2-vl__result-body {
+  display: grid;
+  gap: 6px;
+  min-height: 34px;
+}
+.pb2-vl__wave {
+  justify-self: center;
+  max-width: 100%;
+}
+.pb2-vl__rules {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pb2-vl__rules li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--app-butter);
+  animation: wx-type 1s ease-out var(--d) both;
+}
+.pb2-vl__rules li i {
+  flex-shrink: 0;
+  color: var(--app-butter-accent);
+}
+.pb2-vl__rules .pb2-vl__bar {
+  background: var(--app-butter-accent);
+  opacity: 0.4;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .pb2-voice-learning__steps li.is-current .pb2-voice-learning__dot::before {
-    animation: none;
+  .pb2-voice-learning *,
+  .pb2-voice-learning *::before {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition: none !important;
+  }
+  .pb2-vl__scan,
+  .pb2-vl__thread i {
+    display: none;
   }
 }
 

@@ -13,17 +13,17 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2703";
-import { startDemo } from "../demo-flow.js?v=2703";
-import { isFlagOn } from "../feature-flags.js?v=2703";
-import { networkVoiceOn } from "../voice-parts.js?v=2703";
-import { html, raw } from "../utils.js?v=2703";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2703";
-import { navigate } from "../router.js?v=2703";
-import { setHandoff } from "../handoff.js?v=2703";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2703";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2703";
-import { paintExplainer } from "./welcome-alt-explainer.js?v=2703";
+import "../archie-pixels.js?v=2706";
+import { startDemo } from "../demo-flow.js?v=2706";
+import { isFlagOn } from "../feature-flags.js?v=2706";
+import { networkVoiceOn } from "../voice-parts.js?v=2706";
+import { html, raw } from "../utils.js?v=2706";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2706";
+import { navigate } from "../router.js?v=2706";
+import { setHandoff } from "../handoff.js?v=2706";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2706";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2706";
+import { paintExplainer } from "./welcome-alt-explainer.js?v=2706";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
