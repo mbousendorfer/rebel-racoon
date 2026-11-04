@@ -1402,6 +1402,9 @@ body:not(.onboarding) .welcome-intro__wordmark {
 .welcome-review__skip {
   display: flex;
   justify-content: center;
+  /* The empty state stacks with no gap (its parts carry their own margins):
+     the same step as between its sentence and its options. */
+  margin-top: var(--ref-spacing-md);
 }
 
 .welcome-review__count {
