@@ -1358,40 +1358,44 @@ body:not(.onboarding) .welcome-intro__wordmark {
   color: var(--ref-color-grey-80);
 }
 
-/* The voice review's networks, under the default voice: each row hangs from
-   it on a grey-20 rule (a tree, not an accent bar), its Customize beside it. */
-.welcome-flow__options > li.is-child {
-  position: relative;
+/* The voice review's networks: a row each, its « Own voice » toggle inside the
+   same frame. On, the row opens its part (the button fills the row); off, the
+   row is only a line — no hover, nothing to open. */
+.welcome-review__row {
+  padding: 0;
+  cursor: default;
+}
+.welcome-review__row-main {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xxs);
-  padding-left: var(--ref-spacing-lg);
-}
-.welcome-flow__options > li.is-child::before {
-  content: "";
-  position: absolute;
-  left: var(--ref-spacing-sm);
-  top: calc(-1 * var(--ref-spacing-xxs));
-  bottom: 0;
-  border-left: 1px solid var(--ref-color-grey-20);
-}
-.welcome-flow__options > li.is-child:last-child::before {
-  bottom: 50%;
-}
-.welcome-flow__options > li.is-child::after {
-  content: "";
-  position: absolute;
-  left: var(--ref-spacing-sm);
-  top: 50%;
-  width: calc(var(--ref-spacing-lg) - var(--ref-spacing-sm));
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-.welcome-flow__options > li.is-child > .welcome-flow__option {
+  gap: var(--ref-spacing-xs);
   flex: 1 1 auto;
   min-width: 0;
+  align-self: stretch;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  background: none;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
 }
-.welcome-review__action {
+.welcome-review__row.is-inert .welcome-review__row-main {
+  cursor: default;
+}
+/* A ticked toggle is not a picked option (.welcome-flow__option:has(input:checked)):
+   only the part on screen, a hover on a part, or the keyboard turn the frame blue. */
+.welcome-review__row:has(input:checked):not([aria-current="true"]),
+.welcome-review__row.is-inert:hover {
+  border-color: var(--ref-color-grey-20);
+}
+.welcome-review__row:not(.is-inert):hover,
+.welcome-review__row:has(:focus-visible) {
+  border-color: var(--ref-color-electric-blue-100);
+}
+.welcome-review__toggle {
   flex-shrink: 0;
+  padding-right: var(--ref-spacing-sm);
 }
 
 .welcome-review__count {

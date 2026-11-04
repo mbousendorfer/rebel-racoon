@@ -1278,25 +1278,6 @@
   color: var(--ref-color-grey-80);
 }
 
-/* A network on the default voice (the run's voice review): that voice read
-   only, part by part inside the one card, Customize at its head. */
-.pb2-voice-follow__part + .pb2-voice-follow__part {
-  margin-top: var(--ref-spacing-sm);
-  padding-top: var(--ref-spacing-sm);
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-.pb2-voice-follow__title {
-  margin: 0 0 var(--ref-spacing-xxxs);
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-.pb2-voice-follow__cta {
-  flex-shrink: 0;
-  margin-left: auto;
-}
-
 .pb2-voice-net__foot {
   display: flex;
   justify-content: flex-end;

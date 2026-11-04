@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2693";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2693";
-import { conceptHint } from "./concepts.js?v=2693";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2695";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2695";
+import { conceptHint } from "./concepts.js?v=2695";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2693";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2693";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2693";
-import { isFlagOn } from "./feature-flags.js?v=2693";
-import { clipLookOf } from "./videos-store.js?v=2693";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2693";
-import { parseHashParams } from "./url-state.js?v=2693";
+} from "./playbook-brand-kit.js?v=2695";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2695";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2695";
+import { isFlagOn } from "./feature-flags.js?v=2695";
+import { clipLookOf } from "./videos-store.js?v=2695";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2695";
+import { parseHashParams } from "./url-state.js?v=2695";
 import {
   isListPart,
   voiceParts,
@@ -57,13 +57,13 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2693";
-import { showToast } from "./components/toast.js?v=2693";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2693";
-import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2693";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2693";
-import { consumeHandoff } from "./handoff.js?v=2693";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2693";
+} from "./voice-parts.js?v=2695";
+import { showToast } from "./components/toast.js?v=2695";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2695";
+import { voiceChoices, saveNetworkVoice, useDefaultVoice } from "./network-voice-flow.js?v=2695";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2695";
+import { consumeHandoff } from "./handoff.js?v=2695";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2695";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -71,7 +71,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2693";
+} from "./social-profiles.js?v=2695";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2913,50 +2913,27 @@ function voiceWaysCard(
   });
 }
 
-// The run's Voice review (cfg.networkPicker — 2026-10-29): a card for every
-// network without a voice of its own. Customized and empty: the ways to fill
-// it, as tiles. Not customized: the default voice it writes in, read only, and
-// one Customize (2026-11-04, asked: « j'arrive pas à comprendre que je vais
-// customiser des voices pour les divers networks » — a DS multi-select on the
-// left picked the networks before, and a network left out of it vanished).
-// Filled: its part opens the voice in edit (editVoiceNetwork).
+// The run's Voice review (cfg.networkPicker — 2026-10-29): a card per
+// network picked, the ways to fill its voice as tiles; once it has rules, its
+// part opens them in edit (setVoiceNetwork). Which networks get a voice of
+// their own is picked on the review's left, in a DS multi-select
+// (welcome-alt-recap, 2026-11-04, asked: « ça pourrait pas juste être un select
+// avec un dropdown à choix multiple ? » — a « Your networks » part with a card
+// of checkboxes, and an illustration under it, came before).
 // `voiceRulesFor` is the draft's (never saved): a network out of it keeps the
 // default voice, chosen; in it and left empty, the default voice too, at save.
 function networkPickerCards(data, nets) {
   if (!networkVoiceOn() || !nets.length) return [];
   const picked = data.voiceRulesFor || [];
+  // A network picked with an empty voice: its card is the ways to fill it.
   return nets
-    .filter((net) => !networkVoiceFilled(data, net))
+    .filter((net) => picked.includes(net) && !networkVoiceFilled(data, net))
     .map((net) =>
-      picked.includes(net)
-        ? voiceWaysCard(net, {
-            empty: `Until you do, I write your ${networkLabel(net)} posts in your default voice. Start from one of these.`,
-            className: `pb2-voice-net pb2-voice-net--${net}`,
-          })
-        : voiceFollowsDefault(data, net),
+      voiceWaysCard(net, {
+        empty: `Until you do, I write your ${networkLabel(net)} posts in your default voice. Start from one of these.`,
+        className: `pb2-voice-net pb2-voice-net--${net}`,
+      }),
     );
-}
-
-// A network on the default voice: the one way to change it at the card's
-// head, then that voice as its posts get it, part by part, read only (one
-// card, the parts as its sections — no card in a card).
-function voiceFollowsDefault(data, net) {
-  const label = networkLabel(net);
-  const sections = voiceParts()
-    .map(
-      ({ field, title }) => `<div class="pb2-voice-follow__part">
-        <h4 class="pb2-voice-follow__title">${esc(title)}</h4>
-        ${pb2PartBody(field, baseValue(data, field))}
-      </div>`,
-    )
-    .join("");
-  return pb2Block(`${label} uses your default voice`, sections, {
-    wide: true,
-    icon: networkIcon(net),
-    aside: `<button type="button" class="ap-button stroked blue pb2-voice-follow__cta" data-pb2-voice-customize="${esc(net)}">Customize for ${esc(label)}</button>`,
-    hint: `I write your ${label} posts in it. Customize ${label} when it should sound different.`,
-    className: `pb2-voice-net pb2-voice-follow pb2-voice-net--${net}`,
-  });
 }
 
 // A network's own voice with something in it — empty, it still has to be filled.
@@ -3757,8 +3734,6 @@ function onClick(event) {
     useDefaultVoice(cfg.getData().id, keepVoice.dataset.pb2VoiceKeep);
     return repaint();
   }
-  const customize = event.target.closest("[data-pb2-voice-customize]");
-  if (customize) return setNetworkRules(customize.dataset.pb2VoiceCustomize, true);
   const resetVoice = event.target.closest("[data-pb2-voice-reset]");
   if (resetVoice && cfg.networkPicker) return setNetworkRules(resetVoice.dataset.pb2VoiceReset, false);
   if (resetVoice)

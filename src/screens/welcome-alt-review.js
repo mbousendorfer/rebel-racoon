@@ -33,12 +33,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2693";
-import { navigate } from "../router.js?v=2693";
-import { getDraft, patchDraft } from "../context-builder.js?v=2693";
-import { mount } from "../playbook-view.js?v=2693";
-import { parseHashParams } from "../url-state.js?v=2693";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2693";
+import { html, raw } from "../utils.js?v=2695";
+import { navigate } from "../router.js?v=2695";
+import { getDraft, patchDraft } from "../context-builder.js?v=2695";
+import { mount } from "../playbook-view.js?v=2695";
+import { parseHashParams } from "../url-state.js?v=2695";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2695";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -54,11 +54,12 @@ const GLIDE_MS = 720; // a card glides to the middle
 // `review`: { step, title, sub, parts (a list, or a function for parts that
 // come and go; a part's `open()` opens its tab in edit itself, its `badge` says
 // what's left to do, its `group` / `groupHint` head a run of parts —
-// what's left to do; `child`: it hangs under the part above it, the voice
-// review's networks under the default voice; `action`: { label }, a button
-// beside its row — the voice review's Customize), next: { label, go }, back,
-// onWay?, onAction?(partId) (a row's action), start? (the part to open
-// first), progress? (false: no step dots) }.
+// what's left to do), rows? (the list on the left when it holds more than the
+// parts: a row with `inert` is shown, never opened nor confirmed — the voice
+// review's networks left on the default voice; a row's `toggle`: { label, on },
+// a DS toggle in it, answered by onToggle(partId, on)), next: { label, go },
+// back, onWay?, start? (the part to open first), progress? (false: no step
+// dots) }.
 // `onWay(partId, way, refresh)`: a card's tile was picked (the voice review);
 // `refresh()` repaints the part with what it changed.
 export function renderReview(target, sid, config, review) {
@@ -94,10 +95,9 @@ export function renderReview(target, sid, config, review) {
       <h1 class="welcome-flow__title" id="welcomeFlowTitle">${review.title}</h1>
       <p class="welcome-intro__sub">${review.sub}</p>
       <ul class="welcome-flow__options">
-        ${parts().map((t, i, all) => {
+        ${(review.rows?.() || parts()).map((t, i, all) => {
           const here = t.id === current();
-          // A group opens with its name and a sentence (the voice review:
-          // the default voice, then the networks).
+          // A group opens with its name and a sentence.
           // Only when there are groups to tell apart: a group of one part was a
           // kicker and a hint repeating the sub-line above it.
           const groupLi = (name, hint) =>
@@ -108,41 +108,58 @@ export function renderReview(target, sid, config, review) {
           const groups = new Set(all.map((p) => p.group).filter(Boolean));
           const group =
             t.group && groups.size > 1 && t.group !== all[i - 1]?.group ? groupLi(t.group, t.groupHint) : "";
-          const mark = done.has(t.id)
-            ? `<span class="welcome-review__check${t.id === justChecked ? " is-new" : ""}" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
-            : here && count > 1 && !calm
-              ? `<span class="welcome-review__count">${index + 1} of ${count}</span>`
-              : "";
+          const mark = t.inert
+            ? ""
+            : done.has(t.id)
+              ? `<span class="welcome-review__check${t.id === justChecked ? " is-new" : ""}" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
+              : here && count > 1 && !calm
+                ? `<span class="welcome-review__count">${index + 1} of ${count}</span>`
+                : "";
+          const inner = html`
+            <span class="welcome-flow__glyph is-icon is-tinted" style="${tintOf(t.id)}"
+              ><i class="${t.icon}" aria-hidden="true"></i
+            ></span>
+            <span class="welcome-flow__option-text">
+              <span class="welcome-flow__option-title">${t.title}</span>
+              ${t.lead ? raw(html`<span class="welcome-flow__option-desc">${t.lead}</span>`) : ""}
+            </span>
+            ${t.badge && !done.has(t.id) ? raw(`<span class="ap-status orange">${t.badge}</span>`) : ""} ${raw(mark)}
+          `;
+          // A row with a toggle: the row opens its part (when it is one), the
+          // toggle beside it inside the same frame — never a control in a button.
+          if (t.toggle)
+            return html`
+              ${raw(group)}
+              <li>
+                <div
+                  class="welcome-flow__option welcome-review__row${t.inert ? " is-inert" : ""}"
+                  aria-current="${here && !t.inert ? "true" : "false"}"
+                >
+                  ${t.inert
+                    ? raw(html`<span class="welcome-review__row-main">${raw(inner)}</span>`)
+                    : raw(
+                        html`<button type="button" class="welcome-review__row-main" data-review-part="${t.id}">
+                          ${raw(inner)}
+                        </button>`,
+                      )}
+                  <label class="ap-toggle-container welcome-review__toggle">
+                    <input type="checkbox" data-review-toggle="${t.id}" ${t.toggle.on ? raw("checked") : ""} /><i></i
+                    ><span>${t.toggle.label}</span>
+                  </label>
+                </div>
+              </li>
+            `;
           return html`
             ${raw(group)}
-            <li class="${t.child ? "is-child" : ""}">
+            <li>
               <button
                 type="button"
                 class="welcome-flow__option"
                 data-review-part="${t.id}"
                 aria-current="${here ? "true" : "false"}"
               >
-                <span class="welcome-flow__glyph is-icon is-tinted" style="${tintOf(t.id)}"
-                  ><i class="${t.icon}" aria-hidden="true"></i
-                ></span>
-                <span class="welcome-flow__option-text">
-                  <span class="welcome-flow__option-title">${t.title}</span>
-                  <span class="welcome-flow__option-desc">${t.lead}</span>
-                </span>
-                ${t.badge && !done.has(t.id) ? raw(`<span class="ap-status orange">${t.badge}</span>`) : ""}
-                ${raw(mark)}
+                ${raw(inner)}
               </button>
-              ${t.action
-                ? raw(
-                    html`<button
-                      type="button"
-                      class="ap-button ghost blue welcome-review__action"
-                      data-review-action="${t.id}"
-                    >
-                      <span>${t.action.label}</span>
-                    </button>`,
-                  )
-                : ""}
             </li>
           `;
         })}
@@ -467,14 +484,8 @@ export function renderReview(target, sid, config, review) {
   };
 
   const onClick = (e) => {
-    // A row's action (the voice review's Customize): it changes the part, then
-    // opens it. The button goes with the change: focus lands on its row.
-    const action = e.target.closest("[data-review-action]")?.dataset.reviewAction;
-    if (action) {
-      review.onAction?.(action);
-      openPart(action);
-      return target.querySelector(`[data-review-part="${CSS.escape(action)}"]`)?.focus({ preventScroll: true });
-    }
+    // A row's toggle answers on `change` (below), not here.
+    if (e.target.closest(".welcome-review__toggle")) return;
     const part = e.target.closest("[data-review-part]")?.dataset.reviewPart;
     if (part) {
       if (part !== current()) switchPart(part);
@@ -495,6 +506,21 @@ export function renderReview(target, sid, config, review) {
     if (e.target.closest("[data-flow-back]")) return navigate(review.back);
   };
   target.addEventListener("click", onClick);
+  // A row's toggle (the voice review's « Own voice »): on, the row becomes a
+  // part and opens; off, it goes back to a row — the default voice opens when
+  // it was the one on screen.
+  const onChange = (e) => {
+    const id = e.target.closest("[data-review-toggle]")?.dataset.reviewToggle;
+    if (!id) return;
+    const on = e.target.checked;
+    const wasHere = id === current();
+    review.onToggle?.(id, on);
+    if (on) openPart(id);
+    else if (wasHere) openPart(parts()[0].id);
+    else shell.paint();
+    target.querySelector(`[data-review-toggle="${CSS.escape(id)}"]`)?.focus({ preventScroll: true });
+  };
+  target.addEventListener("change", onChange);
   // The keyboard's ↑ / ↓ browse too — unless you're typing in a field.
   const onKey = (e) => {
     if (calm) return;
@@ -518,6 +544,7 @@ export function renderReview(target, sid, config, review) {
     unmount?.();
     shell.cleanup();
     target.removeEventListener("click", onClick);
+    target.removeEventListener("change", onChange);
     document.removeEventListener("keydown", onKey);
   };
 }
