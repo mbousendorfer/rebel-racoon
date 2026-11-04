@@ -33,12 +33,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2695";
-import { navigate } from "../router.js?v=2695";
-import { getDraft, patchDraft } from "../context-builder.js?v=2695";
-import { mount } from "../playbook-view.js?v=2695";
-import { parseHashParams } from "../url-state.js?v=2695";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2695";
+import { html, raw } from "../utils.js?v=2696";
+import { navigate } from "../router.js?v=2696";
+import { getDraft, patchDraft } from "../context-builder.js?v=2696";
+import { mount } from "../playbook-view.js?v=2696";
+import { parseHashParams } from "../url-state.js?v=2696";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2696";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -323,11 +323,29 @@ export function renderReview(target, sid, config, review) {
     });
     navEl.innerHTML = count && !calm ? nav(list) : "";
     const part = partOf(current());
-    barEl.innerHTML = html`
-      <button type="button" class="ap-button primary blue" data-review-confirm="${part.id}">
-        <i class="ap-icon-check"></i><span>${looksGood(part.id)}</span>
-      </button>
-    `;
+    // A part with nothing in it (`skipLabel`: the voice review's empty network)
+    // has no « Looks good » to give: its way on is a ghost grey button under
+    // the card's options, not the bar's primary (2026-11-04, asked: « the
+    // button should be under the options, but more as a grey ghost button »).
+    const skip = part.skipLabel?.();
+    barEl.hidden = !!skip;
+    barEl.innerHTML = skip
+      ? ""
+      : html`
+          <button type="button" class="ap-button primary blue" data-review-confirm="${part.id}">
+            <i class="ap-icon-check"></i><span>${looksGood(part.id)}</span>
+          </button>
+        `;
+    const card = list[index];
+    if (skip && card && !card.querySelector(":scope > .welcome-review__skip"))
+      card.insertAdjacentHTML(
+        "beforeend",
+        html`<div class="welcome-review__skip">
+          <button type="button" class="ap-button ghost grey" data-review-confirm="${part.id}">
+            <span>${skip}</span>
+          </button>
+        </div>`,
+      );
     applying = false;
     shell.paint();
     if (hook && !target.contains(document.activeElement)) {

@@ -1398,6 +1398,12 @@ body:not(.onboarding) .welcome-intro__wordmark {
   padding-right: var(--ref-spacing-sm);
 }
 
+/* An empty part's way on, under its options (the voice review's empty network). */
+.welcome-review__skip {
+  display: flex;
+  justify-content: center;
+}
+
 .welcome-review__count {
   flex-shrink: 0;
   font-size: var(--sys-text-style-caption-bold-size);
