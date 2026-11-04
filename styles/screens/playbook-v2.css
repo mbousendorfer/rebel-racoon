@@ -1444,21 +1444,6 @@
   }
 }
 
-/* What I propose, in the card: the rules (learnedVoiceHtml's own frame), then
-   its two answers, right-grouped. */
-.pb2-block.pb2-voice-proposal {
-  border: 0;
-  background: none;
-  box-shadow: none;
-  padding: 0;
-}
-.pb2-voice-proposal__foot {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--ref-spacing-xs);
-  margin-top: var(--ref-spacing-md);
-}
-
 .pb2-voice-empty__title {
   margin: 0;
   font-size: var(--sys-text-style-h3-size);

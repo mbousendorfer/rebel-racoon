@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2702";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2702";
-import { conceptHint } from "./concepts.js?v=2702";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2703";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2703";
+import { conceptHint } from "./concepts.js?v=2703";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2702";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2702";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2702";
-import { isFlagOn } from "./feature-flags.js?v=2702";
-import { clipLookOf } from "./videos-store.js?v=2702";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2702";
-import { parseHashParams } from "./url-state.js?v=2702";
+} from "./playbook-brand-kit.js?v=2703";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2703";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2703";
+import { isFlagOn } from "./feature-flags.js?v=2703";
+import { clipLookOf } from "./videos-store.js?v=2703";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2703";
+import { parseHashParams } from "./url-state.js?v=2703";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2702";
-import { showToast } from "./components/toast.js?v=2702";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2702";
+} from "./voice-parts.js?v=2703";
+import { showToast } from "./components/toast.js?v=2703";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2703";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -67,10 +67,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2702";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2702";
-import { consumeHandoff } from "./handoff.js?v=2702";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2702";
+} from "./network-voice-flow.js?v=2703";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2703";
+import { consumeHandoff } from "./handoff.js?v=2703";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2703";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -78,7 +78,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2702";
+} from "./social-profiles.js?v=2703";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2938,7 +2938,7 @@ function networkPickerCards(data, nets) {
     .filter((net) => picked.includes(net) && !networkVoiceFilled(data, net))
     .map((net) =>
       voiceProposals.has(net)
-        ? voiceProposalCard(data, net, voiceProposals.get(net))
+        ? voiceProposalCard(net, voiceProposals.get(net))
         : voiceWaysCard(net, {
             empty: `Until you do, I write your ${networkLabel(net)} posts in your default voice. Start from one of these.`,
             className: `pb2-voice-net pb2-voice-net--${net}`,
@@ -2950,10 +2950,12 @@ function networkPickerCards(data, nets) {
 // on the right, not in a dialog (2026-11-04, asked: « il faudrait que le
 // loading et le résultat s'affiche directement dans la section à droite, et
 // pas dans des modales. Travaille bien mieux ce loader aussi »). The steps run
-// one after the other, then what I propose, saved only on « Add to Voice
-// profile »; Discard goes back to the ways. voice-proposal-modal.js stays for
-// the hosts with no column (the fiche, Clips, a draft's feedback).
-const voiceProposals = new Map(); // net → { steps, at, voice, onUse, timers }
+// one after the other, then the voice is filled in at once — no « Add to Voice
+// profile » step here (2026-11-04, asked: « pas besoin de l'étape de
+// validation "add to voice profile" remplis directement »): its editor opens,
+// where it can be changed. voice-proposal-modal.js stays for the hosts with no
+// column (the fiche, Clips, a draft's feedback).
+const voiceProposals = new Map(); // net → { steps, at, timers }
 
 function dropVoiceProposal(net) {
   voiceProposals.get(net)?.timers.forEach(clearTimeout);
@@ -2961,20 +2963,24 @@ function dropVoiceProposal(net) {
 }
 
 // The options of openVoiceProposal: `voice` already made (after `phases`),
-// else learned from `choice` / `from`. onUse(voice) adds it to the draft.
+// else learned from `choice` / `from`. onUse(voice) adds it to the draft, at
+// the end of the steps.
 export function proposeVoiceInline({ ctx, net, choice = "learn", from = null, voice = null, phases = null, onUse }) {
   dropVoiceProposal(net);
   const steps = phases || learnPhases(net, from, choice);
-  const entry = { steps, at: 0, voice: null, onUse, timers: [] };
+  const entry = { steps, at: 0, timers: [] };
   voiceProposals.set(net, entry);
   steps.forEach((_, i) =>
     entry.timers.push(
       setTimeout(
         () => {
           if (voiceProposals.get(net) !== entry) return;
-          if (i < steps.length - 1) entry.at = i + 1;
-          else entry.voice = voice || proposeNetworkVoice(ctx, net, choice, from);
-          repaint();
+          if (i < steps.length - 1) {
+            entry.at = i + 1;
+            return repaint();
+          }
+          dropVoiceProposal(net);
+          onUse?.(voice || proposeNetworkVoice(ctx, net, choice, from));
         },
         LEARN_PHASE_MS * (i + 1),
       ),
@@ -2983,29 +2989,12 @@ export function proposeVoiceInline({ ctx, net, choice = "learn", from = null, vo
   repaint();
 }
 
-function useVoiceProposal(net) {
-  const entry = voiceProposals.get(net);
-  if (!entry?.voice) return;
-  dropVoiceProposal(net);
-  entry.onUse?.(entry.voice);
-}
-
 // Learning: the Archie mark, what I'm doing, and the steps — done (checked),
-// the one under way (orange dot, bold), the ones to come. Then the proposal:
-// the rules I'd add (learnedVoiceHtml, « Not saved yet »), and its two
-// answers, right-grouped. `data-review-own-actions`: the review shows no
-// confirm of its own under this card.
-function voiceProposalCard(data, net, { steps, at, voice }) {
+// the one under way (orange dot, bold), the ones to come.
+// `data-review-own-actions`: the review shows no confirm under this card.
+function voiceProposalCard(net, { steps, at }) {
   const label = networkLabel(net);
   const cls = `pb2-block pb2-block--wide pb2-voice-net pb2-voice-net--${net}`;
-  if (voice)
-    return `<section class="${cls} pb2-voice-proposal" data-review-own-actions>
-      ${learnedVoiceHtml(data, net, voice)}
-      <div class="pb2-voice-proposal__foot">
-        <button type="button" class="ap-button ghost grey" data-pb2-proposal-discard="${esc(net)}">Discard</button>
-        <button type="button" class="ap-button primary blue" data-pb2-proposal-use="${esc(net)}">Add to Voice profile</button>
-      </div>
-    </section>`;
   const plain = (t) => t.replace(/…$/, "");
   return `<section class="${cls} pb2-voice-learning" data-review-own-actions aria-live="polite" aria-busy="true">
     <span class="archie-loader pb2-voice-learning__mark" aria-hidden="true"></span>
@@ -3821,13 +3810,6 @@ function onClick(event) {
   const keepVoice = event.target.closest("[data-pb2-voice-keep]");
   if (keepVoice) {
     useDefaultVoice(cfg.getData().id, keepVoice.dataset.pb2VoiceKeep);
-    return repaint();
-  }
-  const useProposal = event.target.closest("[data-pb2-proposal-use]");
-  if (useProposal) return useVoiceProposal(useProposal.dataset.pb2ProposalUse);
-  const discardProposal = event.target.closest("[data-pb2-proposal-discard]");
-  if (discardProposal) {
-    dropVoiceProposal(discardProposal.dataset.pb2ProposalDiscard);
     return repaint();
   }
   const resetVoice = event.target.closest("[data-pb2-voice-reset]");
