@@ -33,12 +33,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2689";
-import { navigate } from "../router.js?v=2689";
-import { getDraft, patchDraft } from "../context-builder.js?v=2689";
-import { mount } from "../playbook-view.js?v=2689";
-import { parseHashParams } from "../url-state.js?v=2689";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2689";
+import { html, raw } from "../utils.js?v=2693";
+import { navigate } from "../router.js?v=2693";
+import { getDraft, patchDraft } from "../context-builder.js?v=2693";
+import { mount } from "../playbook-view.js?v=2693";
+import { parseHashParams } from "../url-state.js?v=2693";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2693";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -54,9 +54,11 @@ const GLIDE_MS = 720; // a card glides to the middle
 // `review`: { step, title, sub, parts (a list, or a function for parts that
 // come and go; a part's `open()` opens its tab in edit itself, its `badge` says
 // what's left to do, its `group` / `groupHint` head a run of parts —
-// what's left to do), next: { label, go }, back, onWay?, extra? (a function:
-// { group, hint, after: partId, html(), onClick(e, repaint) }),
-// start? (the part to open first), progress? (false: no step dots) }.
+// what's left to do; `child`: it hangs under the part above it, the voice
+// review's networks under the default voice; `action`: { label }, a button
+// beside its row — the voice review's Customize), next: { label, go }, back,
+// onWay?, onAction?(partId) (a row's action), start? (the part to open
+// first), progress? (false: no step dots) }.
 // `onWay(partId, way, refresh)`: a card's tile was picked (the voice review);
 // `refresh()` repaints the part with what it changed.
 export function renderReview(target, sid, config, review) {
@@ -88,7 +90,6 @@ export function renderReview(target, sid, config, review) {
 
   const left = () => {
     const done = reviewed();
-    const extra = review.extra?.();
     return html`
       <h1 class="welcome-flow__title" id="welcomeFlowTitle">${review.title}</h1>
       <p class="welcome-intro__sub">${review.sub}</p>
@@ -99,19 +100,14 @@ export function renderReview(target, sid, config, review) {
           // the default voice, then the networks).
           // Only when there are groups to tell apart: a group of one part was a
           // kicker and a hint repeating the sub-line above it.
-          const groupLi = (name, hint, control = "") =>
+          const groupLi = (name, hint) =>
             html`<li class="welcome-review__group">
               <p class="welcome-flow__kicker">${name}</p>
-              ${hint ? raw(html`<p class="welcome-review__group-hint">${hint}</p>`) : ""}${raw(control)}
+              ${hint ? raw(html`<p class="welcome-review__group-hint">${hint}</p>`) : ""}
             </li>`;
-          const groups = new Set([...all.map((p) => p.group), extra?.group].filter(Boolean));
+          const groups = new Set(all.map((p) => p.group).filter(Boolean));
           const group =
-            t.group && t.group !== extra?.group && groups.size > 1 && t.group !== all[i - 1]?.group
-              ? groupLi(t.group, t.groupHint)
-              : "";
-          // `review.extra`: a group headed by a control rather than a part
-          // (the voice review's network select), after the part it follows.
-          const after = extra && extra.after === t.id ? groupLi(extra.group, extra.hint, extra.html()) : "";
+            t.group && groups.size > 1 && t.group !== all[i - 1]?.group ? groupLi(t.group, t.groupHint) : "";
           const mark = done.has(t.id)
             ? `<span class="welcome-review__check${t.id === justChecked ? " is-new" : ""}" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
             : here && count > 1 && !calm
@@ -119,7 +115,7 @@ export function renderReview(target, sid, config, review) {
               : "";
           return html`
             ${raw(group)}
-            <li>
+            <li class="${t.child ? "is-child" : ""}">
               <button
                 type="button"
                 class="welcome-flow__option"
@@ -136,8 +132,18 @@ export function renderReview(target, sid, config, review) {
                 ${t.badge && !done.has(t.id) ? raw(`<span class="ap-status orange">${t.badge}</span>`) : ""}
                 ${raw(mark)}
               </button>
+              ${t.action
+                ? raw(
+                    html`<button
+                      type="button"
+                      class="ap-button ghost blue welcome-review__action"
+                      data-review-action="${t.id}"
+                    >
+                      <span>${t.action.label}</span>
+                    </button>`,
+                  )
+                : ""}
             </li>
-            ${raw(after)}
           `;
         })}
       </ul>
@@ -461,9 +467,14 @@ export function renderReview(target, sid, config, review) {
   };
 
   const onClick = (e) => {
-    // The extra control's own clicks (review.extra().onClick returns true when
-    // it handled one); the left repaints with what it changed.
-    if (review.extra?.()?.onClick?.(e, () => shell.paint())) return;
+    // A row's action (the voice review's Customize): it changes the part, then
+    // opens it. The button goes with the change: focus lands on its row.
+    const action = e.target.closest("[data-review-action]")?.dataset.reviewAction;
+    if (action) {
+      review.onAction?.(action);
+      openPart(action);
+      return target.querySelector(`[data-review-part="${CSS.escape(action)}"]`)?.focus({ preventScroll: true });
+    }
     const part = e.target.closest("[data-review-part]")?.dataset.reviewPart;
     if (part) {
       if (part !== current()) switchPart(part);

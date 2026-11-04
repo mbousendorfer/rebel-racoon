@@ -1358,19 +1358,40 @@ body:not(.onboarding) .welcome-intro__wordmark {
   color: var(--ref-color-grey-80);
 }
 
-/* « Network by network »: which networks get a voice of their own, a DS
-   multi-select (welcome-alt-recap, 2026-11-04). The menu floats over the
-   parts under it. */
-.welcome-review__netselect {
+/* The voice review's networks, under the default voice: each row hangs from
+   it on a grey-20 rule (a tree, not an accent bar), its Customize beside it. */
+.welcome-flow__options > li.is-child {
   position: relative;
-  margin-bottom: var(--ref-spacing-xxs);
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding-left: var(--ref-spacing-lg);
 }
-.welcome-review__netselect > summary {
-  list-style: none;
-  cursor: pointer;
+.welcome-flow__options > li.is-child::before {
+  content: "";
+  position: absolute;
+  left: var(--ref-spacing-sm);
+  top: calc(-1 * var(--ref-spacing-xxs));
+  bottom: 0;
+  border-left: 1px solid var(--ref-color-grey-20);
 }
-.welcome-review__netselect > summary::-webkit-details-marker {
-  display: none;
+.welcome-flow__options > li.is-child:last-child::before {
+  bottom: 50%;
+}
+.welcome-flow__options > li.is-child::after {
+  content: "";
+  position: absolute;
+  left: var(--ref-spacing-sm);
+  top: 50%;
+  width: calc(var(--ref-spacing-lg) - var(--ref-spacing-sm));
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+.welcome-flow__options > li.is-child > .welcome-flow__option {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.welcome-review__action {
+  flex-shrink: 0;
 }
 
 .welcome-review__count {
