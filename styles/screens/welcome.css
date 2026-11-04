@@ -3385,7 +3385,7 @@ button.recap__logotile:hover {
 }
 
 /* The run's steps and reviews (welcome-alt-shell.js), first time or not, and
-   the intro when it plays its scene (.is-plain, flag playbookAnimations; flag
+   the intro when it plays its scene (.is-plain, flag voicePerNetwork; flag
    OFF the intro keeps its pixel stage and its card): edge to edge, only a
    grey-20 rule between it and the step; the cards bordered and lifted (they
    must read over the ground), no entrance.

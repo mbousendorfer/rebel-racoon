@@ -1,5 +1,5 @@
 // Building a Playbook — the first time or « Create a Playbook », one run (flag
-// playbookAnimations): instead of the card filling with bars, each step of the
+// voicePerNetwork, which took in playbookAnimations on 2026-11-04): instead of the card filling with bars, each step of the
 // run plays a scene that teaches what the Playbook is made of, how its parts
 // connect, and what each one lets me do (welcome-alt-shell.js mountShell).
 //
@@ -17,15 +17,15 @@
 // The ready screen paints once and moves by attributes (`is-lit`, `is-done`)
 // so its stages light the parts one by one without replaying the scene.
 
-import { escapeHtml } from "../utils.js?v=2701";
-import { isFlagOn } from "../feature-flags.js?v=2701";
-import { networkIcon, networkLabel } from "../social-profiles.js?v=2701";
-import { playbookNetworks } from "../voice-parts.js?v=2701";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2701";
-import { tint, domainOf } from "./welcome-alt-shell.js?v=2701";
-import { styleArtSvg } from "../modules/image-studio/render/style-art.js?v=2701";
-import { resolvePalette } from "../modules/image-studio/render/palette.js?v=2701";
-import { svgToDataUrl } from "../modules/image-studio/render/visual.js?v=2701";
+import { escapeHtml } from "../utils.js?v=2702";
+import { isFlagOn } from "../feature-flags.js?v=2702";
+import { networkIcon, networkLabel } from "../social-profiles.js?v=2702";
+import { playbookNetworks } from "../voice-parts.js?v=2702";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2702";
+import { tint, domainOf } from "./welcome-alt-shell.js?v=2702";
+import { styleArtSvg } from "../modules/image-studio/render/style-art.js?v=2702";
+import { resolvePalette } from "../modules/image-studio/render/palette.js?v=2702";
+import { svgToDataUrl } from "../modules/image-studio/render/visual.js?v=2702";
 
 const W = 560;
 const H = 540;

@@ -162,7 +162,9 @@ export const FLAGS = Object.freeze([
       "a document, a few questions, or by hand; Archie shows what he'd add and the user " +
       "adds it to the Voice profile or edits it first. Until then it follows " +
       "the default voice, warned. A draft written before its voice changed " +
-      "says so and can be rewritten.",
+      "says so and can be rewritten. Building a Playbook (the first time, or " +
+      "Create a Playbook) also plays an animated scene on each step instead of " +
+      "the card filling in (the former Playbook animations flag).",
   },
   {
     id: "newScheduleModal",
@@ -390,20 +392,5 @@ export const FLAGS = Object.freeze([
       "one wave of real drafts, then the demo stops (the drafts stay to look " +
       "at and edit). Scheduling opens a This is a demo dialog instead; Exit " +
       "demo in the topbar wipes it all and goes back to the real setup.",
-  },
-  {
-    id: "playbookAnimations",
-    group: "Playbook",
-    tip: "Creating a Playbook (first time or Create a Playbook): each step plays a scene that teaches the Playbook's parts, instead of the card filling in.",
-    label: "Playbook animations",
-    // OFF: the card filling in. One run for both: the first time and a
-    // returning user's Create a Playbook (welcome-alt-shell.js mountShell).
-    default: false,
-    hides:
-      "When ON, building a Playbook (the first time, or Create a Playbook) shows, on each step, an " +
-      "animated scene instead of the Playbook card filling in: what you give me " +
-      "as a real object (your site, a brand book, your posts), what I do with " +
-      "it, and the part of the Playbook each piece lands in; on Ready, the four " +
-      "parts compose one post. The reviews are unchanged.",
   },
 ]);

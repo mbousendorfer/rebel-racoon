@@ -13,16 +13,17 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2701";
-import { startDemo } from "../demo-flow.js?v=2701";
-import { isFlagOn } from "../feature-flags.js?v=2701";
-import { html, raw } from "../utils.js?v=2701";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2701";
-import { navigate } from "../router.js?v=2701";
-import { setHandoff } from "../handoff.js?v=2701";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2701";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2701";
-import { paintExplainer } from "./welcome-alt-explainer.js?v=2701";
+import "../archie-pixels.js?v=2702";
+import { startDemo } from "../demo-flow.js?v=2702";
+import { isFlagOn } from "../feature-flags.js?v=2702";
+import { networkVoiceOn } from "../voice-parts.js?v=2702";
+import { html, raw } from "../utils.js?v=2702";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2702";
+import { navigate } from "../router.js?v=2702";
+import { setHandoff } from "../handoff.js?v=2702";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2702";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2702";
+import { paintExplainer } from "./welcome-alt-explainer.js?v=2702";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -89,9 +90,10 @@ export function renderWelcomeAltIntro(_params, target) {
   const steps = flowSteps();
   const rows = ROWS.filter((r) => steps.includes(r.step));
   const last = steps.length - 1;
-  // Flag playbookAnimations: the stage plays what a Playbook changes, on the
-  // run's plain stage, instead of the example card on the pixels.
-  const scene = isFlagOn("playbookAnimations");
+  // Flag voicePerNetwork (the former playbookAnimations, baked into it on
+  // 2026-11-04): the stage plays what a Playbook changes, on the run's plain
+  // stage, instead of the example card on the pixels.
+  const scene = networkVoiceOn();
 
   target.innerHTML = html`
     <div class="welcome-intro ${scene ? "is-plain" : ""}">

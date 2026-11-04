@@ -9,10 +9,10 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2701";
-import { getPath, navigate } from "../router.js?v=2701";
-import { parseHashParams } from "../url-state.js?v=2701";
-import { isFlagOn } from "../feature-flags.js?v=2701";
+import { html, raw, escapeHtml } from "../utils.js?v=2702";
+import { getPath, navigate } from "../router.js?v=2702";
+import { parseHashParams } from "../url-state.js?v=2702";
+import { isFlagOn } from "../feature-flags.js?v=2702";
 import {
   altSteps,
   createAltDraft,
@@ -20,9 +20,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2701";
-import { getConnectedProfiles, networkIcon, networkLabel } from "../social-profiles.js?v=2701";
-import { playbookNetworks, networkVoiceOn } from "../voice-parts.js?v=2701";
+} from "../context-builder.js?v=2702";
+import { getConnectedProfiles, networkIcon, networkLabel } from "../social-profiles.js?v=2702";
+import { playbookNetworks, networkVoiceOn } from "../voice-parts.js?v=2702";
 import {
   readSessionId,
   isIntegrated,
@@ -32,10 +32,10 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2701";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2701";
-import { paintExplainer } from "./welcome-alt-explainer.js?v=2701";
-import { setTopbarActions } from "../components/topbar.js?v=2701";
+} from "./welcome-alt-recap.js?v=2702";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2702";
+import { paintExplainer } from "./welcome-alt-explainer.js?v=2702";
+import { setTopbarActions } from "../components/topbar.js?v=2702";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -433,14 +433,15 @@ function renderProgress(step, { all = false } = {}) {
 // Returns { paint, sheet, cleanup }.
 // One run for a first-time user and a returning user's « Create a Playbook »
 // (2026-11-04, asked: « il n'y a pas de raison d'en avoir 2 différents »): a
-// plain stage, no pixels; under `playbookAnimations`, each step plays a scene
+// plain stage, no pixels; under `voicePerNetwork` (it took in the former
+// flag playbookAnimations, 2026-11-04), each step plays a scene
 // that teaches the Playbook's parts (welcome-alt-explainer.js) instead of the
 // card filling in. Only the frame differs: the first time is full-bleed with
 // the stepper in the column, a returning user's run (`isIntegrated()`) sits in
 // the app's chrome with the stepper in the topbar.
 export function mountShell(target, { step, sid, left, sheet = false, build }) {
   const integrated = isIntegrated();
-  const scenes = isFlagOn("playbookAnimations");
+  const scenes = networkVoiceOn();
   target.innerHTML = html`
     <div class="welcome-intro welcome-flow ${sheet ? "is-review" : ""}">
       <section class="welcome-intro__lede" aria-labelledby="welcomeFlowTitle">
