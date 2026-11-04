@@ -1358,21 +1358,55 @@ body:not(.onboarding) .welcome-intro__wordmark {
   color: var(--ref-color-grey-80);
 }
 
-/* The voice review's networks: a row each, its « Own voice » toggle inside the
-   same frame. On, the row opens its part (the button fills the row); off, the
-   row is only a line — no hover, nothing to open. */
-.welcome-review__row {
-  padding: 0;
-  cursor: default;
+/* The voice review's networks: one list in one frame, grey-20 between rows,
+   the toggle's name once in the column head. On, a row opens its part (the
+   button fills it); off, it is only a line. The part on screen: a light blue
+   ground, no edge bar. */
+.welcome-review__nets {
+  margin-top: var(--ref-spacing-xs);
 }
-.welcome-review__row-main {
+.welcome-review__nets-head {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 var(--ref-spacing-xxxs);
+  padding: 0 var(--ref-spacing-sm);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-80);
+}
+.welcome-review__nets-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
+}
+.welcome-review__net {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+.welcome-review__net + .welcome-review__net {
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+.welcome-review__net:not(.is-inert):hover {
+  background: var(--ref-color-grey-05);
+}
+/* After the hover, at its specificity: the part on screen keeps its ground. */
+.welcome-review__net[aria-current="true"]:not(.is-inert) {
+  background: var(--ref-color-electric-blue-10);
+}
+.welcome-review__net-main {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xs);
   flex: 1 1 auto;
   min-width: 0;
   align-self: stretch;
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  padding: 0 var(--ref-spacing-sm);
   background: none;
   border: 0;
   font: inherit;
@@ -1380,22 +1414,31 @@ body:not(.onboarding) .welcome-intro__wordmark {
   color: inherit;
   cursor: pointer;
 }
-.welcome-review__row.is-inert .welcome-review__row-main {
+.welcome-review__net.is-inert .welcome-review__net-main {
   cursor: default;
 }
-/* A ticked toggle is not a picked option (.welcome-flow__option:has(input:checked)):
-   only the part on screen, a hover on a part, or the keyboard turn the frame blue. */
-.welcome-review__row:has(input:checked):not([aria-current="true"]),
-.welcome-review__row.is-inert:hover {
-  border-color: var(--ref-color-grey-20);
+.welcome-review__net-main:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: -2px;
 }
-.welcome-review__row:not(.is-inert):hover,
-.welcome-review__row:has(:focus-visible) {
-  border-color: var(--ref-color-electric-blue-100);
+.welcome-review__net-icon {
+  flex-shrink: 0;
+  font-size: var(--sys-icon-css-md);
+}
+.welcome-review__net-name {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+.welcome-review__net .welcome-review__check {
+  width: 20px;
+  height: 20px;
+  font-size: var(--sys-icon-css-xs);
 }
 .welcome-review__toggle {
   flex-shrink: 0;
-  padding-right: var(--ref-spacing-sm);
+  padding: 0 var(--ref-spacing-sm);
 }
 
 /* An empty part's way on, under its options (the voice review's empty network). */
