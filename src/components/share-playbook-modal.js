@@ -25,8 +25,8 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2763";
-import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=2763";
+} from "../modal-coordinator.js?v=2764";
+import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=2764";
 import {
   canTransfer,
   isMine,
@@ -35,10 +35,10 @@ import {
   recipientsOf,
   tiedProfile,
   profileBlockFor,
-} from "../playbook-access.js?v=2763";
-import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=2763";
-import { showToast } from "./toast.js?v=2763";
-import { html, raw, escapeHtml } from "../utils.js?v=2763";
+} from "../playbook-access.js?v=2764";
+import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=2764";
+import { showToast } from "./toast.js?v=2764";
+import { html, raw, escapeHtml } from "../utils.js?v=2764";
 
 const MODAL_ID = "sharePlaybook";
 

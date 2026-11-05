@@ -33,12 +33,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2763";
-import { navigate } from "../router.js?v=2763";
-import { getDraft, patchDraft } from "../context-builder.js?v=2763";
-import { mount } from "../playbook-view.js?v=2763";
-import { parseHashParams } from "../url-state.js?v=2763";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2763";
+import { html, raw } from "../utils.js?v=2764";
+import { navigate } from "../router.js?v=2764";
+import { getDraft, patchDraft } from "../context-builder.js?v=2764";
+import { mount } from "../playbook-view.js?v=2764";
+import { parseHashParams } from "../url-state.js?v=2764";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2764";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -94,8 +94,9 @@ export function renderReview(target, sid, config, review) {
 
   // The network rows (the voice review): « Network voices », a row per network
   // with a voice of its own — its name over its state, opening its part, a
-  // Remove beside it (two controls, never one inside the other) — then the
-  // networks still on the default voice, a dashed row each to add it (2026-11-05, ux-heuristics, asked: a toggle that both set the state
+  // Remove beside it (two controls, never one inside the other) — and each
+  // network still on the default voice, a dashed row to add it, in the same
+  // order (2026-11-05, ux-heuristics, asked: a toggle that both set the state
   // and opened the row wasn't understood, the state wasn't said, and « que
   // l'utilisateur puisse ajouter lui-même une voice »). Answered by
   // onToggle(partId, on).
@@ -104,8 +105,6 @@ export function renderReview(target, sid, config, review) {
     const more = review.moreNets?.() || [];
     if (!rows.length && !more.length) return "";
     const done = reviewed();
-    const own = rows.filter((t) => !t.inert);
-    const rest = rows.filter((t) => t.inert);
     const row = (t) => {
       const here = t.id === current();
       const check = done.has(t.id)
@@ -137,40 +136,31 @@ export function renderReview(target, sid, config, review) {
         </li>
       `;
     };
-    // The voices without an answer: a dashed row each, « X voice · Configure »
-    // as in the fiche (2026-11-05, asked: « remplacer par configure »), under the ones you have
-    // (2026-11-05, asked: « les montrer en pointillé les voices que l'on peut
-    // ajouter ») — a click adds it and opens it. They replace the « Add a
-    // network voice » button and its menu.
-    const add = rest.length
-      ? html`<ul class="welcome-review__addables">
-          ${raw(
-            rest
-              .map(
-                (t) =>
-                  html`<li>
-                    <button type="button" class="welcome-review__addable" data-review-add-net="${t.id}">
-                      <i class="${t.icon} welcome-review__net-icon" aria-hidden="true"></i>
-                      <span class="welcome-review__addable-name">${t.title} voice</span>
-                      <span class="welcome-review__addable-add">Configure</span>
-                    </button>
-                  </li>`,
-              )
-              .join(""),
-          )}
-        </ul>`
-      : "";
+    // The voices without an answer: a dashed row, « X voice · Configure »
+    // as in the fiche (2026-11-05, asked: « remplacer par configure », « les
+    // montrer en pointillé les voices que l'on peut ajouter ») — a click adds
+    // it and opens it. Every network keeps its place in the one list: a row
+    // added used to leave its place for the head of the list (2026-11-05,
+    // asked: « l'élément cliqué remonte tout en haut »).
+    const addable = (t) =>
+      html`<li>
+        <button type="button" class="welcome-review__addable" data-review-add-net="${t.id}">
+          <i class="${t.icon} welcome-review__net-icon" aria-hidden="true"></i>
+          <span class="welcome-review__addable-name">${t.title} voice</span>
+          <span class="welcome-review__addable-add">Configure</span>
+        </button>
+      </li>`;
     return html`
       <li class="welcome-review__nets">
         <p class="welcome-review__nets-head">Network voices</p>
-        ${own.length
+        ${rows.length
           ? raw(
               html`<ul class="welcome-review__nets-list">
-                ${raw(own.map(row).join(""))}
+                ${raw(rows.map((t) => (t.inert ? addable(t) : row(t))).join(""))}
               </ul>`,
             )
           : ""}
-        ${raw(add)} ${raw(moreMenu(more))}
+        ${raw(moreMenu(more))}
       </li>
     `;
   };

@@ -1437,16 +1437,8 @@ body:not(.onboarding) .welcome-intro__wordmark {
   flex-shrink: 0;
   margin-right: var(--ref-spacing-xs);
 }
-/* A voice you can add: a dashed row under the ones you have, the network's
-   glyph, « X voice », and « + Add » on the right; hover = blue border. */
-.welcome-review__addables {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  margin: var(--ref-spacing-xxs) 0 0;
-  padding: 0;
-  list-style: none;
-}
+/* A voice you can add: a dashed row in its network's place in the list, the
+   network's glyph, « X voice », and « Configure » on the right; hover = blue border. */
 .welcome-review__addable {
   display: flex;
   align-items: center;

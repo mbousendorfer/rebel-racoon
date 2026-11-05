@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { escapeHtml as esc, html, prettyUrl, raw } from "./utils.js?v=2763";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2763";
-import { conceptHint } from "./concepts.js?v=2763";
+import { escapeHtml as esc, html, prettyUrl, raw } from "./utils.js?v=2764";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2764";
+import { conceptHint } from "./concepts.js?v=2764";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2763";
-import { analyzeWebsite } from "./context-mock-analysis.js?v=2763";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2763";
-import { isFlagOn } from "./feature-flags.js?v=2763";
-import { clipLookOf } from "./videos-store.js?v=2763";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2763";
-import { parseHashParams } from "./url-state.js?v=2763";
+} from "./playbook-brand-kit.js?v=2764";
+import { analyzeWebsite } from "./context-mock-analysis.js?v=2764";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2764";
+import { isFlagOn } from "./feature-flags.js?v=2764";
+import { clipLookOf } from "./videos-store.js?v=2764";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2764";
+import { parseHashParams } from "./url-state.js?v=2764";
 import {
   isListPart,
   voiceParts,
@@ -57,19 +57,19 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2763";
-import { showToast } from "./components/toast.js?v=2763";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2763";
+} from "./voice-parts.js?v=2764";
+import { showToast } from "./components/toast.js?v=2764";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2764";
 import {
   voiceChoices,
   saveNetworkVoice,
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2763";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2763";
-import { consumeHandoff } from "./handoff.js?v=2763";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2763";
+} from "./network-voice-flow.js?v=2764";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2764";
+import { consumeHandoff } from "./handoff.js?v=2764";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2764";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -78,7 +78,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   NETWORKS,
-} from "./social-profiles.js?v=2763";
+} from "./social-profiles.js?v=2764";
 import {
   ROSTERS,
   REF_NETWORKS,
@@ -95,7 +95,7 @@ import {
   stopRosterScan,
   handleRosterClick,
   handleInfAddInput,
-} from "./playbook-rosters.js?v=2763";
+} from "./playbook-rosters.js?v=2764";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1419,7 +1419,6 @@ function renderVoiceNav(data) {
   // default voice — a dashed row to configure. No third state: the default
   // voice « by choice » is gone from the fiche (2026-11-05, asked).
   const own = nets.filter((n) => networkVoice(data, n).state === "own");
-  const rest = nets.filter((n) => !own.includes(n));
   // The run's Voice review look, its own classes reused (2026-11-05, asked:
   // « comme sur la création du playbook, avec le network voice en bold… les
   // borders sont trop grosses ») — the default voice an option card with its
@@ -1440,20 +1439,16 @@ function renderVoiceNav(data) {
   // The networks on the default voice: a dashed row each, the run's Voice
   // review's own (.welcome-review__addable); a click opens it to configure.
   // « Configure », not « + Add »: the default voice is used anyway until then
-  // (2026-11-05, asked: « remplacer par configure »).
-  const configure = rest.length
-    ? `<ul class="welcome-review__addables pb2-voice-nav__addables">${rest
-        .map(
-          (
-            n,
-          ) => `<li><button type="button" class="welcome-review__addable" data-pb2-voice-net="${esc(n)}"${n === voiceNet ? ' aria-current="true"' : ""}>
+  // (2026-11-05, asked: « remplacer par configure »). Every network keeps its
+  // place in the one list, a card or a dashed row, as in the run (2026-11-05,
+  // asked: « l'élément cliqué remonte tout en haut »).
+  const configureRow = (
+    n,
+  ) => `<li><button type="button" class="welcome-review__addable" data-pb2-voice-net="${esc(n)}"${n === voiceNet ? ' aria-current="true"' : ""}>
               <i class="${networkIcon(n)} welcome-review__net-icon" aria-hidden="true"></i>
               <span class="welcome-review__addable-name">${esc(networkLabel(n))} voice</span>
               ${canEditView() ? '<span class="welcome-review__addable-add">Configure</span>' : ""}
-            </button></li>`,
-        )
-        .join("")}</ul>`
-    : "";
+            </button></li>`;
   return `<nav class="pb2-voice-nav" aria-label="Voices">
       <button type="button" class="welcome-flow__option" data-pb2-voice-net="" aria-current="${!voiceNet}">
         <span class="welcome-flow__glyph is-icon is-tinted" style="--part-tint: var(--ref-color-purple-20); --part-ink: var(--ref-color-purple-150)"><i class="ap-icon-quote" aria-hidden="true"></i></span>
@@ -1464,8 +1459,7 @@ function renderVoiceNav(data) {
       </button>
       <div class="welcome-review__nets">
         <p class="welcome-review__nets-head">Network voices</p>
-        ${own.length ? `<ul class="welcome-review__nets-list">${own.map(netRow).join("")}</ul>` : ""}
-        ${configure}
+        ${nets.length ? `<ul class="welcome-review__nets-list">${nets.map((n) => (own.includes(n) ? netRow(n) : configureRow(n))).join("")}</ul>` : ""}
         ${canEditView() ? voiceMoreMenu(nets) : ""}
       </div>
     </nav>`;
