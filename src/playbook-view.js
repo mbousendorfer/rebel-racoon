@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2718";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2718";
-import { conceptHint } from "./concepts.js?v=2718";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2720";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2720";
+import { conceptHint } from "./concepts.js?v=2720";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2718";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2718";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2718";
-import { isFlagOn } from "./feature-flags.js?v=2718";
-import { clipLookOf } from "./videos-store.js?v=2718";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2718";
-import { parseHashParams } from "./url-state.js?v=2718";
+} from "./playbook-brand-kit.js?v=2720";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2720";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2720";
+import { isFlagOn } from "./feature-flags.js?v=2720";
+import { clipLookOf } from "./videos-store.js?v=2720";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2720";
+import { parseHashParams } from "./url-state.js?v=2720";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2718";
-import { showToast } from "./components/toast.js?v=2718";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2718";
+} from "./voice-parts.js?v=2720";
+import { showToast } from "./components/toast.js?v=2720";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2720";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -67,10 +67,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2718";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2718";
-import { consumeHandoff } from "./handoff.js?v=2718";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2718";
+} from "./network-voice-flow.js?v=2720";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2720";
+import { consumeHandoff } from "./handoff.js?v=2720";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2720";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -78,7 +78,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2718";
+} from "./social-profiles.js?v=2720";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2172,13 +2172,22 @@ function renderVoiceNav(data) {
   const hasOwn = (n) => networkVoice(data, n).state === "own" || ownPending.has(n);
   const own = nets.filter(hasOwn);
   const rest = nets.filter((n) => !hasOwn(n));
-  const row = (net, name, icon, state) => {
-    const here = (net || null) === voiceNet;
-    return `<button type="button" class="pb2-voice-nav__row"${here ? ' aria-current="true"' : ""} data-pb2-voice-net="${net}">
-      <i class="${icon}" aria-hidden="true"></i>
-      <span class="pb2-voice-nav__text"><span class="ap-caption pb2-voice-nav__name">${esc(name)}</span>${state ? `<span class="pb2-voice-nav__state">${state}</span>` : ""}</span>
-      <i class="ap-icon-chevron-right pb2-voice-nav__chevron" aria-hidden="true"></i>
-    </button>`;
+  // The run's Voice review look, its own classes reused (2026-11-05, asked:
+  // « comme sur la création du playbook, avec le network voice en bold… les
+  // borders sont trop grosses ») — the default voice an option card with its
+  // tinted tile, the network voices one framed list with hairlines, bold names.
+  const netRow = (n, state) => {
+    const here = n === voiceNet;
+    return `<li class="welcome-review__net" aria-current="${here}">
+      <button type="button" class="welcome-review__net-main" data-pb2-voice-net="${n}">
+        <i class="${networkIcon(n)} welcome-review__net-icon" aria-hidden="true"></i>
+        <span class="welcome-review__net-text">
+          <span class="welcome-review__net-name">${esc(networkLabel(n))} voice</span>
+          <span class="welcome-review__net-state">${state}</span>
+        </span>
+        <i class="ap-icon-chevron-right pb2-voice-nav__chevron" aria-hidden="true"></i>
+      </button>
+    </li>`;
   };
   const defaultState = "The base of every network voice";
   const netState = (n) => {
@@ -2203,10 +2212,16 @@ function renderVoiceNav(data) {
           .join("")}</ul>`
       : "";
   return `<nav class="pb2-voice-nav" aria-label="Voices">
-      <div class="pb2-voice-nav__group">${row("", "Default voice", "ap-icon-quote", defaultState)}</div>
-      <div class="pb2-voice-nav__group">
-        <span class="ap-caption pb2-voice-nav__heading">Network voices</span>
-        ${own.map((n) => row(n, `${networkLabel(n)} voice`, networkIcon(n), netState(n))).join("")}
+      <button type="button" class="welcome-flow__option" data-pb2-voice-net="" aria-current="${!voiceNet}">
+        <span class="welcome-flow__glyph is-icon is-tinted" style="--part-tint: var(--ref-color-purple-20); --part-ink: var(--ref-color-purple-150)"><i class="ap-icon-quote" aria-hidden="true"></i></span>
+        <span class="welcome-flow__option-text">
+          <span class="welcome-flow__option-title">Default voice</span>
+          <span class="welcome-flow__option-desc">${defaultState}</span>
+        </span>
+      </button>
+      <div class="welcome-review__nets">
+        <p class="welcome-review__nets-head">Network voices</p>
+        ${own.length ? `<ul class="welcome-review__nets-list">${own.map((n) => netRow(n, netState(n))).join("")}</ul>` : ""}
         ${add}
       </div>
     </nav>`;

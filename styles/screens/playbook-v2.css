@@ -428,7 +428,6 @@
 .pb2-rule-edits {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-sm);
 }
 
 .pb2-rule-edit {
@@ -1122,107 +1121,15 @@
 .pb2-voice-nav {
   position: sticky;
   top: calc(var(--pb2-tabs-h, 0px) + var(--ref-spacing-xxs));
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-sm);
 }
 
-/* The default voice's card, then the network voices: a heading, a small card
-   each, the Add button (2026-11-05, asked: « une card pour la default voice et
-   d'autres petites cards en dessous pour chaque voice de network, et le bouton
-   d'ajout » — one framed list made the default voice a heading over them). */
-.pb2-voice-nav__group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-}
-
-/* A card: one voice you open — its glyph, its name over its state, a chevron.
-   Hover = blue border (house rule, no elevation); the current one a blue
-   border on a light blue ground, never an edge bar. */
-.pb2-voice-nav__row {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  width: 100%;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-card);
-  background: var(--ref-color-white);
-  color: var(--ref-color-grey-100);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-/* The default voice's card: the larger one. */
-.pb2-voice-nav__group:first-child .pb2-voice-nav__row {
-  padding: var(--ref-spacing-sm);
-}
-
-.pb2-voice-nav__row:hover {
-  border-color: var(--ref-color-electric-blue-100);
-}
-
-.pb2-voice-nav__row:focus-visible {
-  outline: 2px solid var(--ref-color-electric-blue-100);
-  outline-offset: 2px;
-}
-
-.pb2-voice-nav__row[aria-current="true"] {
-  border-color: var(--ref-color-electric-blue-100);
-  background: var(--ref-color-electric-blue-10);
-}
-
-.pb2-voice-nav__row[aria-current="true"] .pb2-voice-nav__name {
-  font-weight: var(--ref-font-weight-bold);
-}
-
-.pb2-voice-nav__row > i {
+/* The list wears the run's Voice review classes (welcome.css): the default
+   voice's option card, then « Network voices », one framed list with
+   hairlines, and the dashed rows to add one. Here only: the chevron that says
+   a row opens. */
+.pb2-voice-nav__chevron {
   flex-shrink: 0;
-}
-
-.pb2-voice-nav__text {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.pb2-voice-nav__name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* What the voice is: its rules, or the networks that use it (glyphs named in
-   their aria-label / title). */
-.pb2-voice-nav__state {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
   color: var(--ref-color-grey-80);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-}
-
-.pb2-voice-nav__heading {
-  padding: 0;
-  color: var(--ref-color-grey-80);
-  font-weight: var(--ref-font-weight-bold);
-}
-
-/* The voices you can add (the review's dashed rows): no gap above, the
-   column's own rhythm. */
-.pb2-voice-nav__addables {
-  margin-top: 0;
-}
-
-/* In this column, the cards' caption size. */
-.pb2-voice-nav__addables .welcome-review__addable-name,
-.pb2-voice-nav__addables .welcome-review__addable-add {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
 }
 
 /* The voice on screen names itself: its title (h2) over its sentence. */
