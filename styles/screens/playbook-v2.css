@@ -1122,43 +1122,46 @@
 .pb2-voice-nav {
   position: sticky;
   top: calc(var(--pb2-tabs-h, 0px) + var(--ref-spacing-xxs));
-  background: var(--ref-color-white);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
 }
 
-/* Default voice, then the networks: one hairline between the two. */
+/* The default voice's card, then the network voices: a heading, a small card
+   each, the Add button (2026-11-05, asked: « une card pour la default voice et
+   d'autres petites cards en dessous pour chaque voice de network, et le bouton
+   d'ajout » — one framed list made the default voice a heading over them). */
 .pb2-voice-nav__group {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xxs);
 }
 
-.pb2-voice-nav__group + .pb2-voice-nav__group {
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
-/* A row: one voice you open — its glyph, its name over its state, a chevron.
-   The current one a blue fill, never an edge bar. */
+/* A card: one voice you open — its glyph, its name over its state, a chevron.
+   Hover = blue border (house rule, no elevation); the current one a blue
+   border on a light blue ground, never an edge bar. */
 .pb2-voice-nav__row {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xs);
   width: 100%;
-  min-height: var(--comp-button-height);
-  padding: var(--ref-spacing-xxs);
-  border: 0;
-  border-radius: var(--ref-border-radius-sm);
-  background: none;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
   color: var(--ref-color-grey-100);
   font: inherit;
   text-align: left;
   cursor: pointer;
 }
 
+/* The default voice's card: the larger one. */
+.pb2-voice-nav__group:first-child .pb2-voice-nav__row {
+  padding: var(--ref-spacing-sm);
+}
+
 .pb2-voice-nav__row:hover {
-  background: var(--ref-color-grey-05);
+  border-color: var(--ref-color-electric-blue-100);
 }
 
 .pb2-voice-nav__row:focus-visible {
@@ -1167,8 +1170,8 @@
 }
 
 .pb2-voice-nav__row[aria-current="true"] {
-  background: var(--ref-color-electric-blue-20);
-  color: var(--ref-color-electric-blue-150);
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-10);
 }
 
 .pb2-voice-nav__row[aria-current="true"] .pb2-voice-nav__name {
@@ -1203,13 +1206,8 @@
   line-height: var(--sys-text-style-caption-line-height);
 }
 
-.pb2-voice-nav__nets {
-  display: inline-flex;
-  gap: var(--ref-spacing-xxxs);
-}
-
 .pb2-voice-nav__heading {
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xxs) 0;
+  padding: 0;
   color: var(--ref-color-grey-80);
   font-weight: var(--ref-font-weight-bold);
 }
@@ -1217,13 +1215,12 @@
 /* Add a network voice: a hugging button, its DS menu under it. */
 .pb2-voice-nav__add {
   position: relative;
-  padding: var(--ref-spacing-xxs);
 }
 
 .pb2-voice-nav__menu {
   position: absolute;
   top: 100%;
-  left: var(--ref-spacing-xxs);
+  left: 0;
   z-index: 10;
 }
 

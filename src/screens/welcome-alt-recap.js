@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2714";
-import { catalogueRoute } from "../active-playbook.js?v=2714";
+import { navigate } from "../router.js?v=2715";
+import { catalogueRoute } from "../active-playbook.js?v=2715";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,17 +13,17 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2714";
+} from "../context-builder.js?v=2715";
 import {
   RECAP_SECTIONS,
   editVoiceNetwork,
   networkVoiceFilled,
   setNetworkRules,
   proposeVoiceInline,
-} from "../playbook-view.js?v=2714";
-import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2714";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2714";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2714";
+} from "../playbook-view.js?v=2715";
+import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2715";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2715";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2715";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -33,14 +33,14 @@ import {
   playbookNetworks,
   voiceNetworks,
   onlyNetwork,
-} from "../voice-parts.js?v=2714";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2714";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2714";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2714";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2714";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2714";
-import { showToast } from "../components/toast.js?v=2714";
-import { open as openConfirm } from "../components/confirm-modal.js?v=2714";
+} from "../voice-parts.js?v=2715";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2715";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2715";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2715";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2715";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2715";
+import { showToast } from "../components/toast.js?v=2715";
+import { open as openConfirm } from "../components/confirm-modal.js?v=2715";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -161,17 +161,6 @@ function voiceReview(sid, overrides = {}) {
     return net ? networkLabel(net) : "";
   };
   const notNetworks = (el) => !el.matches(".pb2-voice-net");
-  // The default voice says where it's used: the networks without rules of
-  // their own (an empty network voice writes in it too), by name.
-  const usedOn = () => {
-    const names = nets()
-      .filter((n) => !networkVoiceFilled(getDraft(sid), n))
-      .map(networkLabel);
-    // None: no line, a voice among the others, not a heading (« trop chapeau »).
-    if (!names.length) return "";
-    const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names.at(-1)}` : names[0];
-    return `Used on ${list}.`;
-  };
   const ruleState = (n) => {
     const v = getDraft(sid).voiceByNetwork?.[n];
     const count = ["voiceAlways", "voiceNever", "voiceByPost", "voiceSometimes"].reduce(
@@ -187,7 +176,7 @@ function voiceReview(sid, overrides = {}) {
     tint: VOICE_TINT,
     title: "Default voice",
     icon: voice.icon,
-    lead: only() ? `How your ${only()} posts sound.` : usedOn(),
+    lead: only() ? `How your ${only()} posts sound.` : "How you sound on every network.",
     open: () => editVoiceNetwork(null),
     pick: (all) => all.filter(notNetworks),
   });
