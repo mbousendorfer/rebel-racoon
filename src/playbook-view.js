@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2727";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2727";
-import { conceptHint } from "./concepts.js?v=2727";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2728";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2728";
+import { conceptHint } from "./concepts.js?v=2728";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2727";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2727";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2727";
-import { isFlagOn } from "./feature-flags.js?v=2727";
-import { clipLookOf } from "./videos-store.js?v=2727";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2727";
-import { parseHashParams } from "./url-state.js?v=2727";
+} from "./playbook-brand-kit.js?v=2728";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2728";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2728";
+import { isFlagOn } from "./feature-flags.js?v=2728";
+import { clipLookOf } from "./videos-store.js?v=2728";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2728";
+import { parseHashParams } from "./url-state.js?v=2728";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2727";
-import { showToast } from "./components/toast.js?v=2727";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2727";
+} from "./voice-parts.js?v=2728";
+import { showToast } from "./components/toast.js?v=2728";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2728";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -67,10 +67,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2727";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2727";
-import { consumeHandoff } from "./handoff.js?v=2727";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2727";
+} from "./network-voice-flow.js?v=2728";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2728";
+import { consumeHandoff } from "./handoff.js?v=2728";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2728";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -78,7 +78,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2727";
+} from "./social-profiles.js?v=2728";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2207,9 +2207,11 @@ function renderVoiceNav(data) {
     canEditView() && rest.length
       ? `<ul class="welcome-review__addables pb2-voice-nav__addables">${rest
           .map(
-            (n) => `<li><button type="button" class="welcome-review__addable" data-pb2-voice-add-net="${esc(n)}">
+            (
+              n,
+            ) => `<li><button type="button" class="welcome-review__addable" data-pb2-voice-add-net="${esc(n)}"${n === voiceNet ? ' aria-current="true"' : ""}>
               <i class="${networkIcon(n)} welcome-review__net-icon" aria-hidden="true"></i>
-              <span class="welcome-review__addable-name">${esc(networkLabel(n))} voice</span>
+              <span class="welcome-review__net-text"><span class="welcome-review__addable-name">${esc(networkLabel(n))}</span><span class="welcome-review__net-state">Uses your default voice</span></span>
               <span class="welcome-review__addable-add"><i class="ap-icon-plus" aria-hidden="true"></i><span>Add</span></span>
             </button></li>`,
           )
@@ -2448,7 +2450,7 @@ function pb2TabHead(
         title
           ? `<div class="pb2-tabhead__text">
         <h2 class="pb2-tabhead__title">${icon ? `<i class="${icon}" aria-hidden="true"></i>` : ""}${esc(title)}</h2>
-        <p class="pb2-tabhead__sub">${esc(lead || "")}</p>
+        ${lead ? `<p class="pb2-tabhead__sub">${esc(lead)}</p>` : ""}
       </div>`
           : `<p class="pb2-tabhead__lead">${esc(lead || "")}</p>`
       }
@@ -3271,22 +3273,33 @@ function renderNetworkVoiceRead(data) {
     // offers the ways to give the network its own voice (2026-10-29, asked:
     // « directement proposer les options de création de voice et faire un empty
     // state + compréhensible que de recopier la voice par défaut »).
-    const keep =
-      chosen && !ownPending.has(net)
-        ? ""
-        : `<button type="button" class="ap-button stroked grey" data-pb2-voice-remove="${esc(net)}"><i class="ap-icon-trash" aria-hidden="true"></i><span>Remove the ${esc(label)} voice</span></button>`;
+    // Remove only on a voice that was added (and is still empty): a network
+    // on the default voice has nothing to remove.
+    const added = ownPending.has(net);
+    const remove = added
+      ? `<button type="button" class="ap-button stroked grey" data-pb2-voice-remove="${esc(net)}"><i class="ap-icon-trash" aria-hidden="true"></i><span>Remove the ${esc(label)} voice</span></button>`
+      : "";
+    // What X writes in, said as a DS infobox — the first thing under the head,
+    // with the way to read that voice (2026-11-05, asked: « c'est absolument
+    // pas clair que X utilise la default voice. On dirait qu'elle n'est juste
+    // pas remplie »). The head says nothing more than its name.
+    const uses = `<div class="ap-infobox info has-title pb2-voice-notice" role="status">
+      <i class="ap-icon-info_fill" aria-hidden="true"></i>
+      <div class="ap-infobox-content">
+        <div class="ap-infobox-texts">
+          <span class="ap-infobox-title">${esc(label)} uses your default voice${chosen && !added ? ", by choice" : ""}</span>
+          <span class="ap-infobox-message">I write your ${esc(label)} posts with your default voice until you give ${esc(label)} a voice of its own.</span>
+          <button type="button" class="ap-link" data-pb2-voice-net="">See your default voice</button>
+        </div>
+      </div>
+    </div>`;
     return withVoiceNav(
       data,
-      `${pb2TabHead("voice", keep, {
+      `${pb2TabHead("voice", remove, {
         noEdit: true,
-        // Said in the head, where the eye lands (2026-11-05, asked: « plus
-        // compréhensible que la voice de ce network utilise la default voice »).
-        lead:
-          chosen && !ownPending.has(net)
-            ? `${label} uses your default voice, by choice.`
-            : `For now, your ${label} posts use your default voice.`,
+        lead: "",
         ...voiceTitle(data),
-      })}${voiceIntroHtml(data)}<div class="pb2-grid">${networkVoiceEmpty(net, chosen)}</div>`,
+      })}${voiceIntroHtml(data)}${uses}<div class="pb2-grid">${networkVoiceEmpty(net, chosen)}</div>`,
     );
   }
   // The way back to the default voice closes the voice, under its parts: the

@@ -1482,7 +1482,8 @@ body:not(.onboarding) .welcome-intro__wordmark {
   color: var(--ref-color-grey-80);
   cursor: pointer;
 }
-.welcome-review__addable:hover {
+.welcome-review__addable:hover,
+.welcome-review__addable[aria-current="true"] {
   border-color: var(--ref-color-electric-blue-100);
 }
 .welcome-review__addable:focus-visible {

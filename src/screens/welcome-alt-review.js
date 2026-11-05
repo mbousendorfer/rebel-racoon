@@ -33,12 +33,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2727";
-import { navigate } from "../router.js?v=2727";
-import { getDraft, patchDraft } from "../context-builder.js?v=2727";
-import { mount } from "../playbook-view.js?v=2727";
-import { parseHashParams } from "../url-state.js?v=2727";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2727";
+import { html, raw } from "../utils.js?v=2728";
+import { navigate } from "../router.js?v=2728";
+import { getDraft, patchDraft } from "../context-builder.js?v=2728";
+import { mount } from "../playbook-view.js?v=2728";
+import { parseHashParams } from "../url-state.js?v=2728";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2728";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -143,7 +143,10 @@ export function renderReview(target, sid, config, review) {
                   html`<li>
                     <button type="button" class="welcome-review__addable" data-review-add-net="${t.id}">
                       <i class="${t.icon} welcome-review__net-icon" aria-hidden="true"></i>
-                      <span class="welcome-review__addable-name">${t.title} voice</span>
+                      <span class="welcome-review__net-text"
+                        ><span class="welcome-review__addable-name">${t.title}</span
+                        ><span class="welcome-review__net-state">Uses your default voice</span></span
+                      >
                       <span class="welcome-review__addable-add"
                         ><i class="ap-icon-plus" aria-hidden="true"></i><span>Add</span></span
                       >
