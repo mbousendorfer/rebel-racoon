@@ -4,8 +4,8 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { sessionPlaybookId } from "../../active-playbook.js?v=2760";
-import { NETWORK_LABEL, networkMeta } from "../../social-profiles.js?v=2760";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2761";
+import { NETWORK_LABEL, networkMeta } from "../../social-profiles.js?v=2761";
 import {
   getPosts,
   removePost,
@@ -13,23 +13,30 @@ import {
   updatePostContent,
   attachImageToDraft,
   attachCarouselToDraft,
-} from "../../posts-store.js?v=2760";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2760";
-import { renderPostCard } from "../post-card.js?v=2760";
-import { isPostValid } from "../../post-validation.js?v=2760";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2760";
-import { html, raw } from "../../utils.js?v=2760";
-import { isFlagOn } from "../../feature-flags.js?v=2760";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2760";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2760";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2760";
-import { open as openAssignModal } from "../assign-modal.js?v=2760";
-import { showToast } from "../toast.js?v=2760";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2760";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2760";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2760";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2760";
-import { blockInDemo } from "../../demo-flow.js?v=2760";
+  updatePostClip,
+  undoRevision,
+} from "../../posts-store.js?v=2761";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2761";
+import { renderPostCard } from "../post-card.js?v=2761";
+import { isPostValid } from "../../post-validation.js?v=2761";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2761";
+import { html, raw } from "../../utils.js?v=2761";
+import { isFlagOn } from "../../feature-flags.js?v=2761";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2761";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2761";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2761";
+import { open as openAssignModal } from "../assign-modal.js?v=2761";
+import { showToast } from "../toast.js?v=2761";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2761";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2761";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2761";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2761";
+import { blockInDemo } from "../../demo-flow.js?v=2761";
+import { navigate } from "../../router.js?v=2761";
+import { giveNetworkVoice } from "../../network-voice-flow.js?v=2761";
+import { startRewrite } from "../../draft-rewrite.js?v=2761";
+import { getSources as getStreamSources, updateSourceClips } from "../../sources-stream.js?v=2761";
+import { open as openVideoClipsModal } from "../video-clips-modal.js?v=2761";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -361,7 +368,7 @@ function openScheduleModal(opts) {
   return isFlagOn("newScheduleModal") ? openNewScheduleModal(opts) : openLegacyScheduleModal(opts);
 }
 
-export function onPostSchedule(postId) {
+function onPostSchedule(postId) {
   const sid = activeSessionId();
   if (!sid) return;
   const post = getPosts(sid).find((p) => p.id === postId);
@@ -523,7 +530,7 @@ export function commitAssigned(sid, posts, assignment) {
   });
 }
 
-export function onPostAssign(postId) {
+function onPostAssign(postId) {
   const sid = activeSessionId();
   const post = sid && getPosts(sid).find((p) => p.id === postId);
   if (post) openAssignForPosts(sid, [post]);
@@ -549,7 +556,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2760"), import("../../folders-store.js?v=2760")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2761"), import("../../folders-store.js?v=2761")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -581,7 +588,7 @@ export function onSectionSave(network) {
 }
 
 // Per-card "Save as draft" — single-post counterpart of onSaveAsDraft.
-export function onPostSaveAsDraft(postId) {
+function onPostSaveAsDraft(postId) {
   const sid = activeSessionId();
   if (!sid) return;
   const idx = getPosts(sid).findIndex((p) => p.id === postId);
@@ -605,7 +612,7 @@ export function onPostSaveAsDraft(postId) {
 // (e.g. "LinkedIn — Boost your reach this quarter…"), derived from the
 // draft's network + the first line of its body. Mirrors the Mention action
 // on idea / clip / source cards, which feed addComposerMention a string.
-export function onPostMention(postId) {
+function onPostMention(postId) {
   const sid = activeSessionId();
   if (!sid) return;
   const post = getPosts(sid).find((p) => p.id === postId);
@@ -617,7 +624,7 @@ export function onPostMention(postId) {
   addComposerMention(sid, label);
 }
 
-export function onPostFirstCommentRemove(postId) {
+function onPostFirstCommentRemove(postId) {
   const sid = activeSessionId();
   const post = sid && getPosts(sid).find((p) => p.id === postId);
   if (!post?.firstComment) return;
@@ -628,7 +635,7 @@ export function onPostFirstCommentRemove(postId) {
   });
 }
 
-export function onPostDelete(postId) {
+function onPostDelete(postId) {
   const sid = activeSessionId();
   if (!sid) return;
   const idx = getPosts(sid).findIndex((p) => p.id === postId);
@@ -670,7 +677,7 @@ export function onPostImage(postId) {
 // empty slot produces a picture in one click with no way to steer it, and the
 // media block's studio controls only exist once there IS media — so an
 // image-less draft had no route to the studio at all.
-export function onPostStudio(postId) {
+function onPostStudio(postId) {
   const sid = activeSessionId();
   if (!sid) return;
   const post = getPosts(sid).find((p) => p.id === postId);
@@ -722,7 +729,7 @@ export function onPostImageUpload(postId) {
 
 // Clear a draft image — nulling imageUrl drops the card back to the
 // generate/upload placeholder (post-card.js renders on imageUrl presence).
-export function onPostImageRemove(postId) {
+function onPostImageRemove(postId) {
   const sid = activeSessionId();
   if (!sid) return;
   attachImageToDraft(sid, postId, null);
@@ -730,7 +737,7 @@ export function onPostImageRemove(postId) {
   showToast("Image removed");
 }
 
-export function startEdit(postId, at) {
+function startEdit(postId, at) {
   if (editingPostId === postId) return;
   if (editingPostId) commitEdit(editingPostId); // auto-save the previous card
   const sid = activeSessionId();
@@ -826,4 +833,184 @@ function parseEditorBody(raw) {
     }
   }
   return { text, hashtags, cta: "" };
+}
+
+// The per-card actions on a single draft, from the shell's delegated click
+// listener (right-panel.js), at the same point in its branch order. True when
+// the click was one of them.
+export function handleDraftsClick(event) {
+  // Per-card actions on a single draft (Lot 21 rich PostCard).
+  const editBtn = event.target.closest("[data-post-edit]");
+  if (editBtn) {
+    startEdit(editBtn.dataset.postEdit);
+    return true;
+  }
+  // A click on the draft's text opens the editor with the caret where it
+  // landed — unless it ended a text selection (the user was copying).
+  const editBody = event.target.closest("[data-post-edit-body]");
+  if (editBody && window.getSelection()?.isCollapsed !== false) {
+    startEdit(editBody.dataset.postEditBody, { x: event.clientX, y: event.clientY });
+    return true;
+  }
+  const saveBtn = event.target.closest("[data-post-edit-save]");
+  if (saveBtn) {
+    commitEdit(saveBtn.dataset.postEditSave);
+    return true;
+  }
+  const cancelBtn = event.target.closest("[data-post-edit-cancel]");
+  if (cancelBtn) {
+    cancelEdit(cancelBtn.dataset.postEditCancel);
+    return true;
+  }
+  // The network's "…see more": unclamps the body in place, no re-render.
+  const readMore = event.target.closest("[data-post-readmore]");
+  if (readMore) {
+    const expanded = readMore.closest(".posts__card").classList.toggle("is-expanded");
+    readMore.setAttribute("aria-expanded", String(expanded));
+    readMore.textContent = expanded ? "Show less" : readMore.dataset.more;
+    return true;
+  }
+  const mentionBtn = event.target.closest("[data-post-mention]");
+  if (mentionBtn) {
+    onPostMention(mentionBtn.dataset.postMention);
+    return true;
+  }
+  const saveDraftBtn = event.target.closest("[data-post-save-draft]");
+  if (saveDraftBtn) {
+    onPostSaveAsDraft(saveDraftBtn.dataset.postSaveDraft);
+    return true;
+  }
+  const assignBtn = event.target.closest("[data-post-assign]");
+  if (assignBtn) {
+    onPostAssign(assignBtn.dataset.postAssign);
+    return true;
+  }
+  const scheduleBtn = event.target.closest("[data-post-schedule]");
+  if (scheduleBtn) {
+    // The Edit affordance on the scheduled status-card renders as an
+    // <a href="#"> per DS pattern — swallow the default so the URL
+    // hash doesn't get dirtied when it's clicked.
+    if (scheduleBtn.tagName === "A") event.preventDefault();
+    onPostSchedule(scheduleBtn.dataset.postSchedule);
+    return true;
+  }
+  const fcRemove = event.target.closest("[data-post-first-comment-remove]");
+  if (fcRemove) {
+    onPostFirstCommentRemove(fcRemove.dataset.postFirstCommentRemove);
+    return true;
+  }
+  const delBtn = event.target.closest("[data-post-delete]");
+  if (delBtn) {
+    onPostDelete(delBtn.dataset.postDelete);
+    return true;
+  }
+  const imageBtn = event.target.closest("[data-post-image]");
+  if (imageBtn) {
+    onPostImage(imageBtn.dataset.postImage);
+    return true;
+  }
+  const imageEditBtn = event.target.closest("[data-post-image-edit]");
+  if (imageEditBtn) {
+    onPostStudio(imageEditBtn.dataset.postImageEdit);
+    return true;
+  }
+  const studioBtn = event.target.closest("[data-post-studio]");
+  if (studioBtn) {
+    onPostStudio(studioBtn.dataset.postStudio);
+    return true;
+  }
+  const imageUploadBtn = event.target.closest("[data-post-image-upload]");
+  if (imageUploadBtn) {
+    onPostImageUpload(imageUploadBtn.dataset.postImageUpload);
+    return true;
+  }
+  // The draft's image preset is a Playbook setting: Change opens where it is set.
+  const presetBtn = event.target.closest("[data-post-image-preset]");
+  if (presetBtn) {
+    navigate(`/playbook/${presetBtn.dataset.postImagePreset}?tab=images`);
+    return true;
+  }
+  // The draft's voice (flag voicePerNetwork): « Give X its own voice » asks
+  // in the chat; « Rewrite it » rewrites it in its network's voice as it is now.
+  const voiceBtn = event.target.closest("[data-post-voice]");
+  if (voiceBtn) {
+    const sid = activeSessionId();
+    if (sid) giveNetworkVoice(sid, voiceBtn.dataset.postVoice, voiceBtn.dataset.postVoiceNet);
+    return true;
+  }
+  const rewriteBtn = event.target.closest("[data-post-voice-rewrite]");
+  if (rewriteBtn) {
+    const sid = activeSessionId();
+    if (sid) startRewrite(sid, rewriteBtn.dataset.postVoiceRewrite, "voice");
+    return true;
+  }
+  // My last rewrite, from the draft's green status card: undone (then
+  // redone), its removed words shown or hidden, or closed — the card and the
+  // marks go.
+  const changesUndo = event.target.closest("[data-post-changes-undo]");
+  if (changesUndo) {
+    const sid = activeSessionId();
+    if (sid) undoRevision(sid, changesUndo.dataset.postChangesUndo);
+    return true;
+  }
+  const changesToggle = event.target.closest("[data-post-changes-view], [data-post-changes-dismiss]");
+  if (changesToggle) {
+    const sid = activeSessionId();
+    const id = changesToggle.dataset.postChangesView || changesToggle.dataset.postChangesDismiss;
+    const post = sid && getPosts(sid).find((p) => p.id === id);
+    if (!post?.revision) return true;
+    const patch = changesToggle.dataset.postChangesView ? { view: !post.revision.view } : { hidden: true };
+    updatePostContent(sid, id, { revision: { ...post.revision, ...patch } });
+    return true;
+  }
+  const gapBtn = event.target.closest("[data-post-playbook-gap]");
+  if (gapBtn) {
+    navigate(`/playbook/${gapBtn.dataset.postPlaybookGap}`);
+    return true;
+  }
+  const imageRemoveBtn = event.target.closest("[data-post-image-remove]");
+  if (imageRemoveBtn) {
+    onPostImageRemove(imageRemoveBtn.dataset.postImageRemove);
+    return true;
+  }
+  // "Edit clip" on a draft generated from a video clip — reopen the source
+  // clip in the Video Clips modal (single-clip, subtitles tab). Saving
+  // persists to the source AND re-syncs this draft's PIP (trim / format /
+  // subtitle style) so the card reflects the edit.
+  const postClipEditBtn = event.target.closest("[data-post-clip-edit]");
+  if (postClipEditBtn) {
+    const pid = postClipEditBtn.dataset.postClipEdit;
+    const sid = activeSessionId();
+    if (!sid) return true;
+    const post = getPosts(sid).find((p) => p.id === pid);
+    const ref = post && post.clipRef;
+    if (!ref || !ref.sourceId || !ref.clipId) return true;
+    const source = getStreamSources(sid).find((s) => s.id === ref.sourceId);
+    if (!source) return true;
+    // flag clipsSpace: one editor — the clip opens in the Clips space's.
+    if (isFlagOn("clipsSpace")) {
+      import("../../screens/clips/open-in-clips.js?v=2761").then(({ openInClips }) =>
+        openInClips(sid, source, ref.clipId),
+      );
+      return true;
+    }
+    openVideoClipsModal(source, {
+      editingClipId: ref.clipId,
+      captionsTab: true,
+      clipOverrides: { format: post.format },
+      onSaveClips: (srcId, nextClips) => {
+        updateSourceClips(srcId, nextClips);
+        const edited = (nextClips || []).find((c) => c.id === ref.clipId);
+        if (!edited) return;
+        updatePostClip(sid, pid, {
+          start: edited.start,
+          end: edited.end,
+          format: edited.format || null,
+          subtitleStyle: edited.captionsOn ? edited.captionStyle : "none",
+        });
+      },
+    });
+    return true;
+  }
+  return false;
 }

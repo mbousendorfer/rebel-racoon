@@ -23,8 +23,8 @@
 // colours baked into the icon (they're SVG data-URI backgrounds, not font
 // glyphs), so nothing here has to hardcode a third-party hex.
 
-import { compactNumber, html, raw } from "../utils.js?v=2760";
-import { networkMeta } from "../social-profiles.js?v=2760";
+import { compactNumber, html, raw } from "../utils.js?v=2761";
+import { networkMeta } from "../social-profiles.js?v=2761";
 
 // Avatar tints the card knows how to paint (see social-post-card.css). An
 // unknown accent falls back to grey rather than rendering an unstyled circle —
