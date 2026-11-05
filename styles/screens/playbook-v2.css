@@ -40,6 +40,14 @@
   gap: var(--ref-spacing-sm);
 }
 
+/* The page's head and its first block: 24 (the head's 8 + 16), more than the
+   16 between blocks — the head introduces them, it isn't one of them
+   (2026-11-05, asked: « le rythme vertical… très tassé, et desfois pas
+   assez » — it was 8). A margin, not padding: the sticky head keeps its size. */
+.welcome-screen--library .pb2-tabhead + .pb2-grid {
+  margin-top: var(--ref-spacing-sm);
+}
+
 /* ── Identity header ──────────────────────────────────────────────────── */
 
 .pb2-hero {
@@ -534,11 +542,13 @@
  *   › content 14 (body) › captions 12. One exception: the voice's three words
  *   (24 bold, .pb2-trait).
  * (A pass made the title a 14 label over 16 content: inverted, reverted.)
- * 24 all round, 12 from the title to the content. */
+ * 24 all round. A title and its hint are one pair, 4 apart; 16 from the pair
+ * to the content (2026-11-05: title → hint and hint → content were both 12,
+ * so nothing grouped). */
 .pb2-block {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-md);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
@@ -591,6 +601,11 @@
   margin: 0;
   color: var(--ref-color-grey-80);
   font-size: var(--ref-font-size-sm);
+}
+
+/* Under its title: 4, the pair (the block's gap is 16). */
+.pb2-block__head + .pb2-block__hint {
+  margin-top: calc(var(--ref-spacing-xxxs) - var(--ref-spacing-sm));
 }
 
 /* The Guided / Write it yourself switch, inside a block: it keeps the recap
@@ -1633,7 +1648,7 @@
 .pb2-voice-solo {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-lg);
+  gap: var(--ref-spacing-md);
   max-width: 400px;
   margin-inline: auto;
   padding-top: var(--ref-spacing-xxs);
