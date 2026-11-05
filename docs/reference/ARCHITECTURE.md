@@ -21,18 +21,19 @@
    - match le path (query stripped)
    - appelle `cleanup` retourné par le précédent handler (si défini) — `#app` n'est pas vidé par le router : chaque screen écrit son propre contenu dans `target`
    - appelle le handler du nouveau path : `renderXxx(params, target)`
-4. `setAfterRender` (dans `app.js`) re-render la sidebar + la `conversation-status-card` après chaque route change, et toggle la classe `body.onboarding` pour le flow welcome-alt (layout full-bleed).
+4. `setAfterRender` (dans `app.js`) re-render la sidebar + la `conversation-status-card` après chaque route change, toggle les classes de `<body>` — `onboarding` (le run welcome-alt hors création intégrée, full-bleed), `account-scope` (`isAccountScope(path)`), `clips-editing` (l'éditeur de clip) — et ouvre au besoin l'intro des voix (`maybeOpenVoiceIntro`).
 
 ## Topologie de l'app shell
 
 ```
 <body>
-  #sidebar          ← persistent, géré par src/components/sidebar.js
-  #topbar           ← persistent, géré par src/components/topbar.js
-  #app              ← contenu de la route active, vidé/recréé sur hashchange
-  #rightPanel       ← persistent overlay, géré par src/components/right-panel.js
-  #toastRegion      ← portal pour les toasts (DS .ap-snackbar)
-  #conversationStatusCard ← floating indicator
+  #appShell         ← la grille du shell (index.html)
+    #sidebar        ← persistent, géré par src/components/sidebar.js
+    #topbar         ← persistent, géré par src/components/topbar.js
+    #app            ← contenu de la route active : chaque screen écrit dans `target`
+    #rightPanel     ← persistent, une cellule de la grille, ajouté par src/components/right-panel.js init()
+  #toastRegion      ← portal pour les toasts (DS .ap-snackbar-thread)
+  #conversationStatusCard ← floating indicator (conversation-status-card.js)
   [modals]          ← chacun s'injecte sur init(), un seul ouvert via modal-coordinator
 </body>
 ```
@@ -62,15 +63,18 @@ src/
                           which marks the routes that live ABOVE the workspaces. Insights
                           reads it flag or no flag.
   playbook-access.js    — who may view/use/edit/share a Playbook; the store never filters
-  playbook-brand-kit.js — the Playbook's brand-kit rows (flag `sexySquirrel`), called by playbook-view
+  playbook-brand-kit.js — the Playbook's brand-kit rows, called by playbook-view and the Image Generator
   brand-cover.js — the palette cover + the voice as a sentence, shared by the catalogue card and the fiche header
-  modules/image-studio/ — the Image Generator (flag `sexySquirrel`): the draft's studio, the brand's
-                          styles row + creator. Self-contained (index.js is its only door):
-                          config/ (formats, fonts, networks, style presets, mocks) · model/schema ·
-                          state/ (store, creation / style actions, edit-doc, playbook-brand — the ONE
-                          adapter to the Playbooks) · render/ (layout, palette, generators, export) ·
-                          services/ (storage: localStorage + IndexedDB, mock generation) · ui/ ·
-                          views/ (studio, style-creator, playbook-styles, edit/) · styles/imst-*.css
+  modules/image-studio/ — the Image Generator: the draft's studio, the fiche's Image generation tab,
+                          the style creator. Self-contained (index.js is its only door):
+                          quick-image.js (a draft's « Generate an image », headless) ·
+                          config/ (formats, fonts, networks, style presets, copy limits, edit, mock) ·
+                          lib/ (its own html``, delegate, id, prng) · model/schema ·
+                          state/ (store, notifier, creation / style actions, edit-doc, playbook-brand —
+                          the ONE adapter to the Playbooks) · render/ (layout, palette, generators,
+                          export, visual…) · services/ (storage: localStorage + IndexedDB, prompt,
+                          mock generation) · ui/ · views/ (studio, style-creator, frame,
+                          playbook-images, playbook-styles, edit/) · styles/imst-*.css
   file-kinds.js         — source kind → DS icon class
   figma-capture.js      — ?openModal= / ?openPanel= deep links for the Figma screen capture
   archie-loader.js      — swaps every spinner in the app for the animated Archie mark
@@ -78,15 +82,16 @@ src/
   mocks.js              — barrel over mocks/ — the single import path for seed data
   mocks/                — ALL seed data, one file per domain: sessions, top-posts,
                           sources, ideas, playbooks, topics, posts, threads,
-                          schedule, connectors, social, objectives. Self-contained: no file
+                          schedule, connectors, social, objectives, videos, mentions,
+                          translations, voice-networks, demo-brand. Self-contained: no file
                           under mocks/ reads a sibling.
-  image-studio.js       — Image Studio state engine (UI-agnostic) + all its mocks
-  image-studio-canvas.js — pure canvas helpers: bake / crop / text metrics
+  concepts.js           — what each object IS, said once to the user (the sentence each host page shows)
+  demo-mode.js / demo-flow.js — flag `demoMode`: the state (a leaf the stores read) / what the demo does
 
   # Stores (per-session Map + subscribers, seed from mocks unless new-alt mode)
   sessions-store.js     — chat sessions list (pin / rename / delete)
   contexts-store.js     — Playbooks (Contexts)
-  connectors-store.js   — connectors list + connection state (the only "catalog" store)
+  connectors-store.js   — connectors list + connection state
   library.js            — per-session ideas; getSources() delegates to sources-stream
   posts-store.js        — per-session drafts
   assistant.js          — per-session conversational thread (turns, reasoning chips, MCP query)
@@ -95,12 +100,14 @@ src/
   schedule-presets-store.js — GLOBAL: one posting-rhythm preset per Playbook (the schedule modal's Adjust)
   schedule-engine.js    — the schedule spread (which date each draft gets): the modal and the chat's plan
   chat-refs.js          — Archie's inline references ([[post|idea|source:id]] → underlined label)
-  topic-feeds-store.js  — GLOBAL: one listening feed per Playbook (flag `topicFeed`)
+  topic-feeds-store.js  — GLOBAL: one listening feed per Playbook
   topics-store.js       — GLOBAL: the Topics + the triage, in two separate structures
   topics-catalog.js     — the eight listening sources, cadences, kinds, review
                           statuses, signals (CONFIG, like ff-catalog)
   composer-mentions.js  — per-session @mention pills in the composer
-  composer-connector.js — composer's "Connected sources" submenu (feature-flagged)
+  composer-connector.js — per-session: the connector a chat is asking (flag `connectors`)
+  videos-store.js       — GLOBAL per Playbook: the Clips space's videos (flag `clipsSpace`)
+  post-plan-store.js    — per-session: the post plans of a chat with no source (prod update_post_brief)
 
   # Conversational flow orchestrators (drive the assistant thread + pickers)
   draft-flow.js         — "Draft post from idea" turn sequence (channel pick → execute → result)
@@ -110,15 +117,22 @@ src/
   playbook-rosters.js   — its Competitors + Influencers tabs (render, Discover scan, modal, add, clicks);
                           the view passes a ctx (cfg / editScope as getters, repaint…), never imported back
   context-mock-analysis.js — deterministic mock "website analysis" for onboarding
-  sidebar-wizard.js     — multi-stage numbered-option wizard inside the assistant panel
+  sidebar-wizard.js     — multi-stage numbered-option wizard inside the assistant panel. ⚠️ Unreachable:
+                          its one caller, session.js startSectionEdit, hangs on [data-edit-context-section],
+                          which nothing renders (kept, pending the user's call)
   inline-question.js    — one-shot numbered-option picker inside the assistant panel
   library-actions.js    — shared bulk-bar (Extract/Delete) + click dispatch for content lists
   social-profiles.js    — connected social accounts (STATE: which are connected, + a notifier),
                           the NETWORKS table (icon / label / limit / accent) and the profile renderers
+  voice-parts.js        — a Playbook's voice in five parts (VOICE_PARTS) + a network's voice (networkVoice)
   network-voice-flow.js — a network's voice: the shared choices, the proposal (propose / save), the chat's Voice step (requireNetworkVoices, giveNetworkVoice) — flag voicePerNetwork; without a chat: components/network-voice-modal.js (Clips) and components/voice-proposal-modal.js (questions + proposal)
   connect-profiles-flow.js — requireConnectedProfiles(): the connect step every draft path asks
-                          (flag `skipConnectProfiles`)
   draft-image-flow.js   — "Generate an image": one image straight into the draft, nothing asked
+  post-plan-flow.js     — writing a post in a chat with no source (post plan → confirm → drafts)
+  mention-flow.js       — mentions in drafts, asked in the chat (flag `draftMentions`)
+  post-validation.js    — can this draft publish on its network? DERIVED on every read, never stored
+  word-diff.js          — what a rewrite changed, word by word (flag `draftChanges`; npm run check:diff)
+  clip-framing.js       — the Clips space's reframe engine (port of prod's crop editor; npm run check:framing)
   objective-measures.js / objective-scoring.js / objective-flow.js — Insights' objectives: the
                           metric catalogue, the tiers, and the chat doors (flag `insightsHub`)
   clip-formats.js        — video aspect-ratio catalog
@@ -142,8 +156,12 @@ src/
 
   screens/
     dashboard.js, session.js, home.js, playbook.js,
-    connectors.js, topics.js, topics-settings.js,
-    welcome-alt.js, welcome-alt-recap.js
+    connectors.js, topics.js, topics-settings.js
+    welcome-alt.js        — /welcome-alt: a redirect to the intro
+    welcome-alt-intro.js · welcome-alt-shell.js (the run's split screen, startFlow) ·
+    welcome-alt-steps.js (one screen per step) · welcome-alt-explainer.js (each step's scene) ·
+    welcome-alt-ready.js (the end of the run) · welcome-alt-recap.js (/recap + /voice, the
+    run's sessionStorage helpers) · welcome-alt-review.js (the two reviews' shared screen)
       home.js             — the account home (flag `playbookWorkspace`) AND the Playbooks
                             catalogue, one module, two gated routes (/home + /contexts).
                             Its classes + stylesheet still say `contexts` on purpose.
@@ -152,6 +170,8 @@ src/
     insights/             /insights (flag `insightsHub`): shell (topbar, clicks, doors) · model ·
                           views (the layout switch) · layouts/{cockpit, mob_index, mob_side} ·
                           read · pieces · charts (Highcharts, vendored)
+    clips/                the Clips space (flag `clipsSpace`): library (/clips) · project (/clips/:id) ·
+                          editor (/clips/:id/edit/:clipId) · shared · open-in-clips (the door from a chat)
     _analyse-common.js  — shared "chat bubble + numbered picker bar" wizard primitives
     session/
       intake-lifecycle.js — flips source-intake turns loading→ready as sources process
@@ -160,18 +180,21 @@ src/
       thread-render.js    — renderThread + the turns that read a store (extraction, widgets…)
       composer.js         — the composer, its Add menu, the connector chip, the status banner
       draft-questions.js  — language / profile / repurpose / angle / count / video-intake questions
-      empty-hero.js       — a new chat's hero + "Fresh topics to review"
+      empty-hero.js       — a new chat's hero + « Topics to review »
       clip-studio-view.js — the Clip Studio's stages and handlers
       batch-studio-view.js — the Batch studio's screen and its replay into a chat
       top-posts-view.js   — the Top posts repurpose screen
       workflow-flow.js    — the "How it works" block both studios share
       wizard-keyboard.js  — keyboard nav (↑↓ / 1–9 / Enter / Esc) for the picker
       clip-draft-flow.js  — "draft from clips" picker (ratio → subtitles → accounts → generate) + clipContext; the only external caller (right-panel) imports THIS, not the whole session screen
+      chat-gallery.js     — « Admin: preview in chat » (flag `chatPreviewTool`): every element a chat can show, played on demand
+      home-directions.js  — a new chat's home, the directions under comparison (flags `home*`)
       drafts-asks.js      — what a typed ask does to the drafts (delete all, rewrite, translate, regenerate, first comment, review, image, schedule + the planner): routeTypedAsk, askSwitchPostPlan, openPlanInModal
 
   components/             — each exports init() (injects DOM once) + render/open()
-    topbar.js             persistent header: route title (rename on session) +
-                          Sources / Ideas / Drafts pills + status-card toggle; back on /playbook
+    topbar.js             persistent header: route title (rename on session) + on a session the side
+                          panel's tabs (flag `contentPanel`) or the Sources / Ideas / Drafts pills +
+                          status-card toggle; the back control (backTargetFor)
     sidebar.js            left rail: brand, New chat, Search, nav (under `playbookWorkspace`:
                           `Playbook`, singular, = the active brand's fiche), footer popmenu
                           (feedback/bug/shortcuts + Admin menu)
@@ -179,9 +202,11 @@ src/
                           (Sort & group, rows, pin / rename / delete)
     right-panel.js        sliding panel shell: open / close / resize / URL state + the delegated listeners
     right-panel/          drafts-view.js (Drafts: feed, filters, actions + their clicks, handleDraftsClick, inline editor) ·
-                          sources-view.js · ideas-view.js (Ideas + Clips)
+                          sources-view.js · ideas-view.js (Ideas + Clips) · overview-view.js (Overview, flag `contentPanel`)
     conversation-status-card.js  floating in-progress card (sources/ideas/drafts counts)
-    content-workspace.js  shared Sources+Ideas library layout (search / sort / By Source / All Ideas)
+    content-workspace.js  Sources+Ideas library layout (search / sort / By Source / All Ideas). ⚠️ Unreachable:
+                          renderContentWorkspace isn't exported and nothing produces ?tab=content; session.js
+                          only imports contentState + rerenderContentWorkspaceBody (kept, pending the user's call)
     source-card.js, idea-card.js, idea-card-compact.js, post-card.js, clip-card.js, empty-state.js
     topic-card.js         one Topic: the feed's card, the picker's card, the in-chat row
     starter-card.js       one workflow starter, two hosts: the new chat's hero + the account home
@@ -190,6 +215,7 @@ src/
     more-menu.js          installMoreMenu(): the shared ⋯ popover on source / idea / clip cards
     dropzone.js           bindDropzone(): a dashed target that really accepts a drop
     tooltip.js            document-delegated [data-tooltip] — no per-screen wiring
+    ref-preview.js        hover preview of an inline reference in Archie's messages (chat-refs.js)
     feedback-control.js   the thumbs + reasons row under anything Archie generated
     toast.js              showToast() snackbar (DS .ap-snackbar)
     shortcut-legend.js    ? key dialog
@@ -198,23 +224,19 @@ src/
     connectors-modal.js   connectors gallery + detail overlay (from composer Add / Sources panel / page)
     topic-picker-modal.js one dialog, two views — the picker's list, and the article
     topic-ignore-modal.js "Why did this Topic miss the mark?" — the reason, kept
-    skip-connect-modal.js "Skip connecting an account?" — reassures, then asks why
     topic-history-modal.js the Topic's two-sided trail: the scan's, then the reader's
     video-clips-modal.js (+ video-clips-modal/editor-pane.js), schedule-modal.js
                           (+ schedule-modal-legacy.js behind `newScheduleModal`),
-    connect-account-modal.js the network's consent dialog (flag `skipConnectProfiles`)
+    connect-account-modal.js the network's consent dialog
+    assign-modal.js       assign drafts for review (one reviewer, due date, comment)
+    clip-range-modal.js   « Add a clip »: the one moment a clip's Start / End are chosen
+    network-voice-modal.js, voice-proposal-modal.js, voice-intro-modal.js — a network's voice where
+                          there is no chat (flag `voicePerNetwork`)
     objective-modal.js, objective-catalog-panel.js, measure-scope-field.js — Insights' objectives
     bug-report-modal.js, feedback-modal.js, chat-picker-modal.js,
     confirm-modal.js, rename-modal.js, search-modal.js,
     save-folder-modal.js, analyze-profiles-modal.js, fill-document-modal.js,
-    share-playbook-modal.js  personal / named colleagues / whole org + owner + change log (flag)
-    image-studio-v2/      the Image Studio, split by subject (see FEATURES §7 / §7bis):
-                          index (lifecycle) · events · commit · inline-text · prompt-guard ·
-                          stage-view (shell) · setup-stage (Generate: options + preview) ·
-                          settings-view · references-view · branding-view ·
-                          brief-blocks · preview-column ·
-                          composer-view (Edit only) · tools-view · edit-view ·
-                          interactions · context · type-art / style-art (the 9 drawn option previews)
+    share-playbook-modal.js  personal / named colleagues / whole org + owner + change log (flag `playbookSharing`)
 
   modal-coordinator.js    one-overlay-at-a-time: requestOpen / notifyClose / bindOverlayDismissal,
                           + showOverlay / hideOverlay (the open / closed state every modal sets)

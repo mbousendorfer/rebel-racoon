@@ -1,6 +1,6 @@
 // Tiny admin helper: lets the prototype preview two entry-point states.
-//   "new-alt"   → first-time user, hybrid flow: visual profile picker then
-//                 conversational Playbook builder (no sidebar/topbar)
+//   "new-alt"   → first-time user: empty stores and the first-time run as
+//                 screens (/welcome-alt/*, no sidebar/topbar)
 //   "returning" → populated mocks everywhere
 //
 // The mode is stored in localStorage and read synchronously at render time.

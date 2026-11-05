@@ -1,14 +1,14 @@
 # Shell layout — Right panel · Status card · Sidebar
 
-Handoff sur l'ensemble des règles qui pilotent les 3 surfaces de chrome de la
-zone session : le **right panel**, la **conversation-status-card** et la
-**sidebar** (collapsed / expanded), plus la définition des **tailles** du right
-panel.
+Le détail **tel qu'implémenté** des 3 surfaces de chrome de la zone session : le
+**right panel**, la **conversation-status-card** et la **sidebar** (collapsed /
+expanded), plus les **tailles** du right panel. Les règles produit seules :
+[`PANEL-SIDEBAR-RULES.md`](PANEL-SIDEBAR-RULES.md) ; la recette sans code pour
+une autre stack : [`SIDEBAR-PANEL-RECIPE.md`](SIDEBAR-PANEL-RECIPE.md).
 
 Les 3 surfaces sont des **cellules d'une même grille CSS** sur `#appShell`
 (`.app-shell`), pas des overlays. Tout se joue donc sur `grid-template-columns`
-
-- quelques classes d'état :
+et quelques classes d'état :
 
 | Classe sur `#appShell`    | Effet                                   |
 | ------------------------- | --------------------------------------- |
@@ -24,16 +24,21 @@ Fichiers : `src/components/{right-panel,conversation-status-card,sidebar}.js` +
 
 ## 1. Right panel — ouverture / fermeture
 
-Cellule de grille **ligne 2, colonne 3**. 5 modes mutuellement exclusifs
-(`state.mode`, module-local dans `right-panel.js`) :
+Cellule de grille **ligne 2, colonne 3**, ajoutée par `init()` dans `#appShell`.
+Modes mutuellement exclusifs (`state.mode`, module-local dans `right-panel.js`),
+tous ouverts par `openMode()` :
 
-| Mode            | Ouvert par                                        | Persisté URL ?         |
-| --------------- | ------------------------------------------------- | ---------------------- |
-| `drafts`        | `openDrafts()`                                    | oui — `?panel=drafts`  |
-| `ideas`         | `openIdeas()` / `openClips()` (sous-onglet Clips) | oui — `?panel=ideas`   |
-| `sources`       | `openSources()`                                   | oui — `?panel=sources` |
-| `context-brief` | `openContextBriefPanel()`                         | **non**                |
-| `null`          | `closePanel()`                                    | —                      |
+| Mode       | Ouvert par                                                                                               | Persisté URL ?          |
+| ---------- | -------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `overview` | `openOverview()` — seulement si `hasOverview()` (flag `contentPanel` ON et `conversationStatusCard` OFF) | oui — `?panel=overview` |
+| `drafts`   | `openDrafts()`                                                                                           | oui — `?panel=drafts`   |
+| `ideas`    | `openIdeas()` / `openClips()` (la vue Clips, `outputsView`)                                              | oui — `?panel=ideas`    |
+| `sources`  | `openSources()`                                                                                          | oui — `?panel=sources`  |
+| `null`     | `closePanel()`                                                                                           | —                       |
+
+Sous `contentPanel` (ON par défaut), les onglets du panel vivent dans la topbar
+(`openTab(mode)`, Clips n'y apparaît que s'il y a des clips) ; le panel n'a pas
+de rangée d'en-tête.
 
 **Règles :**
 
@@ -42,44 +47,46 @@ Cellule de grille **ligne 2, colonne 3**. 5 modes mutuellement exclusifs
 - **Scoped session** : `syncFromUrl()` ferme le panel dès qu'on quitte une route
   `/session/:id` (Playbooks, Connectors, Dashboard…), avec `skipUrl` pour ne pas
   réécrire le hash de la nouvelle route.
-- **Persistance URL** : les 3 modes « utilisateur » (`drafts`/`ideas`/`sources`,
-  cf. `VALID_URL_MODES`) sont encodés en `?panel=…`. Au boot et sur chaque
+- **Persistance URL** : tous les modes (`VALID_URL_MODES` = overview / drafts /
+  ideas / sources) sont encodés en `?panel=…` par `history.pushState` (pas de
+  `hashchange`, donc le fil n'est pas re-rendu). Au boot et sur chaque
   `hashchange`, `syncFromUrl()` rouvre le bon mode (deep-link + back/forward) ;
-  un garde no-op casse la boucle write → hashchange → write. `context-brief`
-  n'est **jamais** persisté (piloté par la nav Playbooks, pas un toggle user).
+  un garde no-op casse la boucle write → hashchange → write.
 - **Focus** : à l'ouverture fraîche (`prev === null`), le focus courant est
   mémorisé (`snapshotFocusOnOpen`) et restauré à la fermeture
   (`restoreFocusOnClose`).
-- **Fermeture** : `Escape` ferme le panel **mais** seulement si aucun menu kebab
-  de source n'est ouvert (l'Escape les ferme d'abord). Bouton close inline
-  (modes liste) ou close pinné au coin (`context-brief`). Changer de session
-  (new chat, suppression de la session active) appelle `closeRightPanel()`.
+- **Fermeture** : `Escape` ferme le panel **mais** seulement si aucune modale
+  n'est ouverte par-dessus (`isOverlayEscape`) et aucun menu kebab de source
+  n'est ouvert (l'Escape les ferme d'abord). Bouton close inline. Quitter la
+  session (new chat, autre route) ferme le panel via `syncFromUrl()`.
 
 ---
 
 ## 2. Conversation-status-card — visibilité
 
-Cellule de grille **colonne 3** elle aussi (classe `.is-status-card-visible`).
-Sa `render()` masque la carte (`hideCard()`) si **n'importe laquelle** de ces
-gardes est vraie :
+Derrière le flag **`conversationStatusCard`** (OFF par défaut). Cellule de grille
+**colonne 3** elle aussi (classe `.is-status-card-visible`). Sa `render()` masque
+la carte (`hideCard()`) si **n'importe laquelle** de ces gardes est vraie :
 
-1. Pas sur une route `/session/:id`.
-2. Session `welcome-alt-*` (onboarding full-bleed, grille mono-colonne).
+1. Flag `conversationStatusCard` OFF.
+2. Pas sur une route `/session/:id`.
 3. Session `clip-studio-*` (flow full-page).
 4. Préférence user désactivée — `isEnabled()` lit
    `localStorage["archie-status-card-visible"]` (défaut **ON** ; `"0"` = masqué),
-   togglée par le bouton info de la topbar.
-5. **Un right-panel est ouvert** en mode `drafts`/`ideas`/`sources` → la carte
-   cède la colonne au panel. La préférence n'est pas touchée : à la fermeture du
-   panel, `subscribeRightPanel` re-render et la carte réapparaît si activée.
+   togglée par le bouton info de la topbar. Sous `contentPanel` ni le toggle ni
+   cette garde n'existent : la carte se montre dès que le panel est fermé.
+5. **Un right-panel est ouvert** (n'importe quel mode) → la carte cède la
+   colonne au panel. La préférence n'est pas touchée : à la fermeture du panel,
+   `subscribeRightPanel` re-render et la carte réapparaît si activée.
 6. **Chat vide** — aucune source, idée, clip, draft ni travail en cours
    (`isEmptyChat`). Le toggle topbar est masqué en lockstep.
 
 Sinon : `rootEl.hidden = false` + `setShellLayout(true)`.
 
-> **Carte et right-panel sont mutuellement exclusifs** sur la colonne — sauf le
-> mode `context-brief` (hors `VALID_URL_MODES`, donc la garde #5 ne s'applique
-> pas), qui peut techniquement coexister dans une grille à 4 colonnes.
+> **Carte et right-panel ne s'affichent jamais ensemble** (garde 5). Les règles
+> à 4 colonnes de `conversation-status-card.css` (carte 296px + panel
+> `max(380px, (100vw − sidebar) / 2)` en `grid-column: 4`) ne sont donc jamais
+> atteintes depuis que le mode `context-brief` a disparu.
 
 ---
 
@@ -104,7 +111,7 @@ Piloté par `.is-sidebar-collapsed` sur `#appShell`, persisté dans
 
 - **Seuil de largeur** : `CHAT_MIN_WIDTH_PX = 560`. `predictedChatWidthWithSidebarExpanded()`
   reproduit la formule de grille (`viewport − sidebar(260) − panel`, panel =
-  override de drag ou `max(610, (viewport − 260)/3)`) pour **prédire** la
+  override de drag ou `max(panelFormulaFloor(vw), (viewport − 260)/3)`) pour **prédire** la
   largeur du chat si la sidebar restait étendue. La largeur est **calculée**,
   pas mesurée (`offsetWidth`) — donc immune à la transition CSS
   `grid-template-columns` en cours, plus besoin du `requestAnimationFrame` à
@@ -139,23 +146,19 @@ Tokens de base (`styles/tokens.css`) :
 `styles/layout.css` :
 
 ```
-var(--app-right-panel-width-runtime, max(610px, calc((100vw - sidebar) / 3)))
+var(--app-right-panel-width-runtime, max(var(--app-right-panel-floor), calc((100vw - sidebar) / 3)))
 ```
 
-→ par défaut **1/3 de (viewport − sidebar), plancher 610px**. Les 4 combinaisons :
+→ par défaut **1/3 de (viewport − sidebar)**, avec un plancher
+`--app-right-panel-floor` : **610px**, **380px sous 1280px** (`@media
+(max-width: 1279px)` ; à 1024, 610 laissait le chat sous ses 560px et la barre
+du composer passait à la ligne). `panelFormulaFloor(vw)` dans `right-panel.js`
+recopie ce plancher pour la prédiction du §3 — les deux doivent bouger ensemble.
 
 | État                      | `grid-template-columns`                   |
 | ------------------------- | ----------------------------------------- |
-| panel ouvert              | `260px / 1fr / max(610px, (100vw−260)/3)` |
-| panel + sidebar collapsed | `56px / 1fr / max(610px, (100vw−56)/3)`   |
-
-**Quand la status-card coexiste** (cf. `conversation-status-card.css`) la grille
-passe à **4 colonnes** ; le panel passe en `grid-column: 4` et la formule change
-(plancher **380px**, diviseur **/2**) :
-
-```
-sidebar / 1fr / 296px (carte) / max(380px, (100vw − sidebar) / 2)
-```
+| panel ouvert              | `260px / 1fr / max(floor, (100vw−260)/3)` |
+| panel + sidebar collapsed | `56px / 1fr / max(floor, (100vw−56)/3)`   |
 
 **Override runtime (drag-resize)** — `--app-right-panel-width-runtime` :
 
@@ -168,25 +171,14 @@ sidebar / 1fr / 296px (carte) / max(380px, (100vw − sidebar) / 2)
 - L'override est **réinitialisé à chaque ouverture fraîche** (`prev === null`,
   `resetPanelWidthOverride()`) → la formule redevient le défaut. Un swap de mode
   (Ideas→Drafts) **conserve** l'override pour que le resize survive.
-- L'ancienne clé `localStorage["archie-rpanel-width"]` (ère pré-formule) est
-  **effacée à l'init** (`clearLegacyPanelWidth`) — la largeur custom n'est donc
-  **pas** persistée entre reloads.
-
-> ⚠️ **Divergence code ↔ commentaire** : le commentaire en tête de
-> `right-panel.js` évoque « (viewport − sidebar) / 2 ». La formule réellement
-> appliquée par défaut est **/3 plancher 610px** (`layout.css`). Le `/2 plancher
-380px` ne s'applique qu'au cas status-card + panel. Le commentaire a divergé.
+- La largeur custom n'est écrite nulle part : elle n'est **pas** persistée
+  entre reloads (`init()` appelle aussi `resetPanelWidthOverride()`). La formule
+  est **/3** avec le plancher ci-dessus ; l'ancienne clé `archie-rpanel-width`
+  n'est plus ni lue ni effacée.
 
 ---
 
-## TL;DR — couplage des 3 surfaces
+## TL;DR
 
-Ouvrir un right-panel : (1) **auto-collapse** la sidebar — mais **seulement si**
-le chat passerait sous **560px** (sur grand écran elle reste étendue), one-shot,
-sans restore à la fermeture — et (2) **masque la status-card** en lui cédant la
-colonne 3. Carte et panel ne s'affichent jamais ensemble (sauf `context-brief`,
-grille à 4 colonnes). Au **resize**, la sidebar suit la largeur de façon
-**bidirectionnelle** (collapse sous le seuil, ré-étend au-dessus) tant que
-c'est un collapse `auto` — un collapse **manuel** (⌘B) est respecté. Taille du
-panel = formule de grille `max(610px, (100vw − sidebar) / 3)`, surchargeable
-transitoirement par le drag entre **380px** et **`100vw − 400px`**.
+Les règles produit qui en découlent (couplage, seuils, tailles) sont dans
+[`PANEL-SIDEBAR-RULES.md`](PANEL-SIDEBAR-RULES.md).

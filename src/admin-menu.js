@@ -6,13 +6,13 @@
 // the side-effecting actions wired by the sidebar's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2761";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2761";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2761";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2761";
-import { getRole, setRole, ORG } from "./org.js?v=2761";
-import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2761";
-import { resetIntro } from "./components/voice-intro-modal.js?v=2761";
+import { html, raw, escapeHtml } from "./utils.js?v=2762";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2762";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2762";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2762";
+import { getRole, setRole, ORG } from "./org.js?v=2762";
+import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2762";
+import { resetIntro } from "./components/voice-intro-modal.js?v=2762";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
@@ -23,7 +23,7 @@ const ADMIN_ROLE_OPTIONS = [
 
 const ADMIN_MODE_OPTIONS = [
   { value: "returning", label: "Returning user", hint: "Populated mocks (default)" },
-  { value: "new-alt", label: "First-time user", hint: "Visual picker + conversational chat" },
+  { value: "new-alt", label: "First-time user", hint: "Empty, starts with the first-time run" },
 ];
 
 // Switch user mode: persist, land on a coherent screen for the target mode, then

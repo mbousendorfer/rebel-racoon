@@ -23,19 +23,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2761";
-import { isFlagOn } from "../../feature-flags.js?v=2761";
-import { parseHashParams } from "../../url-state.js?v=2761";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2761";
-import { showToast } from "../../components/toast.js?v=2761";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2761";
-import { open as openRename } from "../../components/rename-modal.js?v=2761";
-import { getContextById } from "../../contexts-store.js?v=2761";
-import { escapeHtml } from "../../utils.js?v=2761";
-import * as ce from "../../caption-editor.js?v=2761";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2761";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2761";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2761";
+import { navigate } from "../../router.js?v=2762";
+import { isFlagOn } from "../../feature-flags.js?v=2762";
+import { parseHashParams } from "../../url-state.js?v=2762";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2762";
+import { showToast } from "../../components/toast.js?v=2762";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2762";
+import { open as openRename } from "../../components/rename-modal.js?v=2762";
+import { getContextById } from "../../contexts-store.js?v=2762";
+import { escapeHtml } from "../../utils.js?v=2762";
+import * as ce from "../../caption-editor.js?v=2762";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2762";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2762";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2762";
 import {
   framingContext,
   initialSegments,
@@ -54,7 +54,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2761";
+} from "../../clip-framing.js?v=2762";
 import {
   fmtMs,
   fmtPrecise,
@@ -69,8 +69,8 @@ import {
   dsSelect,
   bindSelectDismiss,
   EDITOR_TOOLS as TOOLS,
-} from "./shared.js?v=2761";
-import { primeDraftSetup } from "./project.js?v=2761";
+} from "./shared.js?v=2762";
+import { primeDraftSetup } from "./project.js?v=2762";
 
 const FRAME_MS = 40;
 const CARD_MS = 2000; // intro / outro card length
@@ -397,9 +397,6 @@ function syncTime() {
   if (len) len.textContent = fmtPrecise(clipLen());
   const stc = ed.el.querySelector("[data-clips-src-tc]");
   if (stc) stc.textContent = fmtPrecise(ed.t);
-  // The buttons that act at the playhead name the time they'll use.
-  ed.el.querySelectorAll("[data-clips-at]").forEach((n) => (n.textContent = fmtPrecise(ed.t)));
-  ed.el.querySelectorAll("[data-clips-at-rel]").forEach((n) => (n.textContent = fmtPrecise(ed.t - ed.w.startMs)));
   ce.setTime(relSec(), ed.playing);
   const ph = ed.el.querySelector("[data-clips-playhead]");
   if (ph) ph.style.left = pctIn(ed.t);
@@ -1402,9 +1399,6 @@ function handleChange(e) {
   if (!ed) return;
   const t = e.target;
   const seg = segmentAt(ed.w.segments, ed.t);
-  // The edge's field saves on Enter only (handleKey) — a change on blur is
-  // dropped: an inline edit never saves on blur.
-  if (t.matches("[data-clips-time]")) return undefined;
   if (t.matches("[data-clips-layout-pick]")) return edit(() => setLayout(ed.ctx, seg, t.value, ed.t, ratio()));
   if (t.matches("[data-clips-snap]")) {
     ed.snap = t.checked;

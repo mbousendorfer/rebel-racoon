@@ -45,6 +45,7 @@ Critères d'acceptation écrits **depuis l'app tournante** : chacun dit ce que l
 | [`audits/PROD-CHANGES.md`](audits/PROD-CHANGES.md)                         | 2026-06-05      | Plan priorisé des changements à appliquer côté prod pour se rapprocher du proto                                                                                                  |
 | [`audits/ALPHA-FEEDBACK.md`](audits/ALPHA-FEEDBACK.md)                     | 2026-06-10      | Retours des 12 sessions alpha (Mike Allton) : issues numérotées, statut dans le proto, solutions à choisir                                                                       |
 | [`audits/image-studio-integration.md`](audits/image-studio-integration.md) | 2026-09-25 → 28 | L'Image Generator : rapport de phase 0 puis son journal (§9-12 = l'état courant, cf. FEATURES §18)                                                                               |
+| [`audits/2026-10-28-ux-review.md`](audits/2026-10-28-ux-review.md)         | 2026-10-28      | Revue UX surface par surface (heuristiques + copy, 22 surfaces) : corrections faites et points « To decide »                                                                     |
 | [`audits/2026-10-30-ui-polish/`](audits/2026-10-30-ui-polish/README.md)    | 2026-10-29 → 30 | UI polish en boucle : 13 surfaces sur 78 captures reproductibles, 61 batches, score 7.08 → 8.37 ; avant / après (`compare.html`), régressions corrigées, 36 décisions à arbitrer |
 
 Les trois premiers précèdent le workspace Playbook, le Topic Feed, le partage, Insights et l'Image Generator ; `PROD-VS-PROTOTYPE` décrit encore `/settings`, supprimé depuis.
@@ -70,22 +71,22 @@ Les trois premiers précèdent le workspace Playbook, le Topic Feed, le partage,
 
 ## 🗺️ Comment naviguer
 
-| Tu cherches…                                                        | Va voir                                                                  |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Ce qu'est un Playbook, et ce qui n'a rien à y faire                 | [`reference/CONCEPTS.md`](reference/CONCEPTS.md)                         |
-| Ce que fait telle feature (flow, états, entrées)                    | [`reference/FEATURES.md`](reference/FEATURES.md)                         |
-| Comment fonctionne le proto en général                              | [`reference/ARCHITECTURE.md`](reference/ARCHITECTURE.md)                 |
-| Quelles classes/tokens DS l'app utilise en pratique                 | [`reference/UI-PATTERNS.md`](reference/UI-PATTERNS.md)                   |
-| Comment ajouter une route / un écran                                | [`reference/ROUTES.md`](reference/ROUTES.md)                             |
-| Comment ajouter / modifier un store                                 | [`reference/STORES.md`](reference/STORES.md)                             |
-| Comment poser une couleur / un spacing                              | [`reference/DESIGN-SYSTEM.md`](reference/DESIGN-SYSTEM.md)               |
-| Comment se comportent sidebar + right panel (v1)                    | [`reference/PANEL-SIDEBAR-RULES.md`](reference/PANEL-SIDEBAR-RULES.md)   |
-| Recréer le comportement sidebar + right panel de zéro               | [`reference/SIDEBAR-PANEL-RECIPE.md`](reference/SIDEBAR-PANEL-RECIPE.md) |
-| Que veut dire "Playbook" / "Context" / "Finding" / "Idea" / "Draft" | [`reference/GLOSSARY.md`](reference/GLOSSARY.md)                         |
-| Pourquoi c'est fait comme ça (et ce qu'il ne faut pas reproposer)   | [`reference/DECISIONS.md`](reference/DECISIONS.md)                       |
-| Différences entre la prod Studio et le proto                        | [`audits/PROD-VS-PROTOTYPE.md`](audits/PROD-VS-PROTOTYPE.md)             |
-| Quels changements appliquer côté prod                               | [`audits/PROD-CHANGES.md`](audits/PROD-CHANGES.md)                       |
-| Que dire / pas dire dans les copy                                   | [`copy/copy-principles.md`](copy/copy-principles.md)                     |
+| Tu cherches…                                                      | Va voir                                                                  |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Ce qu'est un Playbook, et ce qui n'a rien à y faire               | [`reference/CONCEPTS.md`](reference/CONCEPTS.md)                         |
+| Ce que fait telle feature (flow, états, entrées)                  | [`reference/FEATURES.md`](reference/FEATURES.md)                         |
+| Comment fonctionne le proto en général                            | [`reference/ARCHITECTURE.md`](reference/ARCHITECTURE.md)                 |
+| Quelles classes/tokens DS l'app utilise en pratique               | [`reference/UI-PATTERNS.md`](reference/UI-PATTERNS.md)                   |
+| Comment ajouter une route / un écran                              | [`reference/ROUTES.md`](reference/ROUTES.md)                             |
+| Comment ajouter / modifier un store                               | [`reference/STORES.md`](reference/STORES.md)                             |
+| Comment poser une couleur / un spacing                            | [`reference/DESIGN-SYSTEM.md`](reference/DESIGN-SYSTEM.md)               |
+| Comment se comportent sidebar + right panel (v1)                  | [`reference/PANEL-SIDEBAR-RULES.md`](reference/PANEL-SIDEBAR-RULES.md)   |
+| Recréer le comportement sidebar + right panel de zéro             | [`reference/SIDEBAR-PANEL-RECIPE.md`](reference/SIDEBAR-PANEL-RECIPE.md) |
+| Que veut dire "Playbook" / "Context" / "Topic" / "Idea" / "Draft" | [`reference/GLOSSARY.md`](reference/GLOSSARY.md)                         |
+| Pourquoi c'est fait comme ça (et ce qu'il ne faut pas reproposer) | [`reference/DECISIONS.md`](reference/DECISIONS.md)                       |
+| Différences entre la prod Studio et le proto                      | [`audits/PROD-VS-PROTOTYPE.md`](audits/PROD-VS-PROTOTYPE.md)             |
+| Quels changements appliquer côté prod                             | [`audits/PROD-CHANGES.md`](audits/PROD-CHANGES.md)                       |
+| Que dire / pas dire dans les copy                                 | [`copy/copy-principles.md`](copy/copy-principles.md)                     |
 
 ---
 
@@ -98,6 +99,10 @@ npm run check:versions  # un seul ?v= dans tout le graphe — lancé par le hook
 npm run check:templates # un backtick dans un commentaire HTML blanchit l'app — idem
 npm run check:dead      # audit : exports que personne ne nomme + classes CSS jamais émises
 npm run check:ds        # chaque token / icône / classe .ap-* résout contre le DS @latest (réseau requis)
+npm run check:framing   # le moteur de recadrage de l'espace Clips (clip-framing.js)
+npm run check:diff      # le diff mot à mot des drafts (word-diff.js)
+npm run check:mentions  # les mentions dans les drafts (mentions.js)
+npm run check:utils     # les helpers partagés de utils.js
 ```
 
 `check:dead` rapporte, il ne supprime pas : une classe ASSEMBLÉE (`isv2-art--${key}`) est

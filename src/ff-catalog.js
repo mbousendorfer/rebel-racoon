@@ -63,7 +63,7 @@ export const FLAGS = Object.freeze([
   {
     id: "clipsSpace",
     group: "New surfaces",
-    tip: "Adds Clips to the rail: a video library per Playbook, one editor for every clip tool (trim, reframe, subtitles…), drafts made right there.",
+    tip: "Adds Clips to the rail: a video library per Playbook, one editor for every clip tool (reframe, transcript, subtitles…), drafts made right there.",
     label: "Clips space (/clips)",
     // OFF: the Clip Studio session, the Video Clips modal and the chat's clip
     // flow, byte for byte. The flag gates the routes as well as the rail row.
@@ -76,8 +76,8 @@ export const FLAGS = Object.freeze([
       "last, in the order prod runs it: adding a video starts the analysis at " +
       "once, you review and pick the moments, set the format and subtitles for " +
       "the whole video, refine any clip in ONE editor that holds every tool — " +
-      "Trim, Reframe (the crop editor: per-segment One / Two / Fit framing), " +
-      "Subtitles, Transcript, Clean up, Text, Brand, Format — then create one " +
+      "Reframe (the crop editor: per-segment One / Two / Fit framing), " +
+      "Transcript (its cleanup at the head), Subtitles, Text, Brand — then create one " +
       "draft per clip × account and schedule them, without a chat. The " +
       '"Extract video clips" starter leads here; a chat keeps its clips and ' +
       'gains "Open in Clips".',

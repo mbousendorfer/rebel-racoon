@@ -8,10 +8,10 @@
 Source  →  Idea  →  Draft  →  Schedule
 (input)    (insight) (post)    (calendar slot)
    ▲
-   └── Topic  (optionnel, en amont — flag `topicFeed`)
+   └── Topic  (optionnel, en amont — le Topic Feed)
 ```
 
-1. **Source** — un input brut (PDF, URL, vidéo, audio, video clip, ou une réponse de connecteur). Stocké **par session** dans `sources-stream.js`.
+1. **Source** — un input brut (fichier, URL, texte collé, vidéo, audio, un document de connecteur, un top post ou un Topic). Stocké **par session** dans `sources-stream.js`.
 2. **Idea** — un insight extrait d'une source par Archie.
 3. **Draft** — un post généré depuis une (ou plusieurs) idea(s), pour un réseau spécifique (LinkedIn, X, …).
 4. **Schedule** — un draft posté dans le queue du calendrier.
@@ -22,15 +22,16 @@ En amont, **optionnellement** : un **Topic**. Une Idea peut toujours venir direc
 
 Un **Topic** est ce qu'Archie assemble à partir du listening Agorapulse : une **accroche** (le constat), une **analyse écrite** en deux sections, et les **posts sources** qui la fondent. Il appartient au **feed** d'un Playbook (`feedId`) et à la source de listening qui l'a produit (`sourceId`, voir `topics-catalog.js`).
 
-| Champ                | Rôle                                                                       |
-| -------------------- | -------------------------------------------------------------------------- |
-| `headline`           | Le constat — titre de la carte **et** de la dialog                         |
-| `analysisTitle`      | Le titre au-dessus de l'analyse                                            |
-| `summary`            | Le paragraphe clampé sur la carte                                          |
-| `analysis[]`         | Les paragraphes de prose                                                   |
-| `posts[]`            | Les **source posts** — les publications d'autrui qui servent de preuve     |
-| `ageDays`            | **La** source de vérité de l'âge : groupe le feed et dérive chaque libellé |
-| `unseen` `dismissed` | Badge de la sidebar / masqué du feed (jamais supprimé, pour l'Undo)        |
+| Champ                      | Rôle                                                                                            |
+| -------------------------- | ----------------------------------------------------------------------------------------------- |
+| `headline`                 | Le constat — titre de la carte (le repli quand le Topic n'a pas encore d'article, `topicTitle`) |
+| `summary`                  | Le paragraphe clampé sur la carte                                                               |
+| `article`                  | `{ title, subheads, paragraphs }` — l'analyse écrite ; son `title` prime sur `headline`         |
+| `posts[]`                  | Les **source posts** — les publications d'autrui qui servent de preuve                          |
+| `ageLabel`                 | L'âge relatif (« 2d ago ») : seule source de l'âge, groupe le feed (`groupTopicsByAge`)         |
+| `kind`                     | `ready` (To review) ou `later` (For later) — la classification du scan                          |
+| `isTrending` / `isUpdated` | Les deux signaux du scan                                                                        |
+| `history`                  | Ce que le scan a enregistré ; le triage du lecteur vit à part (`status`, `reason`, une `Map`)   |
 
 Terme **UI et code identiques** : `topic`, `topics-store`, `topicId`, `topic-feeds-store` — et c'est pour ça que le magazine a été supprimé plutôt que gardé derrière un flag, ce qui a libéré ces noms au lieu de forcer un troisième vocabulaire (`research` / `lane` / `brief`) sur du code neuf. ⚠️ `topic` reste **banni comme synonyme d'Idea** (voir [`../copy/copy-principles.md`](../copy/copy-principles.md)) — un Topic est un objet distinct, en amont. Ne pas dire **dossier** dans l'UI (tournure française, et ça collisionne avec `folders-store`).
 
@@ -50,7 +51,7 @@ Une **session** est un fil de conversation avec Archie. Tous synonymes :
 
 - "Session" (préféré dans le code, store `sessions-store.js`)
 - "Chat" (label UI sidebar : "Chats")
-- "Conversation" (label UI prod prod)
+- "Conversation" (label UI en prod)
 
 Chaque session a son propre thread (`assistant.js`), ses ideas (`library.js`), ses drafts (`posts-store.js`), ses mentions composer (`composer-mentions.js`).
 
@@ -67,15 +68,7 @@ C'est un **fil continu** — pas une tâche qui se clôture — et son **Playboo
 - Variables : `contextId`, `contextBuilder`, `defaultContext`, …
 - Route : `/contexts`
 
-L'UI **devrait** utiliser **`Playbook`** partout (label canonique) mais en pratique des labels "Context" leaké dans l'UI :
-
-- Topbar title sur `/contexts` : "Contexts"
-- Sidebar nav item : "Contexts (N)"
-- Header du Playbook editor : "Contexts"
-- Settings → section : "Contexts"
-- CTAs : "+ New context"
-
-Cf. [`../audits/PROD-CHANGES.md`](../audits/PROD-CHANGES.md) §P0-1 pour le plan de fix.
+L'UI dit **`Playbook`** partout : plus aucun label « Context » n'est rendu dans le proto (topbar, rail, fiche, boutons). La fuite reste dans le code, et côté prod : cf. [`../audits/PROD-CHANGES.md`](../audits/PROD-CHANGES.md) §P0-1.
 
 **Règle de comm** : dans les nouveaux écrans / nouveau copy, **toujours dire "Playbook"** dans l'UI — **toujours avec la capitale**, boutons compris (`Create a Playbook`, `Delete Playbook?`). Ne pas renommer le code (refactor plus large).
 
@@ -85,20 +78,21 @@ Cf. [`../audits/PROD-CHANGES.md`](../audits/PROD-CHANGES.md) §P0-1 pour le plan
 
 Un **Source** est tout input brut qu'Archie peut ingérer :
 
-| Kind          | Origin               | State machine                 |
-| ------------- | -------------------- | ----------------------------- |
-| PDF           | Upload file          | uploading → processing → done |
-| URL           | URL import           | importing → processing → done |
-| Video         | Upload file          | uploading → processing → done |
-| Audio         | Upload file          | uploading → processing → done |
-| Video Clip    | Extracted from video | extracting → done             |
-| Connector doc | Connector query      | querying → done               |
+| Kind                                      | Origine                                         | États                                                                        |
+| ----------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------- |
+| PDF · Word · Text · Image · Video · Audio | Upload (`classifyFile`)                         | l'upload `uploading → processing → done`, la source `Processing → Processed` |
+| URL                                       | Import d'URL (`startUrlImport`)                 | `Processing → Processed`                                                     |
+| Text                                      | Texte collé (`startTextImport`)                 | `Processing → Processed`                                                     |
+| le `kind` du document                     | Document de connecteur (`startConnectorImport`) | `Processing → Processed`                                                     |
+| Post                                      | Top post ou Topic (`addReadySource`)            | `Processed` d'emblée                                                         |
+
+Une source vidéo porte en plus ses **clips** (`clips[]`, `clipExtractionStatus` `extracting → ready`).
 
 Géré par [`src/sources-stream.js`](../../src/sources-stream.js) — **par session** (`Map(sessionId → Source[])`). Seuls les **uploads**, état transitoire d'avant-source, y sont globaux. Voir [`CONCEPTS.md` §3](CONCEPTS.md#3-à-qui-appartient-quoi).
 
 ### Idea (kind taxonomy)
 
-Une idée est typée selon une de ces 5 kinds :
+Une idée est typée selon une de ces 5 kinds (filtres du panneau Ideas : Hooks · Stats · Quotes · Stories · Insights) :
 
 | Kind        | Description                                     |
 | ----------- | ----------------------------------------------- |
@@ -107,8 +101,6 @@ Une idée est typée selon une de ces 5 kinds :
 | **Quote**   | Une citation extraite du contenu source         |
 | **Story**   | Une anecdote, un récit                          |
 | **Insight** | Une conclusion analytique                       |
-
-Champ optionnel : `potential` (High / Medium / Low) — heuristique de priorité.
 
 ### Draft, Post, Top post, Source post
 
@@ -127,12 +119,7 @@ Terme parapluie pour les quatre : **content**. Jamais « posts ».
 
 Un **Draft** est un post candidat pour un réseau social. Stocké dans [`posts-store.js`](../../src/posts-store.js).
 
-Status pipeline (mocké) :
-
-- `generating` — en train d'être créé
-- `draft ready` — prêt à reviewer
-- `needs fixes` — Archie a flagué un problème (placeholder en proto)
-- `scheduled` — dans le queue calendrier
+`status` : `ready` (prêt à relire) → `scheduled` (dans la file du calendrier). Pendant une réécriture, `isRegenerating` (+ `regenerateStage`) ; `writtenAt` date le texte (une voix changée depuis le dit sur le draft).
 
 ### Mention
 
@@ -153,8 +140,8 @@ Voir `social-profiles.js` (catalogue des comptes connectés).
 Une **source live MCP-queryable** (Notion, Slite, Google Drive, Slack, …) que Archie peut interroger en chat. Différent d'une source statique parce que :
 
 - Elle est connectée une fois, puis disponible cross-session
-- Une requête déclenche un round-trip MCP simulé (reasoning chip "Querying X via MCP" + réponse citée)
-- Géré par [`connectors-store.js`](../../src/connectors-store.js), state machine `connected / disconnected / syncing / error`
+- Une requête déclenche un round-trip MCP simulé (reasoning chip « Searching X… » (then « Searched X ») + réponse citée)
+- Géré par [`connectors-store.js`](../../src/connectors-store.js), `status` `connected` / `disconnected`
 
 **Feature flag `connectors`** : default OFF. Activable dans le popover Admin (cog en pied de sidebar).
 
@@ -164,7 +151,7 @@ Une **source live MCP-queryable** (Notion, Slite, Google Drive, Slack, …) que 
 
 ### Clip
 
-Un extrait vidéo découpé d'une source vidéo par le **Clip Studio**. Un clip est **une Source** à part entière (kind `Video Clip`, [`sources-stream.js`](../../src/sources-stream.js)) et peut ensuite devenir un draft — pas un objet d'une troisième nature.
+Un extrait d'une vidéo. Dans un chat, les clips sont portés par leur **source vidéo** (`clips[]`, [`sources-stream.js`](../../src/sources-stream.js)) — un clip n'est pas une Source à lui seul ; dans l'espace Clips (flag `clipsSpace`), par la **Video** de la bibliothèque du Playbook ([`videos-store.js`](../../src/videos-store.js)). Un clip peut ensuite devenir un draft.
 
 ### Batch
 
@@ -190,7 +177,7 @@ Le vocabulaire de l'appartenance d'un Playbook. **Trois portées**, et ce qui le
 | **Everyone at {org}** / badge **« Shared with org »**    | Liste **dynamique** : toute l'organisation, arrivées comprises                                                                               | `ctx.scope === "organization"`                  |
 | badge **« Shared by {nom} »**                            | Les deux états partagés, vus de l'autre côté                                                                                                 | `!isMine(ctx) && isShared(ctx)`                 |
 | **Manager**                                              | Rôle qui donne la **gouvernance** — partager, transférer, supprimer — sur les Playbooks partagés uniquement. **Jamais** l'édition du contenu | `isManager()`, `localStorage` `archie-org-role` |
-| **Recent changes**                                       | Le journal du modal de partage — qui, quoi, quand ; **jamais** de diff                                                                       | `ctx.history`                                   |
+| _(journal)_                                              | Qui, quoi, quand — **jamais** de diff ; écrit mais plus rendu (la section « Recent changes » du modal de partage a été retirée)              | `ctx.history`                                   |
 
 ⛔️ À ne pas dire : **« invite »**, **« collaborator »**, **« co-editor »**, **« permissions »** — rien de tout ça n'existe dans le modèle. On **partage** une fiche avec des gens ou avec l'org ; on n'invite personne, et un destinataire ne devient jamais co-auteur.
 

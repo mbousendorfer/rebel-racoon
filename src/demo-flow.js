@@ -1,7 +1,7 @@
 // Demo flow (flag demoMode) — try Archie on Bramble & Bean before connecting
 // anything. The state is demo-mode.js; this is what the demo does:
-//   - startDemo(): from the first-time run (intro, the chat's first question,
-//     the Skip dialog). Arms the state, pre-connects the pretend accounts and
+//   - startDemo(): from the first-time run's intro (« Try it with a demo
+//     brand », welcome-alt-intro.js). Arms the state, pre-connects the pretend accounts and
 //     reloads into a NEW CHAT — the real one: hero, starters, Topics, composer.
 //     The stores swap to Bramble & Bean material at load (isDemo()), so every
 //     way in finds something: top posts, Topics, sample files, coffee ideas.
@@ -14,15 +14,15 @@
 //   - blockInDemo(): every way to schedule asks for a real brand instead.
 //   - exitDemo(): wipes it all and goes back to the real setup.
 
-import { newChatPath } from "./utils.js?v=2761";
-import { DEMO_ACCOUNTS, DEMO_PLAYBOOK, DEMO_SAMPLES } from "./mocks.js?v=2761";
-import { isDemo, isDemoDone, markDemoDone, writeDemo } from "./demo-mode.js?v=2761";
-import { postAssistantMessage, postUserTurn } from "./assistant.js?v=2761";
-import * as inlineQuestion from "./inline-question.js?v=2761";
-import { getPosts, subscribe as subscribePosts } from "./posts-store.js?v=2761";
-import { open as openConfirm } from "./components/confirm-modal.js?v=2761";
-import { showToast } from "./components/toast.js?v=2761";
-import { pushScriptedSource, completeScriptedSource } from "./sources-stream.js?v=2761";
+import { newChatPath } from "./utils.js?v=2762";
+import { DEMO_ACCOUNTS, DEMO_PLAYBOOK, DEMO_SAMPLES } from "./mocks.js?v=2762";
+import { isDemo, isDemoDone, markDemoDone, writeDemo } from "./demo-mode.js?v=2762";
+import { postAssistantMessage, postUserTurn } from "./assistant.js?v=2762";
+import * as inlineQuestion from "./inline-question.js?v=2762";
+import { getPosts, subscribe as subscribePosts } from "./posts-store.js?v=2762";
+import { open as openConfirm } from "./components/confirm-modal.js?v=2762";
+import { showToast } from "./components/toast.js?v=2762";
+import { pushScriptedSource, completeScriptedSource } from "./sources-stream.js?v=2762";
 
 const PROFILES_KEY = "archie-connected-profiles";
 

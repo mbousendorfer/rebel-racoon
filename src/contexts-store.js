@@ -22,20 +22,20 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { newId } from "./utils.js?v=2761";
-import { contexts as seed, sharedContexts, DEMO_PLAYBOOK } from "./mocks.js?v=2761";
-import { isDemo } from "./demo-mode.js?v=2761";
-import { isNewUser } from "./user-mode.js?v=2761";
-import { CURRENT_USER } from "./org.js?v=2761";
-import { isFlagOn } from "./feature-flags.js?v=2761";
-import { createNotifier } from "./store-utils.js?v=2761";
+import { newId } from "./utils.js?v=2762";
+import { contexts as seed, sharedContexts, DEMO_PLAYBOOK } from "./mocks.js?v=2762";
+import { isDemo } from "./demo-mode.js?v=2762";
+import { isNewUser } from "./user-mode.js?v=2762";
+import { CURRENT_USER } from "./org.js?v=2762";
+import { isFlagOn } from "./feature-flags.js?v=2762";
+import { createNotifier } from "./store-utils.js?v=2762";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=2761";
-import { cloneItems, learnNetworkVoice, cloneNetworkVoice } from "./voice-parts.js?v=2761";
+} from "./languages.js?v=2762";
+import { cloneItems, learnNetworkVoice, cloneNetworkVoice } from "./voice-parts.js?v=2762";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -282,10 +282,10 @@ function normalizeImageryDefaults(ctx) {
   return { defaultLook: { kind, id: kind ? s(d.id) : "" }, formatByNetwork };
 }
 
-// Ownership — who this Playbook belongs to and how far it reaches. Two scopes
-// only: "personal" (its owner alone) or "organization" (the whole org may use
-// it, the owner alone may edit it). There is no named sharing, so there is no
-// recipient list to keep in sync.
+// Ownership — who this Playbook belongs to and how far it reaches. Three
+// scopes: "personal" (its owner alone), "members" (a fixed list of people) or
+// "organization" (the whole org, dynamic). The owner alone edits; who may do
+// what is playbook-access.js's call, never this store's.
 //
 // `history` is a governance log, not versioning: who touched the fiche and when,
 // never what changed. Like `usedIn` it is stored ON the Context but is never a

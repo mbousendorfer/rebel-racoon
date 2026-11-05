@@ -36,8 +36,8 @@
 // on the Insights side, while this catalogue parks them. Insights marks those
 // cards "via proxy" by resolving the label here — one story, two surfaces.
 
-import { NETWORK_LABEL, getConnectedProfiles } from "./social-profiles.js?v=2761";
-import { plural } from "./utils.js?v=2761";
+import { NETWORK_LABEL, getConnectedProfiles } from "./social-profiles.js?v=2762";
+import { plural } from "./utils.js?v=2762";
 
 // The metric catalogue. Each metric names a concept, not a per-network field.
 // `type` — volume | rate | counter. A rate is scale-free (never split by

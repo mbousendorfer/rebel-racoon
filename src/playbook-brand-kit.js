@@ -1,24 +1,24 @@
 // The brand kit rows of the Playbook's Brand section — what an AI image
 // generator needs on top of the logo, colours and fonts to stay on-brand:
 // which version each logo is, what each colour is for, the
-// words to avoid, and the visual rules. Gated by the `sexySquirrel` flag (the
-// Image Generator reads these fields; nothing else does yet).
+// words to avoid, and the visual rules (the Image Generator reads these
+// fields; nothing else does yet).
 //
 // Pure renderers + three handlers that playbook-view calls from its own
 // onClick / onInput / onChange while a section is in edit mode. Edits mutate
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=2761";
-import { openImageLookChat } from "./draft-image-flow.js?v=2761";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=2761";
+import { escapeHtml as esc } from "./utils.js?v=2762";
+import { openImageLookChat } from "./draft-image-flow.js?v=2762";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=2762";
 import {
   handlePlaybookImagesClick,
   renderPresetLookPicker,
   renderImagesGenerate,
   renderImagesReferences,
   renderImagesStyles,
-} from "./modules/image-studio/index.js?v=2761";
+} from "./modules/image-studio/index.js?v=2762";
 
 const ROLE_LABELS = {
   primary: "Primary",

@@ -53,9 +53,7 @@
    Context-form, Context-brief) so the panel reads as a stable surface
    instead of resizing aleatoirely between modes. The runtime override
    (set by the resize handle, `--app-right-panel-width-runtime`) wins
-   when present, but is NOT persisted across reloads — the legacy
-   `archie-rpanel-width` localStorage key from the pre-formula era is
-   wiped on init (right-panel.js). */
+   when present, but is NOT persisted across reloads. */
 .app-shell {
   --app-right-panel-floor: 610px;
 }

@@ -43,24 +43,23 @@ in. The flag short-circuits in a single place, so flag OFF is byte-for-byte the 
 
 Ownership is **chrome, never a section**: a tag in the card's metadata corner and beside the fiche's name,
 an Owner quick-fact in the rail, and everything else in the Share modal. A "Sharing" section on the fiche
-would be the switch grid already removed for the listening config ([`CONCEPTS.md`](CONCEPTS.md) §1, third
-storage exception). The degraded chat marks `body.playbook-revoked` — on `<body>`, because the drafts panel
+would be the switch grid already removed for the listening config ([`CONCEPTS.md`](CONCEPTS.md) §1, exceptions
+de stockage). The degraded chat marks `body.playbook-revoked` — on `<body>`, because the drafts panel
 is shell chrome outside `#app` — and one capture-phase listener swallows the generating hooks and says why,
 so no card renderer needs to know sharing exists.
 
 ## The Image Studio is split by subject, and the engine holds no DOM
 
-> Rewritten 2026-10-16. The earlier text described `src/image-studio.js`, `components/image-studio-v2/` and
-> `inline-text.js` — all deleted in `5364592a3` with the old Image Studio. What follows is the module that
-> replaced them, `src/modules/image-studio/`.
+> The old Image Studio (`src/image-studio.js`, `components/image-studio-v2/`, `inline-text.js`) was deleted in
+> `5364592a3`. What follows is the module that replaced it, `src/modules/image-studio/`.
 
 **State has one home per lifetime.** What outlives the dialog — styles, products, creations, assets — is in
 `state/store.js` (read side + subscribe) and written by `state/creation-actions.js` / `state/style-actions.js`
 through `storageService`. What lives only while the dialog is open — the brief being built, the focused
 variation and slide, the run's status, the edit documents — is the `mountStudio()` closure in
 `views/studio.js` (`state`, `entries`, `sources`): no module-level map, nothing to clean up but the closure.
-The brand is the Playbook, read through `state/playbook-brand.js` only; the module imports **no Archie store**
-— the draft comes in as data and goes back through callbacks (`onUse`, `onUseCarousel`, `renderFeedPreview`).
+The brand is the Playbook, read through `state/playbook-brand.js` only — the one file that imports Archie's
+state (`contexts-store`, `playbook-access`, `active-playbook`); no other file of the module does — the draft comes in as data and goes back through callbacks (`onUse`, `onUseCarousel`, `renderFeedPreview`).
 
 **One render path.** A mutation calls `paint()`, which rebuilds the dialog body from state. The exceptions are
 quarantined in **one** place, the editor's **Silent** section (`views/edit/editor.js`): typing in a text
@@ -109,11 +108,11 @@ holds ONE subject still and varies the TREATMENT.
 
 **Gated behind the `connectors` feature flag (default OFF)** — when off, every connectors surface (gallery route + sidebar nav, modal, composer Add → "Connected sources" submenu, Sources panel "Live connectors", Add-source modal Connectors tab) is hidden. Turn it on in the sidebar cog's Admin popover. Connector management lives only on the `/connectors` page/modal — nothing else duplicates it.
 
-Connectors (Notion, Slite, Google Drive, GitHub, …) are seeded in `mocks.js` (`connectors` + `connectorDocs`) with `category` / `featured` / `accent` / `capabilities`. Once **connected**, a connector becomes a **live source**: the user "asks" it in chat and `assistant.js` `sendConnectorMessage()` simulates an MCP round-trip — a "Querying … via MCP" reasoning chip listing tool calls, then a cited mock answer. Entry points: the `/connectors` gallery page (clicking a connector opens its detail in `connectors-modal.js`), the composer **Add** menu, and the right-panel **Sources** "Connect" / "Live connectors" surface. `connectors-view.js` holds the shared render helpers used by both the page and the modal; `connector-ask.js` launches the in-chat ask flow. All connect/disconnect goes through `connectors-store` so the gallery, the modal and the composer stay in sync.
+Connectors (Notion, Slite, Google Drive, GitHub, …) are seeded in `mocks.js` (`connectors` + `connectorDocs`) with `category` / `featured` / `accent` / `capabilities`. Once **connected**, a connector becomes a **live source**: the user "asks" it in chat and `assistant.js` `sendConnectorMessage()` simulates an MCP round-trip — a « Searching {name}… » reasoning chip (« Searched {name} » once done) listing tool calls, then a cited mock answer. Entry points: the `/connectors` gallery page (clicking a connector opens its detail in `connectors-modal.js`), the composer **Add** menu, and the right-panel **Sources** "Connect" / "Live connectors" surface. `connectors-view.js` holds the shared render helpers used by both the page and the modal; `connector-ask.js` launches the in-chat ask flow. All connect/disconnect goes through `connectors-store` so the gallery, the modal and the composer stay in sync.
 
 ## The Topic Feed — the one place Archie proposes instead of waiting
 
-**Gated behind the `topicFeed` feature flag (default OFF)** — when off, `/topics` and `/topics/settings` (a stale deep link bounces to `/`), the sidebar nav row and its unread count, the "Fresh topics to review" list on a new chat and the composer's "Pick from the Topic Feed" all disappear. The data (`mocks.topicFeeds`, `mocks.topics`) rides along regardless, exactly like `multilingualPlaybook`.
+**Always on**: the `topicFeed` flag was baked ON (2026-10-07) and no longer exists — `/topics`, `/topics/settings`, the sidebar row and its unread count, the Topics on a new chat and the composer's "Pick from the Topic Feed" are always there.
 
 Agorapulse listening pulls social posts against **eight sources** declared in `topics-catalog.js`. That file is **CONFIG, not content**: it ships with the app and must exist in `new-alt` mode too, the same split as `ff-catalog.js` vs `mocks.js`. Only `competitor-posts` and `influencer-posts` are `live`, and that is load-bearing — the feed's default source filter derives from `LIVE_SOURCE_IDS`, so a Topic seeded on a non-live source would be filtered out of its own feed on first paint.
 
@@ -139,28 +138,28 @@ An **ignored Topic is never surfaced by a signal, anywhere.** Ticking Ignored in
 
 ## Connecting an account: asked in the flow, never as a prerequisite
 
-Behind `skipConnectProfiles`, nothing is connected to begin with and Playbook creation stops
-_requiring_ an account: the step stays, but it is a choice — it offers to connect one (the same
-rows and the same modal as in chat) when none is, or the usual profile pick when some are, and
-either way it carries a **Skip**. The step count doesn't change; only its obligation does.
-Skipping is not a dead end — the ask comes back where it pays for itself, in the chat flows that
-draft FOR an account. `requireConnectedProfiles()` in
+Connecting an account is never a prerequisite (the `skipConnectProfiles` flag was baked ON on 2026-10-07):
+creating a Playbook asks for no account, and the ask comes back where it pays for itself, in the chat flows
+that draft FOR an account. In the prototype the connected accounts start as the Admin popover's
+« Connected networks » (all six by default, a first-time user included — an Agorapulse user already has
+them), so the ask shows once one is unticked. `requireConnectedProfiles()` in
 [`connect-profiles-flow.js`](../../src/connect-profiles-flow.js) is the whole feature: it returns straight
-through when anything is connected, so callers wrap unconditionally and the flag-off path is
-byte-identical. Otherwise it puts a Quickpicker in the step's own slot, hands the confirm to
+through when anything is connected, so callers wrap unconditionally. Otherwise it puts a Quickpicker in the
+step's own slot, hands the confirm to
 [`connect-account-modal.js`](../../src/components/connect-account-modal.js), then calls `onReady` — so the
-flow **resumes where it left off** instead of restarting. The rule is coverage, not convenience:
-EVERY path that produces a draft asks — `addPostDraft`'s five call sites are the checklist —
-draft-from-idea and repurpose (`session/draft-questions.js`), clip drafts (`clip-draft-flow.js`), top
-posts inline and in the studio (`top-posts-flow.js`), and the Clip Studio. A batch of posts needs no
-gate of its own: it replays its sources through the classic source → idea workflow, which is already
-gated.
+flow **resumes where it left off** instead of restarting. The rule is coverage, not convenience: EVERY path
+that produces a draft asks — `addPostDraft`'s call sites are the checklist — draft-from-idea and repurpose
+(`screens/session/draft-questions.js`), clip drafts (`screens/session/clip-draft-flow.js`), top posts
+(`top-posts-flow.js`), the post plan (`post-plan-flow.js`), the Voice step (`network-voice-flow.js`), a
+draft's image (`draft-image-flow.js`), and the Clip Studio. A batch of posts needs no gate of its own: it
+replays its sources through the classic source → idea workflow, which is already gated.
 
 The Clip Studio is the one that can't use the shared step — it is a full-panel takeover, so a
-Quickpicker posted into the thread would be hidden behind it. `renderClipStudioConnect` (session/clip-studio-view.js) renders
-the SAME network cards in the studio's own chrome instead, and connecting notifies so the normal
-profiles stage takes over. Left alone it was a silent dead end: `finalizeClipStudio` returns early
-on an empty account list, so "Create N drafts" sat disabled with nothing explaining why.
+Quickpicker posted into the thread would be hidden behind it. `renderClipStudioConnect`
+(`screens/session/clip-studio-view.js`) renders the SAME network cards (`connectableNetworkCards`) in the
+studio's own chrome instead, and connecting notifies so the normal profiles stage takes over. Left alone it
+was a silent dead end: `finalizeClipStudio` returns early on an empty account list, so "Create N drafts"
+sat disabled with nothing explaining why. The Clips space's draft step offers the same cards.
 
 Two rules this rests on:
 
@@ -173,72 +172,32 @@ Two rules this rests on:
 - ⚠️ **The cards variant resolves by DESTROYING the picker** (`pick()` deletes the state before
   calling `onPick`). So the dialog must hand control back on cancel — `onDismiss` re-arms the grid.
   Without it, backing out of the dialog leaves the flow with nothing on screen.
-- **The Skip is not silent.** Onboarding's Skip (the nothing-connected branch only) opens
-  [`skip-connect-modal.js`](../../src/components/skip-connect-modal.js): the three guarantees first, as a
-  **trio of three filled tiles** — bold claim + a one-line detail — saying nothing publishes without
-  approval, Archie reads only what is already public, and the accounts live in Agorapulse and not in
-  Archie ([`CONCEPTS.md`](CONCEPTS.md) §6). A row, not a stack: stacked, it had the
-  same silhouette as the checkbox list below it, so nothing said "read this, then answer that" — and
-  three equal-weight paragraphs gave the claims no rank. ⚠️ **Three separate tiles, not one filled
-  container**: a single grey rectangle holding three columns reads as one BANNER, and the three
-  blocks only appear on a second look — the fill and the padding belong to each item, so white
-  gutters do the separating. The dialog's 680px and the three-or-one column rule both fall out of one
-  measurement (the widest string is 162px); `auto-fit` is banned here because two tiles plus an
-  orphan third was invisible as a band and is glaring as separate shapes. Then a
-  multi-select "Why not now?". ⚠️ **No margin-top anywhere in this dialog** — `.ap-dialog-content`
-  gaps its children by `--ref-spacing-md` and every margin added a second one. Answering is **optional**
-  (2026-10-19 — it was REQUIRED: a gate on the skip was one more friction on the app's very first
-  screen, and a forced tick is a noisy answer). Leaving is free too — Back, Esc, backdrop and X all
-  put the network grid back rather than skipping; only an actual answer is recorded. Reasons land in `feedback-store` via `recordReasons` (key `skip:connect-profiles`), the one
-  store function that records an answer with no verdict. Skipping the _pick_ of an already-connected
-  profile is a different gesture and is NOT intercepted.
-- **A step that a dialog hands control back to is put BACK, not asked again.** `askAltProfile` takes
-  `{ announce }`, false from both `onDismiss` paths — without it the thread printed its own question
-  twice for one step (a pre-existing blemish on the connect dialog's cancel, doubled the day the skip
-  dialog became a second caller).
-- **`social-profiles.js` now holds state.** A module-level `Set` of connected ids, empty at first
-  and kept in sessionStorage (`archie-connected-profiles`, 2026-10-19) so a reload — the one that ends
-  onboarding included — doesn't disconnect them, with `connectAccounts()` writing to it and a notifier so
-  every surface agrees. `profileForNetwork()` goes through the SAME gate — otherwise the schedule
-  modal and the top-post cards would show a profile nobody connected. `getConnectableAccounts()`
-  filters on `handle`, not `status`: the mock's disconnected entries include bare network stubs
-  (`{ id: "tt", platformLabel: "TikTok" }`) that have nothing to connect to and would render as
-  "undefined" rows.
 
-**Figé ON le 2026-10-29** : `connectFirst` n'est plus un flag ; le chat d'onboarding, son étape comptes et `skip-connect-modal` sont supprimés — ce qui suit est l'histoire.
+**`social-profiles.js` holds the connected state**: a module-level `Set` of connected ids, seeded from the
+Admin popover's networks (`archie-connected-networks`, localStorage) and kept in sessionStorage
+(`archie-connected-profiles`) so a reload doesn't disconnect them, with `connectAccounts()` writing to it
+and a notifier so every surface agrees. `profileForNetwork()` goes through the SAME gate — otherwise the
+schedule modal and the top-post cards would show a profile nobody connected. `getConnectableAccounts()`
+filters on `handle`, not `status`: the mock's disconnected entries include bare network stubs
+(`{ id: "tt", platformLabel: "TikTok" }`) that have nothing to connect to and would render as
+"undefined" rows.
 
-**Connect first (flag `connectFirst`, 2026-10-19).** A new user can be asked to connect BEFORE
-anything else — `/welcome-alt/connect`, modelled on prod's Archie signup step — without breaking
-this rule: the ask moves to the front, it doesn't become a gate. The screen keeps the same two beats
-(a network row asks, `connect-account-modal` consents) and the same Skip (`skip-connect-modal`,
-same feedback key). Under the flag the whole first-time run is **screens, not the chat**: the plan
-(`/welcome-alt/intro`), then one screen per step in one shell — the step on the left, the Playbook
-card filling with the real answers on the right (`welcome-alt-shell.js`) — then a reveal
-(`/welcome-alt/ready`) that ends on Start writing, with the editable page one click away — in the same
-split and on the stage: EVERY block of the Playbook, never a sorted subset (2026-10-19, asked
-explicitly), dealt as a stack of cards on the stage — one block per card, already in edit, browsed with
-arrows (← →, the keyboard's too) and edited on the fly — no per-card Looks good: 20-odd confirmations
-was a chore (2026-10-19). A wall of blocks and a separate Confirm head were both tried
-the same day and dropped: the head and the view's sticky Cancel / Save read as two stray bars. Each part has its own tint (its cards' header band
-and its tile in the list) — a deliberate exception to "group by structure, not colour", asked for
-explicitly (2026-10-19) so the colour says which part you're in; soft DS tints only, never electric
-blue, which stays the interactive colour. The nav's three pills are a second, smaller exception (`.welcome-review__navbtn`
-instead of `.ap-button`): one shape and one height for all three, asked for the same day. The steps'
-effects on the draft are context-builder's (`createAltDraft`, `readAltWebsite`, `readAltFiles`,
-`writeAltManually`, `analyzeAltInterview`) — the chat calls the same functions, so there is one
-implementation and two hosts. Every list of steps (the plan, the progress) comes from `altSteps()`,
-so no screen announces a step the run won't ask.
-
-**No account in the run (flag `connectFirst`, 2026-10-28, asked: « on va enlever la question de connexion des réseaux »).**
-The connect screen is gone from the first-time run. **Where you post** is asked in the Voice review (`/welcome-alt/voice`, part Your networks; a first-screen
-`/welcome-alt/networks` lived one day and was removed on 2026-10-29, asked: « le "where do you post" est
-toujours au même endroit »), written to `connectedSocials` as network slugs. A new user arrives with their
-Agorapulse accounts already connected (2026-10-29: « les comptes sont connectés déjà »), so the
-networks are ticked from them and posts are read without a connect dialog. This rule is what makes that safe: `requireConnectedProfiles`
-already wraps every path that produces a draft, so the first draft asks for an account and its grid
-leads with the Playbook's networks. The time saved goes to the voice, now a step of
-its own: since 2026-10-29 the run's last review (`/welcome-alt/voice`, see « Une voix par réseau »). The skip dialog and its feedback key stay,
-for the chat onboarding (flag OFF).
+**The first-time run asks no account** (`connectFirst` baked ON on 2026-10-29): it is screens, not the chat —
+the plan (`/welcome-alt/intro`), one screen per step in one shell, the step on the left and the Playbook
+card filling with the real answers on the right (`screens/welcome-alt-shell.js`), a reveal
+(`/welcome-alt/ready`), then two reviews, the Playbook (`/welcome-alt/recap`) and the voice
+(`/welcome-alt/voice`, see « Une voix par réseau »). Every list of steps comes from `altSteps()`, so no
+screen announces a step the run won't ask; the steps' effects are context-builder's (`createAltDraft`,
+`readAltWebsite`, `readAltFiles`, `writeAltManually`, `analyzeAltInterview`). The Playbook's networks
+(`connectedSocials`, network slugs) come from the connected accounts, and the first draft still goes
+through `requireConnectedProfiles`. A review shows EVERY block of the Playbook, never a sorted subset,
+already in edit, in a column that scrolls; each part has its own soft DS tint — a deliberate exception to
+"group by structure, not colour", asked for (2026-10-19) so the colour says which part you're in; never
+electric blue. The nav's pills (`.welcome-review__navbtn` instead of `.ap-button`) are a second, smaller
+exception, asked the same day. ⚠️ Removed, don't bring back: the chat onboarding and its accounts step, the
+connect screen (`/welcome-alt/connect`), a « Where do you post » screen (`/welcome-alt/networks`, one day),
+the Skip dialog (`skip-connect-modal.js`: three guarantees, then « Why not now? »), the review as a stack of
+cards with a per-card « Looks good », and a wall of blocks under a Confirm head.
 
 ⚠️ A surface that merely _lists_ profiles is out of scope on purpose — it renders its empty list.
 But a surface that makes the user _pick_ one must never render an empty picker: that is a silent
@@ -261,9 +220,9 @@ Which feeds listen and how often answers "what job should Archie run?", not "who
 
 The fork introduced `active-playbook.js`: a global, `localStorage`-persisted Playbook scope written to by a select sitting in the feed's own filter bar — so a control that promised a page filter silently re-scoped the sidebar, the next new chat and the composer's picker. That version was **deliberately not ported**, on one condition stated at the time: _don't reintroduce a global scope without a permanently visible switcher — a scope that hides is only safe while it is legible._
 
-**Behind `playbookWorkspace` (default OFF), that condition is now met and the scope IS the model.** A Playbook is the level above the work, not a field on it: one is active at all times, chosen from the switcher under the wordmark in the rail, and everything below it belongs to that brand — the chat list, a new chat, the Topic Feed and its count, Insights, the studios' drafts. The six pickers that each asked the question separately (the composer's select, the feed's toolbar select, `/topics/settings`' own, the batch / clip / repurpose selects) are **gone**, not disabled: a greyed-out field restating what the rail prints permanently is chrome the reader has to rule out, and next to a live control it reads as something broken. Every host absorbs the loss on its own (`flex-end` commit rows, `margin-left:auto` on Send), and the Insights title stops being a picker because the rail is the door now. Where a page would otherwise stop naming its brand, an existing **live** control picks the name up — `/topics/settings`' "Open the Playbook" link becomes "Open Acme · Q2 marketing".
+**Behind `playbookWorkspace` (default OFF), that condition is now met and the scope IS the model.** A Playbook is the level above the work, not a field on it: one is active at all times, chosen from the switcher under the wordmark in the rail, and everything below it belongs to that brand — the chat list, a new chat, the Topic Feed and its count, Insights, the studios' drafts. The six pickers that each asked the question separately (the composer's select, the feed's toolbar select, `/topics/settings`' own, the batch / clip / repurpose selects) are **gone**, not disabled: a greyed-out field restating what the rail prints permanently is chrome the reader has to rule out, and next to a live control it reads as something broken. Every host absorbs the loss on its own (`flex-end` commit rows, `margin-left:auto` on Send), and the Insights title stops being a picker because the rail is the door now. Where a page would otherwise stop naming its brand, an existing **live** control picks the name up — `/topics/settings`' "Open Playbook" link becomes "Open Acme · Q2 marketing".
 
-**Two levels, and the switcher is the seam.** Inside a workspace every surface is one brand's. The CATALOGUE of brands — and any other brand's fiche opened from it — belongs to the level above, so those routes step out of the shell: `isAccountScope(path)` (same module) drives `body.account-scope`, layout.css hides the rail, and the topbar keeps only the way back in ("‹ Back to Acme · Q2 marketing" from the catalogue, "‹ Back to all playbooks" from a fiche). It is the mechanism `body.onboarding` already used, not a new one. Consequences worth knowing before touching either surface:
+**Two levels, and the switcher is the seam.** Inside a workspace every surface is one brand's. The CATALOGUE of brands — and any other brand's fiche opened from it — belongs to the level above, so those routes step out of the shell: `isAccountScope(path)` (same module) drives `body.account-scope`, layout.css hides the rail, and the topbar keeps only the way back in ("Back to Acme · Q2 marketing" from the catalogue, "Back to all Playbooks" from a fiche). It is the mechanism `body.onboarding` already used, not a new one. Consequences worth knowing before touching either surface:
 
 - **Insights' page head is the flag's too.** Flag ON, `/insights` drops its brand
   band entirely — the rail names the Playbook one row above the topbar's own
@@ -273,11 +232,11 @@ The fork introduced `active-playbook.js`: a global, `localStorage`-persisted Pla
   head takes the same word, since a column of three counts and no noun says
   nothing. Flag OFF the band stays: there, the brand name in it is the app's
   only Playbook switcher.
-- **The rail's row is singular.** `Playbooks 8` — a count of every brand, in a rail that promises one — became **`Playbook`** → `/playbook/<active>`: the fiche of the brand you are in, which is both in scope and the frequent destination. The list moved to the switcher's footer ("All playbooks" → `/home`), the only control that announces it changes scope. `workspaceNav()` in sidebar.js does that swap.
+- **The rail's row is singular.** `Playbooks 8` — a count of every brand, in a rail that promises one — became **`Playbook`** → `/playbook/<active>`: the fiche of the brand you are in, which is both in scope and the frequent destination. The list moved to the switcher's footer ("All Playbooks" → `/home`), the only control that announces it changes scope. `workspaceNav()` in sidebar.js does that swap.
 - **The wordmark is the account's door.** In workspace mode it opens `/home`; flag OFF there is no level above the work, so it keeps minting a chat — and `[data-sidebar-new]`, which shares its handler branch, keeps that job in both modes.
-- **The active brand's own fiche stays IN the workspace** — chrome, the rail row lit. Only cross-brand routes leave. That is the whole rule: the chrome follows the object's scope. Its topbar leads with a back arrow to the catalogue (Playbook 2.0: the DS Top bar pattern's icon back, the title staying in the fiche's own header by exception; flag OFF: "‹ Back to all playbooks"), like every other fiche: a bare `Playbook` title repeated the rail row and the h1 and pointed nowhere (the user's call, 2026-09-30, over the earlier no-crumb rule). Staying in the workspace is the rail's job, not the topbar's.
+- **The active brand's own fiche stays IN the workspace** — chrome, the rail row lit. Only cross-brand routes leave. That is the whole rule: the chrome follows the object's scope. Its topbar leads with a back arrow to the catalogue (the DS Top bar pattern's icon back, the title staying in the fiche's own header by exception: "Back to all Playbooks"; flag OFF: "Back to Playbooks"), like every other fiche: a bare `Playbook` title repeated the rail row and the h1 and pointed nowhere (the user's call, 2026-09-30, over the earlier no-crumb rule). Staying in the workspace is the rail's job, not the topbar's.
 - **On the home, a Playbook card IS the workspace.** Clicking it switches to that brand and opens a fresh chat in it (`?contextId=`, not `/` — the home is a launcher, so the gesture is "start", not "resume"); the fiche keeps the pen, with the other hover verbs, and the active card reads `Current`. ⚠️ This reversed the opposite arbitration one commit earlier — body opens the fiche, a small `Switch` link carries the scope move — argued from a mis-click's asymmetry. The user's call; what makes it safe is that nothing is lost (the new chat is empty, the crumb goes back, the brand you left is one card away), and the `Switch` link went with it as a second control for what the whole card now does. Flag OFF the card still opens the fiche.
-- **`/` is the one definition of "this brand's home"** — a redirect to the most recent chat IN SCOPE, else a fresh one (dashboard.js reads `scopeSessions`). The rail's switcher, the catalogue's Switch and the topbar's way back all navigate there rather than each computing a destination. `/` is the **brand's** home and `/home` the **account's**: two levels, two homes, and neither renders the other's list — `/` still renders nothing at all.
+- **`/` is the one definition of "this brand's home"** — a redirect to the most recent chat IN SCOPE, else a fresh one (dashboard.js reads `scopeSessions`). The rail's switcher and the topbar's way back both navigate there rather than each computing a destination. `/` is the **brand's** home and `/home` the **account's**: two levels, two homes, and neither renders the other's list — `/` still renders nothing at all.
 - **A switch re-points the surface it was made from.** From a chat → `/` (above). From the active brand's own fiche → `/playbook/<new id>`: what the reader has open is "this brand's Playbook", not that one brand, so it follows the switch the way `/topics` and Insights follow it. `switchPlaybook()` answers that BEFORE calling `setActivePlaybook` — a moment later the path's id is no longer the active one. Leaving the fiche alone was worse than a stale page: `isAccountScope()` would call it another brand's fiche while `body.account-scope` (only written on a route change) still said workspace, so the rail named one brand above another's sheet. Everywhere else — no brand in the URL — the scope notify repaints in place.
 
 Three rules hold it up:
@@ -292,9 +251,9 @@ Three rules hold it up:
 
 `topic-article.js` is the render engine — `renderTopicHeader` + `renderTopicArticle` + `renderTopicActions`, pure functions, no DOM and no listeners, the same shape as `playbook-view.js` and `connectors-view.js`. The feed's pane, the picker's dialog and the in-chat dialog all call it, so there is exactly one article.
 
-The identity is its own renderer because the two hosts **compose** it differently: the pane keeps `renderTopicHeader(topic, {withActions: true})` outside its scroller — title, source and the two verbs, all fixed, and **no Close**: a two-pane reader closes a message by opening the next one, and the list is right there, so a button spent the header's best slot on what the layout already does. Escape closes the pane, wired by the host and removed in teardown. While the dialog renders the same header inline and keeps its verbs in a sticky footer against its bottom edge. Placement is the host's; what the identity and the verbs SAY is not, which is the whole point of rendering both from one place. ⚠️ The pane used to keep only the VERBS up there, with the title below them inside the scroller: the actions had no subject on screen and scrolling took away the line naming what they act on. A second copy for the dialog is how a card and the thing it opens end up saying different sentences about one Topic. `topicTitle()` is the matching rule for titles: the article's own title wins, `headline` is only the fallback for a Topic with no article yet.
+The identity is its own renderer because the hosts **compose** it differently: the pane keeps `renderTopicHeader(topic, { source, menuOpen })` FIXED above its scroller — provenance, title and the kebab, and **no Close**: a two-pane reader closes a message by opening the next one, and the list is right there, so a button spent the header's best slot on what the layout already does. Escape closes the pane, wired by the host and removed in teardown. The two verbs (`renderTopicActions`) ride a sticky bar inside the scrolling article, between the analysis and the evidence (`renderTopicArticle`'s `actions` slot). The dialog renders the same header with `titleFirst` (the claim leads, a two-column surface has the room) and keeps its verbs in its DS footer. Placement is the host's; what the identity and the verbs SAY is not, which is the whole point of rendering both from one place. ⚠️ The pane used to keep only the VERBS up there, with the title below them inside the scroller: the actions had no subject on screen and scrolling took away the line naming what they act on. A second copy for the dialog is how a card and the thing it opens end up saying different sentences about one Topic. `topicTitle()` is the matching rule for titles: the article's own title wins, `headline` is only the fallback for a Topic with no article yet.
 
-`topic-card.js` emits the same object in TWO shapes — the feed's card and the picker's card, identical part for part — both carrying `data-topic-read`, so a host wires them once. The new chat's Fresh-topics grid renders the picker's card too, with `withUse: true` adding the verb on the card face: the body still opens the article, and the button is the second door for a reader who already knows. ⚠️ There was a third shape, `renderTopicRow`, for the hero; six full-width rows ran ~500px and pushed the workflow starters off the fold, so the hero took the card and the shape count went DOWN.
+`topic-card.js` emits the same object in TWO shapes — the feed's card and the picker's card, identical part for part — both carrying `data-topic-read`, so a host wires them once. `variant: "widget"` is not a third shape: it is the same body minus the button, because the in-chat picker widget puts it inside a radio `<label>`. The new chat's Fresh-topics grid renders the picker's card too, with `withUse: true` adding the verb on the card face: the body still opens the article, and the button is the second door for a reader who already knows. ⚠️ There was a third shape, `renderTopicRow`, for the hero; six full-width rows ran ~500px and pushed the workflow starters off the fold, so the hero took the card and the shape count went DOWN.
 
 ## The master–detail: the list SHRINKS
 
@@ -306,7 +265,7 @@ The split is measured with a **`@container` query on the row**, never a media qu
 
 **Use in chat** (`topic-flow.js`) marks the Topic **Used**, then opens a **new** chat with it attached as a Source via `addReadySource` — so Extract ideas, Draft, Ask and the Sources panel all light up with no new plumbing and no special case. The mark lands _before_ the chat opens, in one place, so the three surfaces that navigate (feed card, feed article, hero card) mean the same thing. No echo message and no question picker on arrival: the source-intake card already names the Topic.
 
-**The composer's "Pick from the Topic Feed" is the one INLINE exception** (`startTopicPickerInline`): it runs in the chat the reader is already in, the same shape as "Top performing posts" — one Archie line, then a single-select **widget turn** (`renderTopicsWidget`, radio cards of the feed's draft-ready Topics, newest first, max six), and **Use this topic** marks it Used, attaches it to _this_ chat via the same `attachTopicToChat`, then offers a next-steps Quickpicker (Extract ideas / Draft a post / Ask about it). Every neighbour in the Add menu acts in place; a Topic that opened a second chat was the one item that took the reader away from the chat they had just asked to add to. ⚠️ The dialog's LIST view that used to back this entry point was deleted with it (`git log -S renderListView`) — `topic-picker-modal.js` now opens on the article only.
+**The composer's "Pick from the Topic Feed" is the one INLINE exception** (`startTopicPickerInline`): it runs in the chat the reader is already in, the same shape as "Top performing posts" — one Archie line, then a single-select **widget turn** (`renderTopicsWidget`, radio cards of the feed's draft-ready Topics, newest first, max six), and **Use this Topic** marks it Used, attaches it to _this_ chat via the same `attachTopicToChat`, then offers a next-steps Quickpicker `askSourceUse` (Find post ideas in it / Write a post about it / Sum it up / Ask about it). Every neighbour in the Add menu acts in place; a Topic that opened a second chat was the one item that took the reader away from the chat they had just asked to add to. ⚠️ The dialog's LIST view that used to back this entry point was deleted with it (`git log -S renderListView`) — `topic-picker-modal.js` now opens on the article only.
 
 **Ignore** opens `topic-ignore-modal.js` and asks why. The reason is the only thing a reader ever _tells_ Archie about the listening, and it is what makes the Ignored state readable afterwards — the card prints it back. It is `stroked grey`, not red: ignoring hides a Topic that ticking Ignored brings straight back. Reversible via the toast's Undo, which also **clears the reason**. ⚠️ The fork's "Don't show this again" checkbox is not ported — it turned Ignore into a one-click action with no reason, contradicting the same feature's promise that the reason is kept.
 
@@ -324,29 +283,30 @@ Every token substitution is commented with the value it stands in for, because t
 
 ## Une voix par réseau : une seule règle partout
 
-Behind `voicePerNetwork`. Revu avec l'utilisateur le 2026-10-27 (« tout a l'air très compliqué ») après une journée de demandes empilées ; ce qui suit est ce qui a été tranché, et ce qui a été retiré en route — ne pas le reproposer.
+Behind `voicePerNetwork` (défaut OFF). Revu avec l'utilisateur le 2026-10-27 (« tout a l'air très compliqué ») puis au fil des demandes jusqu'au 2026-11-05 ; ce qui suit est le modèle en vigueur, puis ce qui a été retiré en route — ne pas le reproposer. Code : [`network-voice-flow.js`](../../src/network-voice-flow.js) (le chat), [`voice-parts.js`](../../src/voice-parts.js) (l'état d'une voix), `playbook-view.js` (la fiche et la revue de création), [`voice-proposal-modal.js`](../../src/components/voice-proposal-modal.js) et [`network-voice-modal.js`](../../src/components/network-voice-modal.js) (hors chat), [`voice-intro-modal.js`](../../src/components/voice-intro-modal.js).
 
-**Tranché :**
+**Le modèle :**
 
-- **La default voice, pas la « Brand voice ».** C'est la voix d'origine du Playbook, la première, celle de tous les réseaux ; « Brand voice » ne disait rien. Renommée partout dans l'UI.
-- **La default voice est générique, liée à aucun réseau** (2026-10-28, après-midi) — chaque réseau en est une déclinaison, y compris celui d'où le Playbook a été créé ; on la décline par ses règles (posts, document, questions, à la main) ou sans source, **Adapt for X**. Revient sur le choix du matin même (« la default voice est celle du premier réseau », onglet « LinkedIn · Default »), à la demande : « j'ai besoin d'une voice générique, non liée à un réseau, et de pouvoir après la décliner pour des networks ». On ne la nomme pas « generic voice » à l'écran : « Too generic » est déjà un motif de feedback. ⚠️ Retiré (toujours) : la case « Learn N voices » qui apprenait tout d'un coup ; retiré cette fois : l'onglet « LinkedIn · Default » et `defaultNetwork`.
-- **Un seul état « default »** pour un réseau sans voix à lui. `borrowed` (jamais réglé) et `plain` (« Use the Brand voice as it is » choisi) étaient deux états pour la même chose vue de l'utilisateur ; seul reste `chosen`, pour ne pas reposer la question.
-- **Les mêmes choix partout** — posts · adapt · document · edit (+ default voice quand un draft attend). Les questions ont été fondues dans « Write it myself » le 2026-11-04 (« la même expérience, des boîtes à remplir ») : chaque partie de l'éditeur pose sa question ; ne pas rouvrir une voie « A few questions ». Avant : quatre jeux différents selon le chat, Clips, la fiche et l'intro.
-- **Apprendre propose, l'utilisateur dispose.** Ce qu'Archie apprend est montré puis **ajouté au Voice profile** (seul moment où c'est enregistré) ou **édité** dans le Playbook. Avant : la voix était écrite dès l'apprentissage, et « valider » ne voulait rien dire. **Exception : la revue Voice de la création** (premier run, Create a Playbook) remplit la voix d'un réseau directement, dans sa carte, puis ouvre son éditeur (2026-11-04, à la demande : « pas besoin de l'étape de validation "add to voice profile" remplis directement ») : rien n'y est encore enregistré, la revue est déjà l'étape de relecture. Ailleurs (fiche, Clips, feedback d'un draft), la proposition reste.
+- **La default voice est générique, liée à aucun réseau** (2026-10-28) — la voix d'origine du Playbook, ses cinq parties, onglet « Default voice » ; chaque réseau en est une déclinaison, y compris celui d'où le Playbook a été créé. On ne la nomme pas « generic voice » à l'écran : « Too generic » est déjà un motif de feedback.
+- **Un réseau a une voix à lui, ou la default voice.** Dans le code, `networkVoice()` rend `own` ou `default` (avec `chosen`, gardé quand l'étape Voice a répondu « default voice », pour ne pas reposer la question) ; à l'écran, il n'y a que deux états.
+- **Les mêmes façons partout** : apprendre de ses posts · adapter la default voice (« Adapt my default voice ») · un document · « Write it myself », où chaque partie pose sa question (+ utiliser la default voice quand un draft attend). « A few questions » a été fondu dans « Write it myself » le 2026-11-04 : ne pas rouvrir cette voie.
+- **Apprendre propose, l'utilisateur dispose.** Ce qu'Archie apprend est montré, puis enregistré seulement par **Add to Voice profile**, ou ouvert non enregistré dans l'éditeur (`learnedVoiceHtml`). Dans la fiche et dans la revue de création, l'apprentissage joue la scène de la revue dans la page puis ouvre la voix en édition, remplie et non enregistrée (Save changes la garde, Cancel la retire) — pas de modale de proposition (2026-11-05). Ailleurs (le chat, Clips, le feedback d'un draft), la proposition reste.
 - **Après « Edit in the Playbook », le flux ne reprend pas tout seul** : on redemande à Archie.
-- **Une voix qui change ne réécrit pas les drafts** — ils le disent (status card « The X voice changed… » + Rewrite it). Pas de réécriture automatique, même depuis « Give X its own voice ».
-- **« Optimize it » renommé « Add rules for X »** (puis « Add a voice for X », 2026-10-29) : optimiser n'est jamais un bouton (une voix est apprise ou éditée), le mot contredisait la règle.
-- **On n'« apprend » pas une voix, on ajoute des règles au Voice profile.** Archie propose des _rules for X_ par-dessus la default voice ; l'action est _Add to Voice profile_. « 1 voice learned », « Use this voice », « Give X its own voice » ont été retirés (2026-10-27).
-- **L'étape Voice du chat est un bloc dans la conversation**, pas le Quickpicker : elle explique ce qui manque et guide avec des tuiles (la recommandée en tête). Exception assumée à la règle « question in-chat = Quickpicker » — c'est une décision à expliquer, pas une question à choix.
+- **Avant le premier draft d'un réseau jamais réglé, l'étape Voice, bloquante** (chat ; un dialog dans Clips). C'est un **bloc dans la conversation**, pas le Quickpicker : il explique ce qui manque et guide avec des tuiles (la recommandée en tête) — exception assumée à la règle « question in-chat = Quickpicker », c'est une décision à expliquer, pas une question à choix. Un draft écrit dans la default voice le dit (« Written in your default voice. No X voice yet. » + « Add a voice for X », `post-card.js`).
+- **Une voix qui change ne réécrit pas les drafts** — ils le disent sur le draft (« Your X rules changed since this draft was written. » + Rewrite it ; `voiceChangedAt` contre `writtenAt`). Pas de réécriture automatique.
 - **Le feedback d'un draft peut mettre à jour la voix** — seulement s'il parle d'écriture, et comme une proposition.
-- **L'onboarding : le dialog seul** (+ l'infobox de la fiche), pour les utilisateurs existants ; le dialog en trois temps est gardé tel quel.
-- **« Voice for X », pas « Rules for X », partout** (2026-10-29 : d'abord la review Voice, puis, à la demande, le chat, la fiche, les dialogs et le glossaire — un mot, voice, pour une chose ; les éléments d'une voix restent des « rules ») ; une seule question (voix par défaut ou voix à elle, sur les réseaux des comptes connectés), et une voix de réseau commence **vide** : rien n'est appris en silence depuis les posts, c'est l'utilisateur qui la remplit (posts, document, questions, adaptée, à la main).
-- **Le réseau principal : essayé puis retiré** (2026-10-28 → 2026-10-29). Demandé d'abord au premier écran, puis dans la revue Voice (« Your main network », radios), il a été retiré à la demande (« enlève ça ») : il n'apportait qu'un ordre. Ne pas le reproposer ; `mainNetwork()` est supprimé. La voix a **sa propre phase** : d'abord un écran après la source (2026-10-28), puis, à la demande (« séparer + fortement la Voice et le Playbook », 2026-10-29), **sa propre review en cards**, après celle du Playbook qui ne la contient plus (`/welcome-alt/voice` : Default voice, puis Network rules). Séparée dans le run seulement : les données restent sur le Playbook, la fiche garde son onglet Voice. Le même jour : des règles **pour les réseaux qu'on choisit**, aucun par défaut (avant : la même voix partout ou des règles pour tous), et les façons de remplir une partie (posts d'un compte, document, questions, default voice adaptée) en tuiles dans ses cards, à droite — essayées d'abord à gauche, déplacées le même jour ; les règles d'un réseau s'éditent dans la review.
-- **Un nouvel utilisateur donne ses règles dans la review de création** (2026-10-28) — d'abord le choix d'en avoir ou non (The same voice everywhere · Rules for each network), puis une carte par réseau sous la default voice, une décision par carte, pas une intro ni une case « tout apprendre ». Un réseau laissé sans réponse n'a **pas** la default voice posée d'office : son premier draft demande (l'étape Voice du chat) — hors du run depuis le 2026-11-04, où un réseau coché laissé vide la reçoit, choisie (plus bas). Avant, la création la posait en silence, elle comptait comme choisie, et un nouvel utilisateur ne voyait jamais le modèle. La fiche ne porte **plus** ce choix (2026-10-29, « c'est incompréhensible le bloc en bas là, et pas nécessaire ? », puis l'audit ux-heuristics) : un radio ne peut pas dire un état mixte et il était en bas de page ; à sa place, l'état de chaque réseau se lit dans la **liste des voix** à gauche de l'onglet (la colonne de nav secondaire DS, recette O4 : Default voice · un réseau par ligne, _Follows default_ sur ceux sans voix à eux ; depuis le 2026-11-05, un toggle « Own voice » par réseau à la place, puis le même jour, après l'audit ux-heuristics (« pas compris », « il manque l'indication… », « ajouter lui-même une voice »), une liste de voix : la default voice et les réseaux qui l'utilisent, _Network voices_ avec l'état de chacune (règles ou vide), et **Add a network voice** ; chaque liste garde son rendu — un composant partagé qui restylait les deux a été retiré le même jour, ne pas le reproposer). Une rangée d'onglets de voix sous les onglets de la page, puis une carte Your networks, ont été essayées le même jour et retirées (« on peut pas avoir des tabs et en dessous de nouveau des tabs ») : ne pas remettre d'onglets dans un onglet. La voix d'un réseau sans voix à lui n'a qu'une action, Add a voice for X (Learn from… et Edit s'y lisaient comme des modifications de la default voice ; l'avertissement offre Keep the default voice). Un réseau gardé sur la default voice par choix n'est plus averti, et un réseau avec ses règles peut revenir à la default voice (confirmé).
-- **La review Voice : la gauche dit où j'en suis, la droite ce que je fais** (2026-11-04, à la demande : « perdue entre ce qui se passe à gauche et à droite… des boutons avec des wordings différents qui mènent à la même chose »). Une action, un libellé. Depuis le 2026-11-05 (audit ux-heuristics, à la demande — l'utilisateur revient sur le retrait du « + Add a voice for a network ») : la default voice dit où elle sert, puis _Network voices_, une ligne par voix ajoutée avec son état et une corbeille, puis **Add a network voice** (DS action dropdown) ; plus de toggle, qui réglait l'état ET ouvrait la ligne. Avant, chaque réseau était une ligne sous la default voice avec un toggle DS « Own voice » : off, il garde la default voice et sa ligne n'ouvre rien ; on, il devient une partie et la droite est celle d'avant (2026-11-04, à la demande : « j'arrive pas à comprendre que je vais customiser des voices pour les divers networks » ; essayé puis retiré le même jour, « too confusing, too much… I never asked to change the right part » : un arbre avec un Customize par ligne et un état écrit, et à droite une carte « X uses your default voice » en lecture — ne pas reproposer ; avant, un select multiple DS sous _Network by network_, lu comme « mes réseaux », avec des pastilles _To fill in_ ; avant encore, une partie _Your networks_ et sa card de cases, et un bouton « + Add a voice for a network ») ; la droite de la revue Voice ne change pas sans demande ; Archie ne suggère pas quel réseau personnaliser ; la dernière confirmation dit « Looks good, draft my first post », les mots du bouton de gauche ; une carte réseau vide ne dit pas « Looks good » mais « Use my default voice for X » (`skipLabel`). **Le run ne laisse aucun réseau sans réponse** (2026-11-04, retour : coché puis sauté, le réseau restait en suspens et son premier draft bloquait) : un réseau coché laissé vide est enregistré dans la default voice, choisie (`reviewedVoices`). Cocher, c'est choisir ; ne rien remplir, c'est la default voice. **Un réseau non ajouté n'est pas réglé** (2026-11-05, à la demande : « si je n'ai pas ajouté les voices lors de la first user experience, pourquoi elles sont visibles dans ma voice profile ? », puis « Toujours ») : rien n'est enregistré pour lui, la revue ouverte ou non (_Draft my first post_ dès Ready n'apprend plus une voix par compte, `ownNetworkVoices`) ; la fiche le montre en pointillé (Add) et **son premier draft demande sa voix**, l'étape Voice bloquante, comme tout réseau en pointillé (retiré dans la fiche, connecté plus tard). Une ligne en pointillé veut toujours dire la même chose. **Le modèle de la fiche** (2026-11-05, à la demande : « les networks disponibles affichés sont ceux qui ont des profils connectés · il est possible d'ajouter une voice pour un network dont il n'y a pas de profils connectés · sans actions de l'utilisateur, un network utilise la Voice par Default ») : la liste montre les réseaux connectés (dès deux) et tout réseau qui a une voix à lui, même sans compte ; les autres s'ajoutent par _Add a voice for another network_ (DS action dropdown sous la liste, aussi avec un seul réseau connecté). Un réseau a une voix à lui (une carte, ses règles comptées) ou la default voice (une ligne _Configure_) — plus d'état « default voice choisie » dans la fiche, plus de _Use my default voice for X_ ni de _Remove the X voice_ sur sa page ; _Use my default voice instead_ sur une voix à lui la ramène. L'étape Voice avant le premier draft d'un réseau connecté jamais réglé reste ; sa réponse « default voice » est gardée (pour ne plus redemander) mais la fiche la montre comme _Configure_. **La revue Voice de la création suit le même modèle** (2026-11-05, « Oui, aligne ») : lignes _Configure_ pour les réseaux connectés, _Add a voice for another network_ sous la liste ; un réseau ouvert et quitté sans voix n'est pas ajouté (`onLeavePart`), sa partie vide propose _Skip for now_ au lieu de _Use my default voice for X_, sa corbeille n'apparaît qu'une fois qu'il a une voix ; seules les voix avec des règles sont enregistrées (`reviewedVoices`), et la boîte « Continue with N empty voices? » est retirée. **Ceci remplace « Le run ne laisse aucun réseau sans réponse » (2026-11-04)** : un réseau connecté sans voix est demandé à son premier draft. Le chat neuf d'après le run trouve son Playbook dans l'URL (`sessionPlaybookId`, active-playbook.js) : lu dans le seul store, il n'en avait pas, et aucune de ses étapes bloquantes ne se déclenchait.
+- **Les mots** : default voice · voice for X (« X voice ») · Add to Voice profile ; les éléments d'une voix restent des « rules ». Jamais « Brand voice », « rules for X », « voice learned », « Use this voice » ni « Optimize » (une voix est apprise ou éditée, optimiser n'est jamais un bouton).
+- **L'onboarding des utilisateurs existants : le dialog seul** (`voice-intro-modal.js`, + l'infobox de la fiche « Each network can now have its own voice »), une fois, qui fait personnaliser les autres réseaux un par un.
+- **La fiche** (2026-11-05, à la demande : « les networks disponibles affichés sont ceux qui ont des profils connectés · il est possible d'ajouter une voice pour un network dont il n'y a pas de profils connectés · sans actions de l'utilisateur, un network utilise la Voice par Default ») : l'onglet Voice profile est un maître–détail, la liste des voix à gauche (la colonne de nav secondaire DS, recette O4) — la default voice, qui nomme les réseaux qui l'utilisent ; _Network voices_, une carte par réseau qui a une voix à lui, ses règles comptées ; puis les réseaux sur la default voice, une ligne en pointillé « X voice · Configure » ; puis **Add a voice for another network** (DS action dropdown, aussi avec un seul réseau connecté). La liste montre les réseaux connectés (dès deux) et tout réseau qui a une voix à lui, même sans compte. La page d'un réseau sans voix : l'infobox « X uses your default voice » et ses façons ; « Use my default voice instead » sur une voix à lui la ramène (confirmé). Une ligne en pointillé veut toujours dire la même chose, et un réseau ouvert puis quitté sans voix n'est pas ajouté.
+- **La revue Voice de la création suit le même modèle** (`/welcome-alt/voice`, 2026-11-05, « Oui, aligne ») : la gauche dit où j'en suis, la droite ce que je fais (2026-11-04 : « perdue entre ce qui se passe à gauche et à droite ») — une action, un libellé. Lignes _Configure_ pour les réseaux connectés, _Add a voice for another network_ sous la liste ; la partie vide d'un réseau propose _Skip for now_, sa corbeille n'apparaît qu'une fois qu'il a une voix ; un réseau ouvert et quitté sans voix n'est pas ajouté (`onLeavePart`). Seules les voix avec des règles sont enregistrées (`reviewedVoices`, `ownNetworkVoices`) : rien n'est appris dans le dos de l'utilisateur, la revue ouverte ou non, et un réseau connecté sans voix est demandé à son premier draft. La droite de la revue ne change pas sans demande ; Archie ne suggère pas quel réseau personnaliser. La voix a sa propre revue, après celle du Playbook qui ne la contient plus (2026-10-29, « séparer + fortement la Voice et le Playbook ») — séparée dans le run seulement : les données restent sur le Playbook, la fiche garde son onglet. Le chat neuf d'après le run trouve son Playbook dans l'URL (`sessionPlaybookId`, active-playbook.js) : lu dans le seul store, il n'en avait pas, et aucune de ses étapes bloquantes ne se déclenchait.
 
 **Retiré (ne pas reproposer) :**
 
+- L'onglet « LinkedIn · Default » et `defaultNetwork` (la default voice = celle du premier réseau, le matin du 2026-10-28), et le **réseau principal** (« Your main network », `mainNetwork()`, 2026-10-28 → 29 : il n'apportait qu'un ordre).
+- La case « Learn N voices » qui apprenait tout d'un coup ; une voix de réseau apprise en silence à la création.
+- Les deux états `borrowed` / `plain` pour un réseau sans voix ; l'état « default voice choisie » dans la fiche, « Use my default voice for X » et « Remove the X voice » sur sa page, « Keep the default voice » (2026-11-05).
+- Des onglets de voix sous les onglets de la page, puis une carte Your networks (« on peut pas avoir des tabs et en dessous de nouveau des tabs ») ; le radio « The same voice everywhere · Rules for each network » en bas de la fiche (2026-10-29, « incompréhensible ») ; le marqueur _Follows default_, puis un toggle « Own voice » par réseau (2026-11-04 → 05 : il réglait l'état ET ouvrait la ligne) ; un arbre avec un Customize par ligne et une carte « X uses your default voice » en lecture à droite de la revue (« too confusing ») ; un select multiple sous _Network by network_, des pastilles _To fill in_ ; un composant partagé qui restylait la liste de la fiche et celle de la revue.
+- « Le run ne laisse aucun réseau sans réponse » (2026-11-04 : un réseau coché laissé vide recevait la default voice, choisie) et la boîte « Continue with N empty voices? » — remplacés le 2026-11-05 par le modèle ci-dessus.
 - Un bouton « Optimize for X » / « Optimize the Brand voice », « Re-optimize » et l'état **stale** d'une voix de réseau quand la default voice change.
 - La ligne « Written in the LinkedIn voice » sous un draft (un draft dans la voix de son réseau ne dit rien).
 - La **comparaison** « le même post dans chaque voix » dans le chat et dans la review de création, et le post avant / après sous une voix apprise.

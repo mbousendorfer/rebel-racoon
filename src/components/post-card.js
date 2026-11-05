@@ -19,21 +19,21 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2761";
-import { isPortraitFormat } from "../clip-formats.js?v=2761";
-import { presetById } from "../clip-captions.js?v=2761";
-import { renderFeedbackControl } from "./feedback-control.js?v=2761";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2762";
+import { isPortraitFormat } from "../clip-formats.js?v=2762";
+import { presetById } from "../clip-captions.js?v=2762";
+import { renderFeedbackControl } from "./feedback-control.js?v=2762";
 import {
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=2761";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2761";
-import { REVEAL_MS } from "../archie-pixels.js?v=2761";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2761";
-import { languageOf } from "../draft-rewrite.js?v=2761";
+} from "../social-profiles.js?v=2762";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2762";
+import { REVEAL_MS } from "../archie-pixels.js?v=2762";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2762";
+import { languageOf } from "../draft-rewrite.js?v=2762";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -47,8 +47,8 @@ import { languageOf } from "../draft-rewrite.js?v=2761";
 //   └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘    two stroked grey buttons
 //
 // Tier 1: `.ap-button.mermaid`, the DS's AI treatment (a gradient BORDER: the
-//    DS ships no filled AI button). Under it, small, the shortcut it runs (flag
-//    sexySquirrel, `opts.imagePreset` from the drafts panel — the card never
+//    DS ships no filled AI button). Under it, small, the shortcut it runs
+//    (`opts.imagePreset` from the drafts panel — the card never
 //    reads the Playbook): the look's name and this network's shape. "Change"
 //    opens the PLAYBOOK, where that preset is set — ⚠️ NOT the Image Studio
 //    (rejected): the preset is a setting, the studio a tool.

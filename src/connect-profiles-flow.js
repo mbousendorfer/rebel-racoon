@@ -1,8 +1,8 @@
 // The "connect an account first" step, shared by every chat flow that drafts
 // FOR a social account.
 //
-// Behind the `skipConnectProfiles` flag, Playbook creation no longer asks which
-// profile will publish, so a user can reach a draft flow with nothing connected.
+// Playbook creation never asks which profile will publish, so a user can reach
+// a draft flow with nothing connected.
 // Rather than dead-ending ("connect one in Settings", a page that no longer
 // exists), the flow REPLACES its "pick an account" step with this one, in the
 // same slot, and resumes where it left off once an account lands.
@@ -14,21 +14,21 @@
 // always the case with the flag off, so this module is a no-op there. That
 // single short-circuit is why callers can wrap unconditionally.
 
-import { sessionPlaybookId } from "./active-playbook.js?v=2761";
-import * as inlineQuestion from "./inline-question.js?v=2761";
-import { postAssistantMessage, postUserProfilesTurn } from "./assistant.js?v=2761";
-import { getConnectedProfiles, getConnectableNetworks, normalizeNetwork } from "./social-profiles.js?v=2761";
-import { getContextById } from "./contexts-store.js?v=2761";
-import { playbookNetworks } from "./voice-parts.js?v=2761";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2761";
+import { sessionPlaybookId } from "./active-playbook.js?v=2762";
+import * as inlineQuestion from "./inline-question.js?v=2762";
+import { postAssistantMessage, postUserProfilesTurn } from "./assistant.js?v=2762";
+import { getConnectedProfiles, getConnectableNetworks, normalizeNetwork } from "./social-profiles.js?v=2762";
+import { getContextById } from "./contexts-store.js?v=2762";
+import { playbookNetworks } from "./voice-parts.js?v=2762";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2762";
 
 // The connect step's cards — one per NETWORK, laid out like Agorapulse's own
 // "Add new social profiles" grid: the network's full-colour glyph, its name,
 // and what you connect on it ("Pages", "Professional accounts"). That is the
 // product's real unit here — you don't pick from accounts you already have, you
 // pick a network and its dialog hands one back.
-// Exported because Playbook creation offers the same grid as its (optional)
-// account step. `first`: the networks to lead with, in order — the Playbook's,
+// Exported because the Clip Studio and the Clips space offer the same grid.
+// `first`: the networks to lead with, in order — the Playbook's,
 // its main one first.
 export function connectableNetworkCards({ first = [] } = {}) {
   const rank = (platform) => {

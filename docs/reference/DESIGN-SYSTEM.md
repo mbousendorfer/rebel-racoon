@@ -13,7 +13,7 @@
 3. **Utiliser les tokens DS, pas des valeurs hardcodées** — chaque `--ref-*` / `--sys-*` doit exister dans `desktop_variables.css`. Les gris : `05 · 10 · 20 · 40 · 60 · 80 · 100 · 150`, rien d'autre. Jamais `padding: 20px` quand `var(--ref-spacing-sm)` existe. Jamais `#fff` quand `var(--ref-color-white)` existe.
 4. **Préférer `--sys-*` à `--ref-*`** quand un token sémantique existe (text-color, border-color, état de composant).
 5. **CSS custom uniquement si rien dans le DS ne convient** — choisir le bon fichier :
-   - `styles/ds-patches.css` — la **seule** place pour étendre une classe DS avec une variante manquante (ex. `.ap-filter-chip`, `.app-modal-backdrop`) ou porter un composant que le DS ne ship qu'en Angular (ex. `.ap-filter-dropdown`). Doit rétrécir au fil que le DS évolue — et ça arrive : le port de `.ap-segmented-control` a été supprimé le jour où `/topics` est passé aux tabs, qui existent en CSS-UI.
+   - `styles/ds-patches.css` — la **seule** place pour étendre une classe DS avec une variante manquante (ex. `.ap-filter-chip`, `.app-modal-backdrop`) ou porter un composant que le DS ne ship qu'en Angular (ex. `.ap-filter-dropdown`). Doit rétrécir au fil que le DS évolue. Inventaire commenté : [`UI-PATTERNS.md` §1](UI-PATTERNS.md#1-stylesds-patchescss--linventaire-des--trous-du-ds-).
    - `styles/screens/<screen>.css` — styling spécifique à un écran.
    - `styles/components/<component>.css` — styling partagé entre écrans.
    - **Jamais** redéclarer une classe `.ap-*` avec des overrides hors `ds-patches.css` — ça flippe la cascade silencieusement.
@@ -27,16 +27,16 @@
 | `--sys-*`  | Semantic tokens (text/border colors, états de composants) — **préférer ces tokens** |
 | `--comp-*` | Component-level tokens — ne pas utiliser directement en CSS app                     |
 
-Exception documentée : l'icône `sparklesMermaid` utilise un SVG inline pour son gradient (pas un token). Les couleurs brand tierces (connector accents, social logos) vivent en data dans JS, pas en tokens DS.
+Exception documentée : `.ap-icon-sparkles-mermaid` est un masque peint en `currentColor` par le DS, donc gris ; hors d'un bouton, `ds-patches.css` le peint avec `--ref-color-mermaid-gradient-background`. Les couleurs brand tierces (connector accents, social logos) vivent en data dans JS, pas en tokens DS.
 
 ## Convention couleur — usage app-wide
 
-| Couleur    | Usage                                                                           |
-| ---------- | ------------------------------------------------------------------------------- |
-| **Orange** | AI / spotlight actions — "Ask", "Try in chat", primary AI CTA, "+ New Playbook" |
-| **Bleu**   | Routine list-page CTAs — Connect, Create, navigation                            |
+| Couleur    | Usage                                                                                |
+| ---------- | ------------------------------------------------------------------------------------ |
+| **Orange** | AI / spotlight actions — "Ask", "Ask in a chat", primary AI CTA                      |
+| **Bleu**   | Routine list-page CTAs — Connect, Create a Playbook, navigation, submits Quickpicker |
 
-Réutiliser les primitives partagées : ex. tous les filter chips utilisent `.ap-filter-chip` (driven par `aria-pressed`), le même chip qu'utilise le Ideas panel.
+Réutiliser les primitives partagées : ex. tous les filter chips utilisent `.ap-filter-chip` (driven par `aria-pressed`). L'application au cas par cas (butter d'Archie, navy du fil, exceptions orange) : [`UI-PATTERNS.md` §5](UI-PATTERNS.md#5-convention-couleur-en-pratique).
 
 ## Files DS (jsDelivr `@latest` — rien n'est vendorisé)
 
@@ -55,47 +55,44 @@ Chargés par `index.html`. Il n'y a plus de dossier `ds/` ni de `scripts/sync-ds
 
 ```
 styles/
-  tokens.css        — tokens app-only (surface aliases, radius, mermaid accent)
-  base.css          — resets, keyframes, app-wide token groupings
+  tokens.css        — tokens app-only (--app-* : surfaces, mesure, butter, navy, radius, ombres, z-index, graphes)
+  base.css          — resets, keyframes partagées (app-spin / -rise / -grow-y / -shimmer / -focus-pulse), [hidden]
+  fonts.css         — les fontes display de l'Image Studio (@font-face locales, OFL)
   layout.css        — app shell (sidebar / topbar / content / panel chrome)
   ds-patches.css    — la seule place légitime pour toucher .ap-*
   chat.css          — composer + thread chrome
-  screens/          — analyse, batch-studio, caption-editor, clip-studio, connectors,
-                      contexts, dashboard, image-studio-canvas, image-studio-v2,
-                      modals, posts, session, topics, topics-settings, welcome
-  components/       — add-source-modal, archie-loader, archie-pixels, clip-card, connectors-modal,
-                      conversation-status-card, feedback-control, right-panel,
-                      schedule-modal, sidebar, social-post-card, subtitle-style,
-                      top-post-card, topic-badge, topic-card, video-clips-modal,
-                      workflow-flow
+  chat-legacy.css   — le fil d'avant newConversationStyles (body:not(.conv-new))
+  screens/          — un fichier par écran (analyse, clips, home, insights-*, playbook-v2, topics, welcome…)
+  components/       — un fichier par composant partagé (right-panel, sidebar, topic-card, draft-changes…)
+src/modules/image-studio/styles/imst-*.css — les feuilles de l'Image Generator
 ```
 
 ## Composants `.ap-*` les plus utilisés
 
-| Classe                       | Variantes                                                       | Usage proto                          |
-| ---------------------------- | --------------------------------------------------------------- | ------------------------------------ |
-| `.ap-button`                 | `.primary` `.stroked` `.ghost` `.transparent` `.danger` (patch) | CTAs                                 |
-| `.ap-icon-button`            | `.stroked` `.transparent` `.lg` `.sm`                           | Boutons icon-only                    |
-| `.ap-input` / `.ap-textarea` | —                                                               | Inputs                               |
-| `.ap-card`                   | —                                                               | Conteneurs principaux                |
-| `.ap-tag`                    | —                                                               | Tags texte (hashtags, kind)          |
-| `.ap-badge`                  | —                                                               | Compteurs                            |
-| `.ap-status`                 | `.green` `.orange` `.red` `.blue` `.grey` `.tagOrange`          | Pills de statut                      |
-| `.ap-snackbar`               | —                                                               | Toasts (`toast.js`)                  |
-| `.ap-filter-chip`            | `aria-pressed` driven                                           | Filtres (extension `ds-patches.css`) |
+| Classe                                   | Variantes (DS 22)                                                                                                                                                                 | Usage proto                          |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `.ap-button`                             | `.primary` / `.secondary` (`.orange` `.blue`) ; `.stroked` (`.blue` `.grey` `.red`) ; `.ghost` (`.blue` `.grey` `.red` `.green`) ; `.transparent` ; `.mermaid` (bordure dégradée) | CTAs                                 |
+| `.ap-icon-button`                        | transparent par défaut ; `.stroked`, `.blue` `.green` `.red`, `.loading`, `.locked` (pas de taille)                                                                               | Boutons icon-only                    |
+| `.ap-input-group` / `.ap-textarea-field` | —                                                                                                                                                                                 | Inputs                               |
+| `.ap-card`                               | —                                                                                                                                                                                 | Conteneurs principaux                |
+| `.ap-tag`                                | —                                                                                                                                                                                 | Tags texte (hashtags, kind)          |
+| `.ap-badge`                              | `.blue` `.orange`                                                                                                                                                                 | Compteurs                            |
+| `.ap-status`                             | `.green` `.orange` `.red` `.blue` `.grey` `.tagOrange` ; `.mermaid` (patch)                                                                                                       | Pills de statut                      |
+| `.ap-snackbar`                           | —                                                                                                                                                                                 | Toasts (`toast.js`)                  |
+| `.ap-filter-chip`                        | `aria-pressed` driven                                                                                                                                                             | Filtres (extension `ds-patches.css`) |
 
 La liste exhaustive : le lookup du skill `/design-guidelines`, ou `css-ui/index.css` sur le CDN.
 
 ## Icônes
 
-Toujours via la font icon DS : `<i class="ap-icon-{name}" aria-hidden="true"></i>`. 290 icônes disponibles. Tailles via classes `.xs` `.sm` `.md` `.lg`.
+Toujours via les icônes DS : `<i class="ap-icon-{name}" aria-hidden="true"></i>` — un masque (`mask-image`) peint en `currentColor`, pas une fonte. ~240 icônes dans `ap-icons.css`. Tailles : `.ap-icon-xxs` … `.ap-icon-xxxl` (dont `-xs` `-sm` `-md` `-lg` `-xl`), sur les tokens `--sys-icon-css-*`.
 
 Pour les boutons icon-only, **mettre `aria-label` sur le bouton** et `aria-hidden="true"` sur l'icône enfant.
 
 ## Anti-patterns connus
 
 - Redéclarer `.ap-icon-button`, `.ap-button` avec `border`/`background` custom → utiliser les modifiers DS (`.stroked`, `.transparent`, `.primary`, color variants).
-- Ajouter `padding: 20px` sur `.step-card`, `.source-header`, etc. dans un view file → ces classes sont déjà stylées centralement.
+- Redonner un `padding` à une classe partagée depuis la feuille d'un écran → elle est déjà stylée dans son fichier de composant ; ajouter une variante là-bas.
 - Couleurs hex, radii px-based, spacings px qui ne matchent pas les tokens.
 - Inventer une icône quand `ap-icons.css` en a déjà une.
 - Mettre `!important` pour résoudre un conflit de cascade — c'est presque toujours le signe qu'une ap-\* est override hors `ds-patches.css`.

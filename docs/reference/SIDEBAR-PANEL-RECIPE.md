@@ -20,9 +20,11 @@ la place disponible** pour le chat — sauf si l'utilisateur l'a réglée à la 
 ```
 ┌──────────┬─────────────────────┬──────────────┐
 │ sidebar  │      contenu        │  right panel │
-│ 260/56px │       1fr           │   ~1/3, ⩾610 │
+│ 260/56px │       1fr           │ ~1/3, ⩾610*  │
 └──────────┴─────────────────────┴──────────────┘
 ```
+
+\* 380 sous 1280px de viewport.
 
 ---
 
@@ -32,7 +34,7 @@ la place disponible** pour le chat — sauf si l'utilisateur l'a réglée à la 
 | ----------------- | ----------------- | -------------------------------------------------- |
 | Sidebar étendue   | `260px`           | largeur de la sidebar complète                     |
 | Sidebar rétractée | `56px`            | largeur du rail d'icônes                           |
-| Plancher du panel | `610px`           | largeur mini du panel                              |
+| Plancher du panel | `610px` / `380px` | largeur mini du panel (`380px` sous 1280px)        |
 | Seuil de chat     | `560px`           | sous cette largeur de chat, la sidebar se rétracte |
 | Bornes du drag    | `380px` / `400px` | min du panel / place toujours réservée au reste    |
 
@@ -66,7 +68,10 @@ premier rendu pour éviter un saut de mise en page.
 
 Largeur du panel par défaut :
 
-> **un tiers de (viewport − sidebar), avec un plancher de 610px.**
+> **un tiers de (viewport − sidebar), avec un plancher de 610px — 380px sous
+> 1280px de viewport** (à 1024, 610 laisserait le chat sous son seuil de 560px).
+
+La prédiction du §3 doit utiliser **le même plancher** que la mise en page.
 
 Quand la sidebar est rétractée, c'est la largeur rétractée (56px) qui entre dans
 le calcul. Une largeur **custom** (drag, cf. §4) prend le dessus quand elle est
