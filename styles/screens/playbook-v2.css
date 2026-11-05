@@ -1616,18 +1616,39 @@
   max-width: 400px;
 }
 
-/* The last choice under the ways: keep the default voice. */
+/* The foot under the ways: keep the default voice, then remove the voice —
+   stacked, the same for every network whatever its name's length. */
 .pb2-voice-keep {
   display: flex;
-  justify-content: center;
-  margin-top: var(--ref-spacing-xs);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-md);
 }
 
-/* What a network writes in: centred over the ways, not the column's width
-   (2026-11-05: « je ne veux pas que l'infobox prenne toute la largeur »). */
-.pb2-voice-main .pb2-voice-uses {
-  max-width: 560px;
+/* A network without a voice of its own (renderNetworkVoiceRead): one column,
+   the ways' width, centred — the name, the infobox, the ways, the foot share
+   two edges (2026-11-05: « tout est éclaté / éparpillé »). The infobox stays
+   off the full width (« je ne veux pas que l'infobox prenne toute la largeur »). */
+.pb2-voice-solo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-lg);
+  max-width: 400px;
   margin-inline: auto;
+  padding-top: var(--ref-spacing-xxs);
+}
+
+.pb2-voice-solo__title {
+  justify-content: center;
+}
+
+.pb2-voice-solo .pb2-voice-notice {
+  margin-bottom: 0;
+}
+
+.pb2-voice-solo .pb2-block.pb2-voice-empty {
+  padding: 0;
 }
 
 /* A network on the default voice: a grey ground, and the default voice's

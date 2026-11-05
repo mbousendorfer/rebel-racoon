@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2740";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2740";
-import { conceptHint } from "./concepts.js?v=2740";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2742";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2742";
+import { conceptHint } from "./concepts.js?v=2742";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2740";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2740";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2740";
-import { isFlagOn } from "./feature-flags.js?v=2740";
-import { clipLookOf } from "./videos-store.js?v=2740";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2740";
-import { parseHashParams } from "./url-state.js?v=2740";
+} from "./playbook-brand-kit.js?v=2742";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2742";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2742";
+import { isFlagOn } from "./feature-flags.js?v=2742";
+import { clipLookOf } from "./videos-store.js?v=2742";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2742";
+import { parseHashParams } from "./url-state.js?v=2742";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2740";
-import { showToast } from "./components/toast.js?v=2740";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2740";
+} from "./voice-parts.js?v=2742";
+import { showToast } from "./components/toast.js?v=2742";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2742";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -68,10 +68,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2740";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2740";
-import { consumeHandoff } from "./handoff.js?v=2740";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2740";
+} from "./network-voice-flow.js?v=2742";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2742";
+import { consumeHandoff } from "./handoff.js?v=2742";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2742";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -79,7 +79,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2740";
+} from "./social-profiles.js?v=2742";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -3218,7 +3218,7 @@ function giveNetworkVoice(net, choice) {
 // A network with no voice of its own, on the fiche: what happens meanwhile,
 // then the ways to give it one, as the run's tiles. Each tile is the fiche's
 // own hook (screens/playbook.js `data-recap-learn`, `data-pb2-voice-own`).
-function networkVoiceEmpty(net, chosen, added = false) {
+function networkVoiceEmpty(net, chosen, added = false, remove = "") {
   const label = networkLabel(net);
   const account = getConnectedProfiles().find((p) => canLearnFrom(p) && normalizeNetwork(p.platform) === net);
   const hook = (way) => `data-recap-learn="${way}" data-recap-learn-net="${esc(net)}"`;
@@ -3248,9 +3248,12 @@ function networkVoiceEmpty(net, chosen, added = false) {
   // « Use my default voice for X » (2026-11-05, asked: « quand je clique sur
   // add il utilise tout de suite la default voice... ça doit être un choix de
   // l'utilisateur comme les autres, tout en bas »).
-  const keep = added
-    ? `<div class="pb2-voice-keep"><button type="button" class="ap-button ghost grey" data-pb2-voice-keep="${esc(net)}">Use my default voice for ${esc(label)}</button></div>`
+  // Remove the voice sits in the same foot row, after it (2026-11-05: the page
+  // as one column, nothing pinned to the far edges).
+  const keepBtn = added
+    ? `<button type="button" class="ap-button ghost grey" data-pb2-voice-keep="${esc(net)}">Use my default voice for ${esc(label)}</button>`
     : "";
+  const keep = keepBtn || remove ? `<div class="pb2-voice-keep">${keepBtn}${remove}</div>` : "";
   return voiceEmptyState(net, voiceWaysRows(tiles) + keep, `Give ${label} its own voice, from one of these.`, {
     className: `pb2-voice-net pb2-voice-net--${net}`,
     bare: true,
@@ -3313,13 +3316,17 @@ function renderNetworkVoiceRead(data) {
         </div>
       </div>
     </div>`;
+    // One column, the ways' width, centred: the name, what it writes in, the
+    // ways, then its actions at the foot (2026-11-05, asked: « le placement de
+    // tout le reste ne va pas, tout est éclaté / éparpillé, ça n'a aucune
+    // structure » — the head had its title flush left and Remove flush right,
+    // the infobox and the ways centred at two other widths).
     return withVoiceNav(
       data,
-      `${pb2TabHead("voice", remove, {
-        noEdit: true,
-        lead: "",
-        ...voiceTitle(data),
-      })}${voiceIntroHtml(data)}${added ? "" : uses}<div class="pb2-grid">${networkVoiceEmpty(net, chosen, added)}</div>`,
+      `<div class="pb2-voice-solo">
+        <h2 class="pb2-tabhead__title pb2-voice-solo__title"><i class="${networkIcon(net)}" aria-hidden="true"></i>${esc(label)} voice</h2>
+        ${voiceIntroHtml(data)}${added ? "" : uses}${networkVoiceEmpty(net, chosen, added, remove)}
+      </div>`,
     );
   }
   // The way back to the default voice closes the voice, under its parts: the
