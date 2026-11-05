@@ -1304,14 +1304,15 @@
   max-width: 400px;
 }
 
-/* What I read: on top, lifted while I read it, a butter scan sweeping it;
-   it steps back once read. */
+/* What I read: on top, lifted while I read it, a butter wash sweeping its
+   front object (clipped to it, so it never overhangs); it steps back once
+   read. Steps are patched in place, so these transitions run. */
 .pb2-vl__source {
   position: relative;
   width: 100%;
   transition:
-    opacity 0.4s ease,
-    transform 0.4s ease;
+    opacity 0.5s ease,
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .is-step-0 .pb2-vl__source {
   animation: wx-pop 0.5s ease both;
@@ -1320,33 +1321,37 @@
   opacity: 0.55;
   transform: scale(0.96);
 }
+.pb2-vl__post.is-front,
+.pb2-vl__doc,
+.pb2-vl__print {
+  position: relative;
+  overflow: hidden;
+}
 .pb2-vl__scan {
   position: absolute;
-  left: -8px;
-  right: -8px;
-  top: 0;
-  height: 3px;
-  border-radius: 3px;
-  background: var(--app-butter-accent);
-  box-shadow: 0 0 12px 2px var(--app-butter);
+  inset: 0;
+  border-bottom: 2px solid var(--app-butter-accent);
+  background: linear-gradient(to bottom, transparent 40%, var(--app-butter));
+  mix-blend-mode: multiply;
   opacity: 0;
+  transform: translateY(-100%);
   pointer-events: none;
 }
 .is-step-0 .pb2-vl__scan {
-  animation: pb2-vl-scan 2.2s ease-in-out infinite;
+  animation: pb2-vl-scan 2.2s cubic-bezier(0.45, 0, 0.55, 1) 0.4s infinite;
 }
 @keyframes pb2-vl-scan {
   0% {
-    top: 0;
     opacity: 0;
+    transform: translateY(-100%);
   }
   15%,
-  85% {
+  80% {
     opacity: 1;
   }
   100% {
-    top: 100%;
     opacity: 0;
+    transform: translateY(0);
   }
 }
 
@@ -1361,11 +1366,23 @@
   gap: 8px;
   text-align: start;
 }
+/* The two behind are blank backs, dealt out from under the front one. */
+.pb2-vl__post.is-side {
+  animation: pb2-vl-deal 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+.pb2-vl__post.is-side > * {
+  visibility: hidden;
+}
 .pb2-vl__post.is-side:nth-child(2) {
-  transform: translate(-18px, -8px) rotate(-4deg);
+  transform: translate(-16px, -10px) rotate(-4deg) scale(0.96);
 }
 .pb2-vl__post.is-side:nth-child(3) {
-  transform: translate(18px, -8px) rotate(4deg);
+  transform: translate(16px, -10px) rotate(4deg) scale(0.96);
+}
+@keyframes pb2-vl-deal {
+  from {
+    transform: none;
+  }
 }
 .pb2-vl__post.is-front {
   z-index: 1;
@@ -1433,6 +1450,19 @@
   background: var(--app-butter-accent);
   animation: pb2-vl-run 1.6s ease-in-out infinite;
 }
+/* Lit where the work flows: into me while I read, out to the voice once I
+   write it. */
+.pb2-vl__thread {
+  transition: opacity 0.4s ease;
+}
+.is-step-2 .pb2-vl__thread.is-in,
+.is-step-0 .pb2-vl__thread.is-out {
+  opacity: 0.3;
+}
+.is-step-2 .pb2-vl__thread.is-in i,
+.is-step-0 .pb2-vl__thread.is-out i {
+  visibility: hidden;
+}
 @keyframes pb2-vl-run {
   from {
     transform: translateY(-3px);
@@ -1470,6 +1500,9 @@
   height: 4px;
   border-radius: 2px;
   background: var(--ref-color-grey-20);
+  transition:
+    width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.35s ease;
 }
 .pb2-vl__pips li.is-done {
   background: var(--ref-color-grey-100);
@@ -1492,8 +1525,9 @@
   box-shadow: var(--app-shadow-card), var(--app-shadow-popover-md);
   text-align: start;
   transition:
-    opacity 0.4s ease,
-    box-shadow 0.4s ease;
+    opacity 0.5s ease,
+    border-color 0.5s ease,
+    box-shadow 0.5s ease;
 }
 .is-step-0 .pb2-vl__result {
   opacity: 0.6;
@@ -1512,10 +1546,20 @@
 .pb2-vl__result-head i {
   font-size: var(--sys-icon-css-md);
 }
+/* As tall at every step (three rows), so nothing below it jumps. */
 .pb2-vl__result-body {
   display: grid;
-  gap: 6px;
-  min-height: 34px;
+  align-content: center;
+  min-height: 84px;
+}
+.pb2-vl__result-body > * {
+  animation: pb2-vl-in 0.45s ease both;
+}
+@keyframes pb2-vl-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
 }
 .pb2-vl__wave {
   justify-self: center;
@@ -1532,7 +1576,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px;
+  box-sizing: border-box;
+  min-height: 24px;
+  padding: 4px 10px;
   border-radius: 8px;
   background: var(--app-butter);
   animation: wx-type 1s ease-out var(--d) both;
@@ -1544,6 +1590,16 @@
 .pb2-vl__rules .pb2-vl__bar {
   background: var(--app-butter-accent);
   opacity: 0.4;
+}
+/* Not written yet: the same rows, blank. */
+.pb2-vl__rules.is-blank li {
+  padding-inline-start: 34px; /* where a written row's line starts, after its + */
+  background: none;
+  animation: none;
+}
+.pb2-vl__rules.is-blank .pb2-vl__bar {
+  background: var(--ref-color-grey-10);
+  opacity: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {

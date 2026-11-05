@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { escapeHtml as esc, html, prettyUrl, raw } from "./utils.js?v=2762";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2762";
-import { conceptHint } from "./concepts.js?v=2762";
+import { escapeHtml as esc, html, prettyUrl, raw } from "./utils.js?v=2763";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2763";
+import { conceptHint } from "./concepts.js?v=2763";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2762";
-import { analyzeWebsite } from "./context-mock-analysis.js?v=2762";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2762";
-import { isFlagOn } from "./feature-flags.js?v=2762";
-import { clipLookOf } from "./videos-store.js?v=2762";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2762";
-import { parseHashParams } from "./url-state.js?v=2762";
+} from "./playbook-brand-kit.js?v=2763";
+import { analyzeWebsite } from "./context-mock-analysis.js?v=2763";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2763";
+import { isFlagOn } from "./feature-flags.js?v=2763";
+import { clipLookOf } from "./videos-store.js?v=2763";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2763";
+import { parseHashParams } from "./url-state.js?v=2763";
 import {
   isListPart,
   voiceParts,
@@ -57,19 +57,19 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2762";
-import { showToast } from "./components/toast.js?v=2762";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2762";
+} from "./voice-parts.js?v=2763";
+import { showToast } from "./components/toast.js?v=2763";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2763";
 import {
   voiceChoices,
   saveNetworkVoice,
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2762";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2762";
-import { consumeHandoff } from "./handoff.js?v=2762";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2762";
+} from "./network-voice-flow.js?v=2763";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2763";
+import { consumeHandoff } from "./handoff.js?v=2763";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2763";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -78,7 +78,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   NETWORKS,
-} from "./social-profiles.js?v=2762";
+} from "./social-profiles.js?v=2763";
 import {
   ROSTERS,
   REF_NETWORKS,
@@ -95,7 +95,7 @@ import {
   stopRosterScan,
   handleRosterClick,
   handleInfAddInput,
-} from "./playbook-rosters.js?v=2762";
+} from "./playbook-rosters.js?v=2763";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2307,7 +2307,8 @@ export function proposeVoiceInline({ ctx, net, choice = "learn", from = null, vo
           if (voiceProposals.get(net) !== entry) return;
           if (i < steps.length - 1) {
             entry.at = i + 1;
-            return repaint();
+            // In place, so the scene's transitions run and its loops don't restart.
+            return paintVoiceStep(net, entry) || repaint();
           }
           dropVoiceProposal(net);
           onUse?.(made);
@@ -2327,22 +2328,26 @@ export function proposeVoiceInline({ ctx, net, choice = "learn", from = null, vo
 // its print breathing, then its rules written in. The objects carry no real
 // text, only lines (2026-11-04, asked: « tu peux quand même faire mieux comme
 // animation de loading... c'est visuellement pauvre », then « un peu plus
-// lente… et pas utiliser du vrai contenu, abstrait le texte »). Each step
-// repaints the card, so each step's motion starts with it.
+// lente… et pas utiliser du vrai contenu, abstrait le texte »). A step patches
+// the scene in place (paintVoiceStep), never repaints it: a repaint snapped
+// every transition and restarted the loops (2026-11-05, asked: « l'animation
+// est un peu buggée »).
 // `data-review-own-actions`: the review shows no confirm under this card.
 const lines = (...widths) => widths.map((w) => `<span class="pb2-vl__bar" style="width:${w}%"></span>`).join("");
+// The scan sweeps the front object only, clipped to it.
+const SCAN = `<span class="pb2-vl__scan" aria-hidden="true"></span>`;
 
 function loaderSource(net, { choice, from }) {
   if (choice === "adapt")
     return `<div class="wx-print pb2-vl__print">
       <div class="pb2-vl__head"><span class="welcome-flow__glyph is-icon"><i class="ap-icon-quote" aria-hidden="true"></i></span>${lines(44)}</div>
       <span class="pb2-vl__pills"><i></i><i></i><i></i></span>
-      ${lines(92, 70)}
+      ${lines(92, 70)}${SCAN}
     </div>`;
   if (from)
     return `<div class="wx-source pb2-vl__doc">
       <div class="pb2-vl__head"><i class="ap-icon-file--text" aria-hidden="true"></i>${lines(40)}</div>
-      ${lines(96, 84, 60)}
+      ${lines(96, 84, 60)}${SCAN}
     </div>`;
   return `<div class="pb2-vl__fan">${[0, 1, 2]
     .map(
@@ -2351,47 +2356,67 @@ function loaderSource(net, { choice, from }) {
           <span class="ap-avatar size-24 wx-post__avatar"><span class="ap-avatar-initials"></span><span class="ap-avatar-network"><i class="${networkIcon(net)}" aria-hidden="true"></i></span></span>
           ${lines(36)}
         </div>
-        ${lines(94, 66)}
+        ${lines(94, 66)}${i === 0 ? SCAN : ""}
       </article>`,
     )
     .join("")}</div>`;
 }
 
+const WAVE = Array.from({ length: 28 }, (_, i) => {
+  const h = 6 + Math.round(Math.abs(Math.sin(i * 0.9) * 16 + Math.sin(i * 0.37) * 8));
+  return `<rect x="${i * 9}" y="${((34 - h) / 2).toFixed(1)}" width="5" height="${h}" rx="2.5" style="--i:${i}" />`;
+}).join("");
+
+// The voice below, per step: three blank rows, its print breathing, then its
+// rules written into the same three rows.
+function voiceStepBody(at) {
+  if (at === 1)
+    return `<svg class="wx-wave pb2-vl__wave" viewBox="0 0 248 34" width="248" height="34" aria-hidden="true">${WAVE}</svg>`;
+  const written = at > 1;
+  return `<ul class="pb2-vl__rules${written ? "" : " is-blank"}">${[82, 64, 74]
+    .map(
+      (w, i) =>
+        `<li style="--d:${(i * 0.6).toFixed(1)}s">${written ? `<i class="ap-icon-plus" aria-hidden="true"></i>` : ""}${lines(w)}</li>`,
+    )
+    .join("")}</ul>`;
+}
+
+const voiceStepPips = (steps, at) =>
+  steps.map((_, i) => `<li class="${i < at ? "is-done" : i === at ? "is-current" : ""}"></li>`).join("");
+
 function voiceProposalCard(net, entry) {
   const { steps, at } = entry;
   const label = networkLabel(net);
-  const wave = Array.from({ length: 28 }, (_, i) => {
-    const h = 6 + Math.round(Math.abs(Math.sin(i * 0.9) * 16 + Math.sin(i * 0.37) * 8));
-    return `<rect x="${i * 9}" y="${((34 - h) / 2).toFixed(1)}" width="5" height="${h}" rx="2.5" style="--i:${i}" />`;
-  }).join("");
-  const body =
-    at === 0
-      ? lines(88, 56)
-      : at === 1
-        ? `<svg class="wx-wave pb2-vl__wave" viewBox="0 0 248 34" width="248" height="34" aria-hidden="true">${wave}</svg>`
-        : `<ul class="pb2-vl__rules">${[82, 64, 74]
-            .map(
-              (w, i) =>
-                `<li style="--d:${(i * 0.7).toFixed(1)}s"><i class="ap-icon-plus" aria-hidden="true"></i>${lines(w)}</li>`,
-            )
-            .join("")}</ul>`;
-  return `<section class="pb2-block pb2-block--wide pb2-voice-net pb2-voice-net--${net} pb2-voice-learning is-step-${at}" data-review-own-actions aria-busy="true">
+  return `<section class="pb2-block pb2-block--wide pb2-voice-net pb2-voice-net--${net} pb2-voice-learning is-step-${at}" data-vl-net="${esc(net)}" data-review-own-actions aria-busy="true">
     <div class="pb2-vl">
-      <div class="pb2-vl__source">${loaderSource(net, entry)}<span class="pb2-vl__scan" aria-hidden="true"></span></div>
-      <span class="pb2-vl__thread" aria-hidden="true"><i></i></span>
+      <div class="pb2-vl__source">${loaderSource(net, entry)}</div>
+      <span class="pb2-vl__thread is-in" aria-hidden="true"><i></i></span>
       <div class="pb2-vl__seam-row">
-        <span class="wx-seam pb2-vl__seam" role="status"><i class="ap-icon-sparkles" aria-hidden="true"></i>${esc(steps[at])}</span>
-        <ol class="pb2-vl__pips" aria-label="Step ${at + 1} of ${steps.length}">${steps
-          .map((_, i) => `<li class="${i < at ? "is-done" : i === at ? "is-current" : ""}"></li>`)
-          .join("")}</ol>
+        <span class="wx-seam pb2-vl__seam" role="status"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>${esc(steps[at])}</span></span>
+        <ol class="pb2-vl__pips" aria-label="Step ${at + 1} of ${steps.length}">${voiceStepPips(steps, at)}</ol>
       </div>
-      <span class="pb2-vl__thread" aria-hidden="true"><i></i></span>
+      <span class="pb2-vl__thread is-out" aria-hidden="true"><i></i></span>
       <div class="pb2-vl__result">
         <div class="pb2-vl__result-head"><i class="${networkIcon(net)}" aria-hidden="true"></i><strong>${esc(label)} voice</strong></div>
-        <div class="pb2-vl__result-body">${body}</div>
+        <div class="pb2-vl__result-body">${voiceStepBody(at)}</div>
       </div>
     </div>
   </section>`;
+}
+
+// The next step on the scene already on screen; false when it isn't there.
+function paintVoiceStep(net, { steps, at }) {
+  const card = mountTarget?.querySelector(`.pb2-voice-learning[data-vl-net="${CSS.escape(net)}"]`);
+  if (!card) return false;
+  card.className = card.className.replace(/\bis-step-\d+/, `is-step-${at}`);
+  const seam = card.querySelector(".pb2-vl__seam");
+  seam.lastElementChild.textContent = steps[at];
+  seam.getAnimations().forEach((a) => (a.cancel(), a.play()));
+  const pips = card.querySelector(".pb2-vl__pips");
+  pips.setAttribute("aria-label", `Step ${at + 1} of ${steps.length}`);
+  [...pips.children].forEach((li, i) => (li.className = i < at ? "is-done" : i === at ? "is-current" : ""));
+  card.querySelector(".pb2-vl__result-body").innerHTML = voiceStepBody(at);
+  return true;
 }
 
 // A network's own voice with something in it — empty, it still has to be filled.
