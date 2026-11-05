@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2713";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2713";
-import { conceptHint } from "./concepts.js?v=2713";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2714";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2714";
+import { conceptHint } from "./concepts.js?v=2714";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2713";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2713";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2713";
-import { isFlagOn } from "./feature-flags.js?v=2713";
-import { clipLookOf } from "./videos-store.js?v=2713";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2713";
-import { parseHashParams } from "./url-state.js?v=2713";
+} from "./playbook-brand-kit.js?v=2714";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2714";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2714";
+import { isFlagOn } from "./feature-flags.js?v=2714";
+import { clipLookOf } from "./videos-store.js?v=2714";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2714";
+import { parseHashParams } from "./url-state.js?v=2714";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2713";
-import { showToast } from "./components/toast.js?v=2713";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2713";
+} from "./voice-parts.js?v=2714";
+import { showToast } from "./components/toast.js?v=2714";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2714";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -67,10 +67,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2713";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2713";
-import { consumeHandoff } from "./handoff.js?v=2713";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2713";
+} from "./network-voice-flow.js?v=2714";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2714";
+import { consumeHandoff } from "./handoff.js?v=2714";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2714";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -78,7 +78,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2713";
+} from "./social-profiles.js?v=2714";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2179,13 +2179,19 @@ function renderVoiceNav(data) {
     const here = (net || null) === voiceNet;
     return `<button type="button" class="pb2-voice-nav__row"${here ? ' aria-current="true"' : ""} data-pb2-voice-net="${net}">
       <i class="${icon}" aria-hidden="true"></i>
-      <span class="pb2-voice-nav__text"><span class="ap-caption pb2-voice-nav__name">${esc(name)}</span><span class="pb2-voice-nav__state">${state}</span></span>
+      <span class="pb2-voice-nav__text"><span class="ap-caption pb2-voice-nav__name">${esc(name)}</span>${state ? `<span class="pb2-voice-nav__state">${state}</span>` : ""}</span>
       <i class="ap-icon-chevron-right pb2-voice-nav__chevron" aria-hidden="true"></i>
     </button>`;
   };
-  const defaultState = rest.length
-    ? `Used on <span class="pb2-voice-nav__nets">${rest.map(glyph).join("")}</span>`
-    : "The base of every network voice";
+  // The networks it writes for: those without rules of their own, empty
+  // network voices included. None: no line — the default voice is a voice in
+  // the list, not a heading over it (2026-11-05: « ça fait trop chapeau »).
+  const usedBy = nets.filter(
+    (n) => !(networkVoice(data, n).state === "own" && voiceHasRules(networkVoice(data, n).voice)),
+  );
+  const defaultState = usedBy.length
+    ? `Used on <span class="pb2-voice-nav__nets">${usedBy.map(glyph).join("")}</span>`
+    : "";
   const netState = (n) => {
     const { state, voice } = networkVoice(data, n);
     const count = state === "own" ? ruleCount(voice) : 0;
