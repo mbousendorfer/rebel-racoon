@@ -1,0 +1,91 @@
+/* The voice list (src/components/voice-list.js): the default voice, then the
+   networks under a column head naming the toggle once. One frame, grey-20
+   between the rows and between the two groups; the row on screen takes a
+   light blue ground and a bold name, never an edge bar. Off, a row is only a
+   line: no hover, nothing to open. */
+.voice-list {
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
+}
+.voice-list__group {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.voice-list__head {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-xxxs);
+  border-top: 1px solid var(--ref-color-grey-20);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-80);
+}
+.voice-list__row {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+.voice-list__row + .voice-list__row {
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+.voice-list__row:not(.is-inert):hover {
+  background: var(--ref-color-grey-05);
+}
+/* After the hover, at its specificity: the row on screen keeps its ground. */
+.voice-list__row[aria-current="true"]:not(.is-inert) {
+  background: var(--ref-color-electric-blue-10);
+}
+.voice-list__main {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  flex: 1 1 auto;
+  min-width: 0;
+  align-self: stretch;
+  padding: 0 var(--ref-spacing-sm);
+  background: none;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+.voice-list__row.is-inert .voice-list__main {
+  cursor: default;
+}
+.voice-list__main:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: -2px;
+}
+.voice-list__icon {
+  flex-shrink: 0;
+  font-size: var(--sys-icon-css-md);
+  color: var(--ref-color-grey-100);
+}
+.voice-list__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-100);
+}
+.voice-list__row[aria-current="true"] .voice-list__name {
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+.voice-list__toggle {
+  flex-shrink: 0;
+  padding: 0 var(--ref-spacing-sm);
+}
+/* A part the run's review says looks good (welcome-review__check), smaller. */
+.voice-list__row .welcome-review__check {
+  width: 20px;
+  height: 20px;
+  font-size: var(--sys-icon-css-xs);
+}

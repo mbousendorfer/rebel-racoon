@@ -33,12 +33,13 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2706";
-import { navigate } from "../router.js?v=2706";
-import { getDraft, patchDraft } from "../context-builder.js?v=2706";
-import { mount } from "../playbook-view.js?v=2706";
-import { parseHashParams } from "../url-state.js?v=2706";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2706";
+import { html, raw } from "../utils.js?v=2707";
+import { navigate } from "../router.js?v=2707";
+import { getDraft, patchDraft } from "../context-builder.js?v=2707";
+import { mount } from "../playbook-view.js?v=2707";
+import { parseHashParams } from "../url-state.js?v=2707";
+import { voiceListHtml } from "../components/voice-list.js?v=2707";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2707";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -57,7 +58,7 @@ const GLIDE_MS = 720; // a card glides to the middle
 // what's left to do), rows? (the list on the left when it holds more than the
 // parts: a row with `inert` is shown, never opened nor confirmed — the voice
 // review's networks left on the default voice; a row's `toggle`: { label, on },
-// a DS toggle in it, answered by onToggle(partId, on); the toggled rows are one list, after the others), next: { label, go },
+// a DS toggle in it, answered by onToggle(partId, on); the rows render as the shared voice list, components/voice-list.js), next: { label, go },
 // back, onWay?, start? (the part to open first), progress? (false: no step
 // dots) }.
 // `onWay(partId, way, refresh)`: a card's tile was picked (the voice review);
@@ -89,54 +90,25 @@ export function renderReview(target, sid, config, review) {
   // so a check that always animated replayed on every click (2026-10-20).
   let justChecked = null;
 
-  // The rows with a toggle (the voice review's networks): one list, one frame,
-  // a column head naming the toggle once, a row per item — its glyph bare, its
-  // name, the toggle. On, the row opens its part; off, it is only a line.
-  // Compact on purpose (2026-11-04, asked: « on peut faire + compact, et de
-  // meilleure qualité » — a framed row each, the label on every toggle, before).
-  const toggleList = () => {
-    const rows = (review.rows?.() || []).filter((t) => t.toggle);
-    if (!rows.length) return "";
-    const done = reviewed();
-    const row = (t) => {
-      const here = t.id === current() && !t.inert;
-      const check =
-        !t.inert && done.has(t.id)
-          ? `<span class="welcome-review__check${t.id === justChecked ? " is-new" : ""}" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
-          : "";
-      const main = html`<i class="${t.icon} welcome-review__net-icon" aria-hidden="true"></i
-        ><span class="welcome-review__net-name">${t.title}</span>${raw(check)}`;
-      return html`
-        <li class="welcome-review__net${t.inert ? " is-inert" : ""}" aria-current="${here ? "true" : "false"}">
-          ${t.inert
-            ? raw(html`<span class="welcome-review__net-main">${raw(main)}</span>`)
-            : raw(
-                html`<button type="button" class="welcome-review__net-main" data-review-part="${t.id}">
-                  ${raw(main)}
-                </button>`,
-              )}
-          <label class="ap-toggle-container welcome-review__toggle">
-            <input
-              type="checkbox"
-              data-review-toggle="${t.id}"
-              aria-label="${t.toggle.label} for ${t.title}"
-              ${t.toggle.on ? raw("checked") : ""}
-            /><i></i>
-          </label>
-        </li>
-      `;
-    };
-    return html`
-      <li class="welcome-review__nets">
-        <p class="welcome-review__nets-head" aria-hidden="true">
-          <span>Network</span><span>${rows[0].toggle.label}</span>
-        </p>
-        <ul class="welcome-review__nets-list">
-          ${raw(rows.map(row).join(""))}
-        </ul>
-      </li>
-    `;
-  };
+  // `rows` (the voice review): the whole list is the shared voice list
+  // (components/voice-list.js) — the default voice, then the networks and
+  // their toggles, as on the Playbook's Voice profile tab.
+  const voiceList = (done) =>
+    voiceListHtml(
+      review.rows().map((t) => ({
+        key: t.id,
+        icon: t.icon,
+        title: t.title,
+        current: t.id === current(),
+        inert: t.inert,
+        toggle: t.toggle ? { on: t.toggle.on } : null,
+        mark:
+          !t.inert && done.has(t.id)
+            ? `<span class="welcome-review__check${t.id === justChecked ? " is-new" : ""}" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
+            : "",
+      })),
+      { openAttr: "data-review-part", toggleAttr: "data-review-toggle" },
+    );
 
   const left = () => {
     const done = reviewed();
@@ -144,54 +116,52 @@ export function renderReview(target, sid, config, review) {
       <h1 class="welcome-flow__title" id="welcomeFlowTitle">${review.title}</h1>
       <p class="welcome-intro__sub">${review.sub}</p>
       <ul class="welcome-flow__options">
-        ${(review.rows?.() || parts())
-          .filter((t) => !t.toggle)
-          .map((t, i, all) => {
-            const here = t.id === current();
-            // A group opens with its name and a sentence.
-            // Only when there are groups to tell apart: a group of one part was a
-            // kicker and a hint repeating the sub-line above it.
-            const groupLi = (name, hint) =>
-              html`<li class="welcome-review__group">
-                <p class="welcome-flow__kicker">${name}</p>
-                ${hint ? raw(html`<p class="welcome-review__group-hint">${hint}</p>`) : ""}
-              </li>`;
-            const groups = new Set(all.map((p) => p.group).filter(Boolean));
-            const group =
-              t.group && groups.size > 1 && t.group !== all[i - 1]?.group ? groupLi(t.group, t.groupHint) : "";
-            const mark = t.inert
-              ? ""
-              : done.has(t.id)
-                ? `<span class="welcome-review__check${t.id === justChecked ? " is-new" : ""}" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
-                : here && count > 1 && !calm
-                  ? `<span class="welcome-review__count">${index + 1} of ${count}</span>`
-                  : "";
-            const inner = html`
-              <span class="welcome-flow__glyph is-icon is-tinted" style="${tintOf(t.id)}"
-                ><i class="${t.icon}" aria-hidden="true"></i
-              ></span>
-              <span class="welcome-flow__option-text">
-                <span class="welcome-flow__option-title">${t.title}</span>
-                ${t.lead ? raw(html`<span class="welcome-flow__option-desc">${t.lead}</span>`) : ""}
-              </span>
-              ${t.badge && !done.has(t.id) ? raw(`<span class="ap-status orange">${t.badge}</span>`) : ""} ${raw(mark)}
-            `;
-            return html`
-              ${raw(group)}
-              <li>
-                <button
-                  type="button"
-                  class="welcome-flow__option"
-                  data-review-part="${t.id}"
-                  aria-current="${here ? "true" : "false"}"
-                >
-                  ${raw(inner)}
-                </button>
-              </li>
-            `;
-          })}
-        ${raw(toggleList())}
+        ${(review.rows ? [] : parts()).map((t, i, all) => {
+          const here = t.id === current();
+          // A group opens with its name and a sentence.
+          // Only when there are groups to tell apart: a group of one part was a
+          // kicker and a hint repeating the sub-line above it.
+          const groupLi = (name, hint) =>
+            html`<li class="welcome-review__group">
+              <p class="welcome-flow__kicker">${name}</p>
+              ${hint ? raw(html`<p class="welcome-review__group-hint">${hint}</p>`) : ""}
+            </li>`;
+          const groups = new Set(all.map((p) => p.group).filter(Boolean));
+          const group =
+            t.group && groups.size > 1 && t.group !== all[i - 1]?.group ? groupLi(t.group, t.groupHint) : "";
+          const mark = t.inert
+            ? ""
+            : done.has(t.id)
+              ? `<span class="welcome-review__check${t.id === justChecked ? " is-new" : ""}" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
+              : here && count > 1 && !calm
+                ? `<span class="welcome-review__count">${index + 1} of ${count}</span>`
+                : "";
+          const inner = html`
+            <span class="welcome-flow__glyph is-icon is-tinted" style="${tintOf(t.id)}"
+              ><i class="${t.icon}" aria-hidden="true"></i
+            ></span>
+            <span class="welcome-flow__option-text">
+              <span class="welcome-flow__option-title">${t.title}</span>
+              ${t.lead ? raw(html`<span class="welcome-flow__option-desc">${t.lead}</span>`) : ""}
+            </span>
+            ${t.badge && !done.has(t.id) ? raw(`<span class="ap-status orange">${t.badge}</span>`) : ""} ${raw(mark)}
+          `;
+          return html`
+            ${raw(group)}
+            <li>
+              <button
+                type="button"
+                class="welcome-flow__option"
+                data-review-part="${t.id}"
+                aria-current="${here ? "true" : "false"}"
+              >
+                ${raw(inner)}
+              </button>
+            </li>
+          `;
+        })}
       </ul>
+      ${review.rows ? raw(voiceList(done)) : ""}
       <div class="welcome-flow__actions">
         <button type="button" class="ap-button ghost grey" data-flow-back>
           <i class="ap-icon-arrow-left"></i><span>Back</span>
@@ -535,7 +505,7 @@ export function renderReview(target, sid, config, review) {
 
   const onClick = (e) => {
     // A row's toggle answers on `change` (below), not here.
-    if (e.target.closest(".welcome-review__toggle")) return;
+    if (e.target.closest(".voice-list__toggle")) return;
     const part = e.target.closest("[data-review-part]")?.dataset.reviewPart;
     if (part) {
       if (part !== current()) switchPart(part);
