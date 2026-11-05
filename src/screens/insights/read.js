@@ -33,8 +33,8 @@
 // Pure render helpers — strings in, strings out, no listeners. Every action is
 // a `data-ins-*` hook the shell dispatches (shell.js § Actions).
 
-import { readingFor } from "./model.js?v=2743";
-import { trendSpec } from "./charts.js?v=2743";
+import { readingFor } from "./model.js?v=2744";
+import { trendSpec } from "./charts.js?v=2744";
 import {
   statusPill,
   measurePill,
@@ -47,7 +47,7 @@ import {
   objectiveActions,
   tierCounts,
   esc,
-} from "./pieces.js?v=2743";
+} from "./pieces.js?v=2744";
 
 // ── The hero ──────────────────────────────────────────────────────────────
 //

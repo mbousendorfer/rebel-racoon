@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2743";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2743";
-import { conceptHint } from "./concepts.js?v=2743";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2744";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2744";
+import { conceptHint } from "./concepts.js?v=2744";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2743";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2743";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2743";
-import { isFlagOn } from "./feature-flags.js?v=2743";
-import { clipLookOf } from "./videos-store.js?v=2743";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2743";
-import { parseHashParams } from "./url-state.js?v=2743";
+} from "./playbook-brand-kit.js?v=2744";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2744";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2744";
+import { isFlagOn } from "./feature-flags.js?v=2744";
+import { clipLookOf } from "./videos-store.js?v=2744";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2744";
+import { parseHashParams } from "./url-state.js?v=2744";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2743";
-import { showToast } from "./components/toast.js?v=2743";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2743";
+} from "./voice-parts.js?v=2744";
+import { showToast } from "./components/toast.js?v=2744";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2744";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -68,10 +68,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2743";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2743";
-import { consumeHandoff } from "./handoff.js?v=2743";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2743";
+} from "./network-voice-flow.js?v=2744";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2744";
+import { consumeHandoff } from "./handoff.js?v=2744";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2744";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -79,7 +79,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2743";
+} from "./social-profiles.js?v=2744";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -3249,10 +3249,10 @@ function networkVoiceEmpty(net, chosen, added = false, remove = "") {
   // add il utilise tout de suite la default voice... ça doit être un choix de
   // l'utilisateur comme les autres, tout en bas »).
   // Remove the voice sits in the same foot, after it (2026-11-05: the page as
-  // one column, nothing pinned to the far edges). Keep = secondary blue,
+  // one column, nothing pinned to the far edges). Keep = secondary blue (.secondary, the light blue ground),
   // Remove = ghost blue (2026-11-05, asked).
   const keepBtn = added
-    ? `<button type="button" class="ap-button stroked blue" data-pb2-voice-keep="${esc(net)}">Use my default voice for ${esc(label)}</button>`
+    ? `<button type="button" class="ap-button secondary blue" data-pb2-voice-keep="${esc(net)}">Use my default voice for ${esc(label)}</button>`
     : "";
   const keep = keepBtn || remove ? `<div class="pb2-voice-keep">${keepBtn}${remove}</div>` : "";
   return voiceEmptyState(net, voiceWaysRows(tiles) + keep, `Give ${label} its own voice, from one of these.`, {
