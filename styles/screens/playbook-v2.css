@@ -1610,3 +1610,8 @@
 .pb2-voice-empty.is-bare .pb2-voice-empty__text {
   margin-top: 0;
 }
+
+/* The fiche's ways, narrower than the run's (2026-11-05: « moins de largeur »). */
+.pb2-voice-empty.is-bare .pb2-voice-rows {
+  max-width: 400px;
+}
