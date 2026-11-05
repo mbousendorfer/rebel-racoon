@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2737";
-import { catalogueRoute } from "../active-playbook.js?v=2737";
+import { navigate } from "../router.js?v=2738";
+import { catalogueRoute } from "../active-playbook.js?v=2738";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,34 +13,34 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2737";
+} from "../context-builder.js?v=2738";
 import {
   RECAP_SECTIONS,
   editVoiceNetwork,
   networkVoiceFilled,
   setNetworkRules,
   proposeVoiceInline,
-} from "../playbook-view.js?v=2737";
-import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2737";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2737";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2737";
+} from "../playbook-view.js?v=2738";
+import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2738";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2738";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2738";
 import {
-  brandVoiceAsIs,
   canLearnFrom,
   learnNetworkVoice,
   networkVoice,
   networkVoiceOn,
   playbookNetworks,
+  defaultVoices,
   voiceNetworks,
   onlyNetwork,
-} from "../voice-parts.js?v=2737";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2737";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2737";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2737";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2737";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2737";
-import { showToast } from "../components/toast.js?v=2737";
-import { open as openConfirm } from "../components/confirm-modal.js?v=2737";
+} from "../voice-parts.js?v=2738";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2738";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2738";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2738";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2738";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2738";
+import { showToast } from "../components/toast.js?v=2738";
+import { open as openConfirm } from "../components/confirm-modal.js?v=2738";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -125,17 +125,9 @@ const keptDefault = (d, n) => !networkVoiceFilled(d, n) && (d?.reviewedParts || 
 function startVoiceRules(sid) {
   const d = getDraft(sid);
   if (!networkVoiceOn() || d.voiceRulesFor) return;
-  const nets = playbookNetworks(d);
-  const own = nets.filter((n) => networkVoice(d, n).state === "own");
-  patchDraft(sid, {
-    voiceRulesFor: own,
-    voiceByNetwork: {
-      ...Object.fromEntries(
-        nets.filter((n) => !own.includes(n)).map((n) => [n, { ...brandVoiceAsIs(d), byDefault: true }]),
-      ),
-      ...Object.fromEntries(own.map((n) => [n, d.voiceByNetwork[n]])),
-    },
-  });
+  // The networks the list shows (every connected one, voiceNetworks).
+  const own = voiceNetworks(d).filter((n) => networkVoice(d, n).state === "own");
+  patchDraft(sid, { voiceRulesFor: own, voiceByNetwork: defaultVoices(d) });
 }
 
 // The Playbook: every part but the Voice, which has its own review next.

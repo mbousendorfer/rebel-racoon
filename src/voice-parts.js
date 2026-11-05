@@ -10,9 +10,9 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2737";
-import { isFlagOn } from "./feature-flags.js?v=2737";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2737";
+import { escapeHtml } from "./utils.js?v=2738";
+import { isFlagOn } from "./feature-flags.js?v=2738";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2738";
 import {
   networkMeta,
   networkLabel,
@@ -22,7 +22,7 @@ import {
   getConnectedProfiles,
   profileForNetwork,
   NETWORKS,
-} from "./social-profiles.js?v=2737";
+} from "./social-profiles.js?v=2738";
 
 // `hint`: what the part holds, said under its title — on the Playbook's tab
 // and in a voice proposal (one source for both).
@@ -237,6 +237,20 @@ export function withNetworkVoices(ctx) {
     ),
     ...(ctx?.voiceByNetwork || {}),
   };
+}
+
+// The run's start, whatever way it ends: every network that can have a voice
+// keeps the default voice — not added, so `byDefault` (the fiche offers to add
+// it, no draft asks) — except one with a voice of its own. Nothing learned
+// behind the user's back, the Voice review opened or not (2026-11-05, asked:
+// « Draft my first post » learned a voice per account without showing it).
+export function defaultVoices(ctx) {
+  const kept = { ...(ctx?.voiceByNetwork || {}) };
+  for (const n of voiceNetworks(ctx)) {
+    const v = kept[n];
+    if (!v || v.optimizedBy === "brand") kept[n] = v && !v.byDefault ? v : { ...brandVoiceAsIs(ctx), byDefault: true };
+  }
+  return kept;
 }
 
 // The default voice copied as it is: a defined voice, not optimized. Edit starts

@@ -12,27 +12,27 @@
 // objective, contentAction, ctaLinks, language, color, suggestions, editingId,
 // onComplete }.
 
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2737";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2737";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2738";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2738";
 import {
   analyzeWebsite,
   analyzeSocialProfiles,
   analyzeDocument,
   analyzeBrandFiles,
   analyzeInterview,
-} from "./context-mock-analysis.js?v=2737";
+} from "./context-mock-analysis.js?v=2738";
 import {
   cloneItems,
-  withNetworkVoices,
+  defaultVoices,
   networkVoiceOn,
   networkVoice,
   voiceHasRules,
   brandVoiceAsIs,
-} from "./voice-parts.js?v=2737";
-import { markIntroSeen } from "./components/voice-intro-modal.js?v=2737";
-import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2737";
-import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2737";
-import { isFlagOn } from "./feature-flags.js?v=2737";
+} from "./voice-parts.js?v=2738";
+import { markIntroSeen } from "./components/voice-intro-modal.js?v=2738";
+import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2738";
+import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2738";
+import { isFlagOn } from "./feature-flags.js?v=2738";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -486,8 +486,10 @@ export function save(sessionId) {
     voiceByPost: cloneItems(d.voiceByPost),
     voiceSometimes: cloneItems(d.voiceSometimes),
     // A NEW Playbook: each network it publishes on keeps what the review gave
-    // it — rules learned from the account's posts, added there, or the default
-    // voice kept (flag voicePerNetwork — stored either way, shown under the flag).
+    // it — rules added there, or the default voice kept (flag voicePerNetwork —
+    // stored either way, shown under the flag). Never opened, the Voice review
+    // gives what it would have at its start (defaultVoices): nothing learned,
+    // every network on the default voice, not added (2026-11-05).
     // Re-saving an existing one never rewrites them.
     // The run's voice review (`voiceRulesFor` set) learns nothing behind the
     // user's back: what it gave each network is what is saved — and a network
@@ -495,7 +497,7 @@ export function save(sessionId) {
     // with no network unanswered, so no first draft asks (2026-11-04, asked:
     // « soit il en choisit un et il applique une voice, soit il fait rien du
     // tout et la voice by default s'applique »).
-    ...(!d.editingId && { voiceByNetwork: d.voiceRulesFor ? reviewedVoices(d) : withNetworkVoices(d) }),
+    ...(!d.editingId && { voiceByNetwork: d.voiceRulesFor ? reviewedVoices(d) : defaultVoices(d) }),
     brandPersonality: d.brandPersonality || "",
     brandTypography: d.brandTypography ? { ...d.brandTypography } : null,
     brandColors: Array.isArray(d.brandColors) ? d.brandColors.map((c) => ({ ...c })) : [],
