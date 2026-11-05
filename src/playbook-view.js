@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2749";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2749";
-import { conceptHint } from "./concepts.js?v=2749";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2750";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2750";
+import { conceptHint } from "./concepts.js?v=2750";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2749";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2749";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2749";
-import { isFlagOn } from "./feature-flags.js?v=2749";
-import { clipLookOf } from "./videos-store.js?v=2749";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2749";
-import { parseHashParams } from "./url-state.js?v=2749";
+} from "./playbook-brand-kit.js?v=2750";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2750";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2750";
+import { isFlagOn } from "./feature-flags.js?v=2750";
+import { clipLookOf } from "./videos-store.js?v=2750";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2750";
+import { parseHashParams } from "./url-state.js?v=2750";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2749";
-import { showToast } from "./components/toast.js?v=2749";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2749";
+} from "./voice-parts.js?v=2750";
+import { showToast } from "./components/toast.js?v=2750";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2750";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -68,10 +68,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2749";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2749";
-import { consumeHandoff } from "./handoff.js?v=2749";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2749";
+} from "./network-voice-flow.js?v=2750";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2750";
+import { consumeHandoff } from "./handoff.js?v=2750";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2750";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -79,7 +79,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2749";
+} from "./social-profiles.js?v=2750";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -3329,11 +3329,13 @@ function renderNetworkVoiceRead(data) {
     // offers the ways to give the network its own voice (2026-10-29, asked:
     // « directement proposer les options de création de voice et faire un empty
     // state + compréhensible que de recopier la voice par défaut »).
-    // Remove only on a voice that was added (and is still empty): a network
-    // on the default voice has nothing to remove.
+    // Remove only once an answer was given — the default voice, chosen. A
+    // voice just added and still undecided offers its ways and the default
+    // voice, not Remove (2026-11-05, asked: « On ne peut pas "remove the x
+    // voice" avant d'avoir décidé si on utilisait la voice par défaut ou non »).
     const added = ownPending.has(net);
     const remove =
-      added || chosen
+      chosen && !added
         ? `<button type="button" class="ap-button ghost blue" data-pb2-voice-remove="${esc(net)}"><i class="ap-icon-trash" aria-hidden="true"></i><span>Remove the ${esc(label)} voice</span></button>`
         : "";
     // What X writes in, said as a DS infobox — the first thing under the head,
