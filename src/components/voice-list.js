@@ -14,7 +14,7 @@
 //   the name), toggle?: { on, disabled? } }] — the rows without a toggle (the
 //   default voice) head the list, the others follow under « Own voice ».
 
-import { escapeHtml as esc } from "../utils.js?v=2707";
+import { escapeHtml as esc } from "../utils.js?v=2708";
 
 function rowHtml(r, { openAttr, toggleAttr }) {
   const main = `<i class="${r.icon} voice-list__icon" aria-hidden="true"></i><span class="voice-list__name">${esc(r.title)}</span>${r.mark || ""}`;
