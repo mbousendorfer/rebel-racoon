@@ -10,9 +10,9 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2720";
-import { isFlagOn } from "./feature-flags.js?v=2720";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2720";
+import { escapeHtml } from "./utils.js?v=2721";
+import { isFlagOn } from "./feature-flags.js?v=2721";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2721";
 import {
   networkMeta,
   networkLabel,
@@ -21,7 +21,8 @@ import {
   getConnectedProfileById,
   getConnectedProfiles,
   profileForNetwork,
-} from "./social-profiles.js?v=2720";
+  NETWORKS,
+} from "./social-profiles.js?v=2721";
 
 // `hint`: what the part holds, said under its title — on the Playbook's tab
 // and in a voice proposal (one source for both).
@@ -125,9 +126,13 @@ export function playbookNetworks(ctx) {
 // une voice pour un network non connecté »).
 // Connected means an account on it is connected now — a draft or a Playbook can
 // still list a network whose account left.
+// Every connected network, not only the ones the Playbook was created on
+// (2026-11-05, asked: « tu ne suis pas les networks connectés » — a network
+// connected later could never get a voice): the Playbook's own first.
 function connectedNetworks(ctx) {
   const on = new Set(getConnectedProfiles().map((p) => normalizeNetwork(p.platform)));
-  return playbookNetworks(ctx).filter((n) => on.has(n));
+  const own = playbookNetworks(ctx).filter((n) => on.has(n));
+  return [...own, ...Object.keys(NETWORKS).filter((n) => on.has(n) && !own.includes(n))];
 }
 
 export function voiceNetworks(ctx) {

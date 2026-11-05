@@ -6,8 +6,8 @@
 // Public API:
 //   open({ durationMs, startMs, endMs, onSubmit })  — onSubmit({ startMs, endMs })
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2720";
-import { fmtPrecise, parseTime, MIN_CLIP_MS, MAX_CLIP_MS } from "../screens/clips/shared.js?v=2720";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2721";
+import { fmtPrecise, parseTime, MIN_CLIP_MS, MAX_CLIP_MS } from "../screens/clips/shared.js?v=2721";
 
 const MODAL_ID = "clip-range";
 
