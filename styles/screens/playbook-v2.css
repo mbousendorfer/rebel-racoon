@@ -1212,16 +1212,17 @@
   font-weight: var(--ref-font-weight-bold);
 }
 
-/* Add a network voice: a hugging button, its DS menu under it. */
-.pb2-voice-nav__add {
-  position: relative;
+/* The voices you can add (the review's dashed rows): no gap above, the
+   column's own rhythm. */
+.pb2-voice-nav__addables {
+  margin-top: 0;
 }
 
-.pb2-voice-nav__menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 10;
+/* In this column, the cards' caption size. */
+.pb2-voice-nav__addables .welcome-review__addable-name,
+.pb2-voice-nav__addables .welcome-review__addable-add {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
 }
 
 /* The voice on screen names itself: its title (h2) over its sentence. */
