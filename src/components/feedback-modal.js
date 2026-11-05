@@ -3,7 +3,7 @@
 // toggle its visibility. No persistence — submitting shows a success flash
 // and resets on close.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2725";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2726";
 
 const MODAL_ID = "feedback";
 

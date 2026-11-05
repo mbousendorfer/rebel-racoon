@@ -1604,15 +1604,9 @@
   margin: 0;
 }
 
-/* Bare (the fiche): under the voice's head, left with it — one sentence, then
-   the ways, no glyph nor title to repeat the head. */
-.pb2-block.pb2-voice-empty.is-bare {
-  align-items: flex-start;
-  padding: var(--ref-spacing-sm) 0 0;
-  text-align: start;
-}
-
+/* Bare (the fiche): still an empty state, centred — one sentence, then the
+   ways, no glyph nor title to repeat the head (2026-11-05: « les options
+   centrées, ça reste un genre d'empty state »). */
 .pb2-voice-empty.is-bare .pb2-voice-empty__text {
-  max-width: none;
-  margin: 0 0 var(--ref-spacing-xs);
+  margin-top: 0;
 }
