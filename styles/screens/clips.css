@@ -1083,18 +1083,6 @@
   transform: translateX(2px);
 }
 
-@keyframes clips-fade {
-  from {
-    opacity: 0;
-  }
-}
-
-@keyframes clips-shimmer {
-  to {
-    background-position: -200% 0;
-  }
-}
-
 .clips-list__none {
   color: var(--ref-color-grey-80);
 }

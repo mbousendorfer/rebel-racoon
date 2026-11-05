@@ -470,27 +470,6 @@
   color: var(--ref-color-grey-80);
 }
 
-/* The Brand tab's two groups — Identity, Imagery. */
-.pb2-group {
-  margin: 0;
-  padding: var(--ref-spacing-md) var(--ref-spacing-lg) 0;
-  font-family: var(--sys-text-style-subtitle-font-family);
-  font-size: var(--sys-text-style-subtitle-size);
-  line-height: var(--sys-text-style-subtitle-line-height);
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--ref-color-grey-100);
-}
-
-.pb2-group + .recap__row {
-  border-top: 0;
-}
-
-.recap__row + .pb2-group {
-  margin-top: var(--ref-spacing-xs);
-  border-top: 1px solid var(--ref-color-grey-20);
-  padding-top: var(--ref-spacing-lg);
-}
-
 /* House rule: no uppercase labels, and label ink never lighter than grey-80.
    Scoped to the new page; the onboarding recap keeps its own look. */
 .pb2 .recap__cmpgroup-title {
@@ -1230,20 +1209,6 @@
   gap: var(--ref-spacing-xs);
 }
 
-.pb2-voice-accounts {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  margin-top: var(--ref-spacing-xxs);
-}
-
-.pb2-voice-accounts__label {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
-}
-
 .pb2-voice-net__foot {
   display: flex;
   justify-content: flex-end;
@@ -1641,16 +1606,6 @@
 /* The fiche's ways, narrower than the run's (2026-11-05: « moins de largeur »). */
 .pb2-voice-empty.is-bare .pb2-voice-rows {
   max-width: 400px;
-}
-
-/* The foot under the ways: keep the default voice, then remove the voice —
-   stacked, the same for every network whatever its name's length. */
-.pb2-voice-keep {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  margin-top: var(--ref-spacing-md);
 }
 
 /* A network without a voice of its own (renderNetworkVoiceRead): one column,

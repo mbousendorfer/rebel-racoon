@@ -347,12 +347,6 @@
   width: 100%;
 }
 
-.nch-flow__arrow {
-  rotate: 90deg;
-  color: var(--ref-color-grey-60);
-  background-color: currentColor;
-}
-
 .nch-flow .nch-fan {
   height: 92px;
 }
@@ -368,11 +362,6 @@
   color: var(--ref-color-grey-100);
   font-size: var(--sys-text-style-caption-size);
   white-space: nowrap;
-}
-
-.nch-file--lg {
-  padding: 10px 14px;
-  font-size: var(--sys-text-style-body-size);
 }
 
 .nch-week {

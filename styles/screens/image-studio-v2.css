@@ -85,29 +85,6 @@
   padding-inline: 212px;
 }
 
-@property --isv2-fade-t {
-  syntax: "<length>";
-  inherits: false;
-  initial-value: 0px;
-}
-
-@property --isv2-fade-b {
-  syntax: "<length>";
-  inherits: false;
-  initial-value: 0px;
-}
-
-@keyframes isv2-opts-edges {
-  from {
-    --isv2-fade-t: 0px;
-    --isv2-fade-b: 24px;
-  }
-  to {
-    --isv2-fade-t: 24px;
-    --isv2-fade-b: 0px;
-  }
-}
-
 /* Sentence case for every label on THIS stage, the section eyebrows included.
    `.isv2-bs-eyebrow` uppercases, which the house rules forbid outright — hierarchy comes
    from size, weight and ink, never from shouting — and with the option groups captioned
@@ -338,40 +315,6 @@
    jobs ended up in one costume. */
 .isv2-sheet-label {
   color: var(--sys-text-color-default);
-}
-
-/* The edge fade, driven by the scroll position itself: solid on the side you've
-   reached, faded on the side there's more. A static right-hand fade would leave
-   the last image permanently washed out once you got to it, which reads as a
-   broken thumbnail rather than as "the end".
- *
-   The two edges are animated as REGISTERED custom properties, not by
-   interpolating `mask-image` directly: an unregistered gradient interpolates
-   discretely in Chrome, so the mask flipped sides in one frame halfway down the
-   scroll. Typed as `<length>`, they interpolate smoothly, and the mask recomputes
-   from them. At 0px a stop pair collapses to zero width — no fade at all — which
-   is exactly what the edge you've reached should look like. */
-@property --isv2-fade-l {
-  syntax: "<length>";
-  inherits: false;
-  initial-value: 0px;
-}
-
-@property --isv2-fade-r {
-  syntax: "<length>";
-  inherits: false;
-  initial-value: 0px;
-}
-
-@keyframes isv2-refs-edges {
-  from {
-    --isv2-fade-l: 0px;
-    --isv2-fade-r: 20px;
-  }
-  to {
-    --isv2-fade-l: 20px;
-    --isv2-fade-r: 0px;
-  }
 }
 
 /* The crop toolbar is styled by image-studio-canvas.css. Only one of its rules

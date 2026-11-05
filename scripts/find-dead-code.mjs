@@ -11,7 +11,7 @@
  *            (`import * as store`) are covered: the call site still spells the
  *            symbol out, so it counts as a reference.
  *
- *   css      a class in styles/ whose name appears nowhere in src/ or
+ *   css      a class in styles/ (or the Image Generator's own sheets) whose name appears nowhere in src/ or
  *            index.html. Classes are routinely ASSEMBLED (`isv2-art--${key}`,
  *            `"is-mark-" + w.mark`), so a candidate whose prefix is followed by
  *            an interpolation or a concatenation is flagged [built?] and is
@@ -82,7 +82,11 @@ function auditCss() {
     return false;
   };
   let total = 0;
-  for (const file of walk(path.join(ROOT, "styles"), ".css")) {
+  // The Image Generator keeps its own sheets beside its code.
+  const cssFiles = walk(path.join(ROOT, "styles"), ".css").concat(
+    walk(path.join(ROOT, "src/modules/image-studio/styles"), ".css"),
+  );
+  for (const file of cssFiles) {
     const clean = fs
       .readFileSync(file, "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, "")
