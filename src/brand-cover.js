@@ -2,7 +2,7 @@
 // the palette cover and the voice as a sentence. One module, two hosts
 // (home/lists.js, playbook-view.js), so the card and the fiche can't drift.
 
-import { escapeAttr } from "./utils.js?v=2736";
+import { escapeAttr } from "./utils.js?v=2737";
 
 // The analysed site's primary / accent / link, deduplicated, up to three.
 function paletteOf(ctx) {

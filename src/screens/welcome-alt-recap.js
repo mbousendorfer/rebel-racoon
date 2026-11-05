@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2736";
-import { catalogueRoute } from "../active-playbook.js?v=2736";
+import { navigate } from "../router.js?v=2737";
+import { catalogueRoute } from "../active-playbook.js?v=2737";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,17 +13,17 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2736";
+} from "../context-builder.js?v=2737";
 import {
   RECAP_SECTIONS,
   editVoiceNetwork,
   networkVoiceFilled,
   setNetworkRules,
   proposeVoiceInline,
-} from "../playbook-view.js?v=2736";
-import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2736";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2736";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2736";
+} from "../playbook-view.js?v=2737";
+import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2737";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2737";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2737";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -33,14 +33,14 @@ import {
   playbookNetworks,
   voiceNetworks,
   onlyNetwork,
-} from "../voice-parts.js?v=2736";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2736";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2736";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2736";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2736";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2736";
-import { showToast } from "../components/toast.js?v=2736";
-import { open as openConfirm } from "../components/confirm-modal.js?v=2736";
+} from "../voice-parts.js?v=2737";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2737";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2737";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2737";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2737";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2737";
+import { showToast } from "../components/toast.js?v=2737";
+import { open as openConfirm } from "../components/confirm-modal.js?v=2737";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -112,6 +112,10 @@ export function renderWelcomeAltVoice(_params, target) {
   });
 }
 
+// A network picked, then answered « Use my default voice for X » (its part
+// confirmed while empty): the default voice, chosen — not an empty voice.
+const keptDefault = (d, n) => !networkVoiceFilled(d, n) && (d?.reviewedParts || []).includes(`voice-net-${n}`);
+
 // The first time on the Voice review: every network follows the default voice
 // (chosen), except one that already has rules of its own (learned from posts).
 // Marked `byDefault`: not added, so the fiche lists it to add (2026-11-05,
@@ -172,6 +176,7 @@ function voiceReview(sid, overrides = {}) {
       (c, f) => c + (v?.[f] || []).length,
       0,
     );
+    if (keptDefault(getDraft(sid), n)) return "Uses your default voice";
     if (!networkVoiceFilled(getDraft(sid), n)) return "No rules yet";
     return count ? `${count} rule${count === 1 ? "" : "s"}` : "Filled in";
   };
@@ -208,7 +213,11 @@ function voiceReview(sid, overrides = {}) {
   // other): the default voice and the networks added.
   const rows = () => [defaultPart(), ...nets().map(netRow)];
   const parts = () => rows().filter((r) => !r.inert);
-  const onToggle = (partId, on) => setNetworkRules(netOf(partId), on);
+  // Added again: asked again (its earlier « Use my default voice » goes).
+  const onToggle = (partId, on) => {
+    if (on) patchDraft(sid, { reviewedParts: (getDraft(sid).reviewedParts || []).filter((id) => id !== partId) });
+    setNetworkRules(netOf(partId), on);
+  };
 
   // The accounts to read on a network (or any, for the default voice).
   const accountsOn = (net) => getConnectedProfiles().filter((p) => !net || normalizeNetwork(p.platform) === net);
@@ -458,7 +467,10 @@ export function finishRun(sid) {
   // lui demander confirmation que tout est ok et lui dire qu'il pourra toujours
   // réediter les voices dans le playbook »).
   const d = getDraft(sid);
-  const empty = networkVoiceOn() ? (d?.voiceRulesFor || []).filter((n) => !networkVoiceFilled(d, n)) : [];
+  // One answered « Use my default voice for X » is not asked about again.
+  const empty = networkVoiceOn()
+    ? (d?.voiceRulesFor || []).filter((n) => !networkVoiceFilled(d, n) && !keptDefault(d, n))
+    : [];
   if (!empty.length) return finish();
   const names = empty.map(networkLabel);
   const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names.at(-1)}` : names[0];
