@@ -17,10 +17,10 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=2745";
-import { parseHashParams } from "../url-state.js?v=2745";
-import { escapeHtml as esc } from "../utils.js?v=2745";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2745";
+import { navigate, getPath } from "../router.js?v=2748";
+import { parseHashParams } from "../url-state.js?v=2748";
+import { escapeHtml as esc } from "../utils.js?v=2748";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2748";
 import {
   getContextById,
   getContexts,
@@ -28,15 +28,15 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=2745";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2745";
-import { mount, snapshotEditable } from "../playbook-view.js?v=2745";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2745";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2745";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2745";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2745";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2745";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=2745";
+} from "../contexts-store.js?v=2748";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2748";
+import { mount, snapshotEditable, learnNetworkVoiceInline } from "../playbook-view.js?v=2748";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2748";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2748";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2748";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2748";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2748";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=2748";
 import {
   canView,
   canEdit,
@@ -48,12 +48,11 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=2745";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2745";
-import { showToast } from "../components/toast.js?v=2745";
-import { learnNetworkVoice } from "../voice-parts.js?v=2745";
-import { openVoiceProposal } from "../components/voice-proposal-modal.js?v=2745";
-import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2745";
+} from "../playbook-access.js?v=2748";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2748";
+import { showToast } from "../components/toast.js?v=2748";
+import { learnNetworkVoice } from "../voice-parts.js?v=2748";
+import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2748";
 
 const AUTOFILL_MS = 1500;
 
@@ -272,19 +271,9 @@ export function renderPlaybook(params, target) {
   }
 
   // Learn from… on a network's tab (flag voicePerNetwork): THAT network's
-  // voice, learned — shown before it's used (voice-proposal-modal), never the
-  // default voice. The tab repaints once it's used.
-  function proposeVoice(net, opts) {
-    openVoiceProposal({
-      ctxId: id,
-      net,
-      onUse: () => {
-        remount();
-        toast(`Added to your ${networkLabel(net)} rules.`);
-      },
-      ...opts,
-    });
-  }
+  // voice, learned in the page as in the run, then opened in edit, unsaved
+  // (playbook-view learnNetworkVoiceInline) — never the default voice.
+  const proposeVoice = (net, opts) => learnNetworkVoiceInline(net, opts);
   function learnNetworkVoiceFromPosts(net) {
     openAnalyzeProfilesModal({
       network: net,
@@ -306,7 +295,9 @@ export function renderPlaybook(params, target) {
     });
   }
   function learnNetworkVoiceFromDocument(net) {
+    // `proposal`: shown before it's saved (opened in edit), as in the run.
     openFillDocumentModal({
+      proposal: true,
       onConfirm: ({ file, url }) => proposeVoice(net, { choice: "document", from: file?.name || docNameFromUrl(url) }),
     });
   }

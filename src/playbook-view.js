@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2745";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2745";
-import { conceptHint } from "./concepts.js?v=2745";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2748";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2748";
+import { conceptHint } from "./concepts.js?v=2748";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2745";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2745";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2745";
-import { isFlagOn } from "./feature-flags.js?v=2745";
-import { clipLookOf } from "./videos-store.js?v=2745";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2745";
-import { parseHashParams } from "./url-state.js?v=2745";
+} from "./playbook-brand-kit.js?v=2748";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2748";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2748";
+import { isFlagOn } from "./feature-flags.js?v=2748";
+import { clipLookOf } from "./videos-store.js?v=2748";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2748";
+import { parseHashParams } from "./url-state.js?v=2748";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2745";
-import { showToast } from "./components/toast.js?v=2745";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2745";
+} from "./voice-parts.js?v=2748";
+import { showToast } from "./components/toast.js?v=2748";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2748";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -68,10 +68,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2745";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2745";
-import { consumeHandoff } from "./handoff.js?v=2745";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2745";
+} from "./network-voice-flow.js?v=2748";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2748";
+import { consumeHandoff } from "./handoff.js?v=2748";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2748";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -79,7 +79,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2745";
+} from "./social-profiles.js?v=2748";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -3203,6 +3203,26 @@ function resetNetworkVoice(net) {
   });
 }
 
+// A network's voice from a source, on the fiche — the run's way: learned in the
+// page (proposeVoiceInline), then opened in edit, filled in and unsaved: Save
+// keeps it, Cancel drops it (editNetworkVoiceFrom). No proposal dialog.
+// `opts`: proposeVoiceInline's choice / from / voice / phases. Left for another
+// voice or an edit meanwhile, nothing opens.
+export function learnNetworkVoiceInline(net, opts = {}) {
+  setVoiceNet(net);
+  proposeVoiceInline({
+    ctx: cfg.getData(),
+    net,
+    ...opts,
+    // A voice just added stays added (ownPending) until Save: Cancel brings
+    // back its ways, not a row to add.
+    onUse: (voice) => {
+      if (voiceNet === net && !editScope) editNetworkVoiceFrom(voice);
+      else repaint();
+    },
+  });
+}
+
 // A choice on a network's card in the creation review: what Archie proposes
 // lands in the draft on « Add to Voice profile »; saved with the Playbook.
 function giveNetworkVoice(net, choice) {
@@ -3280,6 +3300,19 @@ function networkVoiceLead(net, voice, data) {
 function renderNetworkVoiceRead(data) {
   const net = voiceNet;
   const label = networkLabel(net);
+  // Being learned: the run's own scene, in the page, under the network's name
+  // (2026-11-05, asked: « réutilises les mêmes animations de loading et
+  // fonctionnement dans l'édition de playbook que dans la first user
+  // experience… je ne veux pas de la modale de loading »).
+  const learning = canEditView() && voiceProposals.get(net);
+  if (learning)
+    return withVoiceNav(
+      data,
+      `<div class="pb2-voice-solo">
+        <h2 class="pb2-tabhead__title pb2-voice-solo__title"><i class="${networkIcon(net)}" aria-hidden="true"></i>${esc(label)} voice</h2>
+        ${voiceProposalCard(net, learning)}
+      </div>`,
+    );
   const { state, chosen, voice } = networkVoice(data, net);
   if (state === "default") {
     // Read-only: that voice on grey, as it is.
