@@ -19,21 +19,21 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2710";
-import { isPortraitFormat } from "../clip-formats.js?v=2710";
-import { presetById } from "../clip-captions.js?v=2710";
-import { renderFeedbackControl } from "./feedback-control.js?v=2710";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2711";
+import { isPortraitFormat } from "../clip-formats.js?v=2711";
+import { presetById } from "../clip-captions.js?v=2711";
+import { renderFeedbackControl } from "./feedback-control.js?v=2711";
 import {
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=2710";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2710";
-import { REVEAL_MS } from "../archie-pixels.js?v=2710";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2710";
-import { languageOf } from "../draft-rewrite.js?v=2710";
+} from "../social-profiles.js?v=2711";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2711";
+import { REVEAL_MS } from "../archie-pixels.js?v=2711";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2711";
+import { languageOf } from "../draft-rewrite.js?v=2711";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -184,23 +184,12 @@ function updatedLine(post) {
     : "Your post has been updated.";
 }
 
-// View changes only adds the removed words: a rewrite that took nothing out
-// (emojis added, a CTA where there was none) has nothing to show.
-function removedSomething(post) {
-  const { before } = post.revision;
-  return (
-    diffWords(before.text, post.text).some((r) => r.type === "del") ||
-    before.hashtags.some((h) => !post.hashtags.includes(h)) ||
-    (!!before.cta && before.cta !== post.cta)
-  );
-}
-
 function renderChangesStatus(post, opts) {
   if (!changesShown(post, opts)) return "";
   const { undone, intent, view } = post.revision;
   const id = escapeAttr(post.id);
   const viewButton =
-    undone || intent === "translate" || !removedSomething(post)
+    undone || intent === "translate"
       ? ""
       : `<button type="button" class="ap-link small standalone" data-post-changes-view="${id}" aria-pressed="${!!view}">${view ? "Hide changes" : "View changes"}</button>`;
   return `<div class="ap-status-card green posts__card-changes" role="status">
@@ -476,7 +465,7 @@ export function renderPostCard(post, opts = {}) {
           class="ap-card posts__card posts__card--${net} ${editing ? "is-editing" : ""} ${changes &&
           Date.now() - changes.at < 1500
             ? "has-fresh-changes"
-            : ""}"
+            : ""} ${changes?.view ? "is-viewing-changes" : ""}"
         >
           ${raw(
             renderNetworkLayout(net, {
