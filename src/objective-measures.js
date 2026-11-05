@@ -36,7 +36,8 @@
 // on the Insights side, while this catalogue parks them. Insights marks those
 // cards "via proxy" by resolving the label here — one story, two surfaces.
 
-import { NETWORK_LABEL, getConnectedProfiles } from "./social-profiles.js?v=2758";
+import { NETWORK_LABEL, getConnectedProfiles } from "./social-profiles.js?v=2759";
+import { plural } from "./utils.js?v=2759";
 
 // The metric catalogue. Each metric names a concept, not a per-network field.
 // `type` — volume | rate | counter. A rate is scale-free (never split by
@@ -675,7 +676,7 @@ export function objectiveVerdict(resolved) {
     total,
     tier,
     label: tier ? VERDICT_LABELS[tier] : null,
-    phrase: total ? `${onTrack} of ${total} measure${total > 1 ? "s" : ""} on track` : null,
+    phrase: total ? `${onTrack} of ${plural(total, "measure")} on track` : null,
   };
 }
 

@@ -14,19 +14,25 @@
 //   `giving` (« Give X its own voice » on a draft): asked even for a network on
 //   the default voice, without that answer.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2758";
-import { getContextById } from "../contexts-store.js?v=2758";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2758";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
+import { getContextById } from "../contexts-store.js?v=2759";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2759";
 import {
   missingNetworkVoices,
   voiceChoices,
   useDefaultVoice,
   editNetworkVoiceInPlaybook,
   documentName,
-} from "../network-voice-flow.js?v=2758";
-import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2758";
-import { openVoiceProposal } from "./voice-proposal-modal.js?v=2758";
-import { escapeHtml } from "../utils.js?v=2758";
+} from "../network-voice-flow.js?v=2759";
+import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2759";
+import { openVoiceProposal } from "./voice-proposal-modal.js?v=2759";
+import { escapeHtml } from "../utils.js?v=2759";
 
 const MODAL_ID = "network-voice";
 
@@ -99,10 +105,7 @@ export function requireNetworkVoicesInDialog(contextId, networks, onReady, { giv
       ? `These drafts use your default voice. Once ${escapeHtml(one)} has its own voice, you can rewrite each one.`
       : `I don't know how you write on ${missing.length === 1 ? escapeHtml(one) : "these networks"} yet. Pick how I should learn it before I write.`
   }</p>${missing.map((n) => groupHtml(n, giving)).join("")}`;
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
   setTimeout(() => confirmBtn.focus({ preventScroll: true }), 0);
 }
@@ -150,10 +153,7 @@ function giveVoices(p, [pick, ...rest]) {
 function close() {
   if (!modal) return;
   pending = null;
-  modal.classList.remove("open");
-  backdrop.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-  backdrop.hidden = true;
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   notifyClose(MODAL_ID);
 }

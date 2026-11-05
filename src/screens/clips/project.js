@@ -7,37 +7,37 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2758";
-import { isFlagOn } from "../../feature-flags.js?v=2758";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2758";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2758";
-import { showToast } from "../../components/toast.js?v=2758";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2758";
-import { open as openClipRange } from "../../components/clip-range-modal.js?v=2758";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2758";
-import { startRewrite } from "../../draft-rewrite.js?v=2758";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2758";
-import { renderPostCard } from "../../components/post-card.js?v=2758";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2758";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2758";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2758";
+import { navigate } from "../../router.js?v=2759";
+import { isFlagOn } from "../../feature-flags.js?v=2759";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2759";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2759";
+import { showToast } from "../../components/toast.js?v=2759";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2759";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2759";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2759";
+import { startRewrite } from "../../draft-rewrite.js?v=2759";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2759";
+import { renderPostCard } from "../../components/post-card.js?v=2759";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2759";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2759";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2759";
 import {
   getConnectedProfiles,
   renderProfileTag,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-} from "../../social-profiles.js?v=2758";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2758";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2758";
-import { captionStateFor } from "../../clip-captions.js?v=2758";
+} from "../../social-profiles.js?v=2759";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2759";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2759";
+import { captionStateFor } from "../../clip-captions.js?v=2759";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2758";
-import { escapeHtml } from "../../utils.js?v=2758";
+} from "../../posts-store.js?v=2759";
+import { escapeHtml, plural } from "../../utils.js?v=2759";
 import {
   getVideo,
   draftKey,
@@ -48,7 +48,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2758";
+} from "../../videos-store.js?v=2759";
 import {
   fmtMs,
   formatSelect,
@@ -68,7 +68,7 @@ import {
   bestFor,
   CTA_OPTIONS,
   EDITOR_TOOLS,
-} from "./shared.js?v=2758";
+} from "./shared.js?v=2759";
 
 let target = null;
 let videoId = null;
@@ -728,8 +728,6 @@ function renderDraftSetup(v, hasDrafts) {
   const accounts = profiles.filter((p) => draftSetup.accounts.has(p.id));
   const pb = getContextById(v.contextId);
   const count = clips.length * accounts.length;
-  const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
-
   // The clips: picked at step 1, summed up here — a strip and their length.
   const totalMs = clips.reduce((n, c) => n + (c.endMs - c.startMs), 0);
   const STRIP = 6;

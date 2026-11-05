@@ -17,7 +17,13 @@
 //   - Registers with modal-coordinator so opening the dialog auto-closes
 //     any other overlay (drawer, modal, shortcut legend).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2758";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
 
 const MODAL_ID = "confirm";
 
@@ -114,10 +120,7 @@ export function open({
   pendingOnConfirm = onConfirm;
   pendingOnCancel = onCancel;
 
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
 
   // On a destructive confirm, the safe default is Cancel — accidentally
@@ -131,10 +134,7 @@ export function open({
 
 function close() {
   if (!initialized) return;
-  modal.classList.remove("open");
-  backdrop.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-  backdrop.hidden = true;
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   pendingOnConfirm = null;
   pendingOnCancel = null;

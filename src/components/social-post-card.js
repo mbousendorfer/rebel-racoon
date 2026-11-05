@@ -23,8 +23,8 @@
 // colours baked into the icon (they're SVG data-URI backgrounds, not font
 // glyphs), so nothing here has to hardcode a third-party hex.
 
-import { html, raw } from "../utils.js?v=2758";
-import { networkMeta } from "../social-profiles.js?v=2758";
+import { compactNumber, html, raw } from "../utils.js?v=2759";
+import { networkMeta } from "../social-profiles.js?v=2759";
 
 // Avatar tints the card knows how to paint (see social-post-card.css). An
 // unknown accent falls back to grey rather than rendering an unstyled circle —
@@ -40,15 +40,6 @@ const ACCENTS = new Set([
   "yellow",
   "soft-blue",
 ]);
-
-// 1400 → "1.4K", 41800 → "42K", 640 → "640". Engagement here is read at a
-// glance to size a claim, never compared digit by digit.
-function formatCompact(n) {
-  const v = Number(n) || 0;
-  if (v < 1000) return String(v);
-  const k = v / 1000;
-  return `${k >= 10 ? Math.round(k) : k.toFixed(1).replace(/\.0$/, "")}K`;
-}
 
 function iconFor(network) {
   return networkMeta(network)?.icon || "ap-icon-share";
@@ -100,10 +91,10 @@ export function renderSocialPostCard(post, { compact = false } = {}) {
                 const sep = i ? html`<span class="social-post-card__stat-dot" aria-hidden="true"></span>` : "";
                 const body = m.icon
                   ? html`<span class="social-post-card__stat">
-                      <i class="${m.icon}" aria-hidden="true"></i><span>${formatCompact(m.n)}</span>
+                      <i class="${m.icon}" aria-hidden="true"></i><span>${compactNumber(m.n ?? 0)}</span>
                       <span class="social-post-card__sr">${m.sr}</span>
                     </span>`
-                  : html`<span class="social-post-card__stat">${m.label(formatCompact(m.n))}</span>`;
+                  : html`<span class="social-post-card__stat">${m.label(compactNumber(m.n ?? 0))}</span>`;
                 return html`${raw(sep)}${raw(body)}`;
               })
               .join(""),

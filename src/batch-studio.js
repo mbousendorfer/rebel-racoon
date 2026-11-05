@@ -7,7 +7,7 @@
 // workflow.
 //
 // Mirrors the per-session state pattern of clip-studio.js: a module-local
-// Map(sessionId → state) + a Map(sessionId → Set<fn>) of subscribers, with
+// Map(sessionId → state) + a per-session notifier (store-utils), with
 // notify() fanning out to re-render the assistant panel.
 //
 // Files can't survive a sessionStorage handoff, so the staged sources (incl.
@@ -15,10 +15,12 @@
 // in-memory `pendingBatch` slot — the SPA never reloads between the two
 // navigations, so a module-level variable is the safe bridge.
 
-import { pastedTextName } from "./sources-stream.js?v=2758";
+import { prettyUrl } from "./utils.js?v=2759";
+import { pastedTextName } from "./sources-stream.js?v=2759";
+import { createSessionNotifier } from "./store-utils.js?v=2759";
 
 const states = new Map(); // sessionId → state
-const subscribers = new Map(); // sessionId → Set<fn>
+const notifier = createSessionNotifier("batch-studio");
 
 // In-memory carry from the batch screen to the new chat (holds File objects).
 let pendingBatch = null;
@@ -37,8 +39,7 @@ function nextUid() {
 const UPLOAD_MS = 1500;
 
 function notify(sessionId) {
-  const subs = subscribers.get(sessionId);
-  if (subs) for (const fn of subs) fn();
+  notifier.notify(sessionId);
 }
 
 function clearTimers(src) {
@@ -110,7 +111,7 @@ export function addUrlSource(sessionId, url) {
   if (!s) return;
   const clean = url.trim();
   if (!clean) return;
-  const name = clean.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const name = prettyUrl(clean);
   // Skip exact duplicates so a double-submit doesn't double-stage.
   if (s.sources.some((src) => src.origin === "url" && src.url === clean)) return;
   const src = { uid: nextUid(), name, kind: "URL", iconKey: "url", origin: "url", url: clean, status: "ready" };
@@ -192,7 +193,5 @@ export function exit(sessionId) {
 }
 
 export function subscribe(sessionId, fn) {
-  if (!subscribers.has(sessionId)) subscribers.set(sessionId, new Set());
-  subscribers.get(sessionId).add(fn);
-  return () => subscribers.get(sessionId)?.delete(fn);
+  return notifier.subscribe(sessionId, fn);
 }

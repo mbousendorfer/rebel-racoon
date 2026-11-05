@@ -3,9 +3,10 @@
 // `message`-shaped object (or opts) and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2758";
-import { isFlagOn } from "../../feature-flags.js?v=2758";
-import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2758";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2759";
+import { isFlagOn } from "../../feature-flags.js?v=2759";
+import { iconFor } from "../../file-kinds.js?v=2759";
+import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2759";
 
 // The thread's restyle since Monday 2026-10-05 (flag newConversationStyles).
 // OFF renders the Monday markup; styles/chat-legacy.css holds its values.
@@ -52,23 +53,11 @@ export function renderMessageBubble(message) {
 // `focusable` (flag contentPanel): the file itself is a button to that source
 // in the side panel; `active` while the panel was opened from this echo.
 export function renderSourceIntakeTurn(message, source = null, { focusable = false, active = false } = {}) {
-  // Kind icon — map the raw kind label (from sources-stream) to the DS
-  // icon name. Lowercased so "PDF" / "Video" / "URL" / "Word" / "Image"
-  // / "Audio" all resolve.
-  const iconByKind = {
-    pdf: "ap-icon-file--pdf",
-    video: "ap-icon-file--video",
-    url: "ap-icon-link",
-    word: "ap-icon-file--text",
-    text: "ap-icon-file--text",
-    image: "ap-icon-file--image",
-    audio: "ap-icon-file",
-    topic: "ap-icon-antenna",
-  };
   const kindKey = (message.kind || "").toLowerCase();
   // A source may carry its own glyph (a Topic keeps its listening source's icon,
-  // set by topic-flow's attachTopicToChat); that wins over the kind fallback.
-  const icon = source?.iconClass || iconByKind[kindKey] || "ap-icon-file";
+  // set by topic-flow's attachTopicToChat); that wins over the kind icon
+  // (file-kinds, case-insensitive).
+  const icon = source?.iconClass || iconFor(message.kind);
   const isLoading = message.status === "loading";
   // The line under the filename — the same words a picked source's echo uses.
   const kindLabels = {

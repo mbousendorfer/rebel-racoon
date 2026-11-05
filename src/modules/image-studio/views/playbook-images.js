@@ -15,14 +15,15 @@
 // Styles and reference images save as they change, like the styles always did:
 // no Edit. The Generate block's look and formats wait for its Save changes.
 
-import { html, raw, toString } from "../lib/html.js?v=2758";
-import { navigate } from "../../../router.js?v=2758";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=2758";
-import { toast } from "../ui/toast.js?v=2758";
-import { renderEmpty } from "../ui/empty.js?v=2758";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=2758";
-import { shapesFor } from "../config/formats.js?v=2758";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=2758";
+import { html, raw, toString } from "../lib/html.js?v=2759";
+import { navigate } from "../../../router.js?v=2759";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=2759";
+import { toast } from "../ui/toast.js?v=2759";
+import { renderEmpty } from "../ui/empty.js?v=2759";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=2759";
+import { shapesFor } from "../config/formats.js?v=2759";
+import { networkById } from "../config/networks.js?v=2759";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=2759";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -31,18 +32,14 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=2758";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=2758";
+} from "../state/playbook-brand.js?v=2759";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=2759";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
 
-const NETWORKS = [
-  { id: "linkedin", label: "LinkedIn", icon: "ap-icon-linkedin-official" },
-  { id: "instagram", label: "Instagram", icon: "ap-icon-instagram-official" },
-  { id: "facebook", label: "Facebook", icon: "ap-icon-facebook-official" },
-  { id: "x", label: "X", icon: "ap-icon-x-official" },
-];
+// The config's networks, LinkedIn first as this tab lists them.
+const NETWORKS = ["linkedin", "instagram", "facebook", "x"].map(networkById);
 
 // Every block reads the same way: on the left, what it is and its one action;
 // on the right, the things themselves. Styles and reference images keep their

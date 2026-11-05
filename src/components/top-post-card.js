@@ -12,9 +12,15 @@
 // render; no module-local state (the active sort lives in top-posts-flow's
 // picker state).
 
-import { html, raw } from "../utils.js?v=2758";
-import { profileForNetwork, NETWORK_ICON_BY_PLATFORM, BRAND_INITIALS, networkMeta } from "../social-profiles.js?v=2758";
-import { renderEmptyState } from "./empty-state.js?v=2758";
+import { compactNumber, html, raw } from "../utils.js?v=2759";
+import {
+  profileForNetwork,
+  NETWORK_ICON_BY_PLATFORM,
+  BRAND_INITIALS,
+  networkLabel,
+  networkMeta,
+} from "../social-profiles.js?v=2759";
+import { renderEmptyState } from "./empty-state.js?v=2759";
 
 // Sort options for the toolbar. `key` matches data-top-post-sort + the picker
 // state; `compare` sorts descending by the decision-useful value (recent sorts
@@ -76,18 +82,6 @@ function iconFor(network) {
   return networkMeta(network)?.icon || "ap-icon-share";
 }
 
-function labelFor(network) {
-  return networkMeta(network)?.label || network;
-}
-
-// 41800 → "41.8K", 2030 → "2K", 940 → "940". Keeps reach scannable.
-function formatCompact(n) {
-  if (n == null) return "—";
-  if (n < 1000) return String(n);
-  const k = n / 1000;
-  return `${k >= 10 ? Math.round(k) : k.toFixed(1)}K`;
-}
-
 // Permalink to the original post on its network — the "Open original" link.
 // Prototype: these are mock winners, so we build a plausible per-network URL
 // from the post id (opens in a new tab). A real integration would carry the
@@ -113,7 +107,7 @@ function renderViewOnLink(post) {
       href="${postPermalink(post.network, post.id)}"
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="View original post on ${labelFor(post.network)}"
+      aria-label="View original post on ${networkLabel(post.network)}"
     ><span>View on</span><i class="${iconFor(post.network)}" aria-hidden="true"></i></a>`;
 }
 
@@ -208,7 +202,7 @@ export function renderTopPostCard(
   const account = profileForNetwork(post.network);
   const net = (post.network || "").toLowerCase();
   const networkIcon = NETWORK_ICON_BY_PLATFORM[net] || iconFor(post.network);
-  const handle = account?.handle || labelFor(post.network);
+  const handle = account?.handle || networkLabel(post.network);
   const avatarInner = account?.photo
     ? `<img src="${account.photo}" alt="" />`
     : `<span class="ap-avatar-initials">${BRAND_INITIALS}</span>`;
@@ -222,10 +216,10 @@ export function renderTopPostCard(
     statsOverride !== null
       ? statsOverride
       : [
-          [formatCompact(post.views), "Views"],
-          [formatCompact(post.impressions), "Impressions"],
-          [formatCompact(post.reactions), "Reactions"],
-          [formatCompact(secondaryVal), secondaryLabel],
+          [compactNumber(post.views), "Views"],
+          [compactNumber(post.impressions), "Impressions"],
+          [compactNumber(post.reactions), "Reactions"],
+          [compactNumber(secondaryVal), secondaryLabel],
         ]
           .map(
             ([v, l]) =>
@@ -322,7 +316,7 @@ export function renderPostEchoRow({
   const net = (network || "").toLowerCase();
   const account = profileForNetwork(network);
   const networkIcon = NETWORK_ICON_BY_PLATFORM[net] || iconFor(network);
-  const handle = account?.handle || labelFor(network);
+  const handle = account?.handle || networkLabel(network);
   const avatarInner = account?.photo
     ? `<img src="${account.photo}" alt="" />`
     : `<span class="ap-avatar-initials">${BRAND_INITIALS}</span>`;
@@ -363,7 +357,7 @@ export function renderTopPostEcho(post) {
     excerpt: post.excerpt,
     mediaType: post.mediaType,
     image: post.image,
-    statsHtml: `<b class="top-post-echo__avg">${post.vsAvg}×</b> vs avg · <b>${formatCompact(post.views)}</b> views · <b>${formatCompact(post.impressions)}</b> impressions`,
+    statsHtml: `<b class="top-post-echo__avg">${post.vsAvg}×</b> vs avg · <b>${compactNumber(post.views)}</b> views · <b>${compactNumber(post.impressions)}</b> impressions`,
     actionHtml: renderViewOnLink(post),
   });
 }
@@ -424,7 +418,7 @@ export function renderTopPostsWidget({ network, posts = [], selected = [], answe
       <div class="top-posts-widget__head">
         <span class="top-posts-widget__title">
           <i class="${iconFor(network)}" aria-hidden="true"></i>
-          Your top ${labelFor(network)} posts
+          Your top ${networkLabel(network)} posts
         </span>
         <span class="top-posts-widget__hint muted">Pick one</span>
       </div>

@@ -21,11 +21,12 @@
 // module instances are shared — each holds per-session state in a module-local
 // Map, and a second copy at a different URL would hold its own.
 
-import { navigate } from "./router.js?v=2758";
-import { setHandoff } from "./handoff.js?v=2758";
-import { postAssistantMessage, sendMessage } from "./assistant.js?v=2758";
-import * as inlineQuestion from "./inline-question.js?v=2758";
-import { objectiveNextMoves } from "./mocks.js?v=2758";
+import { newChatPath } from "./utils.js?v=2759";
+import { navigate } from "./router.js?v=2759";
+import { setHandoff } from "./handoff.js?v=2759";
+import { postAssistantMessage, sendMessage } from "./assistant.js?v=2759";
+import * as inlineQuestion from "./inline-question.js?v=2759";
+import { objectiveNextMoves } from "./mocks.js?v=2759";
 
 export const OBJECTIVE_CHAT_HANDOFF = "pendingObjectiveChat";
 
@@ -96,7 +97,7 @@ export function openObjectiveInChat(entry) {
   const params = new URLSearchParams();
   params.set("contextId", entry.ctxId);
   params.set("title", entry.label);
-  navigate(`/session/new-${Date.now().toString(36)}?${params.toString()}`);
+  navigate(`${newChatPath()}?${params.toString()}`);
   return true;
 }
 
@@ -125,7 +126,7 @@ export function repurposePostInChat(entry, post) {
   const params = new URLSearchParams();
   params.set("contextId", entry.ctxId);
   params.set("title", entry.label);
-  navigate(`/session/new-${Date.now().toString(36)}?${params.toString()}`);
+  navigate(`${newChatPath()}?${params.toString()}`);
   return true;
 }
 

@@ -15,7 +15,13 @@
 //   - Input is auto-focused + full text selected on open so the user
 //     can immediately overtype or accept.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2758";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
 
 const MODAL_ID = "rename";
 
@@ -73,18 +79,14 @@ function injectOnce() {
 
   cancelBtn.addEventListener("click", close);
   closeBtn.addEventListener("click", close);
-  backdrop.addEventListener("click", close);
   saveBtn.addEventListener("click", submit);
+  bindOverlayDismissal({ modal, backdrop, close });
 
-  // Enter submits, Esc closes — both scoped to the input so they don't
-  // hijack the rest of the app.
+  // Enter submits — scoped to the input so it doesn't hijack the rest of the app.
   inputEl.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
       submit();
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      close();
     }
   });
 
@@ -127,10 +129,7 @@ export function open({
 
   pendingOnSubmit = onSubmit;
 
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
 
   // Focus the input and select the full text so the user can immediately
@@ -143,10 +142,7 @@ export function open({
 
 function close() {
   if (!initialized) return;
-  modal.classList.remove("open");
-  backdrop.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-  backdrop.hidden = true;
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   pendingOnSubmit = null;
   notifyClose(MODAL_ID);

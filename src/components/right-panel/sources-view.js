@@ -3,15 +3,16 @@
 // the panel shell (open / close / resize / URL state / delegated listeners)
 // stays there.
 
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2758";
-import { isFlagOn } from "../../feature-flags.js?v=2758";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2758";
-import { escapeAttr, escapeText } from "../../utils.js?v=2758";
-import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2758";
-import { conceptText } from "../../concepts.js?v=2758";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2758";
-import { renderTopPostEcho } from "../top-post-card.js?v=2758";
-import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2758";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2759";
+import { isFlagOn } from "../../feature-flags.js?v=2759";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2759";
+import { escapeAttr, escapeText } from "../../utils.js?v=2759";
+import { iconFor } from "../../file-kinds.js?v=2759";
+import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2759";
+import { conceptText } from "../../concepts.js?v=2759";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2759";
+import { renderTopPostEcho } from "../top-post-card.js?v=2759";
+import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2759";
 
 // Sources mode view — list of source rows for the active session + a
 // trailing "+ Attach" button. Each row carries kind icon, filename,
@@ -129,16 +130,6 @@ const KIND_LABEL = {
   URL: "Link",
 };
 
-const SOURCE_KIND_ICON = {
-  PDF: "ap-icon-file--pdf",
-  Word: "ap-icon-file--text",
-  Text: "ap-icon-file--text",
-  Video: "ap-icon-file--video",
-  Audio: "ap-icon-file",
-  Image: "ap-icon-file--image",
-  URL: "ap-icon-link",
-};
-
 // Close every open source-card kebab dropdown (except `except`), resetting the
 // trigger's aria-expanded. One menu open at a time.
 export function closeAllSourceMenus(except) {
@@ -153,7 +144,7 @@ export function closeAllSourceMenus(except) {
 function renderSourceRow(src) {
   // Explicit iconClass wins (e.g. a repurposed post's network logo), else map
   // by kind, else the generic file glyph.
-  const icon = src.iconClass || SOURCE_KIND_ICON[src.kind] || "ap-icon-file";
+  const icon = src.iconClass || iconFor(src.kind);
   const isProcessing = src.status !== "Processed";
   // Only surface a status pill while the source is in-flight. Once
   // Processed, the card stays uncluttered. Mermaid-tinted pill mirrors

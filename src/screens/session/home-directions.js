@@ -25,19 +25,19 @@
 // the way the Clips space frames it; the top posts with their images and score;
 // the Topic Feed's fresh Topics.
 
-import { isFlagOn } from "../../feature-flags.js?v=2758";
-import { chatStarters } from "../../mocks.js?v=2758";
-import { getVideos, getVideo, exampleVideo } from "../../videos-store.js?v=2758";
-import { getTopPosts } from "../../top-posts-store.js?v=2758";
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2758";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2758";
-import { findTopicSource } from "../../topics-catalog.js?v=2758";
-import { getContextById } from "../../contexts-store.js?v=2758";
-import { voicesToFinish, networkVoiceOn } from "../../voice-parts.js?v=2758";
-import { networkLabel, networkIcon } from "../../social-profiles.js?v=2758";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2758";
-import { escapeHtml } from "../../utils.js?v=2758";
-import "../../archie-pixels.js?v=2758";
+import { isFlagOn } from "../../feature-flags.js?v=2759";
+import { chatStarters } from "../../mocks.js?v=2759";
+import { getVideos, getVideo, exampleVideo } from "../../videos-store.js?v=2759";
+import { getTopPosts } from "../../top-posts-store.js?v=2759";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2759";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2759";
+import { findTopicSource } from "../../topics-catalog.js?v=2759";
+import { getContextById } from "../../contexts-store.js?v=2759";
+import { voicesToFinish, networkVoiceOn } from "../../voice-parts.js?v=2759";
+import { networkLabel, networkIcon } from "../../social-profiles.js?v=2759";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2759";
+import { escapeHtml, formatClock } from "../../utils.js?v=2759";
+import "../../archie-pixels.js?v=2759";
 
 const DIRECTIONS = [
   ["homeOneInput", oneInput],
@@ -206,7 +206,7 @@ function videoMedia(video, { len = false } = {}) {
   return `
     <span class="nch-video">
       <video class="nch-video__media" src="${esc(video.url)}${t}" muted playsinline preload="metadata" aria-hidden="true"></video>
-      ${len && s ? `<span class="nch-clip__len">${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}</span>` : ""}
+      ${len && s ? `<span class="nch-clip__len">${formatClock(s)}</span>` : ""}
     </span>`;
 }
 

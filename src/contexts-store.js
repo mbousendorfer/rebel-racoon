@@ -22,19 +22,20 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts, DEMO_PLAYBOOK } from "./mocks.js?v=2758";
-import { isDemo } from "./demo-mode.js?v=2758";
-import { isNewUser } from "./user-mode.js?v=2758";
-import { CURRENT_USER } from "./org.js?v=2758";
-import { isFlagOn } from "./feature-flags.js?v=2758";
-import { createNotifier } from "./store-utils.js?v=2758";
+import { newId } from "./utils.js?v=2759";
+import { contexts as seed, sharedContexts, DEMO_PLAYBOOK } from "./mocks.js?v=2759";
+import { isDemo } from "./demo-mode.js?v=2759";
+import { isNewUser } from "./user-mode.js?v=2759";
+import { CURRENT_USER } from "./org.js?v=2759";
+import { isFlagOn } from "./feature-flags.js?v=2759";
+import { createNotifier } from "./store-utils.js?v=2759";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=2758";
-import { cloneItems, learnNetworkVoice, cloneNetworkVoice } from "./voice-parts.js?v=2758";
+} from "./languages.js?v=2759";
+import { cloneItems, learnNetworkVoice, cloneNetworkVoice } from "./voice-parts.js?v=2759";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -78,11 +79,6 @@ const notifier = createNotifier("contexts-store");
 
 export const subscribe = notifier.subscribe;
 const notify = () => notifier.notify(getContexts());
-
-function freshId() {
-  // Stable-enough id for the proto: "ctx-" + base36 timestamp + random suffix.
-  return `ctx-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-}
 
 // Competitors and influencers carry a nested socials array, so a shallow copy
 // isn't enough — clone both levels and stamp an id on entries that arrive
@@ -409,7 +405,7 @@ export function addContext(ctx = {}) {
       ? [ctx.audience]
       : [];
   const next = {
-    id: ctx.id || freshId(),
+    id: ctx.id || newId("ctx"),
     name: ctx.name || "New Playbook",
     color: ctx.color || "orange",
     isDefault: ctx.isDefault === true,

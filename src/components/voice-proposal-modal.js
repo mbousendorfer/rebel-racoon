@@ -16,18 +16,24 @@
 //     review) — nothing is saved here, onUse(voice) adds it to the draft, and
 //     there is no Playbook to edit it in.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2758";
-import { getContextById } from "../contexts-store.js?v=2758";
-import { networkLabel } from "../social-profiles.js?v=2758";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
+import { getContextById } from "../contexts-store.js?v=2759";
+import { networkLabel } from "../social-profiles.js?v=2759";
 import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
-} from "../network-voice-flow.js?v=2758";
-import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2758";
-import { escapeHtml } from "../utils.js?v=2758";
+} from "../network-voice-flow.js?v=2759";
+import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2759";
+import { escapeHtml } from "../utils.js?v=2759";
 
 const MODAL_ID = "voice-proposal";
 
@@ -72,10 +78,7 @@ const button = (action, kind, label, disabled = false) =>
 function show() {
   injectOnce();
   requestOpen(MODAL_ID, cancel);
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
 }
 
@@ -147,10 +150,7 @@ function hide() {
   timers.forEach(clearTimeout);
   timers = [];
   current = null;
-  modal.classList.remove("open");
-  backdrop.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-  backdrop.hidden = true;
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   notifyClose(MODAL_ID);
 }

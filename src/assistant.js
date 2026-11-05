@@ -6,14 +6,15 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2758";
-import { findConnector } from "./connectors-store.js?v=2758";
-import { createSessionNotifier } from "./store-utils.js?v=2758";
-import { addPostDraft } from "./posts-store.js?v=2758";
-import { showToast } from "./components/toast.js?v=2758";
-import { isFlagOn } from "./feature-flags.js?v=2758";
-import { offerMentions } from "./mention-flow.js?v=2758";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2758";
+import { newId } from "./utils.js?v=2759";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2759";
+import { findConnector } from "./connectors-store.js?v=2759";
+import { createSessionNotifier } from "./store-utils.js?v=2759";
+import { addPostDraft } from "./posts-store.js?v=2759";
+import { showToast } from "./components/toast.js?v=2759";
+import { isFlagOn } from "./feature-flags.js?v=2759";
+import { offerMentions } from "./mention-flow.js?v=2759";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2759";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -37,12 +38,6 @@ function readSessionIdeas(sessionId) {
 
 const threads = new Map(); // sessionId → messages[]
 const notifier = createSessionNotifier("assistant");
-
-let idCounter = 0;
-function newId() {
-  idCounter += 1;
-  return `m-${Date.now().toString(36)}-${idCounter}`;
-}
 
 // --- Public API -----------------------------------------------------------
 
@@ -71,7 +66,7 @@ export function sendMessage(sessionId, text, options = {}) {
   // trigger an AI reply.
   if (options.role === "system") {
     thread.push({
-      id: newId(),
+      id: newId("m"),
       role: "system",
       meta: options.meta || "Update",
       variant: options.variant || "grey",
@@ -89,9 +84,9 @@ export function sendMessage(sessionId, text, options = {}) {
   //   2. reasoning system-notice (mermaid-accented "Drafting" block) — open
   //      while loading, collapsed after reply
   //   3. placeholder AI bubble — hidden until the reply lands
-  const userId = newId();
-  const reasoningId = newId();
-  const replyId = newId();
+  const userId = newId("m");
+  const reasoningId = newId("m");
+  const replyId = newId("m");
 
   thread.push({
     id: userId,
@@ -176,11 +171,11 @@ export function sendConnectorMessage(sessionId, connectorId, text) {
   }
 
   const thread = getThread(sessionId);
-  const reasoningId = newId();
-  const replyId = newId();
+  const reasoningId = newId("m");
+  const replyId = newId("m");
 
   thread.push({
-    id: newId(),
+    id: newId("m"),
     role: "user",
     meta: "You",
     text: text.trim(),
@@ -232,7 +227,7 @@ export function sendConnectorMessage(sessionId, connectorId, text) {
 export function postAssistantMessage(sessionId, text, { meta = "Archie" } = {}) {
   const thread = getThread(sessionId);
   thread.push({
-    id: newId(),
+    id: newId("m"),
     role: "assistant",
     meta,
     text,
@@ -267,7 +262,7 @@ export function reportDraftFailure(sessionId, err, retry, source = "draft-flow",
     });
     return;
   }
-  const id = newId();
+  const id = newId("m");
   failedRetries.set(id, retry);
   getThread(sessionId).push({
     id,
@@ -300,7 +295,7 @@ export function retryFailedTurn(sessionId, id) {
 // `status`: "pending" → "connected" (resolved) or "dismissed" (hidden).
 export function postConnectPrompt(sessionId, { connectorId, connectorName, logo, url, noun = "document" }) {
   const thread = getThread(sessionId);
-  const id = newId();
+  const id = newId("m");
   thread.push({
     id,
     role: "connect-prompt",
@@ -340,7 +335,7 @@ export function markConnectPromptResolved(sessionId, id, status = "connected") {
 export function postSourceIntake(sessionId, { kind, filename, size, sourceId, status = "loading" }) {
   const thread = getThread(sessionId);
   thread.push({
-    id: newId(),
+    id: newId("m"),
     role: "source-intake",
     meta: "You",
     kind,
@@ -369,7 +364,7 @@ export function markSourceIntakeReady(sessionId, sourceId) {
 export function postExtractionResult(sessionId, { filename, ideas }) {
   const thread = getThread(sessionId);
   thread.push({
-    id: newId(),
+    id: newId("m"),
     role: "assistant",
     variant: "extraction",
     meta: "Archie",
@@ -407,7 +402,7 @@ export function postExtractionResult(sessionId, { filename, ideas }) {
 // finishes.
 export function startPending(sessionId, meta = null, tools = null) {
   const thread = getThread(sessionId);
-  const id = newId();
+  const id = newId("m");
   // New conversation styles: the work shows the tools it runs, the way the prod
   // thread does (chat-thread.component toActivityGroup) — "Extracting ideas…"
   // while it runs, "Extracted ideas · 2s" / "Ran 2 tools · 3s" once done, and
@@ -509,7 +504,7 @@ export const GENERATION_TOOLS = ["start_generation", "generate_drafts", "check_p
 export function postUserTurn(sessionId, text) {
   const thread = getThread(sessionId);
   thread.push({
-    id: newId(),
+    id: newId("m"),
     role: "user",
     meta: "You",
     text: text.trim(),
@@ -525,7 +520,7 @@ export function postUserTurn(sessionId, text) {
 export function postUserProfilesTurn(sessionId, profiles) {
   const thread = getThread(sessionId);
   thread.push({
-    id: newId(),
+    id: newId("m"),
     role: "user",
     variant: "profiles",
     meta: "You",
@@ -543,7 +538,7 @@ export function postUserProfilesTurn(sessionId, profiles) {
 export function postTopPostPickTurn(sessionId, post) {
   const thread = getThread(sessionId);
   thread.push({
-    id: newId(),
+    id: newId("m"),
     role: "user",
     variant: "top-post-pick",
     meta: "You",
@@ -561,7 +556,7 @@ export function postTopPostPickTurn(sessionId, post) {
 // every thread re-render reflects it (mirrors the source-intake mutate pattern).
 export function postTopPostsWidget(sessionId, { network, postIds }) {
   const thread = getThread(sessionId);
-  const id = newId();
+  const id = newId("m");
   thread.push({
     id,
     role: "assistant",
@@ -629,7 +624,7 @@ export function answerTopPostsWidget(sessionId) {
 // simply drops out of the list.
 export function postTopicsWidget(sessionId, { feedId, topicIds }) {
   const thread = getThread(sessionId);
-  const id = newId();
+  const id = newId("m");
   thread.push({
     id,
     role: "assistant",
@@ -661,7 +656,7 @@ export function postSelectionEcho(sessionId, echo) {
   if (!echo || !echo.title) return;
   const thread = getThread(sessionId);
   thread.push({
-    id: newId(),
+    id: newId("m"),
     role: "user",
     variant: "selection-echo",
     meta: "You",
@@ -685,7 +680,7 @@ export function postAssistantChoice(
 ) {
   const thread = getThread(sessionId);
   thread.push({
-    id: newId(),
+    id: newId("m"),
     role: "assistant-choice",
     meta: "Archie",
     text,
@@ -718,7 +713,7 @@ export function submitAssistantChoice(sessionId, messageId, selectedValues) {
 // turn flips from pending to ready without an extra notify hop.
 export function postClipExtractionTurn(sessionId, { sourceId, filename }) {
   const thread = getThread(sessionId);
-  const id = newId();
+  const id = newId("m");
   thread.push({
     id,
     role: "assistant",
@@ -757,7 +752,7 @@ export function postClipExtractionTurn(sessionId, { sourceId, filename }) {
 // read. `status`: "proposed" → "scheduled" | "dismissed".
 export function postSchedulePlan(sessionId, { intro, rows, summary }) {
   const thread = getThread(sessionId);
-  const id = newId();
+  const id = newId("m");
   thread.push({
     id,
     role: "assistant",
@@ -778,7 +773,7 @@ export function postSchedulePlan(sessionId, { intro, rows, summary }) {
 // composer's status slot.
 export function postPostPlan(sessionId, { planId }) {
   getThread(sessionId).push({
-    id: newId(),
+    id: newId("m"),
     role: "assistant",
     variant: "post-plan",
     meta: "Archie",
@@ -801,7 +796,7 @@ export function setSchedulePlanStatus(sessionId, id, status) {
 export function postDraftResult(sessionId, { ideaTitle, drafts }) {
   const thread = getThread(sessionId);
   thread.push({
-    id: newId(),
+    id: newId("m"),
     role: "assistant",
     variant: "draft",
     meta: "Archie",
@@ -826,7 +821,7 @@ export function postDraftResult(sessionId, { ideaTitle, drafts }) {
 // know whether it still holds (Undo, or a change made on the Playbook).
 export function postImageLookSet(sessionId, { contextId, styleId, label }) {
   getThread(sessionId).push({
-    id: newId(),
+    id: newId("m"),
     role: "assistant",
     variant: "image-look-set",
     meta: "Archie",
@@ -844,7 +839,7 @@ export function postImageLookSet(sessionId, { contextId, styleId, label }) {
 // the change itself is read and undone on the draft.
 export function postRevisionTurn(sessionId, { postId, network, intent, before, after }) {
   getThread(sessionId).push({
-    id: newId(),
+    id: newId("m"),
     role: "assistant",
     variant: "revision",
     meta: "Archie",
@@ -863,7 +858,7 @@ export function postRevisionTurn(sessionId, { postId, network, intent, before, a
 // `items` = [{ postId, network, before, after }] in the order asked.
 export function postRevisionGroupTurn(sessionId, { intent, items }) {
   getThread(sessionId).push({
-    id: newId(),
+    id: newId("m"),
     role: "assistant",
     variant: "revision-group",
     meta: "Archie",
@@ -881,7 +876,7 @@ export function postRevisionGroupTurn(sessionId, { intent, items }) {
 //                     yet) — to add to the Voice profile or edit.
 // Both are `resolved` once answered (resolveTurn). Returns the turn's id.
 export function postVoiceTurn(sessionId, variant, { contextId, network, ...fields }) {
-  const id = newId();
+  const id = newId("m");
   getThread(sessionId).push({
     id,
     role: "assistant",
@@ -938,7 +933,7 @@ function seedThread(sessionId) {
       sessionId,
       scripted.map((turn, idx) => ({
         ...turn,
-        id: newId(),
+        id: newId("m"),
         status: turn.status || "ready",
         createdAt: baseTime + idx * 1000,
       })),
@@ -953,7 +948,7 @@ function seedThread(sessionId) {
 
   threads.set(sessionId, [
     {
-      id: newId(),
+      id: newId("m"),
       role: "assistant",
       meta: "Archie",
       text: greeting,

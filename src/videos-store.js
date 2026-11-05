@@ -20,10 +20,11 @@
 //             preset), transcript, segments (null = auto framing), texts[],
 //             brand (null = the Playbook's clip look) }
 
-import { seedVideos } from "./mocks.js?v=2758";
-import { isNewUser } from "./user-mode.js?v=2758";
-import { createNotifier } from "./store-utils.js?v=2758";
-import { getDefaultContext, getContextById } from "./contexts-store.js?v=2758";
+import { newId } from "./utils.js?v=2759";
+import { seedVideos } from "./mocks.js?v=2759";
+import { isNewUser } from "./user-mode.js?v=2759";
+import { createNotifier } from "./store-utils.js?v=2759";
+import { getDefaultContext, getContextById } from "./contexts-store.js?v=2759";
 
 const MIN_VIDEO_MS = 30 * 1000;
 const MAX_VIDEO_MS = 2 * 60 * 60 * 1000;
@@ -34,8 +35,6 @@ const notifier = createNotifier("videos-store");
 export const subscribe = notifier.subscribe;
 
 let videos = null;
-let counter = 0;
-const newId = (p) => `${p}-${Date.now().toString(36)}-${++counter}`;
 
 function seeded() {
   if (videos) return videos;

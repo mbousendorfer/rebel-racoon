@@ -18,19 +18,16 @@
 // modal EMBEDS (the panel is a view of that dialog, the design's own "the panel
 // slides"); `open()` wraps the same flow in a standalone body-level dialog.
 
-import { escapeHtml as esc } from "../utils.js?v=2758";
-import { getConnectedProfileById } from "../social-profiles.js?v=2758";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2758";
-import { getContextById } from "../contexts-store.js?v=2758";
-import { catalogEntries } from "../objective-measures.js?v=2758";
-
-let flowSeq = 0;
+import { escapeHtml as esc, newId } from "../utils.js?v=2759";
+import { getConnectedProfileById } from "../social-profiles.js?v=2759";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2759";
+import { getContextById } from "../contexts-store.js?v=2759";
+import { catalogEntries } from "../objective-measures.js?v=2759";
 
 // ── The shared flow ──────────────────────────────────────────────────────────
 // One view. All interactions are click-driven except the search input (the host
 // wires input events to handleInput).
 export function createCatalogFlow({ contextId, taken = [], onAdd, onBack, requestRender }) {
-  flowSeq += 1;
   const state = { query: "" };
 
   // ── Adding in ONE step ────────────────────────────────────────────────
@@ -73,7 +70,7 @@ export function createCatalogFlow({ contextId, taken = [], onAdd, onBack, reques
   // before.
   function addNow(metricId) {
     onAdd({
-      id: `m-${flowSeq.toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+      id: newId("m"),
       metricId,
       scope: defaultScope(),
       computing: true,

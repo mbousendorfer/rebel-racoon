@@ -32,17 +32,17 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=2758";
-import { conceptText } from "../concepts.js?v=2758";
-import { navigate, getPath } from "../router.js?v=2758";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2758";
-import { renderTopbar } from "../components/topbar.js?v=2758";
-import { showToast } from "../components/toast.js?v=2758";
-import { renderEmptyState } from "../components/empty-state.js?v=2758";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2758";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2758";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2758";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2758";
+import { html, raw, escapeAttr } from "../utils.js?v=2759";
+import { conceptText } from "../concepts.js?v=2759";
+import { navigate, getPath } from "../router.js?v=2759";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2759";
+import { renderTopbar } from "../components/topbar.js?v=2759";
+import { showToast } from "../components/toast.js?v=2759";
+import { renderEmptyState } from "../components/empty-state.js?v=2759";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2759";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2759";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2759";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2759";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -53,7 +53,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=2758";
+} from "../topics-store.js?v=2759";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -62,13 +62,13 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=2758";
-import { renderTopicCard } from "../components/topic-card.js?v=2758";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=2758";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2758";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=2758";
-import { useTopicInChat } from "../topic-flow.js?v=2758";
-import { canEdit } from "../playbook-access.js?v=2758";
+} from "../topics-catalog.js?v=2759";
+import { renderTopicCard } from "../components/topic-card.js?v=2759";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=2759";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2759";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=2759";
+import { useTopicInChat } from "../topic-flow.js?v=2759";
+import { canEdit } from "../playbook-access.js?v=2759";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -1227,9 +1227,9 @@ function bind(target) {
     if (event.key !== "Escape" || !view) return;
     // An OVERLAY takes it before any of this. `has-modal` is the class every modal
     // here puts on <body> while it is up, and this catches the modals that do NOT
-    // consume Escape themselves — the Ignore dialog only listens on its textarea,
-    // so a press with focus anywhere else used to close the article underneath and
-    // leave the dialog stranded over a blank pane.
+    // consume Escape themselves (the Ignore dialog once listened on its textarea
+    // only, so a press elsewhere closed the article underneath and stranded it;
+    // it now consumes Escape in capture, like topic-history).
     //
     // It cannot catch a modal that DOES handle Escape and then bubbles: that
     // handler runs first and clears the class before this one looks. Consuming the

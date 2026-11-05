@@ -28,7 +28,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock } from "./utils.js?v=2758";
+import { escapeHtml, formatClock, plural } from "./utils.js?v=2759";
 import {
   PRESETS,
   presetById,
@@ -43,7 +43,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=2758";
+} from "./clip-captions.js?v=2759";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -590,7 +590,6 @@ function renderCleanupList() {
   const hidden =
     fillers.filter((f) => words[f.startIdx].removed).length + pauses.filter((p) => pausesRemoved.has(p.idx)).length;
   const total = fillers.length + pauses.length;
-  const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
   host.querySelector("[data-ce-clean-sum]").textContent = total
     ? `${plural(fillers.length, "filler word")} · ${plural(pauses.length, "pause")}${hidden ? ` · ${hidden} hidden` : ""}`
     : "No filler words or long pauses";

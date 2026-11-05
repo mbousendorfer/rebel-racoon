@@ -20,11 +20,17 @@
 //   voiceAskHtml(ctx, net, { id, choices, giving, resolved }) — the Voice step's block
 // Anything carrying [data-vi-open] opens the dialog (one delegated listener).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2758";
-import { getContextById } from "../contexts-store.js?v=2758";
-import { playbookForNewWork } from "../active-playbook.js?v=2758";
-import { isNewUser } from "../user-mode.js?v=2758";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2758";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
+import { getContextById } from "../contexts-store.js?v=2759";
+import { playbookForNewWork } from "../active-playbook.js?v=2759";
+import { isNewUser } from "../user-mode.js?v=2759";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2759";
 import {
   networkVoiceOn,
   networkVoice,
@@ -34,7 +40,7 @@ import {
   baseValue,
   voiceItemsHtml,
   voiceNetTagHtml,
-} from "../voice-parts.js?v=2758";
+} from "../voice-parts.js?v=2759";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -43,11 +49,11 @@ import {
   voiceChoices,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2758";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2758";
-import "../archie-pixels.js?v=2758";
-import { navigate } from "../router.js?v=2758";
-import { escapeHtml } from "../utils.js?v=2758";
+} from "../network-voice-flow.js?v=2759";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2759";
+import "../archie-pixels.js?v=2759";
+import { navigate } from "../router.js?v=2759";
+import { escapeHtml } from "../utils.js?v=2759";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -415,10 +421,7 @@ function openVoiceIntro(contextId = null) {
   requestOpen(MODAL_ID, close);
   ctxId = ctx.id;
   renderSame(ctx);
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
   setTimeout(() => actionsEl.querySelector(".primary")?.focus({ preventScroll: true }), 0);
 }
@@ -745,10 +748,7 @@ function close() {
   proposal = null;
   outcome.clear();
   modal.classList.remove("is-stand", "is-personalize");
-  modal.classList.remove("open");
-  backdrop.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-  backdrop.hidden = true;
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   notifyClose(MODAL_ID);
 }

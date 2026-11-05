@@ -10,15 +10,15 @@
 // connectors-modal.js) rather than an in-page view, so the same focused
 // surface is reachable from chat contexts too.
 
-import { html, raw } from "../utils.js?v=2758";
-import { navigate } from "../router.js?v=2758";
-import { renderTopbar } from "../components/topbar.js?v=2758";
-import { showToast } from "../components/toast.js?v=2758";
-import { setHandoff } from "../handoff.js?v=2758";
-import { findConnector, setConnectorStatus, subscribe as subscribeConnectors } from "../connectors-store.js?v=2758";
-import { renderGalleryBody } from "../connectors-view.js?v=2758";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=2758";
-import { isFlagOn } from "../feature-flags.js?v=2758";
+import { html, newChatPath, raw } from "../utils.js?v=2759";
+import { navigate } from "../router.js?v=2759";
+import { renderTopbar } from "../components/topbar.js?v=2759";
+import { showToast } from "../components/toast.js?v=2759";
+import { setHandoff } from "../handoff.js?v=2759";
+import { findConnector, setConnectorStatus, subscribe as subscribeConnectors } from "../connectors-store.js?v=2759";
+import { renderGalleryBody } from "../connectors-view.js?v=2759";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=2759";
+import { isFlagOn } from "../feature-flags.js?v=2759";
 
 // Local view state (search + category filter).
 let view = { query: "", category: "all" };
@@ -139,5 +139,5 @@ function toggleConnector(id, connect) {
 // runs the ask-connector flow on mount (session.js consumes pendingAskConnector).
 function startTryInChat(id) {
   setHandoff("pendingAskConnector", { connectorId: id });
-  navigate(`/session/new-${Date.now().toString(36)}`);
+  navigate(newChatPath());
 }

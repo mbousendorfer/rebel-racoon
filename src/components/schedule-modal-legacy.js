@@ -1,16 +1,25 @@
-import { html, raw, escapeText } from "../utils.js?v=2758";
-import { showToast } from "./toast.js?v=2758";
-import { bindReorder } from "../drag-reorder.js?v=2758";
+import { html, raw, escapeText } from "../utils.js?v=2759";
+import { showToast } from "./toast.js?v=2759";
+import { bindReorder } from "../drag-reorder.js?v=2759";
 import {
-  getQueue,
   getQueueOn,
   busyCountsByDay,
   dayKey,
   addToQueue,
   subscribe as subscribeQueue,
-} from "../schedule-store.js?v=2758";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2758";
-import { renderProfileTag, profileForNetwork } from "../social-profiles.js?v=2758";
+} from "../schedule-store.js?v=2759";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2759";
+import { renderProfileTag, profileForNetwork } from "../social-profiles.js?v=2759";
+// The optimal-times map and the date helpers are the engine's; this file keeps
+// only what differs (its CADENCES wording, its NETWORK_ICON).
+import {
+  PER_NETWORK_OPTIMAL,
+  FALLBACK_OPTIMAL,
+  startOfDay,
+  defaultStartFrom,
+  pickHour,
+} from "../schedule-engine.js?v=2759";
+import { toDateInput, toLocalInput } from "./schedule-modal.js?v=2759";
 
 // ⚠️ LEGACY — the schedule modal as it was before the redesign, kept behind
 // the `newScheduleModal` flag ("New SM", default ON) so the two can be
@@ -79,22 +88,6 @@ const NETWORK_ICON = {
   tiktok: "ap-icon-tiktok-official",
 };
 
-// Per-network suggested publishing windows. Each entry lists
-// { dow: [0..6 sunday-first], hours: [24h]} — the optimal picker walks
-// the upcoming days and finds the next dow/hour combo that isn't
-// already busy for that network. These mirror the kind of static
-// benchmarks a publishing tool ships with out of the box.
-const PER_NETWORK_OPTIMAL = {
-  linkedin: { dow: [2, 3, 4], hours: [9, 12] }, // Tue/Wed/Thu, 9 + noon
-  twitter: { dow: [1, 2, 3, 4, 5], hours: [10, 14, 17] },
-  x: { dow: [1, 2, 3, 4, 5], hours: [10, 14, 17] },
-  instagram: { dow: [2, 4, 0], hours: [11, 19] }, // Tue/Thu/Sun
-  facebook: { dow: [1, 3, 5], hours: [13, 16] }, // Mon/Wed/Fri
-  tiktok: { dow: [2, 3, 4], hours: [18, 20, 22] },
-};
-
-const FALLBACK_OPTIMAL = { dow: [1, 2, 3, 4, 5], hours: [9, 13, 17] };
-
 // ── Posting cadences (the visible strategy chips) ─────────────────────
 // Each cadence decides WHICH days a slot can land on; the per-network
 // optimal map then decides the HOUR. `days` is a sunday-first dow set;
@@ -118,19 +111,6 @@ const WEEKDAY_DOW = {
   friday: 5,
   saturday: 6,
 };
-
-function startOfDay(ts) {
-  const d = new Date(ts);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function defaultStartFrom() {
-  // Tomorrow — never schedule a batch in the past.
-  const d = startOfDay(Date.now());
-  d.setDate(d.getDate() + 1);
-  return d.getTime();
-}
 
 // Free-text refinement parsing — keeps "describe your own strategy"
 // functional rather than decorative. We read a time-of-day bias and any
@@ -158,15 +138,6 @@ function parseAvoidDays(note) {
     avoid.add(6);
   }
   return avoid;
-}
-
-function pickHour(hours, timeOfDay) {
-  if (!hours || hours.length === 0) return 9;
-  const sorted = [...hours].sort((a, b) => a - b);
-  if (timeOfDay === "morning") return sorted[0];
-  if (timeOfDay === "evening") return sorted[sorted.length - 1];
-  if (timeOfDay === "afternoon") return sorted[Math.floor(sorted.length / 2)];
-  return sorted[0];
 }
 
 export function init() {
@@ -1072,16 +1043,4 @@ function parseDayKey(key) {
 
 function formatTime(ts) {
   return new Date(ts).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
-}
-
-function toDateInput(ts) {
-  const d = new Date(ts || defaultStartFrom());
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-function toLocalInput(ts) {
-  const d = new Date(ts);
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }

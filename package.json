@@ -23,7 +23,8 @@
     "check:ds": "node scripts/check-ds.mjs",
     "check:framing": "node --no-warnings scripts/check-clip-framing.mjs",
     "check:diff": "node --no-warnings scripts/check-word-diff.mjs",
-    "check:mentions": "node --no-warnings scripts/check-mentions.mjs"
+    "check:mentions": "node --no-warnings scripts/check-mentions.mjs",
+    "check:utils": "node --no-warnings scripts/check-utils.mjs"
   },
   "devDependencies": {
     "husky": "^9.1.7",

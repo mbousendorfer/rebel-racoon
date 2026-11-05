@@ -18,10 +18,10 @@
 // the stream is handled by re-looking up the target selector each tick
 // — when it disappears the stream stops and the content commits at once.
 
-import { getPosts, updatePostContent } from "./posts-store.js?v=2758";
-import { isFlagOn } from "./feature-flags.js?v=2758";
-import { escapeText } from "./utils.js?v=2758";
-import { DRAFT_TRANSLATIONS, DRAFT_TRANSLATION_FALLBACK } from "./mocks.js?v=2758";
+import { getPosts, updatePostContent } from "./posts-store.js?v=2759";
+import { isFlagOn } from "./feature-flags.js?v=2759";
+import { escapeText, plural } from "./utils.js?v=2759";
+import { DRAFT_TRANSLATIONS, DRAFT_TRANSLATION_FALLBACK } from "./mocks.js?v=2759";
 
 const inFlight = new Map(); // postId → AbortController
 
@@ -261,8 +261,6 @@ export function languageOf(post) {
 }
 
 const chars = (v) => [...v.text, v.cta || "", ...(v.hashtags || []).map((h) => `#${h}`)].join(" ").length;
-const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
-
 // "I made <the draft> shorter: 2 paragraphs → 1, 140 fewer characters."
 export function revisionSummary(intent, before, after, subject) {
   if (intent === "translate")
@@ -378,7 +376,7 @@ function tokenize(paragraphs) {
 }
 
 function findBody(postId) {
-  return document.querySelector(`[data-post-id="${cssEscape(postId)}"] .posts__card-body`);
+  return document.querySelector(`[data-post-id="${CSS.escape(postId)}"] .posts__card-body`);
 }
 
 function appendWord(paragraphEl, text) {
@@ -393,13 +391,6 @@ function appendWord(paragraphEl, text) {
   span.className = "posts__card-word";
   span.textContent = text;
   paragraphEl.appendChild(span);
-}
-
-function cssEscape(value) {
-  if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
-    return CSS.escape(value);
-  }
-  return String(value).replace(/[^a-zA-Z0-9_-]/g, "\\$&");
 }
 
 function wait(ms) {

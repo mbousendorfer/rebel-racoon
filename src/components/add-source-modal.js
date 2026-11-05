@@ -9,25 +9,31 @@
 // upload state machines live outside in sources-stream.js so they
 // continue running even after the modal closes.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2758";
-import { iconFor } from "../file-kinds.js?v=2758";
-import { connectorDocs } from "../mocks.js?v=2758";
+import { html, raw, escapeHtml } from "../utils.js?v=2759";
+import { iconFor } from "../file-kinds.js?v=2759";
+import { connectorDocs } from "../mocks.js?v=2759";
 import {
   getConnectors,
   findConnector,
   setConnectorStatus,
   subscribe as subscribeConnectors,
-} from "../connectors-store.js?v=2758";
-import { postConnectPrompt } from "../assistant.js?v=2758";
-import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2758";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2758";
-import { navigate } from "../router.js?v=2758";
-import { renderConnectorLogo } from "../connectors-view.js?v=2758";
-import { isFlagOn } from "../feature-flags.js?v=2758";
-import { showToast } from "./toast.js?v=2758";
-import { dropzoneHTML } from "./dropzone.js?v=2758";
-import { isDemo } from "../demo-mode.js?v=2758";
-import { addDemoSource } from "../demo-flow.js?v=2758";
+} from "../connectors-store.js?v=2759";
+import { postConnectPrompt } from "../assistant.js?v=2759";
+import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2759";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
+import { navigate } from "../router.js?v=2759";
+import { renderConnectorLogo } from "../connectors-view.js?v=2759";
+import { isFlagOn } from "../feature-flags.js?v=2759";
+import { showToast } from "./toast.js?v=2759";
+import { dropzoneHTML } from "./dropzone.js?v=2759";
+import { isDemo } from "../demo-mode.js?v=2759";
+import { addDemoSource } from "../demo-flow.js?v=2759";
 
 const MODAL_ID = "addSource";
 import {
@@ -39,7 +45,7 @@ import {
   cancelUpload,
   getUploads,
   subscribeUploads,
-} from "../sources-stream.js?v=2758";
+} from "../sources-stream.js?v=2759";
 
 let backdrop, modal, contentEl, footerEl, fileInput;
 let initialized = false;
@@ -960,10 +966,6 @@ function setUrlError(show) {
 
 function onKeydown(event) {
   if (!modal.classList.contains("open")) return;
-  if (event.key === "Escape") {
-    close();
-    return;
-  }
   // Dropzone is a <div role="button">; Enter/Space must trigger the file
   // picker the same way a click does (line 485 below).
   if ((event.key === "Enter" || event.key === " ") && event.target.id === "addSourceDropzone") {
@@ -1015,10 +1017,7 @@ export function open(opts = {}) {
   state.onStageText = opts.onStageText || null;
   state.onStageUrl = opts.onStageUrl || null;
   state.onStageFile = opts.onStageFile || null;
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
   // Subscribe to upload changes — re-render the upload list + footer.
   // Sources are created directly in the active session's per-session
@@ -1050,10 +1049,7 @@ export function open(opts = {}) {
 
 function close() {
   if (!initialized) return;
-  modal.classList.remove("open");
-  backdrop.classList.remove("open");
-  backdrop.hidden = true;
-  modal.setAttribute("aria-hidden", "true");
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   if (unsubscribeUploads) {
     unsubscribeUploads();
@@ -1088,6 +1084,6 @@ export function init() {
   modal.addEventListener("dragleave", onDragLeave);
   modal.addEventListener("drop", onDrop);
 
-  backdrop.addEventListener("click", close);
+  bindOverlayDismissal({ modal, backdrop, close });
   document.addEventListener("keydown", onKeydown);
 }

@@ -21,12 +21,12 @@
 // Replaces objective-editor-modal (the field-stack editor): the sentence form
 // is the editor now. Body-level, modal-coordinator, closes on route change.
 
-import { escapeHtml as esc } from "../utils.js?v=2758";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2758";
-import { getContexts } from "../contexts-store.js?v=2758";
-import { getActivePlaybookId } from "../active-playbook.js?v=2758";
-import { createCatalogFlow, searchSelectorFor } from "./objective-catalog-panel.js?v=2758";
-import { renderScopeField, scopeFromClick } from "./measure-scope-field.js?v=2758";
+import { escapeHtml as esc, newId } from "../utils.js?v=2759";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2759";
+import { getContexts } from "../contexts-store.js?v=2759";
+import { getActivePlaybookId } from "../active-playbook.js?v=2759";
+import { createCatalogFlow, searchSelectorFor } from "./objective-catalog-panel.js?v=2759";
+import { renderScopeField, scopeFromClick } from "./measure-scope-field.js?v=2759";
 import {
   resolveObjectives,
   materializeMeasureEntries,
@@ -35,7 +35,7 @@ import {
   scopedBaselineFor,
   proposeTargetFrom,
   WINDOWS,
-} from "../objective-measures.js?v=2758";
+} from "../objective-measures.js?v=2759";
 
 const MODAL_ID = "objectiveModal";
 
@@ -47,7 +47,6 @@ let footLeftEl = null;
 let titleEl = null;
 let subEl = null;
 let initialized = false;
-let idSeq = 0;
 
 // The staged draft — nothing below writes to the Playbook until Create/Save.
 let draft = null; // { mode, data, contextId, originalLabel, name, window, measures[], onChange }
@@ -99,11 +98,6 @@ export function init() {
   });
   window.addEventListener("hashchange", close);
   initialized = true;
-}
-
-function genId() {
-  idSeq += 1;
-  return `m-${idSeq.toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
 // data: the live Playbook/draft object (null in create-from-Insights until a
@@ -490,9 +484,9 @@ function seedFromName() {
   if (draft.mode !== "create" || draft.measures.length || !draft.name.trim()) return;
   const resolved = resolveObjectives([draft.name.trim()], draft.contextId)[0];
   if (resolved?.status === "measured") {
-    draft.measures = resolved.measures.map((m) => ({ id: genId(), metricId: m.metricId, target: m.target }));
+    draft.measures = resolved.measures.map((m) => ({ id: newId("m"), metricId: m.metricId, target: m.target }));
   } else if (resolved?.status === "parked") {
-    draft.measures = [{ id: genId(), metricId: resolved.proxy.metricId, target: resolved.proxy.target }];
+    draft.measures = [{ id: newId("m"), metricId: resolved.proxy.metricId, target: resolved.proxy.target }];
   }
 }
 

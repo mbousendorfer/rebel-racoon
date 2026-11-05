@@ -12,23 +12,24 @@
 // objective, contentAction, ctaLinks, language, color, suggestions, editingId,
 // onComplete }.
 
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2758";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2758";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2759";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2759";
 import {
   analyzeWebsite,
   analyzeSocialProfiles,
   analyzeDocument,
   analyzeBrandFiles,
   analyzeInterview,
-} from "./context-mock-analysis.js?v=2758";
-import { cloneItems, ownNetworkVoices, networkVoiceOn, voiceHasRules } from "./voice-parts.js?v=2758";
-import { markIntroSeen } from "./components/voice-intro-modal.js?v=2758";
-import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2758";
-import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2758";
-import { isFlagOn } from "./feature-flags.js?v=2758";
+} from "./context-mock-analysis.js?v=2759";
+import { cloneItems, ownNetworkVoices, networkVoiceOn, voiceHasRules } from "./voice-parts.js?v=2759";
+import { markIntroSeen } from "./components/voice-intro-modal.js?v=2759";
+import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2759";
+import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2759";
+import { isFlagOn } from "./feature-flags.js?v=2759";
+import { createSessionNotifier } from "./store-utils.js?v=2759";
 
 const drafts = new Map(); // sessionId → draft
-const subscribers = new Map(); // sessionId → Set<fn>
+const notifier = createSessionNotifier("context-builder");
 
 // The voices the run's review saved: a network's own, with rules. Nothing
 // for the others — they use the default voice, and a connected one's first
@@ -41,15 +42,7 @@ function reviewedVoices(d) {
 }
 
 function notify(sessionId) {
-  const set = subscribers.get(sessionId);
-  if (!set) return;
-  for (const fn of set) {
-    try {
-      fn();
-    } catch (err) {
-      console.warn("[context-builder] subscriber threw", err);
-    }
-  }
+  notifier.notify(sessionId);
 }
 
 function emptyDraft(overrides = {}) {
@@ -135,9 +128,7 @@ function emptyDraft(overrides = {}) {
 // Repaint hook for surfaces that show a draft as it fills (the onboarding
 // screens). Returns the unsubscribe.
 export function subscribeDraft(sessionId, fn) {
-  if (!subscribers.has(sessionId)) subscribers.set(sessionId, new Set());
-  subscribers.get(sessionId).add(fn);
-  return () => subscribers.get(sessionId)?.delete(fn);
+  return notifier.subscribe(sessionId, fn);
 }
 
 export function getDraft(sessionId) {

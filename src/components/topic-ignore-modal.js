@@ -23,9 +23,9 @@
 // destroyed and red would flag a danger that is not there. The primary slot is
 // deliberately empty — there is no action here worth spotlighting.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2758";
-import { escapeHtml } from "../utils.js?v=2758";
-import { getTopicById, topicTitle } from "../topics-store.js?v=2758";
+import { requestOpen, notifyClose, showOverlay, hideOverlay } from "../modal-coordinator.js?v=2759";
+import { escapeHtml } from "../utils.js?v=2759";
+import { getTopicById, topicTitle } from "../topics-store.js?v=2759";
 
 const MODAL_ID = "topic-ignore";
 
@@ -102,19 +102,27 @@ function injectOnce() {
   submitBtn.addEventListener("click", submit);
 
   // Cmd/Ctrl+Enter submits — a plain Enter belongs to the textarea, which is
-  // multi-line. Esc closes.
+  // multi-line.
   inputEl.addEventListener("keydown", (event) => {
     if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
       event.preventDefault();
       submit();
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      // Kept from the surfaces underneath: the feed's own Escape closes the open
-      // article, and one press must not take both.
-      event.stopPropagation();
-      close();
     }
   });
+
+  // Esc closes from anywhere in the dialog. CAPTURE + stopPropagation, not
+  // bindOverlayDismissal: the feed's own Escape closes the open article, and
+  // one press must not take both (topic-history-modal.js says why capture).
+  document.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.key !== "Escape" || !modal.classList.contains("open")) return;
+      event.preventDefault();
+      event.stopPropagation();
+      close();
+    },
+    true,
+  );
 
   initialized = true;
 }
@@ -142,10 +150,7 @@ export function openIgnoreReason(topicId, onDone = null) {
   inputEl.value = "";
   pendingOnDone = onDone;
 
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
 
   setTimeout(() => inputEl?.focus({ preventScroll: true }), 0);
@@ -153,10 +158,7 @@ export function openIgnoreReason(topicId, onDone = null) {
 
 export function close() {
   if (!initialized) return;
-  backdrop.classList.remove("open");
-  backdrop.hidden = true;
-  modal.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   pendingOnDone = null;
   notifyClose(MODAL_ID);

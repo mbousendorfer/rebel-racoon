@@ -1,17 +1,17 @@
-import { html, raw, escapeText, escapeAttr, formatTimeOfDay, formatClock } from "../utils.js?v=2758";
-import { showToast } from "./toast.js?v=2758";
-import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=2758";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2758";
+import { html, raw, escapeText, escapeAttr, formatTimeOfDay, formatClock, formatDayLabel } from "../utils.js?v=2759";
+import { showToast } from "./toast.js?v=2759";
+import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=2759";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2759";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
   normalizeNetwork,
-} from "../social-profiles.js?v=2758";
-import { getContextById } from "../contexts-store.js?v=2758";
-import { canEdit } from "../playbook-access.js?v=2758";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=2758";
+} from "../social-profiles.js?v=2759";
+import { getContextById } from "../contexts-store.js?v=2759";
+import { canEdit } from "../playbook-access.js?v=2759";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=2759";
 import {
   CADENCES,
   startOfDay,
@@ -21,7 +21,7 @@ import {
   planSlots,
   queueEntries,
   firstLine as extractFirstLine,
-} from "../schedule-engine.js?v=2758";
+} from "../schedule-engine.js?v=2759";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -509,10 +509,6 @@ function renderInner() {
 
 // ── Formatting (en-US like the rest of the copy — a French date inside an
 // English sentence reads as a bug) ──────────────────────────────────────
-function formatDay(ts) {
-  return new Date(ts).toLocaleDateString("en-US", { weekday: "short", day: "numeric", month: "short" });
-}
-
 function formatShortDate(ts) {
   return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
@@ -553,11 +549,11 @@ function rhythmSentence() {
     // can land later (taken days, the network's best weekdays).
     const slot = state.slots[0];
     if (slot && !isComputing() && startOfDay(slot.when) > startOfDay(s.startFrom))
-      return `${lead}${b(formatDay(slot.when))}, ${when}${skip}: the first best day from ${formatDay(s.startFrom)}.`;
-    return `${lead}${lead ? "not before" : "Not before"} ${b(formatDay(s.startFrom))}, ${when}${skip}.`;
+      return `${lead}${b(formatDayLabel(slot.when))}, ${when}${skip}: the first best day from ${formatDayLabel(s.startFrom)}.`;
+    return `${lead}${lead ? "not before" : "Not before"} ${b(formatDayLabel(s.startFrom))}, ${when}${skip}.`;
   }
   const cadence = CADENCES.find((c) => c.id === s.cadence) || CADENCES[0];
-  return `${lead}${b(cadence.label)} from ${b(formatDay(s.startFrom))}, ${at}${skip}.`;
+  return `${lead}${b(cadence.label)} from ${b(formatDayLabel(s.startFrom))}, ${at}${skip}.`;
 }
 
 function sameRhythm(a, b) {
@@ -882,8 +878,8 @@ function renderPeek(slot, agenda) {
     )
     .join("");
   return `
-    <div class="ap-action-dropdown schedule-modal__peek" id="schedulePeek-${id}" role="dialog" aria-label="Also on ${escapeAttr(formatDay(slot.when))}">
-      <span class="schedule-modal__peek-head">${escapeText(formatDay(slot.when))}</span>
+    <div class="ap-action-dropdown schedule-modal__peek" id="schedulePeek-${id}" role="dialog" aria-label="Also on ${escapeAttr(formatDayLabel(slot.when))}">
+      <span class="schedule-modal__peek-head">${escapeText(formatDayLabel(slot.when))}</span>
       <ul class="schedule-modal__peek-list">${rows}</ul>
     </div>`;
 }
@@ -943,13 +939,13 @@ function renderWhen(slot) {
             type="button"
             class="schedule-modal__when-time"
             data-schedule-when="${id}"
-            aria-label="Change the publish time: ${escapeAttr(formatDay(slot.when))}, ${formatTime(slot.when)}"
+            aria-label="Change the publish time: ${escapeAttr(formatDayLabel(slot.when))}, ${formatTime(slot.when)}"
           >${formatTime(slot.when)}</button>
           <button
             type="button"
             class="ap-icon-button schedule-modal__when-edit"
             data-schedule-when="${id}"
-            aria-label="Change the publish time: ${escapeAttr(formatDay(slot.when))}, ${formatTime(slot.when)}"
+            aria-label="Change the publish time: ${escapeAttr(formatDayLabel(slot.when))}, ${formatTime(slot.when)}"
             data-tooltip="Change date or time"
             tabindex="-1"
           >
@@ -1088,7 +1084,7 @@ function renderFootSummary() {
   const last = times[times.length - 1];
   let span;
   if (times.length === 1) {
-    span = `<strong>${escapeText(formatDay(first))}</strong> at ${formatTime(first)}`;
+    span = `<strong>${escapeText(formatDayLabel(first))}</strong> at ${formatTime(first)}`;
   } else {
     const days = Math.round((startOfDay(last) - startOfDay(first)) / 86400000) + 1;
     span = `<strong>${times.length} drafts over ${days} ${days === 1 ? "day" : "days"}</strong> · ${escapeText(formatShortDate(first))} – ${escapeText(formatShortDate(last))}`;
@@ -1096,13 +1092,13 @@ function renderFootSummary() {
   return `<span class="schedule-modal__foot-span">${span}</span>${disclosure}`;
 }
 
-function toDateInput(ts) {
+export function toDateInput(ts) {
   const d = new Date(ts || defaultStartFrom());
   const pad = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-function toLocalInput(ts) {
+export function toLocalInput(ts) {
   const d = new Date(ts);
   const pad = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;

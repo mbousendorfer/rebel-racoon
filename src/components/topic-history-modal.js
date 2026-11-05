@@ -22,10 +22,10 @@
 // trail says one thing in two places; only the placement differs, which is the
 // same split the article's identity and verbs already use.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2758";
-import { escapeHtml } from "../utils.js?v=2758";
-import { getTopicById, topicTitle } from "../topics-store.js?v=2758";
-import { renderTopicTrail } from "../topic-article.js?v=2758";
+import { requestOpen, notifyClose, showOverlay, hideOverlay } from "../modal-coordinator.js?v=2759";
+import { escapeHtml } from "../utils.js?v=2759";
+import { getTopicById, topicTitle } from "../topics-store.js?v=2759";
+import { renderTopicTrail } from "../topic-article.js?v=2759";
 
 const MODAL_ID = "topic-history";
 
@@ -116,10 +116,7 @@ export function openTopicHistory(topicId) {
   subEl.innerHTML = `“${escapeHtml(topicTitle(topic))}”`;
   bodyEl.innerHTML = renderTopicTrail(topic);
 
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
 
   setTimeout(() => doneBtn?.focus({ preventScroll: true }), 0);
@@ -127,10 +124,7 @@ export function openTopicHistory(topicId) {
 
 export function close() {
   if (!initialized) return;
-  backdrop.classList.remove("open");
-  backdrop.hidden = true;
-  modal.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   notifyClose(MODAL_ID);
 }

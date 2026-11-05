@@ -17,10 +17,16 @@
 // On submit we simulate a ~1.4s round-trip and flash a success state; the
 // modal then closes itself. Nothing is actually posted.
 
-import { escapeHtml, formatTimeOfDay } from "../utils.js?v=2758";
-import { getSessionById } from "../sessions-store.js?v=2758";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2758";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2758";
+import { escapeHtml, formatTimeOfDay } from "../utils.js?v=2759";
+import { getSessionById } from "../sessions-store.js?v=2759";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2759";
 
 const MODAL_ID = "bugReport";
 
@@ -203,20 +209,14 @@ function populateContext() {
 export function open() {
   if (!initialized) init();
   requestOpen(MODAL_ID, close);
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
   populateContext();
   window.setTimeout(() => focusSafe(problemInput), 50);
 }
 
 function close() {
-  modal.classList.remove("open");
-  backdrop.classList.remove("open");
-  backdrop.hidden = true;
-  modal.setAttribute("aria-hidden", "true");
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   reset();
   notifyClose(MODAL_ID);

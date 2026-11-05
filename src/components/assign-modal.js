@@ -20,10 +20,16 @@
 // picker is the share dialog's (.ap-select trigger + DS Selection Dropdown,
 // disabled rows that say why with an `ap-tag grey mini` + tooltip).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2758";
-import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER, getReviewer, hasProfileAccess } from "../org.js?v=2758";
-import { profileForNetwork } from "../social-profiles.js?v=2758";
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=2758";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
+import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER, getReviewer, hasProfileAccess } from "../org.js?v=2759";
+import { profileForNetwork } from "../social-profiles.js?v=2759";
+import { html, raw, escapeText, escapeAttr, formatDayLabel } from "../utils.js?v=2759";
 
 const MODAL_ID = "assignReview";
 
@@ -217,7 +223,7 @@ function renderPicker() {
 
 function formatDue(value) {
   const d = new Date(value);
-  const day = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  const day = formatDayLabel(d);
   const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   return `${day} at ${time}`;
 }
@@ -286,20 +292,14 @@ export function open({ posts, onConfirm, reviewerId = null } = {}) {
     onConfirm: typeof onConfirm === "function" ? onConfirm : null,
   };
   render();
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
   setTimeout(() => modal.querySelector(".ap-select-trigger")?.focus({ preventScroll: true }), 0);
 }
 
 function close() {
   if (!initialized) return;
-  modal.classList.remove("open");
-  backdrop.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-  backdrop.hidden = true;
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   state = emptyState();
   notifyClose(MODAL_ID);

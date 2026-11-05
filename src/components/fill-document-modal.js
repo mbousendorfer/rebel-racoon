@@ -13,9 +13,15 @@
 //     it fires onConfirm({ file, url }) then closes. A warning notes the
 //     overwrite. Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2758";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2758";
-import { detectUrlService } from "../url-services.js?v=2758";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2759";
+import { detectUrlService } from "../url-services.js?v=2759";
 
 const MODAL_ID = "fill-document";
 const ACCEPT = ".pdf,.doc,.docx,.txt,.md,.rtf,.pptx,.csv";
@@ -137,7 +143,6 @@ function injectOnce() {
 
   cancelBtn.addEventListener("click", close);
   closeBtn.addEventListener("click", close);
-  backdrop.addEventListener("click", close);
   confirmBtn.addEventListener("click", submit);
 
   // Click / keyboard / drag-drop on the shared dropzone.
@@ -158,14 +163,8 @@ function injectOnce() {
     }
   });
 
-  // Esc closes from anywhere in the dialog (not just the URL field). Guarded
-  // by the open state so it's inert when the modal is closed.
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modal.classList.contains("open")) {
-      e.preventDefault();
-      close();
-    }
-  });
+  // Esc closes from anywhere in the dialog (not just the URL field).
+  bindOverlayDismissal({ modal, backdrop, close });
 
   initialized = true;
 }
@@ -202,10 +201,7 @@ export function open({ onConfirm = null, onDismiss = null, proposal = false } = 
   syncConfirm();
   updateUrlPrefix();
 
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
   // Move focus into the dialog so keyboard/AT users start inside it.
   requestAnimationFrame(() => dropEl?.focus());
@@ -213,10 +209,7 @@ export function open({ onConfirm = null, onDismiss = null, proposal = false } = 
 
 function close() {
   if (!initialized) return;
-  modal.classList.remove("open");
-  backdrop.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-  backdrop.hidden = true;
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   pendingOnConfirm = null;
   selectedFile = null;

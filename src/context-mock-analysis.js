@@ -8,7 +8,8 @@
 // Suggested values become menthol chips (AI-suggested). Other static
 // option lists come from the brief panel renderer.
 
-import { objectivesInText } from "./objective-measures.js?v=2758";
+import { hostname } from "./utils.js?v=2759";
+import { objectivesInText } from "./objective-measures.js?v=2759";
 
 const AGORAPULSE = {
   name: "Agorapulse",
@@ -460,7 +461,7 @@ export function analyzeWebsite(url) {
   const generic = clone(GENERIC);
   generic.name = derivedName;
   // Patch domain-dependent fields with the actual URL when available.
-  const domain = deriveDomain(url);
+  const domain = hostname(url || "");
   if (domain) {
     if (generic.suggestions.ctaLinks[0]) {
       generic.suggestions.ctaLinks[0].url = domain;
@@ -482,7 +483,7 @@ export function analyzeWebsite(url) {
 }
 
 function deriveName(url) {
-  const domain = deriveDomain(url);
+  const domain = hostname(url || "");
   if (!domain) return "";
   // "Foo Bar" from "foo-bar.com"
   const slug = domain.split(".")[0] || "";
@@ -729,7 +730,7 @@ export function analyzeDocument(file) {
 export function competitorKey(c) {
   if (typeof c === "string") return c.trim().toLowerCase();
   return (
-    deriveDomain(c?.websiteUrl || "") ||
+    hostname(c?.websiteUrl || "") ||
     String(c?.name || "")
       .trim()
       .toLowerCase() ||
@@ -757,15 +758,6 @@ export function discoverCompetitors(url, { exclude = [] } = {}) {
     known.add(key); // guard against duplicates inside the pool itself
     return true;
   });
-}
-
-function deriveDomain(url) {
-  try {
-    const u = new URL(url.startsWith("http") ? url : `https://${url}`);
-    return u.hostname.replace(/^www\./, "");
-  } catch {
-    return "";
-  }
 }
 
 function clone(obj) {

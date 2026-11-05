@@ -5,7 +5,7 @@
 // two modals (with z-index races and Esc behaviour undefined).
 //
 // Usage:
-//   import { requestOpen, notifyClose } from "./modal-coordinator.js?v=2758";
+//   import { requestOpen, notifyClose } from "./modal-coordinator.js?v=2759";
 //
 //   export function open() {
 //     requestOpen("bugReport", close);   // closes the active overlay first
@@ -134,6 +134,28 @@ document.addEventListener(
 );
 export function isOverlayEscape(event) {
   return overlayEscapes.has(event);
+}
+
+// showOverlay / hideOverlay: the open and closed states every overlay sets
+// the same way — the backdrop shown, `.open` on both, aria-hidden in step.
+// What else an overlay does on open (focus, body.has-modal, its state) stays
+// in its own open() / close().
+export function showOverlay(modal, backdrop) {
+  if (backdrop) {
+    backdrop.hidden = false;
+    backdrop.classList.add("open");
+  }
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+export function hideOverlay(modal, backdrop) {
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+  if (backdrop) {
+    backdrop.classList.remove("open");
+    backdrop.hidden = true;
+  }
 }
 
 // bindOverlayDismissal wires the common dismissal patterns (Escape key,

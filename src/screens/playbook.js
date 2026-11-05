@@ -17,10 +17,10 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=2758";
-import { parseHashParams } from "../url-state.js?v=2758";
-import { escapeHtml as esc } from "../utils.js?v=2758";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2758";
+import { navigate, getPath } from "../router.js?v=2759";
+import { parseHashParams } from "../url-state.js?v=2759";
+import { escapeHtml as esc, newChatPath, prettyUrl } from "../utils.js?v=2759";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2759";
 import {
   getContextById,
   getContexts,
@@ -28,15 +28,15 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=2758";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2758";
-import { mount, snapshotEditable, learnNetworkVoiceInline } from "../playbook-view.js?v=2758";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2758";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2758";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2758";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2758";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2758";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=2758";
+} from "../contexts-store.js?v=2759";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2759";
+import { mount, snapshotEditable, learnNetworkVoiceInline } from "../playbook-view.js?v=2759";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2759";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2759";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2759";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2759";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2759";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=2759";
 import {
   canView,
   canEdit,
@@ -48,11 +48,11 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=2758";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2758";
-import { showToast } from "../components/toast.js?v=2758";
-import { learnNetworkVoice } from "../voice-parts.js?v=2758";
-import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2758";
+} from "../playbook-access.js?v=2759";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2759";
+import { showToast } from "../components/toast.js?v=2759";
+import { learnNetworkVoice } from "../voice-parts.js?v=2759";
+import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2759";
 
 const AUTOFILL_MS = 1500;
 
@@ -74,10 +74,6 @@ const STAGES = {
 
 function toast(msg) {
   showToast(msg);
-}
-
-function prettyUrl(url) {
-  return (url || "").replace(/^https?:\/\//, "").replace(/\/$/, "");
 }
 
 // Playbook 2.0: the topbar follows the DS Top bar (V2 Molecules › Top bar,
@@ -395,7 +391,7 @@ export function renderPlaybook(params, target) {
       // screen. So the switch happens first; the `?contextId=` then merely
       // restates it.
       if (isWorkspaceMode()) setActivePlaybook(id);
-      navigate(`/session/new-${Date.now().toString(36)}?contextId=${id}`);
+      navigate(`${newChatPath()}?contextId=${id}`);
       return true;
     }
 

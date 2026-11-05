@@ -4,8 +4,8 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { sessionPlaybookId } from "../../active-playbook.js?v=2758";
-import { networkMeta } from "../../social-profiles.js?v=2758";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2759";
+import { NETWORK_LABEL, networkMeta } from "../../social-profiles.js?v=2759";
 import {
   getPosts,
   removePost,
@@ -13,23 +13,23 @@ import {
   updatePostContent,
   attachImageToDraft,
   attachCarouselToDraft,
-} from "../../posts-store.js?v=2758";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2758";
-import { renderPostCard } from "../post-card.js?v=2758";
-import { isPostValid } from "../../post-validation.js?v=2758";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2758";
-import { html, raw } from "../../utils.js?v=2758";
-import { isFlagOn } from "../../feature-flags.js?v=2758";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2758";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2758";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2758";
-import { open as openAssignModal } from "../assign-modal.js?v=2758";
-import { showToast } from "../toast.js?v=2758";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2758";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2758";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2758";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2758";
-import { blockInDemo } from "../../demo-flow.js?v=2758";
+} from "../../posts-store.js?v=2759";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2759";
+import { renderPostCard } from "../post-card.js?v=2759";
+import { isPostValid } from "../../post-validation.js?v=2759";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2759";
+import { html, raw } from "../../utils.js?v=2759";
+import { isFlagOn } from "../../feature-flags.js?v=2759";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2759";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2759";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2759";
+import { open as openAssignModal } from "../assign-modal.js?v=2759";
+import { showToast } from "../toast.js?v=2759";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2759";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2759";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2759";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2759";
+import { blockInDemo } from "../../demo-flow.js?v=2759";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -354,11 +354,6 @@ function renderDraftsEmpty() {
   `;
 }
 
-export function cssEscape(value) {
-  if (typeof CSS !== "undefined" && typeof CSS.escape === "function") return CSS.escape(value);
-  return String(value).replace(/[^a-zA-Z0-9_-]/g, "\\$&");
-}
-
 // "New SM" flag: the redesigned modal, or the previous one kept for
 // comparison. Same call shape; the legacy one ignores `playbookId`.
 function openScheduleModal(opts) {
@@ -554,7 +549,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2758"), import("../../folders-store.js?v=2758")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2759"), import("../../folders-store.js?v=2759")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -610,22 +605,12 @@ export function onPostSaveAsDraft(postId) {
 // (e.g. "LinkedIn — Boost your reach this quarter…"), derived from the
 // draft's network + the first line of its body. Mirrors the Mention action
 // on idea / clip / source cards, which feed addComposerMention a string.
-const NETWORK_PILL_LABEL = {
-  linkedin: "LinkedIn",
-  x: "X",
-  twitter: "X",
-  instagram: "Instagram",
-  facebook: "Facebook",
-  tiktok: "TikTok",
-  youtube: "YouTube",
-};
-
 export function onPostMention(postId) {
   const sid = activeSessionId();
   if (!sid) return;
   const post = getPosts(sid).find((p) => p.id === postId);
   if (!post) return;
-  const network = NETWORK_PILL_LABEL[(post.network || "").toLowerCase()] || "Draft";
+  const network = NETWORK_LABEL[(post.network || "").toLowerCase()] || "Draft";
   const firstLine = (Array.isArray(post.text) ? post.text[0] : post.text) || "";
   const snippet = firstLine.trim().slice(0, 40);
   const label = snippet ? `${network} · ${snippet}${firstLine.trim().length > 40 ? "…" : ""}` : `${network} draft`;

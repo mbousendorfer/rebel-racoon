@@ -8,13 +8,14 @@
 // The state machine timers live here (not inside the modal) so uploads
 // continue in background after the user closes the modal.
 
-import { sourcesBySession as seedByCsesssion, DEMO_CLIPS } from "./mocks.js?v=2758";
-import { isDemo } from "./demo-mode.js?v=2758";
-import { isFlagOn } from "./feature-flags.js?v=2758";
-import { isNewUser } from "./user-mode.js?v=2758";
-import { createNotifier } from "./store-utils.js?v=2758";
-import { detectUrlService } from "./url-services.js?v=2758";
-import { showToast } from "./components/toast.js?v=2758";
+import { newId, prettyUrl } from "./utils.js?v=2759";
+import { sourcesBySession as seedByCsesssion, DEMO_CLIPS } from "./mocks.js?v=2759";
+import { isDemo } from "./demo-mode.js?v=2759";
+import { isFlagOn } from "./feature-flags.js?v=2759";
+import { isNewUser } from "./user-mode.js?v=2759";
+import { createNotifier } from "./store-utils.js?v=2759";
+import { detectUrlService } from "./url-services.js?v=2759";
+import { showToast } from "./components/toast.js?v=2759";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.
@@ -106,12 +107,6 @@ const sourceSubsBySession = new Map();
 // Global uploads notifier — single subscriber set, snapshot is the whole
 // uploads array.
 const uploadsNotifier = createNotifier("sources-stream/uploads");
-
-let counter = 0;
-function newId(prefix) {
-  counter += 1;
-  return `${prefix}-${Date.now().toString(36)}-${counter}`;
-}
 
 function getOrInitSessionSources(sessionId) {
   let list = sourcesBySession.get(sessionId);
@@ -512,7 +507,7 @@ export function setSourceIdeaCount(sessionId, sourceId, n) {
 
 // URL import skips the upload phase — straight into Processing.
 export function startUrlImport(url, sessionId) {
-  const filename = url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const filename = prettyUrl(url);
   // Recognised links (YouTube, Drive, Notion, …) carry their service logo so
   // the source reflects its nature instead of a generic link glyph.
   const serviceLogo = detectUrlService(url)?.logo || null;

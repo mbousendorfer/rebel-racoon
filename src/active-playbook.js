@@ -42,11 +42,11 @@
 //   scopeSessions(list)    → the chat list, scoped
 //   isAccountScope(path)   → is this route ABOVE the workspaces?
 
-import { getContexts, getContextById, getDefaultContext } from "./contexts-store.js?v=2758";
-import { isFlagOn } from "./feature-flags.js?v=2758";
-import { createNotifier } from "./store-utils.js?v=2758";
-import { getSessionById } from "./sessions-store.js?v=2758";
-import { parseHashParams } from "./url-state.js?v=2758";
+import { getContexts, getContextById, getDefaultContext } from "./contexts-store.js?v=2759";
+import { isFlagOn } from "./feature-flags.js?v=2759";
+import { createNotifier } from "./store-utils.js?v=2759";
+import { getSessionById } from "./sessions-store.js?v=2759";
+import { parseHashParams } from "./url-state.js?v=2759";
 
 const KEY = "archie-active-playbook";
 

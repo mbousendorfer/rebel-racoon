@@ -3,7 +3,13 @@
 // toggle its visibility. No persistence — submitting shows a success flash
 // and resets on close.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2758";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
 
 const MODAL_ID = "feedback";
 
@@ -106,10 +112,7 @@ export function open({ subject = null } = {}) {
   if (!initialized) init();
   applySubject(subject);
   requestOpen(MODAL_ID, close);
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
   window.setTimeout(() => focusSafe(textArea), 50);
 }
@@ -137,10 +140,7 @@ function applySubject(subject) {
 }
 
 function close() {
-  modal.classList.remove("open");
-  backdrop.classList.remove("open");
-  backdrop.hidden = true;
-  modal.setAttribute("aria-hidden", "true");
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   reset();
   notifyClose(MODAL_ID);

@@ -21,12 +21,12 @@ import {
   postDraftResult,
   reportDraftFailure,
   GENERATION_TOOLS,
-} from "./assistant.js?v=2758";
-import { getIdeas } from "./library.js?v=2758";
-import { anglesByIdea } from "./mocks.js?v=2758";
-import { addPostDraft } from "./posts-store.js?v=2758";
-import { networkMeta } from "./social-profiles.js?v=2758";
-import { requireNetworkVoices } from "./network-voice-flow.js?v=2758";
+} from "./assistant.js?v=2759";
+import { getIdeas } from "./library.js?v=2759";
+import { anglesByIdea } from "./mocks.js?v=2759";
+import { addPostDraft } from "./posts-store.js?v=2759";
+import { networkLabel, networkMeta } from "./social-profiles.js?v=2759";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2759";
 
 // The set-up pass before a draft (reading the brief and the voice) — logged as
 // its own tools, so the generation that follows isn't counted twice.
@@ -40,7 +40,7 @@ const DRAFT_DELAY_MS = 6000;
 // is given, `work` runs inside a try/catch so a downstream failure (posts-store
 // throws, assistant push errors) still clears the chip and surfaces a retry
 // toast instead of leaving the chip ticking forever (FIND-D2).
-function withPendingChip(sessionId, work, onError, tools = GENERATION_TOOLS) {
+export function withPendingChip(sessionId, work, onError, tools = GENERATION_TOOLS) {
   const pendingId = startPending(sessionId, "Generating post drafts…", tools);
   setTimeout(() => {
     finishPending(sessionId, pendingId);
@@ -119,10 +119,6 @@ export function getAnglesForIdea(sessionId, ideaId) {
   return anglesByIdea[ideaId] || generateAngles(idea);
 }
 
-function labelFor(channel) {
-  return networkMeta(channel)?.label || channel;
-}
-
 export function startDraftFlow(sessionId, ideaId, count = 1, channelOverride = null, angle = null, language = null) {
   const idea = resolveIdea(sessionId, ideaId);
   if (!idea) return;
@@ -153,7 +149,7 @@ export function startDraftFlow(sessionId, ideaId, count = 1, channelOverride = n
 
     const choices = channels.map((c) => ({
       value: c,
-      label: labelFor(c),
+      label: networkLabel(c),
       icon: networkMeta(c).icon,
     }));
 

@@ -32,57 +32,35 @@ import {
   postUserTurn,
   postUserProfilesTurn,
   reportDraftFailure,
-  GENERATION_TOOLS,
-} from "./assistant.js?v=2758";
-import { getTopPosts, getTopPost } from "./top-posts-store.js?v=2758";
-import { addPostDraft } from "./posts-store.js?v=2758";
-import { addReadySource } from "./sources-stream.js?v=2758";
+} from "./assistant.js?v=2759";
+import { getTopPosts, getTopPost } from "./top-posts-store.js?v=2759";
+import { addPostDraft } from "./posts-store.js?v=2759";
+import { addReadySource } from "./sources-stream.js?v=2759";
 import {
   getConnectedProfiles,
   BRAND_INITIALS,
   NETWORK_ICON_BY_PLATFORM,
   PROFILE_SEARCH_THRESHOLD,
+  networkLabel,
   networkMeta,
   normalizeNetwork,
   getConnectedProfileById,
-} from "./social-profiles.js?v=2758";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2758";
-import { requireNetworkVoices } from "./network-voice-flow.js?v=2758";
-import { SORTS, PERIODS } from "./components/top-post-card.js?v=2758";
-import * as inlineQuestion from "./inline-question.js?v=2758";
-import { playbookForNewWork } from "./active-playbook.js?v=2758";
+} from "./social-profiles.js?v=2759";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2759";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2759";
+import { withPendingChip } from "./draft-flow.js?v=2759";
+import { SORTS, PERIODS } from "./components/top-post-card.js?v=2759";
+import * as inlineQuestion from "./inline-question.js?v=2759";
+import { playbookForNewWork } from "./active-playbook.js?v=2759";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;
 // the title flags when the set was clipped.
 const MAX_DRAFTS = 10;
 
-// Simulated "generating" delay — matches draft-flow's chip duration so the
-// milker feels like the rest of the studio.
-const GEN_DELAY_MS = 6000;
-
 // Simulated "loading this profile's top posts" beat between the profile chooser
 // (step 1) and the winner board.
 const PROFILE_LOAD_MS = 1800;
-
-function labelFor(network) {
-  return networkMeta(network)?.label || network;
-}
-
-// Shared chip lifecycle (mirrors draft-flow.withPendingChip): show the thinking
-// chip, wait out the simulated delay, clear it, run `work` inside try/catch so a
-// downstream failure still clears the chip and offers a Retry.
-function withPendingChip(sessionId, work, onError, meta = "Generating post drafts…") {
-  const pendingId = startPending(sessionId, meta, GENERATION_TOOLS);
-  setTimeout(() => {
-    finishPending(sessionId, pendingId);
-    try {
-      work();
-    } catch (err) {
-      onError(err);
-    }
-  }, GEN_DELAY_MS);
-}
 
 // The base body a winner is repurposed from — its own published copy. Repurposing
 // keeps the post's message intact and adapts it per target network (below); it no
@@ -141,11 +119,11 @@ function repurposeContext(post) {
     kind: "repurpose",
     headline: {
       icon: "ap-icon-shuffle",
-      text: `Repurposed from your top ${labelFor(post.network)} post · ${post.perfBadge}`,
+      text: `Repurposed from your top ${networkLabel(post.network)} post · ${post.perfBadge}`,
     },
     source: {
       icon: meta.icon || "ap-icon-file--text",
-      label: `Your top ${labelFor(post.network)} post`,
+      label: `Your top ${networkLabel(post.network)} post`,
       detail: post.excerpt,
     },
   };
@@ -406,7 +384,7 @@ export function startTopPostsInline(sessionId) {
 // in the conversation (matches the draft flow's profile echo).
 function echoAccount(sessionId, account, network) {
   if (account) postUserProfilesTurn(sessionId, [account]);
-  else postUserTurn(sessionId, labelFor(normalizeNetwork(network)));
+  else postUserTurn(sessionId, networkLabel(normalizeNetwork(network)));
 }
 
 // The recency window to pull winners from — the same periods the studio board
@@ -502,7 +480,7 @@ function presentWinners(sessionId, network, sortKey = "performance", period = "1
       .map((p) => p.id);
     postAssistantMessage(
       sessionId,
-      `Here are your top ${labelFor(net)} posts by ${sort.label.toLowerCase()} — pick one to repurpose.`,
+      `Here are your top ${networkLabel(net)} posts by ${sort.label.toLowerCase()} — pick one to repurpose.`,
     );
     postTopPostsWidget(sessionId, { network: net, postIds });
   }, PROFILE_LOAD_MS);
@@ -703,7 +681,7 @@ function writeRepurpose(sessionId, posts, pickedTargets, contextId) {
 function repurposeTitle(posts, count, capped) {
   const base =
     posts.length === 1
-      ? `New takes on your top ${labelFor(posts[0].network)} post`
+      ? `New takes on your top ${networkLabel(posts[0].network)} post`
       : `Fresh takes on ${posts.length} of your top posts`;
   return capped ? `${base} · first ${count}` : base;
 }

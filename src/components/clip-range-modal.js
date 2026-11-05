@@ -6,8 +6,14 @@
 // Public API:
 //   open({ durationMs, startMs, endMs, onSubmit })  — onSubmit({ startMs, endMs })
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2758";
-import { fmtPrecise, parseTime, MIN_CLIP_MS, MAX_CLIP_MS } from "../screens/clips/shared.js?v=2758";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
+import { fmtPrecise, parseTime, MIN_CLIP_MS, MAX_CLIP_MS } from "../screens/clips/shared.js?v=2759";
 
 const MODAL_ID = "clip-range";
 
@@ -88,17 +94,14 @@ function injectOnce() {
     if (e.target.closest("[data-clip-range-close]")) close();
     else if (e.target.closest("#clipRangeAdd")) submit();
   });
-  backdrop.addEventListener("click", close);
   modal.addEventListener("input", validate);
   modal.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
       submit();
-    } else if (e.key === "Escape") {
-      e.preventDefault();
-      close();
     }
   });
+  bindOverlayDismissal({ modal, backdrop, close });
   initialized = true;
 }
 
@@ -118,10 +121,7 @@ export function open({ durationMs, startMs, endMs, onSubmit }) {
   startEl.value = fmtPrecise(startMs);
   endEl.value = fmtPrecise(endMs);
   validate();
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
   setTimeout(() => {
     startEl.focus({ preventScroll: true });
@@ -131,10 +131,7 @@ export function open({ durationMs, startMs, endMs, onSubmit }) {
 
 function close() {
   if (!initialized) return;
-  modal.classList.remove("open");
-  backdrop.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-  backdrop.hidden = true;
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   pending = null;
   notifyClose(MODAL_ID);

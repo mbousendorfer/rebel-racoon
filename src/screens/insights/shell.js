@@ -31,25 +31,25 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=2758";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2758";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=2758";
+import { html, raw } from "../../utils.js?v=2759";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2759";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=2759";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=2758";
-import { getPath, navigate } from "../../router.js?v=2758";
-import { isFlagOn } from "../../feature-flags.js?v=2758";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2758";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2758";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=2758";
-import { renderEmptyState } from "../../components/empty-state.js?v=2758";
-import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=2758";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=2758";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=2758";
-import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=2758";
+} from "../../active-playbook.js?v=2759";
+import { getPath, navigate } from "../../router.js?v=2759";
+import { isFlagOn } from "../../feature-flags.js?v=2759";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2759";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2759";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=2759";
+import { renderEmptyState } from "../../components/empty-state.js?v=2759";
+import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=2759";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=2759";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=2759";
+import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=2759";
 
 // ── Module state ──────────────────────────────────────────────────────────
 
@@ -171,10 +171,6 @@ function paint() {
   syncTopbar(layoutId === "mob_index" && selected ? entries.find((e) => e.key === selected) || null : null);
 }
 
-function cssEscape(s) {
-  return window.CSS?.escape ? CSS.escape(s) : s.replace(/["\\]/g, "\\$&");
-}
-
 // Coalesce a burst of store notifications into one paint. A macrotask, not
 // requestAnimationFrame: rAF never fires in a hidden tab, so a Playbook edit
 // made while Insights sits in a background tab would repaint only on return —
@@ -287,7 +283,7 @@ function onClick(event) {
     return;
   }
   if (ds.insJump) {
-    const node = host.querySelector(`[data-ins-objective="${cssEscape(ds.insJump)}"]`);
+    const node = host.querySelector(`[data-ins-objective="${CSS.escape(ds.insJump)}"]`);
     node?.scrollIntoView({ block: "start", behavior: "smooth" });
   }
 }

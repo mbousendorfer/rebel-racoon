@@ -22,18 +22,24 @@
 // header empty and titles itself inside the scrolling body. paint() also writes
 // the Topic's title into the dialog's aria-label.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2758";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2758";
+import { html, raw, escapeHtml } from "../utils.js?v=2759";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
 import {
   renderTopicArticle,
   renderTopicActions,
   renderTopicTrail,
   renderTopicPosts,
   renderTopicHeader,
-} from "../topic-article.js?v=2758";
-import { getTopicById, topicTitle } from "../topics-store.js?v=2758";
-import { findTopicSource } from "../topics-catalog.js?v=2758";
-import { useTopicInChat } from "../topic-flow.js?v=2758";
+} from "../topic-article.js?v=2759";
+import { getTopicById, topicTitle } from "../topics-store.js?v=2759";
+import { findTopicSource } from "../topics-catalog.js?v=2759";
+import { useTopicInChat } from "../topic-flow.js?v=2759";
 
 const MODAL_ID = "topic-picker";
 
@@ -79,7 +85,7 @@ function injectOnce() {
   bodyEl = document.getElementById("topicPickerBody");
   footEl = document.getElementById("topicPickerFoot");
 
-  backdrop.addEventListener("click", close);
+  bindOverlayDismissal({ modal, backdrop, close });
 
   // One delegated listener on the dialog, like every other surface in this app.
   modal.addEventListener("click", (event) => {
@@ -127,12 +133,6 @@ function injectOnce() {
     }
   });
 
-  document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape" || !modal.classList.contains("open")) return;
-    event.preventDefault();
-    close();
-  });
-
   initialized = true;
 }
 
@@ -153,20 +153,14 @@ export function openTopicArticle(topicId) {
 
 function show() {
   paint();
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
   bodyEl.scrollTop = 0;
 }
 
 export function close() {
   if (!initialized) return;
-  backdrop.classList.remove("open");
-  backdrop.hidden = true;
-  modal.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   state = null;
   notifyClose(MODAL_ID);

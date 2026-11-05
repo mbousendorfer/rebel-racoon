@@ -15,13 +15,11 @@
 //   updatePlan(sid, id, partial) · setActivePlan(sid, id)
 //   subscribe(sid, fn) · clearSession(sid)
 
-import { createSessionNotifier } from "./store-utils.js?v=2758";
+import { newId } from "./utils.js?v=2759";
+import { createSessionNotifier } from "./store-utils.js?v=2759";
 
 const plansBySession = new Map(); // sid → { plans: [], activeId }
 const notifier = createSessionNotifier("post-plan-store");
-
-let seq = 0;
-const newId = () => `plan-${Date.now().toString(36)}-${(seq += 1)}`;
 
 function entry(sessionId) {
   if (!plansBySession.has(sessionId)) plansBySession.set(sessionId, { plans: [], activeId: null });
@@ -42,7 +40,7 @@ export function getActivePlan(sessionId) {
 export function createPlan(sessionId, partial) {
   const e = entry(sessionId);
   const plan = {
-    id: newId(),
+    id: newId("plan"),
     topic: "",
     audience: null,
     facts: [],

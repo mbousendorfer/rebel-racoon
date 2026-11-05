@@ -12,14 +12,21 @@
 //     onPick({ kind: "new" } | { kind: "existing", session })
 //   });
 
-import { recentSessions } from "../mocks.js?v=2758";
-import { getSources } from "../sources-stream.js?v=2758";
-import { getIdeas } from "../library.js?v=2758";
-import { getPosts } from "../posts-store.js?v=2758";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2758";
+import { recentSessions } from "../mocks.js?v=2759";
+import { getSources } from "../sources-stream.js?v=2759";
+import { getIdeas } from "../library.js?v=2759";
+import { getPosts } from "../posts-store.js?v=2759";
+import { plural } from "../utils.js?v=2759";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
 
 const MODAL_ID = "chatPicker";
-import { renderPicker, bindWizardKeyboard, unbindWizardKeyboard } from "../screens/_analyse-common.js?v=2758";
+import { renderPicker, bindWizardKeyboard, unbindWizardKeyboard } from "../screens/_analyse-common.js?v=2759";
 
 let backdrop, modal, body;
 let initialized = false;
@@ -61,7 +68,6 @@ function buildItems() {
     const sources = getSources(s.id).length;
     const ideas = getIdeas(s.id).length;
     const drafts = getPosts(s.id).length;
-    const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
     return {
       value: s.id,
       label: s.name,
@@ -105,10 +111,7 @@ export function open(opts = {}) {
   modal.querySelector(".ap-dialog-subtitle").textContent =
     opts.subtitle || "Drafts live inside chats. Pick one, or start fresh.";
   renderBody();
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
   bindKeyboard();
 }
@@ -116,10 +119,7 @@ export function open(opts = {}) {
 function close() {
   if (!initialized) return;
   unbindWizardKeyboard();
-  modal.classList.remove("open");
-  backdrop.classList.remove("open");
-  backdrop.hidden = true;
-  modal.setAttribute("aria-hidden", "true");
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   pendingPick = null;
   notifyClose(MODAL_ID);

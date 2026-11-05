@@ -11,9 +11,15 @@
 //       object = file the drafts into it. New folders are created here
 //       (addFolder via the dropdown's create item) before the callback fires.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2758";
-import { getFolders, addFolder } from "../folders-store.js?v=2758";
-import { escapeHtml } from "../utils.js?v=2758";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
+import { getFolders, addFolder } from "../folders-store.js?v=2759";
+import { escapeHtml } from "../utils.js?v=2759";
 
 const MODAL_ID = "saveFolder";
 
@@ -280,10 +286,7 @@ export function open({ count = 0, onConfirm = null } = {}) {
   syncFields();
   refreshSave();
 
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
 
   setTimeout(() => optionsEl.querySelector('input[value="drafts"]')?.focus({ preventScroll: true }), 0);
@@ -291,10 +294,7 @@ export function open({ count = 0, onConfirm = null } = {}) {
 
 function close() {
   if (!initialized) return;
-  modal.classList.remove("open");
-  backdrop.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-  backdrop.hidden = true;
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   pendingOnConfirm = null;
   notifyClose(MODAL_ID);

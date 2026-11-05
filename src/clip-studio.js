@@ -9,7 +9,7 @@
 //   profiles  → pick profiles + per-network format, then create drafts
 //
 // Mirrors the per-session state pattern of inline-question.js: a module-local
-// Map(sessionId → state) + a Map(sessionId → Set<fn>) of subscribers, with
+// Map(sessionId → state) + a per-session notifier (store-utils), with
 // notify() fanning out to re-render the assistant panel.
 //
 // Clips are SOURCE-BACKED: at analysis completion we persist them to a real
@@ -17,10 +17,11 @@
 // video-clips-modal trimmer, the right-panel Clips/Drafts surfaces, and the
 // draft-creation flow all operate on one source with no divergence.
 
-import { buildClipsForSource, updateSourceClips, getSources } from "./sources-stream.js?v=2758";
+import { buildClipsForSource, updateSourceClips, getSources } from "./sources-stream.js?v=2759";
+import { createSessionNotifier } from "./store-utils.js?v=2759";
 
 const states = new Map(); // sessionId → state
-const subscribers = new Map(); // sessionId → Set<fn>
+const notifier = createSessionNotifier("clip-studio");
 
 // Real analyze duration. Short enough to demo, while the ETA copy communicates
 // the production "~2 min" (see fakeEtaSec in the render).
@@ -36,8 +37,7 @@ const CLIP_STAGES = [
 ];
 
 function notify(sessionId) {
-  const subs = subscribers.get(sessionId);
-  if (subs) for (const fn of subs) fn();
+  notifier.notify(sessionId);
 }
 
 export function isActive(sessionId) {
@@ -269,7 +269,5 @@ export function exit(sessionId) {
 }
 
 export function subscribe(sessionId, fn) {
-  if (!subscribers.has(sessionId)) subscribers.set(sessionId, new Set());
-  subscribers.get(sessionId).add(fn);
-  return () => subscribers.get(sessionId)?.delete(fn);
+  return notifier.subscribe(sessionId, fn);
 }

@@ -14,13 +14,20 @@
 // Standard modal lifecycle via modal-coordinator (one overlay at a time, focus
 // restore, Esc / backdrop dismissal) — mirrors add-source-modal.js.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2758";
-import { navigate } from "../router.js?v=2758";
-import { showToast } from "./toast.js?v=2758";
-import { setHandoff } from "../handoff.js?v=2758";
-import { findConnector, setConnectorStatus, subscribe as subscribeConnectors } from "../connectors-store.js?v=2758";
-import { renderGalleryBody, renderDetailBody } from "../connectors-view.js?v=2758";
-import { askConnector } from "../connector-ask.js?v=2758";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
+import { navigate } from "../router.js?v=2759";
+import { newChatPath } from "../utils.js?v=2759";
+import { showToast } from "./toast.js?v=2759";
+import { setHandoff } from "../handoff.js?v=2759";
+import { findConnector, setConnectorStatus, subscribe as subscribeConnectors } from "../connectors-store.js?v=2759";
+import { renderGalleryBody, renderDetailBody } from "../connectors-view.js?v=2759";
+import { askConnector } from "../connector-ask.js?v=2759";
 
 const MODAL_ID = "connectors";
 
@@ -70,10 +77,7 @@ export function open({ connectorId = null, currentSessionId = null } = {}) {
   if (!initialized) init();
   requestOpen(MODAL_ID, close);
   view = { query: "", category: "all", connectorId, currentSessionId };
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
   // Keep badges live if a connector is toggled elsewhere while open.
   if (!unsubscribe) unsubscribe = subscribeConnectors(() => render());
@@ -82,10 +86,7 @@ export function open({ connectorId = null, currentSessionId = null } = {}) {
 
 function close() {
   if (!initialized) return;
-  modal.classList.remove("open");
-  backdrop.classList.remove("open");
-  backdrop.hidden = true;
-  modal.setAttribute("aria-hidden", "true");
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   if (unsubscribe) {
     unsubscribe();
@@ -199,6 +200,6 @@ function startTryInChat(id) {
     askConnector(sid, id);
   } else {
     setHandoff("pendingAskConnector", { connectorId: id });
-    navigate(`/session/new-${Date.now().toString(36)}`);
+    navigate(newChatPath());
   }
 }

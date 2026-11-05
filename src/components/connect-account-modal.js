@@ -20,15 +20,21 @@
 //     connectAccounts(ids) then fires onConfirm with the accounts that flipped.
 //   - Cancel / Esc / backdrop / close-X dismiss without connecting anything.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2758";
-import { escapeHtml as esc } from "../utils.js?v=2758";
+import {
+  requestOpen,
+  notifyClose,
+  bindOverlayDismissal,
+  showOverlay,
+  hideOverlay,
+} from "../modal-coordinator.js?v=2759";
+import { escapeHtml as esc } from "../utils.js?v=2759";
 import {
   getConnectableAccounts,
   connectAccounts,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=2758";
+} from "../social-profiles.js?v=2759";
 
 const MODAL_ID = "connect-account";
 
@@ -175,19 +181,13 @@ export function open({ network = null, preselected = [], onConfirm = null, onDis
   renderList(preselected, network);
   syncConfirm();
 
-  backdrop.hidden = false;
-  backdrop.classList.add("open");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  showOverlay(modal, backdrop);
   document.body.classList.add("has-modal");
 }
 
 function close() {
   if (!initialized) return;
-  modal.classList.remove("open");
-  backdrop.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-  backdrop.hidden = true;
+  hideOverlay(modal, backdrop);
   document.body.classList.remove("has-modal");
   // Still holding onConfirm means nothing was connected: this is a cancel, and
   // the caller has to put its step back (the card grid resolved on pick, so

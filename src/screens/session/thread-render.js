@@ -4,7 +4,7 @@
 // prompt) render here. The pure, dependency-free turns stay in thread-turns.js.
 // Moved out of session.js, unchanged.
 
-import { sessionPlaybookId } from "../../active-playbook.js?v=2758";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2759";
 import {
   renderExtractingNotice,
   renderSourceIntakeTurn,
@@ -14,32 +14,31 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2758";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2758";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2758";
-import { getTopPost } from "../../top-posts-store.js?v=2758";
-import { getTopicById } from "../../topics-store.js?v=2758";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2758";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2758";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2758";
-import { getIdeas } from "../../library.js?v=2758";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2758";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2758";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2758";
-import { getPlans } from "../../post-plan-store.js?v=2758";
-import { isFlagOn } from "../../feature-flags.js?v=2758";
-import { CURRENT_USER } from "../../org.js?v=2758";
-import { getContextById } from "../../contexts-store.js?v=2758";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2758";
-import { getFocusKey } from "../../components/right-panel.js?v=2758";
-import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2758";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2758";
+} from "./thread-turns.js?v=2759";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2759";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2759";
+import { getTopPost } from "../../top-posts-store.js?v=2759";
+import { getTopicById } from "../../topics-store.js?v=2759";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2759";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2759";
+import { escapeHtml, formatDayLabel, formatTimeOfDay, plural } from "../../utils.js?v=2759";
+import { getIdeas } from "../../library.js?v=2759";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2759";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2759";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2759";
+import { getPlans } from "../../post-plan-store.js?v=2759";
+import { isFlagOn } from "../../feature-flags.js?v=2759";
+import { CURRENT_USER } from "../../org.js?v=2759";
+import { getContextById } from "../../contexts-store.js?v=2759";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2759";
+import { getFocusKey } from "../../components/right-panel.js?v=2759";
+import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2759";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2759";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
 // .is-active while the panel shows them. Claude's artifact card, in short.
 const contentCards = () => isFlagOn("contentPanel");
-const plural = (n, one) => `${n} ${one}${n === 1 ? "" : "s"}`;
 function contentCard({ kind, key, ids, title, sub, cta, icon }) {
   return renderResultCard({
     state: "ready",
@@ -908,7 +907,6 @@ function renderPostPlanTurn(message, sessionId) {
 // date on the right in a column that reads top to bottom. A row whose draft has
 // left the store (scheduled) keeps its label as plain text.
 function renderSchedulePlanTurn(message, sessionId) {
-  const day = (ts) => new Date(ts).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
   const time = formatTimeOfDay;
   // Until it's scheduled, a date is the quick way into the schedule modal.
   const editable = message.status !== "scheduled";
@@ -924,13 +922,13 @@ function renderSchedulePlanTurn(message, sessionId) {
           </span>
           ${
             editable
-              ? `<button type="button" class="schedule-plan__when schedule-plan__when--edit" data-schedule-plan-edit="${message.id}" aria-label="Change the date: ${day(r.when)}, ${time(r.when)}" data-tooltip="Change date or time">
-                  <span class="schedule-plan__day">${day(r.when)}</span>
+              ? `<button type="button" class="schedule-plan__when schedule-plan__when--edit" data-schedule-plan-edit="${message.id}" aria-label="Change the date: ${formatDayLabel(r.when)}, ${time(r.when)}" data-tooltip="Change date or time">
+                  <span class="schedule-plan__day">${formatDayLabel(r.when)}</span>
                   <span class="schedule-plan__time">${time(r.when)}</span>
                   <i class="ap-icon-pen schedule-plan__edit" aria-hidden="true"></i>
                 </button>`
               : `<span class="schedule-plan__when">
-                  <span class="schedule-plan__day">${day(r.when)}</span>
+                  <span class="schedule-plan__day">${formatDayLabel(r.when)}</span>
                   <span class="schedule-plan__time">${time(r.when)}</span>
                 </span>`
           }
