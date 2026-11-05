@@ -1647,3 +1647,10 @@
   color: var(--ref-color-purple-150);
   font-size: var(--sys-icon-css-xs);
 }
+
+/* A row opens its voice: the chevron says so (no trash on every row — the
+   voice's page carries Remove). */
+.pb2-voice-nav__chevron {
+  flex-shrink: 0;
+  color: var(--ref-color-grey-80);
+}

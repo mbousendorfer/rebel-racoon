@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2732";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2732";
-import { conceptHint } from "./concepts.js?v=2732";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2734";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2734";
+import { conceptHint } from "./concepts.js?v=2734";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2732";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2732";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2732";
-import { isFlagOn } from "./feature-flags.js?v=2732";
-import { clipLookOf } from "./videos-store.js?v=2732";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2732";
-import { parseHashParams } from "./url-state.js?v=2732";
+} from "./playbook-brand-kit.js?v=2734";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2734";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2734";
+import { isFlagOn } from "./feature-flags.js?v=2734";
+import { clipLookOf } from "./videos-store.js?v=2734";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2734";
+import { parseHashParams } from "./url-state.js?v=2734";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2732";
-import { showToast } from "./components/toast.js?v=2732";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2732";
+} from "./voice-parts.js?v=2734";
+import { showToast } from "./components/toast.js?v=2734";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2734";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -68,10 +68,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2732";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2732";
-import { consumeHandoff } from "./handoff.js?v=2732";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2732";
+} from "./network-voice-flow.js?v=2734";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2734";
+import { consumeHandoff } from "./handoff.js?v=2734";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2734";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -79,7 +79,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2732";
+} from "./social-profiles.js?v=2734";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2162,7 +2162,9 @@ function voiceIntroHtml(data) {
 // voice of its own (or being given one, `ownPending`), its line saying whether
 // it has rules; then the networks still on the default voice, a dashed row
 // each to add it. No toggle: a voice is removed from its
-// own page or its row (Remove the X voice · Use my default voice instead).
+// own page (Remove the X voice · Use my default voice instead) — no trash on
+// every row (2026-11-05, asked: « ne pas afficher l'action supprimer sur toutes
+// les lignes »).
 const ownPending = new Set();
 const ruleCount = (v) =>
   ["voiceAlways", "voiceNever", "voiceByPost", "voiceSometimes"].reduce((n, f) => n + (v?.[f] || []).length, 0);
@@ -2197,12 +2199,8 @@ function renderVoiceNav(data) {
           <span class="welcome-review__net-name">${esc(networkLabel(n))} voice</span>
           <span class="welcome-review__net-state">${dflt ? '<i class="ap-icon-quote pb2-voice-nav__default-glyph" aria-hidden="true"></i>' : ""}${state}</span>
         </span>
+        <i class="ap-icon-chevron-right pb2-voice-nav__chevron" aria-hidden="true"></i>
       </button>
-      ${
-        canEditView()
-          ? `<button type="button" class="ap-icon-button transparent grey welcome-review__net-remove" data-pb2-voice-remove="${n}" aria-label="Remove the ${esc(networkLabel(n))} voice" title="Remove the ${esc(networkLabel(n))} voice"><i class="ap-icon-trash"></i></button>`
-          : ""
-      }
     </li>`;
   };
   const defaultState = "The base of every network voice";

@@ -33,12 +33,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2732";
-import { navigate } from "../router.js?v=2732";
-import { getDraft, patchDraft } from "../context-builder.js?v=2732";
-import { mount } from "../playbook-view.js?v=2732";
-import { parseHashParams } from "../url-state.js?v=2732";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2732";
+import { html, raw } from "../utils.js?v=2734";
+import { navigate } from "../router.js?v=2734";
+import { getDraft, patchDraft } from "../context-builder.js?v=2734";
+import { mount } from "../playbook-view.js?v=2734";
+import { parseHashParams } from "../url-state.js?v=2734";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2734";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -118,15 +118,19 @@ export function renderReview(target, sid, config, review) {
             </span>
             ${raw(check)}
           </button>
-          <button
-            type="button"
-            class="ap-icon-button transparent grey welcome-review__net-remove"
-            data-review-remove="${t.id}"
-            aria-label="Remove the ${t.title} voice"
-            title="Remove the ${t.title} voice"
-          >
-            <i class="ap-icon-trash"></i>
-          </button>
+          ${here
+            ? raw(
+                html`<button
+                  type="button"
+                  class="ap-icon-button transparent grey welcome-review__net-remove"
+                  data-review-remove="${t.id}"
+                  aria-label="Remove the ${t.title} voice"
+                  title="Remove the ${t.title} voice"
+                >
+                  <i class="ap-icon-trash"></i>
+                </button>`,
+              )
+            : ""}
         </li>
       `;
     };

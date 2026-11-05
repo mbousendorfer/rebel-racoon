@@ -42,14 +42,14 @@ import {
   postVoiceTurn,
   resolveTurn,
   getThread,
-} from "./assistant.js?v=2732";
-import { getContextById, updateContext } from "./contexts-store.js?v=2732";
-import { getSessionById } from "./sessions-store.js?v=2732";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2732";
-import { setHandoff } from "./handoff.js?v=2732";
-import { navigate } from "./router.js?v=2732";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2732";
-import { getPosts } from "./posts-store.js?v=2732";
+} from "./assistant.js?v=2734";
+import { getContextById, updateContext } from "./contexts-store.js?v=2734";
+import { getSessionById } from "./sessions-store.js?v=2734";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2734";
+import { setHandoff } from "./handoff.js?v=2734";
+import { navigate } from "./router.js?v=2734";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2734";
+import { getPosts } from "./posts-store.js?v=2734";
 import {
   networkVoiceOn,
   networkVoice,
@@ -58,7 +58,7 @@ import {
   brandVoiceAsIs,
   voiceNetworks,
   adaptNetworkVoice,
-} from "./voice-parts.js?v=2732";
+} from "./voice-parts.js?v=2734";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;
