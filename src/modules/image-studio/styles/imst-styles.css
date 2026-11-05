@@ -532,7 +532,7 @@ button.imst-style-card {
   place-items: center;
   width: var(--ref-spacing-md);
   height: var(--ref-spacing-md);
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   background: var(--ref-color-electric-blue-100);
 }
 

@@ -460,7 +460,7 @@ body.playbook-revoked .session__composer-card {
 .empty-chat > * {
   position: relative;
   z-index: 1;
-  animation: empty-rise var(--ref-animation-long) var(--app-ease-out) both;
+  animation: app-rise var(--ref-animation-long) var(--app-ease-out) both;
 }
 
 .empty-chat > *:nth-child(1) {
@@ -485,17 +485,6 @@ body.playbook-revoked .session__composer-card {
   animation-delay: 420ms;
 }
 
-@keyframes empty-rise {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* Brand logo above the headline — the Archie wordmark (orange = AI per the
    project's brand convention) gives the empty state a premium, intentional
    opening. Two wordmark styles are stacked and slowly crossfade so the logo
@@ -508,7 +497,7 @@ body.playbook-revoked .session__composer-card {
   /* Nudge left so the wordmark — not the whole lockup — optically centers under
      the text below (the monogram adds left-weight, so a dead-centered lockup
      reads a touch right). Use `left`, not `transform`: the empty-chat entrance
-     animation (empty-rise) already drives `transform`, which would override it. */
+     animation (app-rise) already drives `transform`, which would override it. */
   left: -26px;
 }
 
@@ -1043,7 +1032,7 @@ body.playbook-revoked .session__composer-card {
 .empty-chat__lead > .session__composer {
   position: relative;
   z-index: 3;
-  animation: empty-rise var(--ref-animation-long) var(--app-ease-out) 160ms both;
+  animation: app-rise var(--ref-animation-long) var(--app-ease-out) 160ms both;
 }
 
 /* In the hero the composer sits near the top with the page below it, so the
@@ -1939,7 +1928,7 @@ archie-pixels.empty-chat__pixels {
     var(--ref-color-grey-05) 100%
   );
   background-size: 200% 100%;
-  animation: thread-skeleton-shimmer 1.4s linear infinite;
+  animation: app-shimmer 1.4s linear infinite;
 }
 .thread-skeleton__row--out .thread-skeleton__bubble {
   /* The single "out" (user, right) bubble carries Archie's butter accent
@@ -1960,15 +1949,6 @@ archie-pixels.empty-chat__pixels {
 }
 .thread-skeleton__row:nth-child(4) .thread-skeleton__bubble {
   animation-delay: 0.36s;
-}
-
-@keyframes thread-skeleton-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

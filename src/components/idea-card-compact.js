@@ -17,9 +17,9 @@
 //     showMention — render the Mention button (default true; false where there
 //                   is no composer, e.g. the standalone Ideas page)
 
-import { iconFor } from "../file-kinds.js?v=2759";
-import { escapeText, escapeAttr } from "../utils.js?v=2759";
-import { isFlagOn } from "../feature-flags.js?v=2759";
+import { iconFor } from "../file-kinds.js?v=2760";
+import { escapeText, escapeAttr } from "../utils.js?v=2760";
+import { isFlagOn } from "../feature-flags.js?v=2760";
 
 // Each idea kind → its DS `.ap-tag` colour variant. The one table: every kind
 // tag (this card, the panel's Overview and Sources, the full idea card, the

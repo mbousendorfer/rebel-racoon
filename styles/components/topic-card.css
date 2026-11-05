@@ -378,47 +378,8 @@
    The same "app card in a conversation turn" the top-posts widget is
    (top-post-card.css .top-posts-widget): a head, a single-select list of DS
    radio cards, a confirm footer. Same tokens, same measure, so the two Add-menu
-   flows read as one family. */
-.topics-widget {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 540px;
-  border: 1px solid var(--app-border);
-  border-radius: var(--app-radius-card);
-  background: var(--app-surface);
-  overflow: hidden;
-}
-
-.topics-widget__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-sm);
-}
-
-.topics-widget__title {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-h3-size);
-  line-height: var(--sys-text-style-h3-line-height);
-  font-weight: var(--sys-text-style-h3-weight);
-  color: var(--ref-color-grey-150);
-}
-
-.topics-widget__title i {
-  font-size: var(--sys-icon-css-md);
-}
-
-/* The quiet "Pick one" affordance, right-aligned. */
-.topics-widget__hint {
-  flex-shrink: 0;
-  font-size: var(--sys-text-style-caption-size);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--sys-text-color-light);
-}
+   flows read as one family — its shell, head, rows and footer ARE the
+   top-posts rules (top-post-card.css); only what differs lives here. */
 
 /* Scrollable, so six cards stay inside the turn. */
 .topics-widget__list {
@@ -432,14 +393,6 @@
 
 .topics-widget__gone {
   margin: 0;
-}
-
-/* Each row is the DS radio-button card: it owns the frame, the dot and the
-   hover / checked border. We widen it and strip the Topic body's own frame so
-   the body fills the card (the radio card is the frame now). */
-.topics-widget__row {
-  width: 100%;
-  align-items: center;
 }
 
 .topics-widget__row .topic-card--widget {
@@ -464,27 +417,4 @@
   position: absolute;
   right: var(--ref-spacing-sm);
   bottom: var(--ref-spacing-xs);
-}
-
-/* Frozen after confirm — a dimmed, non-interactive record of the pick. */
-.topics-widget--answered {
-  opacity: 0.72;
-}
-
-.topics-widget--answered .topics-widget__row {
-  cursor: default;
-}
-
-/* Footer — the commit action, behind an edge-to-edge hairline. */
-.topics-widget__foot {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  border-top: 1px solid var(--app-border);
-}
-
-.topics-widget__cta {
-  flex: 0 0 auto;
 }

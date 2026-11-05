@@ -634,7 +634,7 @@
   border: 0;
   cursor: pointer;
   padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);

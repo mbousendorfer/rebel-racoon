@@ -1171,7 +1171,7 @@ span.chat-bubble-choice-chip {
   justify-content: center;
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   background: var(--app-archie-mark);
 }
 

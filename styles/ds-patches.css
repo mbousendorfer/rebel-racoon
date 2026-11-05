@@ -963,7 +963,7 @@ button.ap-link {
   height: 20px;
   min-width: 20px;
   border: 1px solid var(--ref-color-grey-20);
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   box-shadow: none;
   background: transparent;
   color: var(--ref-color-grey-80);
@@ -1018,7 +1018,7 @@ button.ap-link {
   margin: 0;
   padding: 0;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   background: transparent;
   color: var(--ref-color-grey-100);
   cursor: pointer;

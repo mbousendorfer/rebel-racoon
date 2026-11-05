@@ -301,7 +301,7 @@
   height: 12px;
   background: var(--ref-color-white);
   border: 1px solid #444;
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   pointer-events: auto;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
   touch-action: none;
@@ -800,7 +800,7 @@
 .cap-ed-menu__dot {
   width: 12px;
   height: 12px;
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   flex-shrink: 0;
 }
 

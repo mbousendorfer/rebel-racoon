@@ -41,7 +41,7 @@
    DS "Post History" design's round status icons. The default pip stays a soft
    square (its own source-identity read); this variant is opt-in. */
 .topic-badge--round {
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
 }
 
 .topic-badge--lg > i {

@@ -159,7 +159,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-100);
-  animation: welcome-intro-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: welcome-intro-pop 0.35s var(--app-ease-bounce) both;
 }
 
 .welcome-intro__part-pill:nth-child(2) {
@@ -228,7 +228,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
 .welcome-intro__step:not(:last-child)::after {
   background: var(--app-butter-accent);
   transform-origin: top;
-  animation: welcome-intro-rail var(--step-gap) linear var(--t) both;
+  animation: app-grow-y var(--step-gap) linear var(--t) both;
 }
 
 .welcome-intro__num {
@@ -237,14 +237,14 @@ body:not(.onboarding) .welcome-intro__wordmark {
   place-items: center;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   border: 1px solid var(--app-butter-accent);
   background: var(--app-butter);
   color: var(--ref-color-grey-100);
   font-size: var(--sys-text-style-caption-bold-size);
   font-weight: var(--sys-text-style-caption-bold-weight);
   line-height: 1;
-  animation: welcome-intro-disc 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) var(--t) both;
+  animation: welcome-intro-disc 0.45s var(--app-ease-bounce) var(--t) both;
 }
 
 .welcome-intro__text {
@@ -360,7 +360,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
 .welcome-intro__card-status {
   flex-shrink: 0;
   margin-left: auto;
-  animation: welcome-intro-land 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--t) both;
+  animation: app-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--t) both;
 }
 
 .welcome-intro__publish {
@@ -417,7 +417,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxxs);
-  animation: welcome-intro-land 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--t) both;
+  animation: app-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--t) both;
 }
 
 .welcome-intro__row dt {
@@ -445,7 +445,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
 
 /* Inside a line, its pieces land one after the other. */
 .welcome-intro__row dd > * {
-  animation: welcome-intro-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: welcome-intro-pop 0.35s var(--app-ease-bounce) both;
   animation-delay: calc(var(--t) + 0.12s);
 }
 .welcome-intro__row dd > :nth-child(2) {
@@ -488,7 +488,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
 .welcome-intro__swatch {
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
 }
 
@@ -498,21 +498,10 @@ body:not(.onboarding) .welcome-intro__wordmark {
     transform: translateY(24px) scale(0.98);
   }
 }
-@keyframes welcome-intro-land {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-}
 @keyframes welcome-intro-pop {
   from {
     opacity: 0;
     transform: scale(0.6);
-  }
-}
-@keyframes welcome-intro-rail {
-  from {
-    transform: scaleY(0);
   }
 }
 /* A step lights as its line lands: white → butter, with a small swell. */
@@ -801,7 +790,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
   place-items: center;
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   border: 1px solid var(--ref-color-grey-20);
   background: var(--app-surface);
 }
@@ -863,7 +852,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
 
 /* The reveal: the card takes a breath. */
 .welcome-flow__card.is-revealed {
-  animation: welcome-flow-reveal 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: welcome-flow-reveal 0.7s var(--app-ease-bounce) both;
 }
 
 @keyframes welcome-flow-reveal {
@@ -1017,7 +1006,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
   border-radius: var(--app-radius-card);
   box-shadow: var(--app-shadow-popover-lg);
   /* The view repaints its whole DOM on most edits (a radio, a chip…): the
-     block's own entrance (pb2-rise) would replay and the card jump. A new
+     block's own entrance (app-rise) would replay and the card jump. A new
      part's cascade is the only motion a card has. */
   animation: none;
 }
@@ -1031,7 +1020,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
 
 /* A new part's nav lands with its column. */
 .welcome-review__nav.is-dealt {
-  animation: welcome-intro-land 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+  animation: app-rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
 }
 
 @keyframes welcome-review-part-out {
@@ -1521,7 +1510,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
   flex-shrink: 0;
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   border: 1px solid var(--app-butter-accent);
   background: var(--app-butter);
   color: var(--ref-color-grey-100);
@@ -1530,7 +1519,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
 
 /* Only the check just earned pops in — the list repaints on every move. */
 .welcome-review__check.is-new {
-  animation: welcome-intro-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: welcome-intro-pop 0.35s var(--app-ease-bounce) both;
 }
 
 .welcome-flow__option[aria-current="true"] {
@@ -2932,7 +2921,8 @@ button.recap__logotile:hover {
 /* Crossfade the message on each stage change. */
 .recap-loading__title,
 .recap-loading__sub {
-  animation: recap-loading-fade 360ms var(--app-ease-out);
+  --app-rise-from: 6px;
+  animation: app-rise 360ms var(--app-ease-out);
 }
 
 .recap-loading__steps {
@@ -2956,17 +2946,6 @@ button.recap__logotile:hover {
 .recap-loading__step.is-active {
   background: var(--ref-color-electric-blue-100);
   animation: recap-loading-pulse 1.2s ease-in-out infinite;
-}
-
-@keyframes recap-loading-fade {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
 }
 
 @keyframes recap-loading-pulse {

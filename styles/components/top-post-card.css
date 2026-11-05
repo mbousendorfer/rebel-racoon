@@ -14,9 +14,11 @@
   max-width: 980px;
 }
 
-/* Studio-style intro header — mirrors .batch-studio__intro / .clip-studio__intro
-   so the milker reads as a first-class workflow. */
-.top-posts-intro {
+/* The studios' intro header — Top posts, Batch, Clip Studio share one frame,
+   Archie badge and title, so each reads as a first-class workflow. */
+.top-posts-intro,
+.batch-studio__intro,
+.clip-studio__intro {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,7 +26,9 @@
   gap: var(--ref-spacing-xs);
 }
 
-.top-posts-intro__badge {
+.top-posts-intro__badge,
+.batch-studio__ai-badge,
+.clip-studio__ai-badge {
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
@@ -37,12 +41,16 @@
   font-weight: var(--sys-text-style-caption-bold-weight);
 }
 
-.top-posts-intro__badge i {
+.top-posts-intro__badge i,
+.batch-studio__ai-badge i,
+.clip-studio__ai-badge i {
   font-size: var(--sys-icon-css-xs);
   color: var(--app-archie-mark);
 }
 
-.top-posts-intro__title {
+.top-posts-intro__title,
+.batch-studio__title,
+.clip-studio__title {
   margin: 0;
   font-family: var(--ref-font-family);
   font-size: var(--sys-text-style-marketing-size);
@@ -660,8 +668,10 @@
 /* ── Inline selection widget (Add-menu flow) ─────────────────────────
    A premium "app card" embedded in the AI conversation turn: a header, a
    single-select list of winners, and a confirm CTA. Edge-to-edge sections
-   (header / list / footer) on a soft-elevated rounded card. */
-.top-posts-widget {
+   (header / list / footer) on a soft-elevated rounded card. The Topic Feed
+   picker (.topics-widget, topic-card.css) is the same card: one set of rules. */
+.top-posts-widget,
+.topics-widget {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -672,14 +682,16 @@
   overflow: hidden;
 }
 
-.top-posts-widget__head {
+.top-posts-widget__head,
+.topics-widget__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-sm);
 }
-.top-posts-widget__title {
+.top-posts-widget__title,
+.topics-widget__title {
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xs);
@@ -688,11 +700,13 @@
   font-weight: var(--sys-text-style-h3-weight);
   color: var(--ref-color-grey-150);
 }
-.top-posts-widget__title i {
+.top-posts-widget__title i,
+.topics-widget__title i {
   font-size: var(--sys-icon-css-md);
 }
 /* Right-aligned "Pick one" affordance — a quiet uppercase micro-label. */
-.top-posts-widget__hint {
+.top-posts-widget__hint,
+.topics-widget__hint {
   flex-shrink: 0;
   font-size: var(--sys-text-style-caption-size);
   font-weight: var(--sys-text-style-body-bold-weight);
@@ -713,7 +727,8 @@
    owns the frame, the radio dot (::before) and the hover / checked border
    states. We only widen it, centre the dot against the media row, and strip the
    echo's own frame so it fills the card. */
-.top-posts-widget__row {
+.top-posts-widget__row,
+.topics-widget__row {
   width: 100%;
   align-items: center;
 }
@@ -729,15 +744,18 @@
 }
 
 /* Frozen state after confirm — dim + non-interactive record of the pick. */
-.top-posts-widget--answered {
+.top-posts-widget--answered,
+.topics-widget--answered {
   opacity: 0.72;
 }
-.top-posts-widget--answered .top-posts-widget__row {
+.top-posts-widget--answered .top-posts-widget__row,
+.topics-widget--answered .topics-widget__row {
   cursor: default;
 }
 
 /* Footer — the commit action, separated by an edge-to-edge hairline. */
-.top-posts-widget__foot {
+.top-posts-widget__foot,
+.topics-widget__foot {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -745,6 +763,7 @@
   padding: var(--ref-spacing-sm) var(--ref-spacing-md);
   border-top: 1px solid var(--app-border);
 }
-.top-posts-widget__cta {
+.top-posts-widget__cta,
+.topics-widget__cta {
   flex: 0 0 auto;
 }

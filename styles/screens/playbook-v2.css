@@ -248,17 +248,6 @@
   gap: var(--ref-spacing-xxxs);
 }
 
-@keyframes pb2-rise {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 .pb2-sub {
   display: block;
   margin: 0 0 var(--ref-spacing-xxs);
@@ -544,7 +533,8 @@
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
   background: var(--ref-color-white);
-  animation: pb2-rise 0.32s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --app-rise-from: 6px;
+  animation: app-rise 0.32s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   animation-delay: calc(var(--pb2-i, 0) * 40ms);
 }
 
@@ -1402,7 +1392,7 @@
 .pb2-vl__pills i {
   width: 48px;
   height: 16px;
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   background: var(--ref-color-purple-10);
 }
 .pb2-vl__doc {
@@ -1439,7 +1429,7 @@
   top: 0;
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   background: var(--app-butter-accent);
   animation: pb2-vl-run 1.6s ease-in-out infinite;
 }

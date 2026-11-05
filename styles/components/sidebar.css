@@ -385,7 +385,7 @@
   flex: 0 0 8px;
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   background: var(--dot-color);
 }
 

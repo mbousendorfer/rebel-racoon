@@ -30,16 +30,8 @@
   gap: var(--ref-spacing-md);
 }
 
-.clip-studio__title {
-  margin: 0;
-  font-family: var(--ref-font-family);
-  font-size: var(--sys-text-style-marketing-size);
-  line-height: var(--sys-text-style-marketing-line-height);
-  font-weight: var(--sys-text-style-marketing-weight);
-  letter-spacing: -0.01em;
-  color: var(--ref-color-grey-100);
-}
-
+/* The intro (frame, Archie badge, title) is shared with the other studios:
+   top-post-card.css, .top-posts-intro. */
 .clip-studio__sub {
   margin: 0;
   max-width: 460px;
@@ -47,23 +39,6 @@
   line-height: var(--sys-text-style-subtitle-line-height);
   font-weight: var(--sys-text-style-subtitle-weight);
   color: var(--ref-color-grey-80);
-}
-
-.clip-studio__ai-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
-  border-radius: var(--app-radius-pill);
-  background: var(--app-butter);
-  color: var(--ref-color-grey-100);
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-}
-.clip-studio__ai-badge i {
-  font-size: var(--sys-icon-css-xs);
-  color: var(--app-archie-mark);
 }
 
 /* ── Upload / config (single focused column) ───────────────────────────── */
@@ -123,14 +98,6 @@
   gap: var(--ref-spacing-md);
 }
 
-/* Centered hero. */
-.clip-studio__intro {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: var(--ref-spacing-xs);
-}
 .clip-studio__intro .clip-studio__sub {
   max-width: 520px;
 }
@@ -566,7 +533,7 @@
     var(--ref-color-mermaid-10) 100%
   );
   background-size: 200% 100%;
-  animation: clip-studio-shimmer 1.4s linear infinite;
+  animation: app-shimmer 1.4s linear infinite;
 }
 .clip-studio__skeleton span:nth-child(2) {
   animation-delay: 0.15s;
@@ -576,14 +543,6 @@
 }
 .clip-studio__skeleton span:nth-child(4) {
   animation-delay: 0.45s;
-}
-@keyframes clip-studio-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
 }
 .clip-studio__progress.source-card__progress {
   flex: 0 0 auto;

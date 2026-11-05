@@ -59,7 +59,7 @@
   place-items: center;
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   background: var(--ref-color-white);
 }
 
@@ -216,7 +216,7 @@
   place-items: center;
   width: 20px;
   height: 20px;
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   background: var(--ref-color-white);
   border: 1px solid var(--ref-color-grey-20);
 }
@@ -366,7 +366,7 @@
   height: 24px;
   margin-top: var(--ref-spacing-xxxs);
   padding-inline: var(--ref-spacing-xs);
-  border-radius: 999px; /* pill */
+  border-radius: var(--app-radius-pill); /* pill */
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
   background: linear-gradient(
@@ -517,7 +517,7 @@
 /* On open the rows rise in one after another; when a date lands, its tile
    pops and its details fade in. Each plays once (one-shot flags in JS). */
 .schedule-modal__row.is-entering {
-  animation: schedule-modal__rise 360ms var(--app-ease-out) both;
+  animation: app-rise 360ms var(--app-ease-out) both;
   animation-delay: calc(var(--i) * 60ms);
 }
 
@@ -527,13 +527,6 @@
 
 .schedule-modal__row.is-landing .schedule-modal__when-body {
   animation: schedule-modal__reveal 280ms var(--app-ease-out) both;
-}
-
-@keyframes schedule-modal__rise {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
 }
 
 @keyframes schedule-modal__pop {
@@ -596,7 +589,7 @@
 .schedule-modal__spinner {
   width: var(--sys-icon-sm);
   height: var(--sys-icon-sm);
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   border: 2px solid var(--ref-color-white);
   border-top-color: transparent;
   animation: app-spin 0.8s linear infinite;

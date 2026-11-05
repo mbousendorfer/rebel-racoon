@@ -153,7 +153,7 @@
   left: 6px;
   bottom: 6px;
   padding: 1px 6px;
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   background: rgb(0 0 0 / 0.6);
   color: #fff;
   font-size: 11px;
@@ -314,7 +314,7 @@
   place-items: center;
   width: 18px;
   height: 18px;
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   background: var(--ref-color-orange-100);
   color: #fff;
   font-size: 10px;
@@ -516,7 +516,7 @@
   height: 40px;
   padding: 0 var(--ref-spacing-sm) 0 8px;
   border: 1px solid var(--ref-color-grey-20);
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   background: #fff;
   color: var(--ref-color-grey-100);
   font: inherit;
@@ -951,7 +951,7 @@
   align-items: center;
   gap: var(--ref-spacing-xxs);
   padding: 6px var(--ref-spacing-xs);
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   background: var(--ref-color-white);
   color: var(--ref-color-grey-100);
   font-size: var(--sys-text-style-caption-bold-size);
@@ -1191,7 +1191,7 @@
   .nch-slide.is-on .nch-seam::before,
   .nch-slide.is-on .nch-seam::after {
     transform-origin: top;
-    animation: nch-thread 240ms var(--app-ease-out) 160ms both;
+    animation: app-grow-y 240ms var(--app-ease-out) 160ms both;
   }
 
   .nch-slide.is-on .nch-seam::after {
@@ -1211,12 +1211,6 @@
   from {
     opacity: 0;
     translate: 0 8px;
-  }
-}
-
-@keyframes nch-thread {
-  from {
-    transform: scaleY(0);
   }
 }
 
@@ -1304,7 +1298,7 @@
   width: 28px;
   height: 28px;
   translate: -50% -50%;
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   background: rgb(0 0 0 / 0.5);
   color: #fff;
   pointer-events: none;
@@ -1354,7 +1348,7 @@
   height: 36px;
   padding: 0 var(--ref-spacing-sm) 0 6px;
   border: 1px solid var(--ref-color-grey-20);
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   background: var(--ref-color-white);
   color: var(--ref-color-grey-100);
   font: inherit;

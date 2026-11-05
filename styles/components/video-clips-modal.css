@@ -558,10 +558,11 @@
   font-weight: var(--sys-text-style-body-weight);
 }
 
-/* ── DS buttons on the dark modal ──────────────────────────────────
-   The neutral grey variants (transparent / ghost / stroked) are built for
-   light surfaces — remap their text + border to the dark ramp. Orange
-   (primary) and red (ghost danger) keep their DS hue; they read on dark. */
+/* ── The grey DS buttons, a step darker ────────────────────────────
+   Written for the dark modal (removed 2026-10-26) and kept on the light one:
+   they differ from the DS defaults (stroked text grey-100, hover border
+   grey-80, hover ink on ghost), so removing them is a visual change to decide,
+   not a cleanup. */
 .video-clips-modal .ap-button.transparent.grey,
 .video-clips-modal .ap-button.ghost.grey {
   color: var(--ref-color-grey-80);

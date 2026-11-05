@@ -109,6 +109,31 @@ a {
   }
 }
 
+/* An entrance: up from below and in. --app-rise-from sets the distance (8px). */
+@keyframes app-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--app-rise-from, 8px));
+  }
+}
+
+/* A line drawn from its transform-origin (set by the caller). */
+@keyframes app-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+/* A skeleton's sheen, across a background twice its width. */
+@keyframes app-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 @keyframes app-focus-pulse {
   0%,
   100% {

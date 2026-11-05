@@ -656,13 +656,7 @@
 .clips-analyzing__step.is-current .clips-analyzing__dot {
   border: 2px solid var(--ref-color-orange-100);
   border-right-color: transparent;
-  animation: clips-spin 0.9s linear infinite;
-}
-
-@keyframes clips-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  animation: app-spin 0.9s linear infinite;
 }
 
 /* ── Project: master–detail ───────────────────────────────────────
@@ -2425,7 +2419,7 @@ body.clips-editing .app-content {
   bottom: 42%;
   width: 34%;
   aspect-ratio: 1;
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
 }
 
 .clips-layout__person::after {

@@ -392,7 +392,7 @@
 .schedule-modal-legacy__day-dot {
   width: var(--ref-spacing-xxxs);
   height: var(--ref-spacing-xxxs);
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   background: var(--ref-color-grey-60);
 }
 
@@ -421,7 +421,7 @@
   padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
   background: var(--ref-color-white);
   border: 1px solid var(--ref-color-grey-20);
-  border-radius: 999px; /* a pill: the DS ships no pill radius */
+  border-radius: var(--app-radius-pill); /* a pill: the DS ships no pill radius */
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
@@ -563,17 +563,11 @@
 .schedule-modal-legacy__spinner {
   width: var(--sys-icon-sm);
   height: var(--sys-icon-sm);
-  border-radius: 50%;
+  border-radius: var(--app-radius-circle);
   border: 2px solid var(--ref-color-white);
   border-top-color: transparent;
-  animation: schedule-modal-legacy__spin 0.8s linear infinite;
+  animation: app-spin 0.8s linear infinite;
   display: inline-block;
-}
-
-@keyframes schedule-modal-legacy__spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* Narrow viewport — stack columns. */

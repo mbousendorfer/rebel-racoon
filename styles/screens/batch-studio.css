@@ -36,45 +36,11 @@
   gap: var(--ref-spacing-md);
 }
 
-/* ── Intro (centered hero, matching the Clip Studio) ──────────────────────── */
-.batch-studio__intro {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: var(--ref-spacing-xs);
-}
-
+/* The intro (frame, Archie badge, title) is shared with the other studios:
+   top-post-card.css, .top-posts-intro. */
 /* A little extra air around the explainer strip, on top of the column gap. */
 .batch-studio__inner .workflow-flow {
   margin-top: var(--ref-spacing-sm);
-}
-
-.batch-studio__ai-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
-  border-radius: var(--app-radius-pill);
-  background: var(--app-butter);
-  color: var(--ref-color-grey-100);
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-}
-.batch-studio__ai-badge i {
-  font-size: var(--sys-icon-css-xs);
-  color: var(--app-archie-mark);
-}
-
-.batch-studio__title {
-  margin: 0;
-  font-family: var(--ref-font-family);
-  font-size: var(--sys-text-style-marketing-size);
-  line-height: var(--sys-text-style-marketing-line-height);
-  font-weight: var(--sys-text-style-marketing-weight);
-  letter-spacing: -0.01em;
-  color: var(--ref-color-grey-100);
 }
 
 /* "How it works" flow is the shared .workflow-flow component
