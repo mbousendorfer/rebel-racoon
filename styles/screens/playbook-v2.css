@@ -1682,6 +1682,7 @@
    button, its menu opening down from its left edge. */
 .pb2-voice-more {
   align-self: flex-start;
+  width: fit-content;
   margin-top: var(--ref-spacing-xxs);
 }
 

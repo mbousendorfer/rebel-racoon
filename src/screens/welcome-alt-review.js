@@ -33,12 +33,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2755";
-import { navigate } from "../router.js?v=2755";
-import { getDraft, patchDraft } from "../context-builder.js?v=2755";
-import { mount } from "../playbook-view.js?v=2755";
-import { parseHashParams } from "../url-state.js?v=2755";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2755";
+import { html, raw } from "../utils.js?v=2757";
+import { navigate } from "../router.js?v=2757";
+import { getDraft, patchDraft } from "../context-builder.js?v=2757";
+import { mount } from "../playbook-view.js?v=2757";
+import { parseHashParams } from "../url-state.js?v=2757";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2757";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -58,7 +58,9 @@ const GLIDE_MS = 720; // a card glides to the middle
 // parts: a row with `inert` is shown, never opened nor confirmed — the voice
 // review's networks left on the default voice; a row's `net`: a network, listed
 // under « Network voices » (inert: in the Add menu), answered by
-// onToggle(partId, on)), next: { label, go },
+// onToggle(partId, on); `removable: false` hides its trash), moreNets? (the
+// networks to add from a menu under the rows: { id, title, icon }),
+// onLeavePart?(partId), next: { label, go },
 // back, onWay?, start? (the part to open first), progress? (false: no step
 // dots) }.
 // `onWay(partId, way, refresh)`: a card's tile was picked (the voice review);
@@ -99,7 +101,8 @@ export function renderReview(target, sid, config, review) {
   // onToggle(partId, on).
   const netList = () => {
     const rows = (review.rows?.() || []).filter((t) => t.net);
-    if (!rows.length) return "";
+    const more = review.moreNets?.() || [];
+    if (!rows.length && !more.length) return "";
     const done = reviewed();
     const own = rows.filter((t) => !t.inert);
     const rest = rows.filter((t) => t.inert);
@@ -118,7 +121,7 @@ export function renderReview(target, sid, config, review) {
             </span>
             ${raw(check)}
           </button>
-          ${here
+          ${here && t.removable !== false
             ? raw(
                 html`<button
                   type="button"
@@ -167,10 +170,44 @@ export function renderReview(target, sid, config, review) {
               </ul>`,
             )
           : ""}
-        ${raw(add)}
+        ${raw(add)} ${raw(moreMenu(more))}
       </li>
     `;
   };
+
+  // « Add a voice for another network »: the networks with no account
+  // connected, in a DS action dropdown under the rows (2026-11-05, asked: the
+  // fiche's model, « Oui, aligne »). A pick adds it and opens it, like a row.
+  const moreMenu = (more) =>
+    more.length
+      ? html`<details class="recap__panel-menu pb2-voice-more" data-review-more>
+          <summary class="ap-button ghost blue recap__panel-menu-toggle">
+            <i class="ap-icon-plus" aria-hidden="true"></i><span>Add a voice for another network</span>
+          </summary>
+          <div class="ap-action-dropdown recap__panel-menu-pop" role="menu" aria-label="Networks">
+            ${raw(
+              more
+                .map(
+                  (t) =>
+                    html`<button
+                      type="button"
+                      class="ap-action-dropdown-item"
+                      data-review-add-net="${t.id}"
+                      role="menuitem"
+                    >
+                      <i class="${t.icon}"></i>
+                      <div class="ap-action-dropdown-item-text">
+                        <div class="ap-action-dropdown-item-label-container">
+                          <span class="ap-action-dropdown-item-label">${t.title}</span>
+                        </div>
+                      </div>
+                    </button>`,
+                )
+                .join(""),
+            )}
+          </div>
+        </details>`
+      : "";
 
   const left = () => {
     const done = reviewed();
@@ -523,7 +560,10 @@ export function renderReview(target, sid, config, review) {
 
   // Changing part: the column leaves, the new one cascades in.
   let moving = false;
+  // `review.onLeavePart(id)`: the part on screen is left (the voice review
+  // drops a network left with no voice — never added).
   const switchPart = (id, opts = {}) => {
+    if (id !== current()) review.onLeavePart?.(current());
     if (calm) return openPart(id, opts);
     if (moving) return;
     moving = true;
@@ -547,6 +587,7 @@ export function renderReview(target, sid, config, review) {
     }
     patchDraft(sid, { reviewedParts: [...new Set([...reviewed(), from])] });
     const to = parts()[parts().findIndex((t) => t.id === from) + 1];
+    review.onLeavePart?.(from);
     if (!to) return review.next.go();
     switchPart(to.id);
   };
@@ -571,6 +612,8 @@ export function renderReview(target, sid, config, review) {
     // The network voices: add one (it opens), remove one.
     const addNet = e.target.closest("[data-review-add-net]")?.dataset.reviewAddNet;
     if (addNet) {
+      e.target.closest("details")?.removeAttribute("open");
+      if (addNet !== current()) review.onLeavePart?.(current());
       review.onToggle?.(addNet, true);
       return openPart(addNet);
     }

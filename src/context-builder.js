@@ -12,40 +12,32 @@
 // objective, contentAction, ctaLinks, language, color, suggestions, editingId,
 // onComplete }.
 
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2755";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2755";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2757";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2757";
 import {
   analyzeWebsite,
   analyzeSocialProfiles,
   analyzeDocument,
   analyzeBrandFiles,
   analyzeInterview,
-} from "./context-mock-analysis.js?v=2755";
-import {
-  cloneItems,
-  ownNetworkVoices,
-  networkVoiceOn,
-  networkVoice,
-  voiceHasRules,
-  brandVoiceAsIs,
-} from "./voice-parts.js?v=2755";
-import { markIntroSeen } from "./components/voice-intro-modal.js?v=2755";
-import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2755";
-import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2755";
-import { isFlagOn } from "./feature-flags.js?v=2755";
+} from "./context-mock-analysis.js?v=2757";
+import { cloneItems, ownNetworkVoices, networkVoiceOn, voiceHasRules } from "./voice-parts.js?v=2757";
+import { markIntroSeen } from "./components/voice-intro-modal.js?v=2757";
+import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2757";
+import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2757";
+import { isFlagOn } from "./feature-flags.js?v=2757";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
 
-// The voices the run's review saved: its own for a network that has rules,
-// the default voice (chosen) for one picked and left empty.
+// The voices the run's review saved: a network's own, with rules. Nothing
+// for the others — they use the default voice, and a connected one's first
+// draft asks (2026-11-05, the fiche's model: « sans actions de l'utilisateur,
+// un network utilise la Voice par Default », the draft's Voice step kept).
 function reviewedVoices(d) {
-  const kept = { ...(d.voiceByNetwork || {}) };
-  for (const n of d.voiceRulesFor) {
-    const { state, voice } = networkVoice(d, n);
-    if (!(state === "own" && voiceHasRules(voice))) kept[n] = brandVoiceAsIs(d);
-  }
-  return kept;
+  return Object.fromEntries(
+    Object.entries(d.voiceByNetwork || {}).filter(([, v]) => v?.optimizedBy !== "brand" && voiceHasRules(v)),
+  );
 }
 
 function notify(sessionId) {
@@ -492,11 +484,7 @@ export function save(sessionId) {
     // no network added (2026-11-05).
     // Re-saving an existing one never rewrites them.
     // The run's voice review (`voiceRulesFor` set) learns nothing behind the
-    // user's back: what it gave each network is what is saved — and a network
-    // picked there but left empty keeps the default voice, chosen: the run ends
-    // with no network unanswered, so no first draft asks (2026-11-04, asked:
-    // « soit il en choisit un et il applique une voice, soit il fait rien du
-    // tout et la voice by default s'applique »).
+    // user's back: the voices it gave, with rules, are what is saved.
     ...(!d.editingId && { voiceByNetwork: d.voiceRulesFor ? reviewedVoices(d) : ownNetworkVoices(d) }),
     brandPersonality: d.brandPersonality || "",
     brandTypography: d.brandTypography ? { ...d.brandTypography } : null,

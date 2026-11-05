@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2755";
-import { catalogueRoute } from "../active-playbook.js?v=2755";
+import { navigate } from "../router.js?v=2757";
+import { catalogueRoute } from "../active-playbook.js?v=2757";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,17 +13,23 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2755";
+} from "../context-builder.js?v=2757";
 import {
   RECAP_SECTIONS,
   editVoiceNetwork,
   networkVoiceFilled,
   setNetworkRules,
   proposeVoiceInline,
-} from "../playbook-view.js?v=2755";
-import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2755";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2755";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2755";
+} from "../playbook-view.js?v=2757";
+import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2757";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2757";
+import {
+  getConnectedProfiles,
+  networkIcon,
+  networkLabel,
+  normalizeNetwork,
+  NETWORKS,
+} from "../social-profiles.js?v=2757";
 import {
   canLearnFrom,
   learnNetworkVoice,
@@ -33,14 +39,14 @@ import {
   ownNetworkVoices,
   voiceNetworks,
   onlyNetwork,
-} from "../voice-parts.js?v=2755";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2755";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2755";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2755";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2755";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2755";
-import { showToast } from "../components/toast.js?v=2755";
-import { open as openConfirm } from "../components/confirm-modal.js?v=2755";
+} from "../voice-parts.js?v=2757";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2757";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2757";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2757";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2757";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2757";
+import { showToast } from "../components/toast.js?v=2757";
+import { open as openConfirm } from "../components/confirm-modal.js?v=2757";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -112,10 +118,6 @@ export function renderWelcomeAltVoice(_params, target) {
   });
 }
 
-// A network picked, then answered « Use my default voice for X » (its part
-// confirmed while empty): the default voice, chosen — not an empty voice.
-const keptDefault = (d, n) => !networkVoiceFilled(d, n) && (d?.reviewedParts || []).includes(`voice-net-${n}`);
-
 // The first time on the Voice review: no network added, except one that
 // already has rules of its own. One not added is never set: the fiche lists it
 // to add, and its first draft asks (2026-11-05, asked: « si je n'ai pas ajouté
@@ -153,7 +155,10 @@ const playbookReview = () => ({
 const VOICE_TINT = "voice";
 function voiceReview(sid, overrides = {}) {
   const voice = RECAP_SECTIONS.find((t) => t.id === "voice");
-  const nets = () => (networkVoiceOn() ? voiceNetworks(getDraft(sid)) : []);
+  // The fiche's model (2026-11-05, « Oui, aligne »): the connected networks,
+  // then any picked from « Add a voice for another network ».
+  const nets = () =>
+    networkVoiceOn() ? [...new Set([...voiceNetworks(getDraft(sid)), ...(getDraft(sid).voiceRulesFor || [])])] : [];
   const netOf = (partId) => partId.startsWith("voice-net-") && partId.slice("voice-net-".length);
   const customizing = (n) => (getDraft(sid).voiceRulesFor || []).includes(n);
   // One network: the default voice is that network's, said in its words.
@@ -168,8 +173,7 @@ function voiceReview(sid, overrides = {}) {
       (c, f) => c + (v?.[f] || []).length,
       0,
     );
-    if (keptDefault(getDraft(sid), n)) return "Uses your default voice";
-    // Picked, no answer yet: its name alone, as in the fiche (2026-11-05,
+    // Picked, no voice yet: its name alone, as in the fiche (2026-11-05,
     // asked: « pas besoin du "no rules yet" »).
     if (!networkVoiceFilled(getDraft(sid), n)) return "";
     return count ? `${count} rule${count === 1 ? "" : "s"}` : "Filled in";
@@ -195,8 +199,11 @@ function voiceReview(sid, overrides = {}) {
     lead: ruleState(n),
     // On the default voice: not a part, only an entry of « Add a network voice ».
     inert: !customizing(n),
-    // On and still empty: the confirm keeps the default voice.
-    skipLabel: () => !networkVoiceFilled(getDraft(sid), n) && `Use my default voice for ${networkLabel(n)}`,
+    // Picked and still empty: no « Use my default voice » to choose — it is
+    // the default anyway; the way on leaves it, not added (onLeavePart).
+    skipLabel: () => !networkVoiceFilled(getDraft(sid), n) && "Skip for now",
+    // Its trash only once it has a voice — nothing to remove before.
+    removable: networkVoiceFilled(getDraft(sid), n),
     open: () => editVoiceNetwork(n),
     pick: (all) => {
       const card = all.filter((el) => el.matches(`.pb2-voice-net--${n}`));
@@ -208,6 +215,18 @@ function voiceReview(sid, overrides = {}) {
   const rows = () => [defaultPart(), ...nets().map(netRow)];
   const parts = () => rows().filter((r) => !r.inert);
   // Added again: asked again (its earlier « Use my default voice » goes).
+  // A network left with no voice was never added: its row goes back to
+  // Configure (the fiche's way).
+  const onLeavePart = (partId) => {
+    const n = netOf(partId);
+    if (n && customizing(n) && !networkVoiceFilled(getDraft(sid), n)) setNetworkRules(n, false);
+  };
+  const moreNets = () =>
+    networkVoiceOn()
+      ? Object.keys(NETWORKS)
+          .filter((n) => !nets().includes(n))
+          .map((n) => ({ id: `voice-net-${n}`, title: networkLabel(n), icon: networkIcon(n) }))
+      : [];
   const onToggle = (partId, on) => {
     if (on) patchDraft(sid, { reviewedParts: (getDraft(sid).reviewedParts || []).filter((id) => id !== partId) });
     setNetworkRules(netOf(partId), on);
@@ -335,6 +354,8 @@ function voiceReview(sid, overrides = {}) {
     rows,
     onWay,
     onToggle,
+    onLeavePart,
+    moreNets,
     next: { label: finishLabel(), go: () => finishRun(sid) },
     // The last confirm and the left's way out are one action: one wording
     // (2026-11-04 — it read « Looks good, finish » beside « Draft my first post »).
@@ -455,29 +476,9 @@ function finishIntegrated(sid) {
 // user creating one Playbook more (`welcomeAltIntegrated`) saves it and goes
 // back where they started — no reload, which would re-seed the stores.
 export function finishRun(sid) {
-  const finish = () => (isIntegrated() ? finishIntegrated(sid) : enterArchie(sid));
-  // Networks picked for a voice of their own and left empty: said, and asked,
-  // before the run ends (2026-10-29, asked: « il faut prévenir l'utilisateur et
-  // lui demander confirmation que tout est ok et lui dire qu'il pourra toujours
-  // réediter les voices dans le playbook »).
-  const d = getDraft(sid);
-  // One answered « Use my default voice for X » is not asked about again.
-  const empty = networkVoiceOn()
-    ? (d?.voiceRulesFor || []).filter((n) => !networkVoiceFilled(d, n) && !keptDefault(d, n))
-    : [];
-  if (!empty.length) return finish();
-  const names = empty.map(networkLabel);
-  const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names.at(-1)}` : names[0];
-  const count = `${empty.length} empty voice${empty.length === 1 ? "" : "s"}`;
-  openConfirm({
-    title: `Continue with ${count}?`,
-    body: `${list} ${empty.length === 1 ? "has" : "have"} no voice of ${empty.length === 1 ? "its" : "their"} own, so I'll write ${empty.length === 1 ? "its" : "their"} posts in your default voice. You can add one anytime in your Playbook.`,
-    confirmLabel: "Continue",
-    cancelLabel: empty.length === 1 ? "Fill it in" : "Fill them in",
-    onConfirm: finish,
-    // The review opens the part the URL's `tab` names: the first empty voice.
-    onCancel: () => navigate(`/welcome-alt/voice?tab=voice-net-${encodeURIComponent(empty[0])}`),
-  });
+  // No « empty voices » to confirm any more: a network left with no voice was
+  // never added, it uses the default voice (2026-11-05, the fiche's model).
+  return isIntegrated() ? finishIntegrated(sid) : enterArchie(sid);
 }
 export const finishLabel = () => (isIntegrated() ? "Save my Playbook" : "Draft my first post");
 
