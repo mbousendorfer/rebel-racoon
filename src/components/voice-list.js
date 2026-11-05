@@ -1,8 +1,10 @@
 // The voice list: the default voice, then the Playbook's networks, each with
-// its « Own voice » toggle. One component for the run's Voice review
-// (welcome-alt-review.js) and the Playbook's Voice profile tab
-// (playbook-view.js renderVoiceNav) — asked on 2026-11-05: « on pourrait
-// mutualiser le comportement entre ces 2 éléments », toggles in both.
+// its « Own voice » toggle — the Playbook's Voice profile tab
+// (playbook-view.js renderVoiceNav), with the behavior of the run's Voice
+// review (2026-11-05, asked: « on pourrait mutualiser le comportement entre
+// ces 2 éléments »). The review keeps its own look (welcome-alt-review.js
+// toggleList): sharing it was tried the same day and reverted, « je t'ai pas
+// demandé de modifier ça ».
 //
 // Off, a network uses the default voice and its row opens nothing; on, its row
 // opens its voice. The host owns what a click or a toggle does: it passes its
@@ -14,7 +16,7 @@
 //   the name), toggle?: { on, disabled? } }] — the rows without a toggle (the
 //   default voice) head the list, the others follow under « Own voice ».
 
-import { escapeHtml as esc } from "../utils.js?v=2708";
+import { escapeHtml as esc } from "../utils.js?v=2709";
 
 function rowHtml(r, { openAttr, toggleAttr }) {
   const main = `<i class="${r.icon} voice-list__icon" aria-hidden="true"></i><span class="voice-list__name">${esc(r.title)}</span>${r.mark || ""}`;

@@ -9,10 +9,10 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2708";
-import { getPath, navigate } from "../router.js?v=2708";
-import { parseHashParams } from "../url-state.js?v=2708";
-import { isFlagOn } from "../feature-flags.js?v=2708";
+import { html, raw, escapeHtml } from "../utils.js?v=2709";
+import { getPath, navigate } from "../router.js?v=2709";
+import { parseHashParams } from "../url-state.js?v=2709";
+import { isFlagOn } from "../feature-flags.js?v=2709";
 import {
   altSteps,
   createAltDraft,
@@ -20,9 +20,9 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2708";
-import { getConnectedProfiles, networkIcon, networkLabel } from "../social-profiles.js?v=2708";
-import { playbookNetworks, networkVoiceOn } from "../voice-parts.js?v=2708";
+} from "../context-builder.js?v=2709";
+import { getConnectedProfiles, networkIcon, networkLabel } from "../social-profiles.js?v=2709";
+import { playbookNetworks, networkVoiceOn } from "../voice-parts.js?v=2709";
 import {
   readSessionId,
   isIntegrated,
@@ -32,10 +32,10 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2708";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2708";
-import { paintExplainer } from "./welcome-alt-explainer.js?v=2708";
-import { setTopbarActions } from "../components/topbar.js?v=2708";
+} from "./welcome-alt-recap.js?v=2709";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2709";
+import { paintExplainer } from "./welcome-alt-explainer.js?v=2709";
+import { setTopbarActions } from "../components/topbar.js?v=2709";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
