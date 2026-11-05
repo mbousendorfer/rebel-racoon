@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2742";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2742";
-import { conceptHint } from "./concepts.js?v=2742";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2743";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2743";
+import { conceptHint } from "./concepts.js?v=2743";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2742";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2742";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2742";
-import { isFlagOn } from "./feature-flags.js?v=2742";
-import { clipLookOf } from "./videos-store.js?v=2742";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2742";
-import { parseHashParams } from "./url-state.js?v=2742";
+} from "./playbook-brand-kit.js?v=2743";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2743";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2743";
+import { isFlagOn } from "./feature-flags.js?v=2743";
+import { clipLookOf } from "./videos-store.js?v=2743";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2743";
+import { parseHashParams } from "./url-state.js?v=2743";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2742";
-import { showToast } from "./components/toast.js?v=2742";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2742";
+} from "./voice-parts.js?v=2743";
+import { showToast } from "./components/toast.js?v=2743";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2743";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -68,10 +68,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2742";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2742";
-import { consumeHandoff } from "./handoff.js?v=2742";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2742";
+} from "./network-voice-flow.js?v=2743";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2743";
+import { consumeHandoff } from "./handoff.js?v=2743";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2743";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -79,7 +79,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2742";
+} from "./social-profiles.js?v=2743";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -3248,10 +3248,11 @@ function networkVoiceEmpty(net, chosen, added = false, remove = "") {
   // « Use my default voice for X » (2026-11-05, asked: « quand je clique sur
   // add il utilise tout de suite la default voice... ça doit être un choix de
   // l'utilisateur comme les autres, tout en bas »).
-  // Remove the voice sits in the same foot row, after it (2026-11-05: the page
-  // as one column, nothing pinned to the far edges).
+  // Remove the voice sits in the same foot, after it (2026-11-05: the page as
+  // one column, nothing pinned to the far edges). Keep = secondary blue,
+  // Remove = ghost blue (2026-11-05, asked).
   const keepBtn = added
-    ? `<button type="button" class="ap-button ghost grey" data-pb2-voice-keep="${esc(net)}">Use my default voice for ${esc(label)}</button>`
+    ? `<button type="button" class="ap-button stroked blue" data-pb2-voice-keep="${esc(net)}">Use my default voice for ${esc(label)}</button>`
     : "";
   const keep = keepBtn || remove ? `<div class="pb2-voice-keep">${keepBtn}${remove}</div>` : "";
   return voiceEmptyState(net, voiceWaysRows(tiles) + keep, `Give ${label} its own voice, from one of these.`, {
@@ -3300,7 +3301,7 @@ function renderNetworkVoiceRead(data) {
     const added = ownPending.has(net);
     const remove =
       added || chosen
-        ? `<button type="button" class="ap-button stroked grey" data-pb2-voice-remove="${esc(net)}"><i class="ap-icon-trash" aria-hidden="true"></i><span>Remove the ${esc(label)} voice</span></button>`
+        ? `<button type="button" class="ap-button ghost blue" data-pb2-voice-remove="${esc(net)}"><i class="ap-icon-trash" aria-hidden="true"></i><span>Remove the ${esc(label)} voice</span></button>`
         : "";
     // What X writes in, said as a DS infobox — the first thing under the head,
     // with the way to read that voice (2026-11-05, asked: « c'est absolument
