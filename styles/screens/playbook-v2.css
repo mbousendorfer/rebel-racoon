@@ -1104,8 +1104,10 @@
  * warning. */
 .pb2-voice-layout {
   display: grid;
-  /* 225: the DS secondary-nav column (page-patterns P6). */
-  grid-template-columns: 225px minmax(0, 1fr);
+  /* 300: wider than the DS secondary nav (225) since its rows became cards
+     with a state line (2026-11-05, asked: « les diverses voice sur la colonne
+     de gauche pourraient prendre plus de largeur »). */
+  grid-template-columns: 300px minmax(0, 1fr);
   gap: var(--ref-spacing-md);
   align-items: start;
 }
@@ -1124,13 +1126,8 @@
 }
 
 /* The list wears the run's Voice review classes (welcome.css): the default
-   voice's option card, then « Network voices », one framed list with
-   hairlines, and the dashed rows to add one. Here only: the chevron that says
-   a row opens. */
-.pb2-voice-nav__chevron {
-  flex-shrink: 0;
-  color: var(--ref-color-grey-80);
-}
+   voice's option card, then « Network voices », a card each with its Remove,
+   and the dashed rows to add one. */
 
 /* The voice on screen names itself: its title (h2) over its sentence. */
 .pb2-tabhead__text {
