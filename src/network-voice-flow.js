@@ -42,14 +42,14 @@ import {
   postVoiceTurn,
   resolveTurn,
   getThread,
-} from "./assistant.js?v=2729";
-import { getContextById, updateContext } from "./contexts-store.js?v=2729";
-import { getSessionById } from "./sessions-store.js?v=2729";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2729";
-import { setHandoff } from "./handoff.js?v=2729";
-import { navigate } from "./router.js?v=2729";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2729";
-import { getPosts } from "./posts-store.js?v=2729";
+} from "./assistant.js?v=2731";
+import { getContextById, updateContext } from "./contexts-store.js?v=2731";
+import { getSessionById } from "./sessions-store.js?v=2731";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2731";
+import { setHandoff } from "./handoff.js?v=2731";
+import { navigate } from "./router.js?v=2731";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2731";
+import { getPosts } from "./posts-store.js?v=2731";
 import {
   networkVoiceOn,
   networkVoice,
@@ -58,7 +58,7 @@ import {
   brandVoiceAsIs,
   voiceNetworks,
   adaptNetworkVoice,
-} from "./voice-parts.js?v=2729";
+} from "./voice-parts.js?v=2731";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;
@@ -168,6 +168,16 @@ export function saveNetworkVoice(ctxId, net, voice) {
 export function useDefaultVoice(ctxId, net) {
   const ctx = getContextById(ctxId);
   if (ctx) saveNetworkVoice(ctxId, net, brandVoiceAsIs(ctx));
+}
+
+// Remove a network's answer altogether: no voice of its own, no default voice
+// chosen — the network is back to never set (the fiche's Remove on a network
+// kept on the default voice by choice).
+export function clearNetworkVoice(ctxId, net) {
+  const ctx = getContextById(ctxId);
+  if (!ctx) return;
+  const rest = Object.fromEntries(Object.entries(ctx.voiceByNetwork || {}).filter(([n]) => n !== net));
+  updateContext(ctxId, { voiceByNetwork: rest });
 }
 
 // « Edit it myself », or « Edit » on a proposal: the network's tab, in edit

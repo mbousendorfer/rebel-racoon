@@ -17,11 +17,11 @@
 // The mock returns SEEDS, not pixels: render/ draws them locally, on-style and
 // on-palette, so the same variation always looks the same.
 
-import { MOCK } from "../../config/mock.js?v=2729";
-import { createVariation } from "../../model/schema.js?v=2729";
-import { randomSeed } from "../../lib/prng.js?v=2729";
-import { wait } from "../../lib/delegate.js?v=2729";
-import { buildPrompt } from "../prompt.js?v=2729";
+import { MOCK } from "../../config/mock.js?v=2731";
+import { createVariation } from "../../model/schema.js?v=2731";
+import { randomSeed } from "../../lib/prng.js?v=2731";
+import { wait } from "../../lib/delegate.js?v=2731";
+import { buildPrompt } from "../prompt.js?v=2731";
 
 function delay(signal) {
   const [min, max] = MOCK.generation.delayMs;

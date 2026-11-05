@@ -1622,3 +1622,10 @@
   justify-content: center;
   margin-top: var(--ref-spacing-xs);
 }
+
+/* What a network writes in: centred over the ways, not the column's width
+   (2026-11-05: « je ne veux pas que l'infobox prenne toute la largeur »). */
+.pb2-voice-main .pb2-voice-uses {
+  max-width: 560px;
+  margin-inline: auto;
+}
