@@ -1678,22 +1678,16 @@
   padding: 0;
 }
 
-/* A network on the default voice: a grey ground, and the default voice's
-   purple quote before « Uses your default voice » — the same glyph and tint
-   as the Default voice card above. */
-.pb2-voice-nav .pb2-voice-nav__net--default:not([aria-current="true"]) {
-  background: var(--ref-color-grey-05);
+/* « Add a voice for another network », under the rows: a hug-width ghost
+   button, its menu opening down from its left edge. */
+.pb2-voice-more {
+  align-self: flex-start;
+  margin-top: var(--ref-spacing-xxs);
 }
 
-.pb2-voice-nav__net--default .welcome-review__net-state {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-}
-
-.pb2-voice-nav__default-glyph {
-  color: var(--ref-color-purple-150);
-  font-size: var(--sys-icon-css-xs);
+.pb2-voice-more .recap__panel-menu-pop {
+  left: 0;
+  right: auto;
 }
 
 /* A row opens its voice: the chevron says so (no trash on every row — the
