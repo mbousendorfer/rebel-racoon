@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2752";
-import { catalogueRoute } from "../active-playbook.js?v=2752";
+import { navigate } from "../router.js?v=2753";
+import { catalogueRoute } from "../active-playbook.js?v=2753";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,17 +13,17 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2752";
+} from "../context-builder.js?v=2753";
 import {
   RECAP_SECTIONS,
   editVoiceNetwork,
   networkVoiceFilled,
   setNetworkRules,
   proposeVoiceInline,
-} from "../playbook-view.js?v=2752";
-import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2752";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2752";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2752";
+} from "../playbook-view.js?v=2753";
+import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2753";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2753";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2753";
 import {
   canLearnFrom,
   learnNetworkVoice,
@@ -33,14 +33,14 @@ import {
   ownNetworkVoices,
   voiceNetworks,
   onlyNetwork,
-} from "../voice-parts.js?v=2752";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2752";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2752";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2752";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2752";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2752";
-import { showToast } from "../components/toast.js?v=2752";
-import { open as openConfirm } from "../components/confirm-modal.js?v=2752";
+} from "../voice-parts.js?v=2753";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2753";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2753";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2753";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2753";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2753";
+import { showToast } from "../components/toast.js?v=2753";
+import { open as openConfirm } from "../components/confirm-modal.js?v=2753";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -169,7 +169,9 @@ function voiceReview(sid, overrides = {}) {
       0,
     );
     if (keptDefault(getDraft(sid), n)) return "Uses your default voice";
-    if (!networkVoiceFilled(getDraft(sid), n)) return "No rules yet";
+    // Picked, no answer yet: its name alone, as in the fiche (2026-11-05,
+    // asked: « pas besoin du "no rules yet" »).
+    if (!networkVoiceFilled(getDraft(sid), n)) return "";
     return count ? `${count} rule${count === 1 ? "" : "s"}` : "Filled in";
   };
   const defaultPart = () => ({

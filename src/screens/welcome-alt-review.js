@@ -33,12 +33,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2752";
-import { navigate } from "../router.js?v=2752";
-import { getDraft, patchDraft } from "../context-builder.js?v=2752";
-import { mount } from "../playbook-view.js?v=2752";
-import { parseHashParams } from "../url-state.js?v=2752";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2752";
+import { html, raw } from "../utils.js?v=2753";
+import { navigate } from "../router.js?v=2753";
+import { getDraft, patchDraft } from "../context-builder.js?v=2753";
+import { mount } from "../playbook-view.js?v=2753";
+import { parseHashParams } from "../url-state.js?v=2753";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2753";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -114,7 +114,7 @@ export function renderReview(target, sid, config, review) {
             <i class="${t.icon} welcome-review__net-icon" aria-hidden="true"></i>
             <span class="welcome-review__net-text">
               <span class="welcome-review__net-name">${t.title} voice</span>
-              <span class="welcome-review__net-state">${t.lead}</span>
+              ${t.lead ? raw(html`<span class="welcome-review__net-state">${t.lead}</span>`) : ""}
             </span>
             ${raw(check)}
           </button>
@@ -134,7 +134,8 @@ export function renderReview(target, sid, config, review) {
         </li>
       `;
     };
-    // The voices you can add: a dashed row each, under the ones you have
+    // The voices without an answer: a dashed row each, « X voice · Configure »
+    // as in the fiche (2026-11-05, asked: « remplacer par configure »), under the ones you have
     // (2026-11-05, asked: « les montrer en pointillé les voices que l'on peut
     // ajouter ») — a click adds it and opens it. They replace the « Add a
     // network voice » button and its menu.
@@ -147,13 +148,8 @@ export function renderReview(target, sid, config, review) {
                   html`<li>
                     <button type="button" class="welcome-review__addable" data-review-add-net="${t.id}">
                       <i class="${t.icon} welcome-review__net-icon" aria-hidden="true"></i>
-                      <span class="welcome-review__net-text"
-                        ><span class="welcome-review__addable-name">${t.title}</span
-                        ><span class="welcome-review__net-state">Uses your default voice</span></span
-                      >
-                      <span class="welcome-review__addable-add"
-                        ><i class="ap-icon-plus" aria-hidden="true"></i><span>Add</span></span
-                      >
+                      <span class="welcome-review__addable-name">${t.title} voice</span>
+                      <span class="welcome-review__addable-add">Configure</span>
                     </button>
                   </li>`,
               )
