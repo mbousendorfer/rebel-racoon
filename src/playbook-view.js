@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2750";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2750";
-import { conceptHint } from "./concepts.js?v=2750";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2751";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2751";
+import { conceptHint } from "./concepts.js?v=2751";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2750";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2750";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2750";
-import { isFlagOn } from "./feature-flags.js?v=2750";
-import { clipLookOf } from "./videos-store.js?v=2750";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2750";
-import { parseHashParams } from "./url-state.js?v=2750";
+} from "./playbook-brand-kit.js?v=2751";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2751";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2751";
+import { isFlagOn } from "./feature-flags.js?v=2751";
+import { clipLookOf } from "./videos-store.js?v=2751";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2751";
+import { parseHashParams } from "./url-state.js?v=2751";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2750";
-import { showToast } from "./components/toast.js?v=2750";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2750";
+} from "./voice-parts.js?v=2751";
+import { showToast } from "./components/toast.js?v=2751";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2751";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -68,10 +68,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2750";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2750";
-import { consumeHandoff } from "./handoff.js?v=2750";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2750";
+} from "./network-voice-flow.js?v=2751";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2751";
+import { consumeHandoff } from "./handoff.js?v=2751";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2751";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -79,7 +79,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2750";
+} from "./social-profiles.js?v=2751";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2110,7 +2110,22 @@ export function editVoiceNetwork(net) {
   openEdit(cfg.getData(), "voice");
 }
 
+// A voice added and left without an answer — no rules, no default voice
+// chosen — was never added: leaving it (another voice, another tab) brings its
+// row back to Add (2026-11-05, asked: a way to undo an undecided « + Add »,
+// with no button; the trash before an answer was removed). A voice being
+// learned is dropped with it. `keep`: the voice being opened.
+function dropUndecided(keep = null) {
+  const d = cfg?.getData();
+  for (const n of [...ownPending]) {
+    if (n === keep || networkVoice(d, n).state === "own") continue;
+    ownPending.delete(n);
+    dropVoiceProposal(n);
+  }
+}
+
 function setVoiceNet(net) {
+  dropUndecided(net);
   voiceNet = net || null;
   const [path] = window.location.hash.slice(1).split("?");
   const q = parseHashParams();
@@ -3932,6 +3947,7 @@ function saveOnLeave() {
 // or Esc — stay on the edit. Nothing changed → the editor closes, no question.
 function switchTab(id) {
   leaveEdit(() => {
+    dropUndecided();
     setTab(id);
     repaint();
     mountTarget?.querySelector(".welcome-screen")?.scrollTo({ top: 0 });
