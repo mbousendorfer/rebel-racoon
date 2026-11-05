@@ -33,7 +33,7 @@ export function setX(sessionId, x) {
 export { subscribe };
 ```
 
-Voir [`src/store-utils.js`](../../src/store-utils.js) pour `createNotifier()`.
+Voir [`src/store-utils.js`](../../src/store-utils.js) pour `createNotifier()` et `createSessionNotifier()` (abonnés par session, chacun dans un try/catch : un abonné qui lève une erreur n'arrête pas les suivants). Les stores per-session l'utilisent, `batch-studio`, `clip-studio` et `context-builder` compris (2026-11-05) ; seul `library.js` garde le sien (il réémet). Un id neuf vient de `newId(prefix)` (`utils.js`), jamais d'un compteur local.
 
 ## Catalogue des stores
 

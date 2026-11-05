@@ -48,8 +48,10 @@ src/
   url-state.js          — parseHashParams() / setHashQuery() (hash query params)
   drag-reorder.js       — bindReorder(): the app's one drag-to-reorder (grip, lift, slide); styles/components/drag-reorder.css
   handoff.js            — single-use sessionStorage bridge across navigations
-  utils.js              — html`` / raw() tagged-template helpers + escapeHtml (html`` escapes by default)
-  store-utils.js        — createNotifier() subscribe/notify primitive used by stores
+  utils.js              — html`` / raw() tagged-template helpers + escapeHtml (html`` escapes by default),
+                          and the shared formatters: newId, newChatPath, plural, prettyUrl, hostname,
+                          formatDayLabel, formatTimeOfDay, formatClock, compactNumber (npm run check:utils)
+  store-utils.js        — createNotifier() / createSessionNotifier(): the subscribe/notify primitives every store uses
   user-mode.js          — "returning" vs "new-alt" mode (localStorage: archie-user-mode)
   feature-flags.js      — flag get/set (localStorage); ff-catalog.js is the flag list
   org.js                — CONFIG: who I am, my org, its members, my role (localStorage: archie-org-role)
@@ -105,6 +107,8 @@ src/
   draft-rewrite.js      — regenerate-a-draft (thinking → streaming → commit)
   context-builder.js    — Playbook creation/edit conversation (drives welcome-alt + edits)
   playbook-view.js      — shared Playbook render engine (recap + detail)
+  playbook-rosters.js   — its Competitors + Influencers tabs (render, Discover scan, modal, add, clicks);
+                          the view passes a ctx (cfg / editScope as getters, repaint…), never imported back
   context-mock-analysis.js — deterministic mock "website analysis" for onboarding
   sidebar-wizard.js     — multi-stage numbered-option wizard inside the assistant panel
   inline-question.js    — one-shot numbered-option picker inside the assistant panel
@@ -163,6 +167,7 @@ src/
       workflow-flow.js    — the "How it works" block both studios share
       wizard-keyboard.js  — keyboard nav (↑↓ / 1–9 / Enter / Esc) for the picker
       clip-draft-flow.js  — "draft from clips" picker (ratio → subtitles → accounts → generate) + clipContext; the only external caller (right-panel) imports THIS, not the whole session screen
+      drafts-asks.js      — what a typed ask does to the drafts (delete all, rewrite, translate, regenerate, first comment, review, image, schedule + the planner): routeTypedAsk, askSwitchPostPlan, openPlanInModal
 
   components/             — each exports init() (injects DOM once) + render/open()
     topbar.js             persistent header: route title (rename on session) +
@@ -173,7 +178,7 @@ src/
     sidebar/              playbook-switcher.js (flag `playbookWorkspace`) · recent-chats.js
                           (Sort & group, rows, pin / rename / delete)
     right-panel.js        sliding panel shell: open / close / resize / URL state + the delegated listeners
-    right-panel/          drafts-view.js (Drafts: feed, filters, actions, inline editor) ·
+    right-panel/          drafts-view.js (Drafts: feed, filters, actions + their clicks, handleDraftsClick, inline editor) ·
                           sources-view.js · ideas-view.js (Ideas + Clips)
     conversation-status-card.js  floating in-progress card (sources/ideas/drafts counts)
     content-workspace.js  shared Sources+Ideas library layout (search / sort / By Source / All Ideas)
@@ -211,7 +216,8 @@ src/
                           composer-view (Edit only) · tools-view · edit-view ·
                           interactions · context · type-art / style-art (the 9 drawn option previews)
 
-  modal-coordinator.js    one-overlay-at-a-time: requestOpen / notifyClose / bindOverlayDismissal
+  modal-coordinator.js    one-overlay-at-a-time: requestOpen / notifyClose / bindOverlayDismissal,
+                          + showOverlay / hideOverlay (the open / closed state every modal sets)
 ```
 
 ## Conventions de fichiers
@@ -254,27 +260,32 @@ Pattern uniforme :
 ```js
 // pseudo-code
 let inited = false,
-  dialog,
+  modal,
+  backdrop,
   lastFocus;
 const MODAL_ID = "addSourceModal";
 
 export function init() {
   if (inited) return;
   inited = true;
-  document.body.insertAdjacentHTML("beforeend", `<dialog id="${MODAL_ID}">…</dialog>`);
-  dialog = document.getElementById(MODAL_ID);
-  bindOverlayDismissal(dialog, close);
+  document.body.insertAdjacentHTML(
+    "beforeend",
+    `<div class="app-modal-backdrop" id="${MODAL_ID}Backdrop" hidden></div><aside class="ap-dialog" id="${MODAL_ID}" aria-hidden="true">…</aside>`,
+  );
+  modal = document.getElementById(MODAL_ID);
+  backdrop = document.getElementById(`${MODAL_ID}Backdrop`);
+  bindOverlayDismissal({ modal, backdrop, close }); // Escape + backdrop click, only while open
 }
 
 export function open() {
   lastFocus = document.activeElement;
   requestOpen(MODAL_ID, close); // modal-coordinator
-  dialog.hidden = false;
-  dialog.querySelector("[autofocus]")?.focus();
+  showOverlay(modal, backdrop); // backdrop shown, .open on both, aria-hidden="false"
+  modal.querySelector("[autofocus]")?.focus();
 }
 
 function close() {
-  dialog.hidden = true;
+  hideOverlay(modal, backdrop);
   notifyClose(MODAL_ID);
   lastFocus?.focus({ preventScroll: true });
 }

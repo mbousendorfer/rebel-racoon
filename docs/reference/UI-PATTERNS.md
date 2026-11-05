@@ -449,7 +449,7 @@ Détail complet des formules de taille : [`SHELL-LAYOUT.md`](SHELL-LAYOUT.md).
 
 ## 7. Animations & loaders
 
-**`base.css` (partagé)** : `@keyframes app-spin`, `app-focus-pulse` (pulse electric-blue-20), + umbrella **reduced-motion** (`@media (prefers-reduced-motion: reduce)` cape toutes les durées à ~0).
+**`base.css` (partagé)** : `@keyframes app-spin`, `app-rise` (opacité + montée ; la distance par `--app-rise-from`, 8px par défaut), `app-grow-y` (un trait qui se dessine depuis son `transform-origin`), `app-shimmer` (le reflet d'un squelette), `app-focus-pulse` (pulse electric-blue-20) — une entrée, un squelette ou un spinner de plus les réutilise au lieu d'écrire ses keyframes (2026-11-05 : 14 copies retirées), + umbrella **reduced-motion** (`@media (prefers-reduced-motion: reduce)` cape toutes les durées à ~0).
 
 **Keyframes par fichier** : `modals.css` (backdrop-fade, fade-in, success-pop, gen-shimmer), `session.css` (empty-rise, assistant-notice-pulse, composer-status-in/-out, thread-skeleton-shimmer), `dashboard.css` (source-card-processing-pulse), `posts.css` (word-fade-in), `clip-studio.css` (pulse/spin/shimmer/fill/stage), `welcome.css` (recap-loading), `schedule-modal.css` (spin), `topics.css` (topics-ghost-shimmer).
 
