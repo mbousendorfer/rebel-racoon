@@ -1375,28 +1375,32 @@ body:not(.onboarding) .welcome-intro__wordmark {
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-80);
 }
+/* One card per network voice, the shape of the dashed rows under them
+   (2026-11-05, asked: « perturbant que ça s'ajoute au même bloc » — a voice
+   added left its dashed card to join one framed list). Hover = blue border;
+   the part on screen a blue border on a light blue ground. */
 .welcome-review__nets-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
   margin: 0;
   padding: 0;
   list-style: none;
-  background: var(--app-surface);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-card);
-  overflow: hidden;
 }
 .welcome-review__net {
   display: flex;
   align-items: center;
   min-height: 44px;
-}
-.welcome-review__net + .welcome-review__net {
-  border-top: 1px solid var(--ref-color-grey-20);
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
 }
 .welcome-review__net:not(.is-inert):hover {
-  background: var(--ref-color-grey-05);
+  border-color: var(--ref-color-electric-blue-100);
 }
-/* After the hover, at its specificity: the part on screen keeps its ground. */
 .welcome-review__net[aria-current="true"]:not(.is-inert) {
+  border-color: var(--ref-color-electric-blue-100);
   background: var(--ref-color-electric-blue-10);
 }
 .welcome-review__net-main {
@@ -1459,7 +1463,7 @@ body:not(.onboarding) .welcome-intro__wordmark {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
-  margin: var(--ref-spacing-xs) 0 0;
+  margin: var(--ref-spacing-xxs) 0 0;
   padding: 0;
   list-style: none;
 }

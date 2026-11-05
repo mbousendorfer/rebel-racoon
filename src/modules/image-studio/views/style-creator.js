@@ -9,22 +9,22 @@
 // active Playbook. (A three-subject "Test run" column was removed at the user's
 // request, 2026-10-06: "ça n'a pas de sens".)
 
-import { html, toString } from "../lib/html.js?v=2721";
-import { delegate } from "../lib/delegate.js?v=2721";
-import { getPath } from "../../../router.js?v=2721";
-import { setTopbarActions } from "../../../components/topbar.js?v=2721";
-import { renderFrame } from "./frame.js?v=2721";
-import { renderEmpty } from "../ui/empty.js?v=2721";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=2721";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2721";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=2721";
-import { toast } from "../ui/toast.js?v=2721";
-import { confirmDialog } from "../ui/dialog.js?v=2721";
-import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2721";
-import { copyService } from "../services/index.js?v=2721";
-import { lookFromColors } from "../render/visual.js?v=2721";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2721";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2721";
+import { html, toString } from "../lib/html.js?v=2723";
+import { delegate } from "../lib/delegate.js?v=2723";
+import { getPath } from "../../../router.js?v=2723";
+import { setTopbarActions } from "../../../components/topbar.js?v=2723";
+import { renderFrame } from "./frame.js?v=2723";
+import { renderEmpty } from "../ui/empty.js?v=2723";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=2723";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2723";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=2723";
+import { toast } from "../ui/toast.js?v=2723";
+import { confirmDialog } from "../ui/dialog.js?v=2723";
+import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2723";
+import { copyService } from "../services/index.js?v=2723";
+import { lookFromColors } from "../render/visual.js?v=2723";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2723";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2723";
 
 function draftFrom(style, brandId) {
   if (style) {
