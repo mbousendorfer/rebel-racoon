@@ -1615,3 +1615,10 @@
 .pb2-voice-empty.is-bare .pb2-voice-rows {
   max-width: 400px;
 }
+
+/* The last choice under the ways: keep the default voice. */
+.pb2-voice-keep {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--ref-spacing-xs);
+}
