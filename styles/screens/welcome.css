@@ -1436,9 +1436,33 @@ body:not(.onboarding) .welcome-intro__wordmark {
   height: 20px;
   font-size: var(--sys-icon-css-xs);
 }
-.welcome-review__toggle {
+.welcome-review__net-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: var(--ref-spacing-xxs) 0;
+}
+/* What the voice holds: its rules, or none yet. */
+.welcome-review__net-state {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+.welcome-review__net-remove {
   flex-shrink: 0;
-  padding: 0 var(--ref-spacing-sm);
+  margin-right: var(--ref-spacing-xs);
+}
+/* Add a network voice: a hugging button, its DS menu under it. */
+.welcome-review__add {
+  position: relative;
+  margin-top: var(--ref-spacing-xs);
+}
+.welcome-review__add-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
 }
 
 /* An empty part's way on, under its options (the voice review's empty network). */

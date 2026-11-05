@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2711";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2711";
-import { conceptHint } from "./concepts.js?v=2711";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2712";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2712";
+import { conceptHint } from "./concepts.js?v=2712";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2711";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2711";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2711";
-import { isFlagOn } from "./feature-flags.js?v=2711";
-import { clipLookOf } from "./videos-store.js?v=2711";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2711";
-import { parseHashParams } from "./url-state.js?v=2711";
+} from "./playbook-brand-kit.js?v=2712";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2712";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2712";
+import { isFlagOn } from "./feature-flags.js?v=2712";
+import { clipLookOf } from "./videos-store.js?v=2712";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2712";
+import { parseHashParams } from "./url-state.js?v=2712";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2711";
-import { showToast } from "./components/toast.js?v=2711";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2711";
+} from "./voice-parts.js?v=2712";
+import { showToast } from "./components/toast.js?v=2712";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2712";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -67,10 +67,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2711";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2711";
-import { consumeHandoff } from "./handoff.js?v=2711";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2711";
+} from "./network-voice-flow.js?v=2712";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2712";
+import { consumeHandoff } from "./handoff.js?v=2712";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2712";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -78,7 +78,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2711";
+} from "./social-profiles.js?v=2712";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2151,71 +2151,90 @@ function voiceIntroHtml(data) {
 // Angular-only): 36 px caption rows, the current one a blue fill, never an edge
 // bar. Default voice first, then the networks, each marked « Follows default »
 // when it has no voice of its own.
-// The Voice profile tab's list (the secondary nav, recipe O4): the default
-// voice, a hairline, then a row per network with its « Own voice » toggle —
-// the logic of the run's Voice review, in this list's own look (2026-11-05,
-// asked: « on pourrait mutualiser le comportement entre ces 2 éléments », then
-// « je voulais juste que tu maintiennes la logique des toggles »; a shared
-// component restyling both was tried and removed the same day). On: the
-// network has a voice of its own, or is being given one (`ownPending`, until it
-// has rules), and its row opens it; off: it uses the default voice and its row
-// opens nothing. « Follows default » went with the toggle that says it.
+// The Voice profile tab's list (the secondary nav, recipe O4): a list of
+// voices, each row one you open (2026-11-05, ux-heuristics, asked: « le fait que
+// l'on puisse définir une voice par network et l'éditer en cliquant sur la même
+// ligne » n'était pas compris, « il manque l'indication que le network utilise
+// la voice par défaut… ou qu'elle soit remplie », « que l'utilisateur puisse
+// ajouter lui-même une voice »). Default voice first, its line naming the
+// networks that use it; then « Network voices », one row per network with a
+// voice of its own (or being given one, `ownPending`), its line saying whether
+// it has rules; then « Add a network voice », a DS action dropdown of the
+// networks still on the default voice. No toggle: a voice is removed from its
+// own page (Use my default voice instead · Keep the default voice).
 const ownPending = new Set();
+let addMenuOpen = false;
+const ruleCount = (v) =>
+  ["voiceAlways", "voiceNever", "voiceByPost", "voiceSometimes"].reduce((n, f) => n + (v?.[f] || []).length, 0);
 function renderVoiceNav(data) {
   const nets = voiceNets(data);
   // Creation shows each network as a card under the default voice instead.
   if (!nets.length || !isLibrary()) return "";
-  const row = (net, name, icon, toggle = null) => {
-    const opens = !toggle || toggle.on;
-    const here = opens && (net || null) === voiceNet;
-    const label = `<i class="${icon}" aria-hidden="true"></i><span class="ap-caption pb2-voice-nav__name">${esc(name)}</span>`;
-    return `<div class="pb2-voice-nav__row${opens ? "" : " is-inert"}"${here ? ' aria-current="true"' : ""}>
-      ${
-        opens
-          ? `<button type="button" class="pb2-voice-nav__open" data-pb2-voice-net="${net}">${label}</button>`
-          : `<span class="pb2-voice-nav__open">${label}</span>`
-      }
-      ${
-        toggle
-          ? `<label class="ap-toggle-container pb2-voice-nav__toggle"><input type="checkbox" data-pb2-voice-own="${esc(net)}" aria-label="Own voice for ${esc(name)}"${toggle.on ? " checked" : ""}${toggle.disabled ? " disabled" : ""} /><i></i></label>`
-          : ""
-      }
-    </div>`;
+  const hasOwn = (n) => networkVoice(data, n).state === "own" || ownPending.has(n);
+  const own = nets.filter(hasOwn);
+  const rest = nets.filter((n) => !hasOwn(n));
+  const glyph = (n) =>
+    `<i class="${networkIcon(n)}" role="img" aria-label="${esc(networkLabel(n))}" title="${esc(networkLabel(n))}"></i>`;
+  const row = (net, name, icon, state) => {
+    const here = (net || null) === voiceNet;
+    return `<button type="button" class="pb2-voice-nav__row"${here ? ' aria-current="true"' : ""} data-pb2-voice-net="${net}">
+      <i class="${icon}" aria-hidden="true"></i>
+      <span class="pb2-voice-nav__text"><span class="ap-caption pb2-voice-nav__name">${esc(name)}</span><span class="pb2-voice-nav__state">${state}</span></span>
+      <i class="ap-icon-chevron-right pb2-voice-nav__chevron" aria-hidden="true"></i>
+    </button>`;
   };
+  const defaultState = rest.length
+    ? `Used on <span class="pb2-voice-nav__nets">${rest.map(glyph).join("")}</span>`
+    : "The base of every network voice";
+  const netState = (n) => {
+    const { state, voice } = networkVoice(data, n);
+    const count = state === "own" ? ruleCount(voice) : 0;
+    if (state === "own" && voiceHasRules(voice)) return count ? `${count} rule${count === 1 ? "" : "s"}` : "Filled in";
+    return "No rules yet";
+  };
+  const add =
+    canEditView() && rest.length
+      ? `<div class="pb2-voice-nav__add">
+          <button type="button" class="ap-button stroked grey" data-pb2-voice-add aria-expanded="${addMenuOpen}" aria-haspopup="menu">
+            <i class="ap-icon-plus" aria-hidden="true"></i><span>Add a network voice</span>
+          </button>
+          ${
+            addMenuOpen
+              ? `<div class="ap-action-dropdown pb2-voice-nav__menu" role="menu">${rest
+                  .map(
+                    (
+                      n,
+                    ) => `<button type="button" role="menuitem" class="ap-action-dropdown-item" data-pb2-voice-own="${esc(n)}">
+                      <i class="${networkIcon(n)}" aria-hidden="true"></i>
+                      <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container">
+                        <span class="ap-action-dropdown-item-label">${esc(networkLabel(n))}</span>
+                      </div></div>
+                    </button>`,
+                  )
+                  .join("")}</div>`
+              : ""
+          }
+        </div>`
+      : "";
   return `<nav class="pb2-voice-nav" aria-label="Voices">
-      <div class="pb2-voice-nav__group">${row("", "Default voice", "ap-icon-quote")}</div>
+      <div class="pb2-voice-nav__group">${row("", "Default voice", "ap-icon-quote", defaultState)}</div>
       <div class="pb2-voice-nav__group">
-        ${nets
-          .map((n) =>
-            row(n, networkLabel(n), networkIcon(n), {
-              on: networkVoice(data, n).state === "own" || ownPending.has(n),
-              disabled: !canEditView(),
-            }),
-          )
-          .join("")}
+        <span class="ap-caption pb2-voice-nav__heading">Network voices</span>
+        ${own.map((n) => row(n, `${networkLabel(n)} voice`, networkIcon(n), netState(n))).join("")}
+        ${add}
       </div>
     </nav>`;
 }
 
-// The toggle. On: the network opens, its ways to a voice of its own. Off: a
-// voice of its own is removed after a confirm (resetNetworkVoice); one only
-// being given goes back to the default voice at once.
-function setNetworkOwn(net, on) {
-  const d = cfg.getData();
-  if (on) {
-    ownPending.add(net);
-    return leaveEdit(() => {
-      setVoiceNet(net);
-      repaint();
-    });
-  }
-  ownPending.delete(net);
-  if (networkVoice(d, net).state === "own") {
-    repaint(); // the toggle stays on until the confirm says yes
-    return resetNetworkVoice(net);
-  }
-  if (voiceNet === net) setVoiceNet(null);
-  repaint();
+// Add a network voice: the network gets a voice of its own, empty
+// (`ownPending`) until it has rules, and opens on its ways to fill it.
+function addNetworkVoice(net) {
+  addMenuOpen = false;
+  ownPending.add(net);
+  leaveEdit(() => {
+    setVoiceNet(net);
+    repaint();
+  });
 }
 
 function withVoiceNav(data, body) {
@@ -3249,9 +3268,10 @@ function renderNetworkVoiceRead(data) {
     // offers the ways to give the network its own voice (2026-10-29, asked:
     // « directement proposer les options de création de voice et faire un empty
     // state + compréhensible que de recopier la voice par défaut »).
-    const keep = chosen
-      ? ""
-      : `<button type="button" class="ap-button stroked grey" data-pb2-voice-keep="${esc(net)}">Keep the default voice</button>`;
+    const keep =
+      chosen && !ownPending.has(net)
+        ? ""
+        : `<button type="button" class="ap-button stroked grey" data-pb2-voice-keep="${esc(net)}">Keep the default voice</button>`;
     return withVoiceNav(
       data,
       `${pb2TabHead("voice", keep, {
@@ -3881,8 +3901,16 @@ function onClick(event) {
   }
   // Voice per network — the Voice profile's own tabs; Edit on a network without
   // a voice of its own starts from the default voice as it is.
-  const ownToggle = event.target.closest("[data-pb2-voice-own]");
-  if (ownToggle) return ownToggle.matches("input") && setNetworkOwn(ownToggle.dataset.pb2VoiceOwn, ownToggle.checked);
+  const addNet = event.target.closest("[data-pb2-voice-own]");
+  if (addNet) return addNetworkVoice(addNet.dataset.pb2VoiceOwn);
+  if (event.target.closest("[data-pb2-voice-add]")) {
+    addMenuOpen = !addMenuOpen;
+    return repaint();
+  }
+  if (addMenuOpen) {
+    addMenuOpen = false;
+    repaint();
+  }
   const voiceTab = event.target.closest("[data-pb2-voice-net]");
   if (voiceTab) {
     const net = voiceTab.dataset.pb2VoiceNet || null;
@@ -3922,8 +3950,6 @@ function onClick(event) {
     return isLibrary()
       ? resetNetworkVoice(resetVoice.dataset.pb2VoiceReset)
       : giveNetworkVoice(resetVoice.dataset.pb2VoiceReset, "default");
-  if (event.target.closest("[data-pb2-voice-own]") && voiceNet)
-    return editNetworkVoiceFrom(brandVoiceAsIs(cfg.getData()));
   if (!canEditView() && event.target.closest(WRITE_HOOKS)) return;
 
   // Section-nav — scroll the panel into view (buttons, not anchors, so the

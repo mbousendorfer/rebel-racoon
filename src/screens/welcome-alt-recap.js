@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2711";
-import { catalogueRoute } from "../active-playbook.js?v=2711";
+import { navigate } from "../router.js?v=2712";
+import { catalogueRoute } from "../active-playbook.js?v=2712";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,17 +13,17 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2711";
+} from "../context-builder.js?v=2712";
 import {
   RECAP_SECTIONS,
   editVoiceNetwork,
   networkVoiceFilled,
   setNetworkRules,
   proposeVoiceInline,
-} from "../playbook-view.js?v=2711";
-import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2711";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2711";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2711";
+} from "../playbook-view.js?v=2712";
+import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2712";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2712";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2712";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -33,14 +33,14 @@ import {
   playbookNetworks,
   voiceNetworks,
   onlyNetwork,
-} from "../voice-parts.js?v=2711";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2711";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2711";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2711";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2711";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2711";
-import { showToast } from "../components/toast.js?v=2711";
-import { open as openConfirm } from "../components/confirm-modal.js?v=2711";
+} from "../voice-parts.js?v=2712";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2712";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2712";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2712";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2712";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2712";
+import { showToast } from "../components/toast.js?v=2712";
+import { open as openConfirm } from "../components/confirm-modal.js?v=2712";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -142,7 +142,8 @@ const playbookReview = () => ({
 
 // The Voice: the default voice (its five parts), then — flag voicePerNetwork,
 // a Playbook with networks — one row per network under it, each with a DS
-// toggle « Own voice » (2026-11-04, asked: « j'arrive pas à comprendre que je
+// toggle « Own voice » (2026-11-04, replaced 2026-11-05 by « Network voices »,
+// a row per voice with its state, and « Add a network voice »; asked: « j'arrive pas à comprendre que je
 // vais customiser des voices pour les divers networks », then « too confusing,
 // too much » for a tree with a Customize per row; it replaces a DS
 // multi-select, which read as « your networks »). Off: the network uses the
@@ -160,13 +161,32 @@ function voiceReview(sid, overrides = {}) {
     return net ? networkLabel(net) : "";
   };
   const notNetworks = (el) => !el.matches(".pb2-voice-net");
+  // The default voice says where it's used: the networks without a voice of
+  // their own, by name.
+  const usedOn = () => {
+    const names = nets()
+      .filter((n) => !customizing(n))
+      .map(networkLabel);
+    if (!names.length) return "The base of every network voice.";
+    const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names.at(-1)}` : names[0];
+    return `Used on ${list}.`;
+  };
+  const ruleState = (n) => {
+    const v = getDraft(sid).voiceByNetwork?.[n];
+    const count = ["voiceAlways", "voiceNever", "voiceByPost", "voiceSometimes"].reduce(
+      (c, f) => c + (v?.[f] || []).length,
+      0,
+    );
+    if (!networkVoiceFilled(getDraft(sid), n)) return "No rules yet";
+    return count ? `${count} rule${count === 1 ? "" : "s"}` : "Filled in";
+  };
   const defaultPart = () => ({
     id: "voice-default",
     tab: "voice",
     tint: VOICE_TINT,
     title: "Default voice",
     icon: voice.icon,
-    lead: only() ? `How your ${only()} posts sound.` : "How you sound on every network.",
+    lead: only() ? `How your ${only()} posts sound.` : usedOn(),
     open: () => editVoiceNetwork(null),
     pick: (all) => all.filter(notNetworks),
   });
@@ -176,8 +196,10 @@ function voiceReview(sid, overrides = {}) {
     tint: VOICE_TINT,
     title: networkLabel(n),
     icon: networkIcon(n),
-    toggle: { label: "Own voice", on: customizing(n) },
-    // Off: a row, not a part — nothing to open, nothing to confirm.
+    net: n,
+    // Its state, said: how many rules, or none yet.
+    lead: ruleState(n),
+    // On the default voice: not a part, only an entry of « Add a network voice ».
     inert: !customizing(n),
     // On and still empty: the confirm keeps the default voice.
     skipLabel: () => !networkVoiceFilled(getDraft(sid), n) && `Use my default voice for ${networkLabel(n)}`,
@@ -188,7 +210,7 @@ function voiceReview(sid, overrides = {}) {
     },
   });
   // The list: every network. The parts (opened, confirmed one after the
-  // other): the default voice and the networks toggled on.
+  // other): the default voice and the networks added.
   const rows = () => [defaultPart(), ...nets().map(netRow)];
   const parts = () => rows().filter((r) => !r.inert);
   const onToggle = (partId, on) => setNetworkRules(netOf(partId), on);

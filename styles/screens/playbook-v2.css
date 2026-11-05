@@ -1139,21 +1139,31 @@
   border-top: 1px solid var(--ref-color-grey-20);
 }
 
-/* A row: what opens the voice, then (a network) its « Own voice » toggle —
-   two controls side by side, never one inside the other. Off, a network's
-   row is only a line: no hover, nothing to open. */
+/* A row: one voice you open — its glyph, its name over its state, a chevron.
+   The current one a blue fill, never an edge bar. */
 .pb2-voice-nav__row {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
+  width: 100%;
   min-height: var(--comp-button-height);
-  padding: 0 var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxs);
+  border: 0;
   border-radius: var(--ref-border-radius-sm);
+  background: none;
   color: var(--ref-color-grey-100);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
-.pb2-voice-nav__row:not(.is-inert):hover {
+.pb2-voice-nav__row:hover {
   background: var(--ref-color-grey-05);
+}
+
+.pb2-voice-nav__row:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
 }
 
 .pb2-voice-nav__row[aria-current="true"] {
@@ -1165,43 +1175,56 @@
   font-weight: var(--ref-font-weight-bold);
 }
 
-.pb2-voice-nav__open {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  flex: 1 1 auto;
-  min-width: 0;
-  align-self: stretch;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.pb2-voice-nav__row.is-inert .pb2-voice-nav__open {
-  cursor: default;
-}
-
-.pb2-voice-nav__open:focus-visible {
-  outline: 2px solid var(--ref-color-electric-blue-100);
-  outline-offset: 2px;
-  border-radius: var(--ref-border-radius-sm);
-}
-
-.pb2-voice-nav__open > i,
-.pb2-voice-nav__toggle {
+.pb2-voice-nav__row > i {
   flex-shrink: 0;
 }
 
-.pb2-voice-nav__name {
+.pb2-voice-nav__text {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   min-width: 0;
+}
+
+.pb2-voice-nav__name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* What the voice is: its rules, or the networks that use it (glyphs named in
+   their aria-label / title). */
+.pb2-voice-nav__state {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
+.pb2-voice-nav__nets {
+  display: inline-flex;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.pb2-voice-nav__heading {
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xxs) 0;
+  color: var(--ref-color-grey-80);
+  font-weight: var(--ref-font-weight-bold);
+}
+
+/* Add a network voice: a hugging button, its DS menu under it. */
+.pb2-voice-nav__add {
+  position: relative;
+  padding: var(--ref-spacing-xxs);
+}
+
+.pb2-voice-nav__menu {
+  position: absolute;
+  top: 100%;
+  left: var(--ref-spacing-xxs);
+  z-index: 10;
 }
 
 /* The voice on screen names itself: its title (h2) over its sentence. */

@@ -33,12 +33,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2711";
-import { navigate } from "../router.js?v=2711";
-import { getDraft, patchDraft } from "../context-builder.js?v=2711";
-import { mount } from "../playbook-view.js?v=2711";
-import { parseHashParams } from "../url-state.js?v=2711";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2711";
+import { html, raw } from "../utils.js?v=2712";
+import { navigate } from "../router.js?v=2712";
+import { getDraft, patchDraft } from "../context-builder.js?v=2712";
+import { mount } from "../playbook-view.js?v=2712";
+import { parseHashParams } from "../url-state.js?v=2712";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2712";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -56,8 +56,9 @@ const GLIDE_MS = 720; // a card glides to the middle
 // what's left to do, its `group` / `groupHint` head a run of parts —
 // what's left to do), rows? (the list on the left when it holds more than the
 // parts: a row with `inert` is shown, never opened nor confirmed — the voice
-// review's networks left on the default voice; a row's `toggle`: { label, on },
-// a DS toggle in it, answered by onToggle(partId, on); the toggled rows are one list, after the others), next: { label, go },
+// review's networks left on the default voice; a row's `net`: a network, listed
+// under « Network voices » (inert: in the Add menu), answered by
+// onToggle(partId, on)), next: { label, go },
 // back, onWay?, start? (the part to open first), progress? (false: no step
 // dots) }.
 // `onWay(partId, way, refresh)`: a card's tile was picked (the voice review);
@@ -89,51 +90,97 @@ export function renderReview(target, sid, config, review) {
   // so a check that always animated replayed on every click (2026-10-20).
   let justChecked = null;
 
-  // The rows with a toggle (the voice review's networks): one list, one frame,
-  // a column head naming the toggle once, a row per item — its glyph bare, its
-  // name, the toggle. On, the row opens its part; off, it is only a line.
-  // Compact on purpose (2026-11-04, asked: « on peut faire + compact, et de
-  // meilleure qualité » — a framed row each, the label on every toggle, before).
-  const toggleList = () => {
-    const rows = (review.rows?.() || []).filter((t) => t.toggle);
+  // The network rows (the voice review): « Network voices », a row per network
+  // with a voice of its own — its name over its state, opening its part, a
+  // Remove beside it (two controls, never one inside the other) — then « Add a
+  // network voice », a DS action dropdown of the networks still on the default
+  // voice (2026-11-05, ux-heuristics, asked: a toggle that both set the state
+  // and opened the row wasn't understood, the state wasn't said, and « que
+  // l'utilisateur puisse ajouter lui-même une voice »). Answered by
+  // onToggle(partId, on).
+  let addOpen = false;
+  const netList = () => {
+    const rows = (review.rows?.() || []).filter((t) => t.net);
     if (!rows.length) return "";
     const done = reviewed();
+    const own = rows.filter((t) => !t.inert);
+    const rest = rows.filter((t) => t.inert);
     const row = (t) => {
-      const here = t.id === current() && !t.inert;
-      const check =
-        !t.inert && done.has(t.id)
-          ? `<span class="welcome-review__check${t.id === justChecked ? " is-new" : ""}" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
-          : "";
-      const main = html`<i class="${t.icon} welcome-review__net-icon" aria-hidden="true"></i
-        ><span class="welcome-review__net-name">${t.title}</span>${raw(check)}`;
+      const here = t.id === current();
+      const check = done.has(t.id)
+        ? `<span class="welcome-review__check${t.id === justChecked ? " is-new" : ""}" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
+        : "";
       return html`
-        <li class="welcome-review__net${t.inert ? " is-inert" : ""}" aria-current="${here ? "true" : "false"}">
-          ${t.inert
-            ? raw(html`<span class="welcome-review__net-main">${raw(main)}</span>`)
-            : raw(
-                html`<button type="button" class="welcome-review__net-main" data-review-part="${t.id}">
-                  ${raw(main)}
-                </button>`,
-              )}
-          <label class="ap-toggle-container welcome-review__toggle">
-            <input
-              type="checkbox"
-              data-review-toggle="${t.id}"
-              aria-label="${t.toggle.label} for ${t.title}"
-              ${t.toggle.on ? raw("checked") : ""}
-            /><i></i>
-          </label>
+        <li class="welcome-review__net" aria-current="${here ? "true" : "false"}">
+          <button type="button" class="welcome-review__net-main" data-review-part="${t.id}">
+            <i class="${t.icon} welcome-review__net-icon" aria-hidden="true"></i>
+            <span class="welcome-review__net-text">
+              <span class="welcome-review__net-name">${t.title} voice</span>
+              <span class="welcome-review__net-state">${t.lead}</span>
+            </span>
+            ${raw(check)}
+          </button>
+          <button
+            type="button"
+            class="ap-icon-button transparent grey welcome-review__net-remove"
+            data-review-remove="${t.id}"
+            aria-label="Remove the ${t.title} voice"
+            title="Remove the ${t.title} voice"
+          >
+            <i class="ap-icon-trash"></i>
+          </button>
         </li>
       `;
     };
+    const menu = addOpen
+      ? html`<div class="ap-action-dropdown welcome-review__add-menu" role="menu">
+          ${raw(
+            rest
+              .map(
+                (t) =>
+                  html`<button
+                    type="button"
+                    role="menuitem"
+                    class="ap-action-dropdown-item"
+                    data-review-add-net="${t.id}"
+                  >
+                    <i class="${t.icon}" aria-hidden="true"></i>
+                    <div class="ap-action-dropdown-item-text">
+                      <div class="ap-action-dropdown-item-label-container">
+                        <span class="ap-action-dropdown-item-label">${t.title}</span>
+                      </div>
+                    </div>
+                  </button>`,
+              )
+              .join(""),
+          )}
+        </div>`
+      : "";
+    const add = rest.length
+      ? html`<div class="welcome-review__add">
+          <button
+            type="button"
+            class="ap-button stroked grey"
+            data-review-add
+            aria-haspopup="menu"
+            aria-expanded="${addOpen ? "true" : "false"}"
+          >
+            <i class="ap-icon-plus" aria-hidden="true"></i><span>Add a network voice</span>
+          </button>
+          ${raw(menu)}
+        </div>`
+      : "";
     return html`
       <li class="welcome-review__nets">
-        <p class="welcome-review__nets-head" aria-hidden="true">
-          <span>Network</span><span>${rows[0].toggle.label}</span>
-        </p>
-        <ul class="welcome-review__nets-list">
-          ${raw(rows.map(row).join(""))}
-        </ul>
+        <p class="welcome-review__nets-head">Network voices</p>
+        ${own.length
+          ? raw(
+              html`<ul class="welcome-review__nets-list">
+                ${raw(own.map(row).join(""))}
+              </ul>`,
+            )
+          : ""}
+        ${raw(add)}
       </li>
     `;
   };
@@ -145,7 +192,7 @@ export function renderReview(target, sid, config, review) {
       <p class="welcome-intro__sub">${review.sub}</p>
       <ul class="welcome-flow__options">
         ${(review.rows?.() || parts())
-          .filter((t) => !t.toggle)
+          .filter((t) => !t.net)
           .map((t, i, all) => {
             const here = t.id === current();
             // A group opens with its name and a sentence.
@@ -190,7 +237,7 @@ export function renderReview(target, sid, config, review) {
               </li>
             `;
           })}
-        ${raw(toggleList())}
+        ${raw(netList())}
       </ul>
       <div class="welcome-flow__actions">
         <button type="button" class="ap-button ghost grey" data-flow-back>
@@ -534,8 +581,27 @@ export function renderReview(target, sid, config, review) {
   };
 
   const onClick = (e) => {
-    // A row's toggle answers on `change` (below), not here.
-    if (e.target.closest(".welcome-review__toggle")) return;
+    // The network voices: add one (it opens), remove one, the Add menu.
+    const addNet = e.target.closest("[data-review-add-net]")?.dataset.reviewAddNet;
+    if (addNet) {
+      addOpen = false;
+      review.onToggle?.(addNet, true);
+      return openPart(addNet);
+    }
+    if (e.target.closest("[data-review-add]")) {
+      addOpen = !addOpen;
+      return shell.paint();
+    }
+    if (addOpen) {
+      addOpen = false;
+      shell.paint();
+    }
+    const remove = e.target.closest("[data-review-remove]")?.dataset.reviewRemove;
+    if (remove) {
+      const wasHere = remove === current();
+      review.onToggle?.(remove, false);
+      return wasHere ? openPart(parts()[0].id) : shell.paint();
+    }
     const part = e.target.closest("[data-review-part]")?.dataset.reviewPart;
     if (part) {
       if (part !== current()) switchPart(part);
@@ -556,21 +622,6 @@ export function renderReview(target, sid, config, review) {
     if (e.target.closest("[data-flow-back]")) return navigate(review.back);
   };
   target.addEventListener("click", onClick);
-  // A row's toggle (the voice review's « Own voice »): on, the row becomes a
-  // part and opens; off, it goes back to a row — the default voice opens when
-  // it was the one on screen.
-  const onChange = (e) => {
-    const id = e.target.closest("[data-review-toggle]")?.dataset.reviewToggle;
-    if (!id) return;
-    const on = e.target.checked;
-    const wasHere = id === current();
-    review.onToggle?.(id, on);
-    if (on) openPart(id);
-    else if (wasHere) openPart(parts()[0].id);
-    else shell.paint();
-    target.querySelector(`[data-review-toggle="${CSS.escape(id)}"]`)?.focus({ preventScroll: true });
-  };
-  target.addEventListener("change", onChange);
   // The keyboard's ↑ / ↓ browse too — unless you're typing in a field.
   const onKey = (e) => {
     if (calm) return;
@@ -594,7 +645,6 @@ export function renderReview(target, sid, config, review) {
     unmount?.();
     shell.cleanup();
     target.removeEventListener("click", onClick);
-    target.removeEventListener("change", onChange);
     document.removeEventListener("keydown", onKey);
   };
 }
