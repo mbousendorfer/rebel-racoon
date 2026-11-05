@@ -165,15 +165,6 @@
   border-radius: 8px;
 }
 
-.wx-partchip > span:last-child {
-  display: grid;
-}
-
-.wx-partchip > span:last-child > span {
-  font-size: 11.5px;
-  color: var(--ref-color-grey-80);
-}
-
 .wx-glyph.welcome-flow__glyph {
   width: 32px;
   height: 32px;
@@ -240,6 +231,47 @@
   color: var(--ref-color-grey-100);
 }
 
+/* Text abstracted to lines (welcome-alt-explainer.js `lines`): the shape of
+   a sentence, not its words, so the scene reads at a glance. */
+.wx-lines {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+.wx-lines i {
+  display: block;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--ref-color-grey-10);
+}
+
+.wx-lines.is-title i {
+  height: 12px;
+  background: var(--ref-color-grey-20);
+}
+
+.wx-lines.is-nav {
+  width: auto;
+  grid-template-columns: repeat(3, 28px);
+  gap: 10px;
+}
+
+/* The brand book's one line that matters, highlighted as it's read. */
+.wx-lines.is-mark i {
+  height: 10px;
+  background: linear-gradient(var(--app-butter), var(--app-butter)) no-repeat left / 0 100% var(--ref-color-grey-10);
+  animation: wx-highlight 0.7s ease-out 1s forwards;
+}
+
+.wx-chip.is-icon {
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+}
+
 /* My stitch on the thread: a white capsule, lifted, my olive sparkle in it.
    White, not butter: it sits on grey and on the butter disc alike (butter on
    butter disappeared, 2026-11-03). */
@@ -257,8 +289,7 @@
 }
 
 .wx-seam i,
-.wx-tag i,
-.wx-doors i {
+.wx-tag i {
   color: var(--app-butter-accent);
 }
 
@@ -274,19 +305,9 @@
   gap: 10px;
 }
 
-.wx-part__head > span:last-child {
-  display: grid;
-  min-width: 0;
-}
-
 .wx-part__head strong {
   font-size: 14px;
   line-height: 1.25;
-}
-
-.wx-part__head strong + span {
-  font-size: 12px;
-  color: var(--ref-color-grey-80);
 }
 
 .wx-slot {
@@ -298,13 +319,6 @@
   padding-top: 10px;
   border-top: 1px solid var(--ref-color-grey-20);
   animation: wx-land 0.7s cubic-bezier(0.16, 1, 0.3, 1) var(--d, 0s) both;
-}
-
-.wx-slot__text {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 /* A piece of the source on its way to its part. */
@@ -412,24 +426,10 @@
   justify-items: start;
 }
 
-.wx-browser__h {
-  font-size: 19px;
-  line-height: 1.15;
-  font-weight: var(--sys-text-style-h2-weight);
-  letter-spacing: -0.01em;
-}
-
-.wx-browser__sub {
-  font-size: 11px;
-  color: var(--ref-color-grey-80);
-}
-
 .wx-browser__cta {
-  padding: 5px 12px;
+  width: 64px;
+  height: 22px;
   border-radius: 999px;
-  color: var(--ref-color-white);
-  font-size: 11px;
-  font-weight: var(--sys-text-style-body-bold-weight);
 }
 
 .wx-browser__img {
@@ -485,35 +485,16 @@
   font-size: 14px;
 }
 
-.wx-book__label {
-  font-size: 11px;
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-80);
-}
-
-.wx-book__quote {
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.wx-book__quote mark {
-  color: inherit;
-  border-radius: 3px;
-  background: linear-gradient(var(--app-butter), var(--app-butter)) no-repeat left / 0 100%;
-  animation: wx-highlight 0.7s ease-out 1s forwards;
-}
-
-.wx-book__say {
-  font-size: 12px;
-  color: var(--ref-color-grey-80);
-}
-
 .wx-book__type {
   display: flex;
   align-items: center;
   gap: 12px;
   font-size: 11px;
   color: var(--ref-color-grey-80);
+}
+
+.wx-book__type .wx-lines {
+  width: 96px;
 }
 
 .wx-book__type b {
@@ -526,8 +507,8 @@
 
 .wx-source {
   display: grid;
-  gap: 7px;
-  height: 92px;
+  gap: 8px;
+  height: 84px;
   padding: 11px 12px;
   overflow: hidden;
 }
@@ -551,20 +532,26 @@
   text-overflow: ellipsis;
 }
 
-.wx-mini.is-doc {
-  white-space: normal;
+.wx-mini .wx-lines {
+  flex: 1;
 }
 
 .wx-bubble {
   justify-self: end;
-  padding: 3px 9px;
+  width: 50%;
+  padding: 5px 9px;
   border-radius: 10px;
-  background: var(--ref-color-grey-05);
+  background: var(--ref-color-grey-10);
   font-size: 11px;
+}
+
+.wx-bubble .wx-lines i {
+  background: var(--ref-color-grey-20);
 }
 
 .wx-bubble.is-me {
   justify-self: start;
+  width: 62%;
   background: var(--app-butter);
 }
 
@@ -579,15 +566,6 @@
   align-items: center;
   gap: 10px;
   font-size: 14px;
-}
-
-.wx-print__head > span {
-  display: grid;
-}
-
-.wx-print__head > span > span {
-  font-size: 12px;
-  color: var(--ref-color-grey-80);
 }
 
 .wx-print .wx-chips {
@@ -607,14 +585,6 @@
 
 .wx-wave rect:nth-child(3n) {
   fill: var(--ref-color-purple-100);
-}
-
-.wx-print__quote {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.45;
-  text-align: center;
-  text-wrap: balance;
 }
 
 /* ── Posts ────────────────────────────────────────────────────────────── */
@@ -652,19 +622,14 @@
   color: var(--ref-color-grey-80);
 }
 
+strong.wx-post__who,
 .wx-post__who strong {
   font-size: 13px;
   color: var(--ref-color-grey-100);
 }
 
 .wx-post__text {
-  display: -webkit-box;
-  margin: 10px 0 0;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  font-size: 12.5px;
-  line-height: 1.45;
+  margin-top: 12px;
 }
 
 .wx-tag {
@@ -684,9 +649,21 @@
   color: var(--ref-color-purple-150);
 }
 
-.wx-type {
-  display: block;
-  animation: wx-type 1.1s steps(28, end) var(--d, 0s) both;
+/* The language scene's posts write themselves, line by line. */
+.wx-type i {
+  animation: wx-type 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.6s both;
+}
+
+.wx-type i:nth-child(2) {
+  animation-delay: 1.9s;
+}
+
+.wx-type i:nth-child(3) {
+  animation-delay: 2.2s;
+}
+
+.wx-langcard strong {
+  font-size: 14px;
 }
 
 .wx-langcard {
@@ -694,17 +671,6 @@
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-}
-
-.wx-langcard > span:nth-child(2) {
-  display: grid;
-  font-size: 12px;
-  color: var(--ref-color-grey-80);
-}
-
-.wx-langcard strong {
-  font-size: 14px;
-  color: var(--ref-color-grey-100);
 }
 
 .wx-lang {
@@ -782,10 +748,23 @@
   padding: 16px;
 }
 
+/* The intro's draft keeps its words: the rewrite is the lesson. */
 .wx-draft__text {
   margin: 0;
   font-size: 14px;
   line-height: 1.55;
+}
+
+/* A part's share of the ready draft: its pin, then its lines. */
+.wx-hl.is-lines {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+}
+
+.wx-hl.is-lines .wx-lines {
+  flex: 1;
 }
 
 .wx-hl {
@@ -873,12 +852,6 @@
   transition:
     opacity 0.5s ease 0.3s,
     transform 0.5s ease 0.3s;
-}
-
-.wx-doors span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .is-done .wx-doors {

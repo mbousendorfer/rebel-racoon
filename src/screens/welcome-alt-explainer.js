@@ -17,15 +17,15 @@
 // The ready screen paints once and moves by attributes (`is-lit`, `is-done`)
 // so its stages light the parts one by one without replaying the scene.
 
-import { escapeHtml } from "../utils.js?v=2734";
-import { isFlagOn } from "../feature-flags.js?v=2734";
-import { networkIcon, networkLabel } from "../social-profiles.js?v=2734";
-import { playbookNetworks } from "../voice-parts.js?v=2734";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2734";
-import { tint, domainOf } from "./welcome-alt-shell.js?v=2734";
-import { styleArtSvg } from "../modules/image-studio/render/style-art.js?v=2734";
-import { resolvePalette } from "../modules/image-studio/render/palette.js?v=2734";
-import { svgToDataUrl } from "../modules/image-studio/render/visual.js?v=2734";
+import { escapeHtml } from "../utils.js?v=2735";
+import { isFlagOn } from "../feature-flags.js?v=2735";
+import { networkIcon, networkLabel } from "../social-profiles.js?v=2735";
+import { playbookNetworks } from "../voice-parts.js?v=2735";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2735";
+import { tint, domainOf } from "./welcome-alt-shell.js?v=2735";
+import { styleArtSvg } from "../modules/image-studio/render/style-art.js?v=2735";
+import { resolvePalette } from "../modules/image-studio/render/palette.js?v=2735";
+import { svgToDataUrl } from "../modules/image-studio/render/visual.js?v=2735";
 
 const W = 560;
 const H = 540;
@@ -67,12 +67,9 @@ function brandOf(d) {
     name,
     logo: d?.brandLogo || "",
     colors,
-    font: d?.brandTypography?.headingFont || "Averta",
     // A picture as my Image Generator would draw it for this brand.
     art: (variant) => svgToDataUrl(styleArtSvg(variant, palette)),
     traits: traits.length ? traits : ["Warm", "Clear", "Helpful"],
-    voice: d?.voiceSummary || "Warm and clear. Every post opens with what matters to the reader.",
-    audience: d?.audience?.[0] || "People who care about what they buy",
     lang: d?.primaryLanguage || (d?.languages || [])[0] || "English",
     competitors: (d?.competitors || [])
       .map((c) => c.name)
@@ -132,19 +129,21 @@ const swatches = (colors, cls = "") =>
 
 const chips = (list, cls = "wx-chip") => list.map((t) => `<span class="${cls}">${e(t)}</span>`).join("");
 
+// Text abstracted to lines: the shape of a sentence, not its words (widths in %).
+const lines = (widths, cls = "") =>
+  `<span class="wx-lines ${cls}">${widths.map((w) => `<i style="width:${w}%"></i>`).join("")}</span>`;
+
 const avatar = (b, net, size) => `
   <span class="ap-avatar size-${size} wx-post__avatar">
     ${bind(b.logo ? `<img src="${e(b.logo)}" alt="" />` : `<span class="ap-avatar-initials">${e(b.name.slice(0, 1))}</span>`)}
     <span class="ap-avatar-network" role="img" aria-label="${e(networkLabel(net))}"><i class="${networkIcon(net)}" aria-hidden="true"></i></span>
   </span>`;
 
-// A post as the networks show it: the DS avatar with its network badge.
-const post = (b, net, text, { tag = "", cls = "" } = {}) => `
+// A post as the networks show it: the DS avatar with its network badge, its text as lines.
+const post = (b, net, { tag = "", cls = "", lineCls = "" } = {}) => `
   <article class="wx-post ${cls}">
-    <header class="wx-post__head">${avatar(b, net, 32)}
-      <span class="wx-post__who"><strong>${bind(e(b.name))}</strong><span>Just now</span></span>
-    </header>
-    <p class="wx-post__text">${text}</p>
+    <header class="wx-post__head">${avatar(b, net, 32)}<strong class="wx-post__who">${bind(e(b.name))}</strong></header>
+    ${lines([100, 92, 64], `wx-post__text ${lineCls}`)}
     ${tag}
   </article>`;
 
@@ -162,7 +161,7 @@ const rowsOf = (breaks, gap) => {
 const stage = (caption, body, svg, { attrs = "", h = H, Y }) => `
   <div class="wx-caption">
     <h3 class="wx-caption__title">${e(caption.title)}</h3>
-    <p class="wx-caption__text">${e(caption.text)}</p>
+    ${caption.text ? `<p class="wx-caption__text">${e(caption.text)}</p>` : ""}
   </div>
   <div class="wx-fit" data-h="${h}" data-rows="${Y.rows}" style="--h:${Y(h)}px">
     <div class="wx-canvas" aria-hidden="true" ${attrs}>
@@ -171,14 +170,14 @@ const stage = (caption, body, svg, { attrs = "", h = H, Y }) => `
     </div>
   </div>`;
 
-const partCard = (id, meaning, body, slotDelay) => `
+const partCard = (id, body, slotDelay) => `
   <div class="wx-part" style="${tint(id)}">
-    <div class="wx-part__head">${glyph(id)}<span><strong>${e(part(id).title)}</strong><span>${e(meaning)}</span></span></div>
+    <div class="wx-part__head">${glyph(id)}<strong>${e(part(id).title)}</strong></div>
     <div class="wx-slot" style="--d:${slotDelay.toFixed(2)}s">${body}</div>
   </div>`;
 
-// Three posts dealt as a fan: the middle one readable, the sides behind it.
-function fanPosts(b, textOf, { y, d, tagOf = () => "" }) {
+// Three posts dealt as a fan: the middle one in front, the sides behind it.
+function fanPosts(b, { y, d, tagOf = () => "", lineCls = "" }) {
   const nets = b.networks;
   const slots = [
     { x: 24, rot: -5, z: 1, cls: "is-side", net: nets[1] || nets[0] },
@@ -187,7 +186,7 @@ function fanPosts(b, textOf, { y, d, tagOf = () => "" }) {
   ];
   return slots
     .map((s, i) =>
-      at(s.x, y + (s.rot ? 16 : 0), 200, post(b, s.net, textOf(i), { tag: tagOf(i), cls: s.cls }), {
+      at(s.x, y + (s.rot ? 16 : 0), 200, post(b, s.net, { tag: tagOf(i), cls: s.cls, lineCls }), {
         cls: "wx-fan",
         d: d + (i === 1 ? 0 : 0.18),
         style: `z-index:${s.z};--rot:${s.rot}deg`,
@@ -210,12 +209,12 @@ function brandScene(d, gap = 0) {
         <span class="wx-browser__url"><i class="ap-icon-lock-on" aria-hidden="true"></i>${e(b.domain)}</span>
       </div>
       <div class="wx-browser__page">
-        <div class="wx-browser__nav"><span class="wx-browser__brand">${brandMark(b, 20)}<strong>${bind(e(b.name))}</strong></span><span>Shop</span><span>About</span><span>Journal</span></div>
+        <div class="wx-browser__nav"><span class="wx-browser__brand">${brandMark(b, 20)}<strong>${bind(e(b.name))}</strong></span>${lines([100, 100, 100], "is-nav")}</div>
         <div class="wx-browser__hero">
           <div class="wx-browser__copy">
-            <span class="wx-browser__h">Made with care,<br />for every day.</span>
-            <span class="wx-browser__sub">For people who care about what they buy.</span>
-            ${bind(`<span class="wx-browser__cta" style="background:${e(b.colors[0])}">Shop now</span>`)}
+            ${lines([90, 70], "is-title")}
+            ${lines([80])}
+            ${bind(`<span class="wx-browser__cta" style="background:${e(b.colors[0])}"></span>`)}
           </div>
           ${bind(`<img class="wx-browser__img" src="${b.art("flat-lay")}" alt="" />`)}
         </div>
@@ -223,60 +222,28 @@ function brandScene(d, gap = 0) {
       </div>
     </div>`;
   const cards = [
-    {
-      id: "goals",
-      x: 16,
-      y: Y(300),
-      meaning: "Who you write for, and why",
-      body: bind(`<span class="wx-slot__text">${e(b.audience)}</span>`),
-    },
-    {
-      id: "voice",
-      x: 288,
-      y: Y(300),
-      meaning: "How you sound",
-      body: bind(`<span class="wx-chips">${chips(b.traits)}</span>`),
-    },
-    {
-      id: "brand",
-      x: 16,
-      y: Y(424),
-      meaning: "Your colors, logo and type",
-      body: bind(`${swatches(b.colors)}<span class="wx-font"><b>Aa</b>${e(b.font)}</span>`),
-    },
+    { id: "goals", x: 16, y: Y(300), body: lines([90, 60]) },
+    { id: "voice", x: 288, y: Y(300), body: bind(`<span class="wx-chips">${chips(b.traits)}</span>`) },
+    { id: "brand", x: 16, y: Y(424), body: bind(`${swatches(b.colors)}<span class="wx-font"><b>Aa</b></span>`) },
     {
       id: "competitors",
       x: 288,
       y: Y(424),
-      meaning: "Who you're up against",
-      body: bind(
-        b.competitors.length
-          ? `<span class="wx-chips">${chips(b.competitors)}</span>`
-          : `<span class="wx-slot__text">I'll suggest a few</span>`,
-      ),
+      body: bind(b.competitors.length ? `<span class="wx-chips">${chips(b.competitors)}</span>` : lines([70, 45])),
     },
   ];
-  // Where each piece leaves the site, and what it looks like on the way.
+  // Where each piece leaves the site, and what it looks like on the way: an icon, no words.
+  const dot = (icon) => `<span class="wx-chip is-fly is-icon"><i class="${icon}"></i></span>`;
   const flights = [
-    [
-      190,
-      128,
-      144,
-      Y(372),
-      2.0,
-      `<span class="wx-chip is-fly"><i class="ap-icon-multiple-users"></i>Your audience</span>`,
-    ],
-    [190, 96, 416, Y(372), 2.25, `<span class="wx-chip is-fly"><i class="ap-icon-quote"></i>Your words</span>`],
+    [190, 128, 144, Y(372), 2.0, dot("ap-icon-multiple-users")],
+    [190, 96, 416, Y(372), 2.25, dot("ap-icon-quote")],
     [400, 120, 144, Y(496), 2.5, swatches(b.colors.slice(0, 3), "is-fly")],
-    [300, 16, 416, Y(496), 2.75, `<span class="wx-chip is-fly"><i class="ap-icon-search"></i>Brands like yours</span>`],
+    [300, 16, 416, Y(496), 2.75, dot("ap-icon-search")],
   ];
   return stage(
-    {
-      title: "How I get to know your brand",
-      text: "I read your site and sort what I find into four parts. Every draft I write starts there.",
-    },
+    { title: "How I get to know your brand" },
     at(80, 0, 400, site, { cls: "wx-hero" }) +
-      seam(Y(216), "I sort it into your Playbook", 1.2) +
+      seam(Y(216), "I read your site", 1.2) +
       at(
         0,
         Y(262),
@@ -284,9 +251,7 @@ function brandScene(d, gap = 0) {
         `<div class="wx-pbhead">${brandMark(b, 22)}<strong>Your Playbook</strong><span>${e(b.domain)}</span></div>`,
         { cls: "wx-pbhead-row", d: 1.4 },
       ) +
-      cards
-        .map((c, i) => at(c.x, c.y, 256, partCard(c.id, c.meaning, c.body, 2.9 + i * 0.25), { d: 1.5 + i * 0.1 }))
-        .join("") +
+      cards.map((c, i) => at(c.x, c.y, 256, partCard(c.id, c.body, 2.9 + i * 0.25), { d: 1.5 + i * 0.1 })).join("") +
       flights.map((f) => fly(...f)).join(""),
     thread(280, 206, 280, Y(262), 1),
     { Y },
@@ -298,29 +263,18 @@ function languageScene(d, gap = 0) {
   const b = brandOf(d);
   const Y = rowsOf([160, 250], gap);
   const lang = b.lang;
-  const lines = [
-    "Spring is here, and so is our new range.",
-    "Three things we wish we'd known sooner.",
-    "Ten years together. Thank you.",
-  ];
   return stage(
-    {
-      title: "Every draft, in your language",
-      text: `I write in ${lang} on every network, so nothing needs translating.`,
-    },
+    { title: "Every draft, in your language" },
     at(
       150,
       30,
       260,
-      `<div class="wx-langcard">${brandMark(b, 36)}<span><strong>${bind(e(b.name))}</strong><span>Your Playbook</span></span>
+      `<div class="wx-langcard">${brandMark(b, 36)}<strong>${bind(e(b.name))}</strong>
         <span class="wx-lang"><i class="ap-icon-translate" aria-hidden="true"></i>${e(lang)}</span></div>`,
       { cls: "wx-hero" },
     ) +
       seam(Y(160), `I write in ${lang}`, 0.6) +
-      fanPosts(b, (i) => `<span class="wx-type" style="--d:${(1.6 + i * 0.35).toFixed(2)}s">${e(lines[i])}</span>`, {
-        y: Y(250),
-        d: 1.1,
-      }),
+      fanPosts(b, { y: Y(250), d: 1.1, lineCls: "wx-type" }),
     thread(280, 106, 280, Y(206), 0.4) + fanThreads(Y(206), Y(250), 0.9),
     { h: 410, Y },
   );
@@ -329,86 +283,58 @@ function languageScene(d, gap = 0) {
 // Documents: your brand book sharpens the voice and the look.
 function documentsScene(d, gap = 0) {
   const b = brandOf(d);
-  const Y = rowsOf([262, 340], gap);
+  const Y = rowsOf([160, 238], gap);
   const book = `
     <div class="wx-book">
       <div class="wx-book__page">
         <span class="wx-book__brand">${brandMark(b, 22)}<strong>${bind(e(b.name))}</strong></span>
-        <span class="wx-book__label">Our voice</span>
-        <span class="wx-book__quote"><mark>Warm, never pushy.</mark> We talk like a friend who knows the product.</span>
-        <span class="wx-book__label">We say</span>
-        <span class="wx-book__say">"you", "made for", "every day"</span>
+        ${lines([70], "is-mark")}
+        ${lines([100, 85, 92, 60])}
       </div>
       <div class="wx-book__page">
-        <span class="wx-book__label">Colors</span>
         ${bind(swatches(b.colors, "is-big"))}
-        <span class="wx-book__label">Type</span>
-        <span class="wx-book__type"><b>Aa</b><span>${bind(e(b.font))}<br />Headings and body</span></span>
+        <span class="wx-book__type"><b>Aa</b>${lines([100, 70])}</span>
       </div>
     </div>`;
   return stage(
-    {
-      title: "Your brand book, put to work",
-      text: "The words you use go to your Voice profile. Your colors and type go to Branding.",
-    },
+    { title: "Your brand book, put to work" },
     at(40, 0, 480, book, { cls: "wx-hero" }) +
-      seam(Y(262), "I keep your words and your look", 1.1) +
-      at(
-        24,
-        Y(340),
-        240,
-        partCard("voice", "How you sound", `<span class="wx-slot__text">Warm, never pushy</span>`, 2.6),
-        {
-          d: 1.4,
-        },
-      ) +
+      seam(Y(160), "I keep your words and your look", 1.1) +
+      at(24, Y(238), 240, partCard("voice", bind(`<span class="wx-chips">${chips(b.traits)}</span>`), 2.6), {
+        d: 1.4,
+      }) +
       at(
         296,
-        Y(340),
+        Y(238),
         240,
-        partCard(
-          "brand",
-          "Your colors, logo and type",
-          bind(`${swatches(b.colors)}<span class="wx-font"><b>Aa</b>${e(b.font)}</span>`),
-          2.9,
-        ),
+        partCard("brand", bind(`${swatches(b.colors)}<span class="wx-font"><b>Aa</b></span>`), 2.9),
         { d: 1.55 },
       ) +
-      fly(
-        150,
-        104,
-        144,
-        Y(400),
-        1.9,
-        `<span class="wx-chip is-fly"><i class="ap-icon-quote"></i>Warm, never pushy</span>`,
-      ) +
-      fly(400, 76, 416, Y(400), 2.2, swatches(b.colors.slice(0, 3), "is-fly")),
-    thread(280, 216, 280, Y(302), 0.9) + thread(280, Y(302), 144, Y(340), 1.2) + thread(280, Y(302), 416, Y(340), 1.2),
-    { h: 460, Y },
+      fly(150, 64, 144, Y(288), 1.9, `<span class="wx-chip is-fly is-icon"><i class="ap-icon-quote"></i></span>`) +
+      fly(400, 40, 416, Y(288), 2.2, swatches(b.colors.slice(0, 3), "is-fly")),
+    thread(280, 136, 280, Y(200), 0.9) + thread(280, Y(200), 144, Y(238), 1.2) + thread(280, Y(200), 416, Y(238), 1.2),
+    { h: 350, Y },
   );
 }
 
 // Voice source: learned once from what you give me, then every post sounds like you.
 function voiceScene(d, gap = 0) {
   const b = brandOf(d);
-  const Y = rowsOf([108, 150, 372], gap);
+  const Y = rowsOf([100, 142, 314], gap);
   const perNetwork = isFlagOn("voicePerNetwork");
   const sources = [
     {
       icon: "ap-icon-post",
       title: "Your posts",
-      body: `<span class="wx-mini"><i class="${networkIcon(b.networks[0])}"></i>Our busiest week yet.</span>
-             <span class="wx-mini"><i class="${networkIcon(b.networks[1] || b.networks[0])}"></i>You asked, we listened.</span>`,
+      body: [b.networks[0], b.networks[1] || b.networks[0]]
+        .map((n, i) => `<span class="wx-mini"><i class="${networkIcon(n)}"></i>${lines([i ? 70 : 100])}</span>`)
+        .join(""),
     },
-    {
-      icon: "ap-icon-file--pdf",
-      title: "A document",
-      body: `<span class="wx-mini is-doc">We say "you", never "users". Short sentences.</span>`,
-    },
+    { icon: "ap-icon-file--pdf", title: "A document", body: lines([100, 75]) },
     {
       icon: "ap-icon-single-chat-bubble",
       title: "Your own words",
-      body: `<span class="wx-bubble is-me">How do you sound?</span><span class="wx-bubble">Friendly, but expert.</span>`,
+      body: `<span class="wx-bubble is-me">${lines([100])}</span><span class="wx-bubble">${lines([100])}</span>`,
     },
   ];
   // The voice print: bars of a waveform, each breathing on its own beat.
@@ -416,18 +342,8 @@ function voiceScene(d, gap = 0) {
     const h = 8 + Math.round(Math.abs(Math.sin(i * 0.9) * 22 + Math.sin(i * 0.37) * 12));
     return `<rect x="${i * 9}" y="${((46 - h) / 2).toFixed(1)}" width="5" height="${h}" rx="2.5" style="--i:${i}" />`;
   }).join("");
-  const lines = [
-    "Small steps, big results. Here's what changed for us this month.",
-    "Three habits that give you back an hour a day. Number two surprised us.",
-    "You asked, we listened. Here's what's new.",
-  ];
   return stage(
-    {
-      title: "Your voice, learned once, used everywhere",
-      text: perNetwork
-        ? "Give me any one of these and I learn how you sound. Each network uses that voice, or gets one of its own."
-        : "Give me any one of these and I learn how you sound. Then every draft sounds like you, on every network.",
-    },
+    { title: "Your voice, learned once, used everywhere" },
     sources
       .map((s, i) =>
         at(
@@ -439,13 +355,13 @@ function voiceScene(d, gap = 0) {
         ),
       )
       .join("") +
-      seam(Y(108), "I learn how you sound", 0.7) +
+      seam(Y(100), "I learn how you sound", 0.7) +
       at(
         100,
-        Y(150),
+        Y(142),
         360,
         `<div class="wx-print" style="${tint("voice")}">
-          <div class="wx-print__head">${glyph("voice")}<span><strong>Voice profile</strong><span>How you sound</span></span></div>
+          <div class="wx-print__head">${glyph("voice")}<strong>Voice profile</strong></div>
           <svg class="wx-wave" viewBox="0 0 320 46" width="320" height="46">${bars}</svg>
           ${bind(
             `<span class="wx-chips">${b.traits
@@ -454,12 +370,11 @@ function voiceScene(d, gap = 0) {
               )
               .join("")}</span>`,
           )}
-          <p class="wx-print__quote">${bind(e(b.voice))}</p>
         </div>`,
         { cls: "wx-hero", d: 1.1 },
       ) +
-      fanPosts(b, (i) => e(lines[i]), {
-        y: Y(372),
+      fanPosts(b, {
+        y: Y(314),
         d: 2.2,
         tagOf: (i) =>
           !perNetwork
@@ -468,25 +383,18 @@ function voiceScene(d, gap = 0) {
               ? `<span class="wx-tag is-own">${e(networkLabel(b.networks[2] || b.networks[0]))} voice</span>`
               : `<span class="wx-tag"><i class="ap-icon-quote"></i>Default voice</span>`,
       }),
-    [92, 280, 468].map((x) => thread(x, 92, 280, Y(150), 0.4)).join("") + fanThreads(Y(352), Y(372), 2),
-    { Y },
+    [92, 280, 468].map((x) => thread(x, 84, 280, Y(142), 0.4)).join("") + fanThreads(Y(294), Y(314), 2),
+    { h: 454, Y },
   );
 }
 
-// What each part gives a draft, said on its chip.
-const ROLE = {
-  goals: "Who it's for",
-  voice: "How it sounds",
-  brand: "How it looks",
-  competitors: "What's different",
-};
 const partChips = () =>
   PART_IDS.map((id, i) =>
     at(
       i * 142,
       0,
       134,
-      `<div class="wx-partchip" style="${tint(id)}">${glyph(id)}<span><strong>${e(part(id).title)}</strong><span>${ROLE[id]}</span></span></div>`,
+      `<div class="wx-partchip" style="${tint(id)}">${glyph(id)}<strong>${e(part(id).title)}</strong></div>`,
       { cls: "wx-corner", attrs: `data-part="${id}"` },
     ),
   ).join("");
@@ -496,31 +404,24 @@ const pin = (id) => `<span class="wx-pin" style="${tint(id)}"><i class="${part(i
 // thread draws, and its share of the post is marked on the post itself.
 function readyScene(d, gap = 0) {
   const b = brandOf(d);
-  const Y = rowsOf([124, 482], gap);
+  const Y = rowsOf([124, 436], gap);
   const net = b.networks[0];
-  const mark = (id, text) => `<span class="wx-hl" data-part="${id}" style="${tint(id)}">${pin(id)}${text}</span>`;
+  // Each part's share of the draft: its lines, marked in its tint.
+  const mark = (id, widths) =>
+    `<span class="wx-hl is-lines" data-part="${id}" style="${tint(id)}">${pin(id)}${lines(widths)}</span>`;
   const chipsRow = partChips();
   const draft = `
     <article class="wx-draft">
-      <header class="wx-post__head">${avatar(b, net, 40)}
-        <span class="wx-post__who"><strong>${bind(e(b.name))}</strong><span>Draft for ${e(networkLabel(net))}</span></span>
-      </header>
-      <p class="wx-draft__text">
-        ${mark("goals", "If you run a growing team,")}
-        ${mark("voice", "here's the one habit that gave us back four hours a week.")}
-      </p>
+      <header class="wx-post__head">${avatar(b, net, 40)}<strong class="wx-post__who">${bind(e(b.name))}</strong></header>
+      ${mark("goals", [60])}
+      ${mark("voice", [100, 80])}
       <div class="wx-draft__img wx-hl is-block" data-part="brand" style="${tint("brand")}">
         ${bind(`<img src="${b.art("lifestyle")}" alt="" />`)}
         ${pin("brand")}
       </div>
-      <p class="wx-draft__text">${mark("competitors", "Nobody else in our space is talking about it yet.")}</p>
+      ${mark("competitors", [75])}
     </article>`;
-  const doors = `<div class="wx-doors">
-    <span class="ap-status mermaid">Ready to write</span>
-    <span><i class="ap-icon-double-chat-bubbles"></i>Drafts in any chat</span>
-    <span><i class="ap-icon-sparkles"></i>Ideas from Topics</span>
-    <span><i class="ap-icon-image"></i>On-brand images</span>
-  </div>`;
+  const doors = `<div class="wx-doors"><span class="ap-status mermaid">Ready to write</span></div>`;
   // Where each part's thread lands on the post.
   const ends = [
     [170, Y(124)],
@@ -529,13 +430,10 @@ function readyScene(d, gap = 0) {
     [410, Y(124)],
   ];
   return stage(
-    {
-      title: "Four parts, one draft",
-      text: "Each part shapes the same draft, so it sounds and looks like you.",
-    },
-    chipsRow + at(100, Y(124), 360, draft, { cls: "wx-hero" }) + at(0, Y(482), W, doors, { cls: "wx-doors-row" }),
-    PART_IDS.map((id, i) => thread(67 + i * 142, 52, ...ends[i], 0, `data-part="${id}"`)).join(""),
-    { attrs: `data-scene-ready`, Y },
+    { title: "Four parts, one draft" },
+    chipsRow + at(100, Y(124), 360, draft, { cls: "wx-hero" }) + at(0, Y(436), W, doors, { cls: "wx-doors-row" }),
+    PART_IDS.map((id, i) => thread(67 + i * 142, 44, ...ends[i], 0, `data-part="${id}"`)).join(""),
+    { attrs: `data-scene-ready`, h: 476, Y },
   );
 }
 
@@ -587,7 +485,7 @@ function introScene(_d, gap = 0) {
       text: "I write every draft from your Playbook. Here's what each part changes.",
     },
     partChips() + at(100, Y(124), 360, draft, { cls: "wx-hero" }),
-    PART_IDS.map((id, i) => thread(67 + i * 142, 52, ...ends[i], 0, `data-part="${id}"`)).join(""),
+    PART_IDS.map((id, i) => thread(67 + i * 142, 44, ...ends[i], 0, `data-part="${id}"`)).join(""),
     { attrs: `data-scene-ready data-scene-intro`, h: 476, Y },
   );
 }
