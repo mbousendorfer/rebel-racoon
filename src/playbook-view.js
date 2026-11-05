@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2748";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2748";
-import { conceptHint } from "./concepts.js?v=2748";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2749";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2749";
+import { conceptHint } from "./concepts.js?v=2749";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2748";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2748";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2748";
-import { isFlagOn } from "./feature-flags.js?v=2748";
-import { clipLookOf } from "./videos-store.js?v=2748";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2748";
-import { parseHashParams } from "./url-state.js?v=2748";
+} from "./playbook-brand-kit.js?v=2749";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2749";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2749";
+import { isFlagOn } from "./feature-flags.js?v=2749";
+import { clipLookOf } from "./videos-store.js?v=2749";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2749";
+import { parseHashParams } from "./url-state.js?v=2749";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2748";
-import { showToast } from "./components/toast.js?v=2748";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2748";
+} from "./voice-parts.js?v=2749";
+import { showToast } from "./components/toast.js?v=2749";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2749";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -68,10 +68,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2748";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2748";
-import { consumeHandoff } from "./handoff.js?v=2748";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2748";
+} from "./network-voice-flow.js?v=2749";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2749";
+import { consumeHandoff } from "./handoff.js?v=2749";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2749";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -79,7 +79,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2748";
+} from "./social-profiles.js?v=2749";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2732,7 +2732,7 @@ function renderRuleEditor(field, items) {
       </div>`,
     )
     .join("");
-  return `<div class="pb2-rule-edits">${rows}</div>
+  return `<div class="pb2-rule-edits${cases ? " is-cases" : ""}">${rows}</div>
     <button type="button" class="ap-button secondary blue recap__add-row" data-vr-add="${field}">
       <i class="ap-icon-plus"></i><span>${cases ? "Add a case" : "Add a rule"}</span>
     </button>`;

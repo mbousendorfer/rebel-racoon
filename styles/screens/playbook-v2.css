@@ -427,15 +427,25 @@
   margin-top: var(--ref-spacing-xxxs);
 }
 
-/* Words to avoid, in the Never block, under its rules. */
+/* Words to avoid, in the Never block, under its rules: 24 from them (the
+   body's 16 + 8), a section of its own. */
 .pb2-avoid-row {
-  margin-top: var(--ref-spacing-md);
+  margin-top: var(--ref-spacing-xxs);
 }
 
-/* A part's rules, edited: one row each — the fields, then remove. */
+/* A part's rules, edited: one row each — the fields, then remove. 12 between
+   two rules; 24 between two cases, whose two fields sit 8 apart, so a case
+   reads as one (2026-11-05, asked: « y'a des problèmes de marges et rythme
+   vertical » — the fiche had no gap at all, the fields touched; only the run's
+   review spaced them). */
 .pb2-rule-edits {
   display: flex;
   flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.pb2-rule-edits.is-cases {
+  gap: var(--ref-spacing-md);
 }
 
 .pb2-rule-edit {
@@ -452,9 +462,11 @@
   min-width: 0;
 }
 
+/* The examples from the brand's posts: a caption 8 under its field, part of it. */
 .pb2-rule-edit__examples {
   margin: 0;
-  font-size: var(--ref-font-size-sm);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
 }
 

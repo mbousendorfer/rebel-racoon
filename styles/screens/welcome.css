@@ -1197,10 +1197,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
   gap: var(--ref-spacing-xs);
 }
 
-.welcome-flow__sheet .welcome-review__card .pb2-rule-edits {
-  gap: var(--ref-spacing-xs);
-}
-
 .welcome-flow__sheet .welcome-review__card .pb2-avoid-row {
   margin-top: var(--ref-spacing-xxxs);
 }
@@ -1324,13 +1320,8 @@ body:not(.onboarding) .welcome-intro__wordmark {
 /* Rules (Always, Never, Now and then): a list — a field per rule, its
    example right under it, small, as part of it. No hairlines between them
    (2026-11-04, asked: « pas besoin des séparateurs dans ce genre de blocs »):
-   each field is already a box, the gap separates them. */
-.welcome-review__card .pb2-rule-edit__examples {
-  margin: var(--ref-spacing-xxxs) 0 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
-}
+   each field is already a box, the gap separates them. The spacing and the
+   caption are the base's (playbook-v2.css .pb2-rule-edits), the fiche's too. */
 
 .welcome-review__card .recap__add-row {
   margin-top: 0; /* the body's gap is the air */
