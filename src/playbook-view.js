@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2724";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2724";
-import { conceptHint } from "./concepts.js?v=2724";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2725";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2725";
+import { conceptHint } from "./concepts.js?v=2725";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2724";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2724";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2724";
-import { isFlagOn } from "./feature-flags.js?v=2724";
-import { clipLookOf } from "./videos-store.js?v=2724";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2724";
-import { parseHashParams } from "./url-state.js?v=2724";
+} from "./playbook-brand-kit.js?v=2725";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2725";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2725";
+import { isFlagOn } from "./feature-flags.js?v=2725";
+import { clipLookOf } from "./videos-store.js?v=2725";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2725";
+import { parseHashParams } from "./url-state.js?v=2725";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2724";
-import { showToast } from "./components/toast.js?v=2724";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2724";
+} from "./voice-parts.js?v=2725";
+import { showToast } from "./components/toast.js?v=2725";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2725";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -67,10 +67,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2724";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2724";
-import { consumeHandoff } from "./handoff.js?v=2724";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2724";
+} from "./network-voice-flow.js?v=2725";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2725";
+import { consumeHandoff } from "./handoff.js?v=2725";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2725";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -78,7 +78,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2724";
+} from "./social-profiles.js?v=2725";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2207,7 +2207,7 @@ function renderVoiceNav(data) {
     canEditView() && rest.length
       ? `<ul class="welcome-review__addables pb2-voice-nav__addables">${rest
           .map(
-            (n) => `<li><button type="button" class="welcome-review__addable" data-pb2-voice-own="${esc(n)}">
+            (n) => `<li><button type="button" class="welcome-review__addable" data-pb2-voice-add-net="${esc(n)}">
               <i class="${networkIcon(n)} welcome-review__net-icon" aria-hidden="true"></i>
               <span class="welcome-review__addable-name">${esc(networkLabel(n))} voice</span>
               <span class="welcome-review__addable-add"><i class="ap-icon-plus" aria-hidden="true"></i><span>Add</span></span>
@@ -2901,12 +2901,15 @@ function voiceWaysRows(items) {
 // the network's glyph bare (no medallion), the benefit as an H3, one sentence,
 // then the ways as the run's option rows. Still a .pb2-block, so the review
 // picks it as its part's card like any other.
-function voiceEmptyState(net, rows, body, { className = "" } = {}) {
+// `bare`: under a head that already names the network and says what happens
+// meanwhile (the fiche), no glyph and no title — one sentence, then the ways
+// (2026-11-05, asked: « du doublon d'information / de titre »).
+function voiceEmptyState(net, rows, body, { className = "", bare = false } = {}) {
   const label = networkLabel(net);
-  return `<section class="pb2-block pb2-block--wide pb2-voice-empty ${className}">
-    <i class="${networkIcon(net)} pb2-voice-empty__icon" aria-hidden="true"></i>
+  return `<section class="pb2-block pb2-block--wide pb2-voice-empty${bare ? " is-bare" : ""} ${className}">
+    ${bare ? "" : `<i class="${networkIcon(net)} pb2-voice-empty__icon" aria-hidden="true"></i>`}
     <div class="pb2-voice-empty__text">
-      <h3 class="pb2-voice-empty__title">Give ${esc(label)} its own voice</h3>
+      ${bare ? "" : `<h3 class="pb2-voice-empty__title">Give ${esc(label)} its own voice</h3>`}
       <p class="pb2-voice-empty__body">${esc(body)}</p>
     </div>
     ${rows}
@@ -3225,16 +3228,12 @@ function networkVoiceEmpty(net, chosen) {
       hint: "Start from your default voice",
     },
   ].filter(Boolean);
-  // Under the tab's head (which carries Keep the default voice), the empty
-  // state: what happens meanwhile, then the ways.
-  return voiceEmptyState(
-    net,
-    voiceWaysRows(tiles),
-    chosen
-      ? `I write your ${label} posts in your default voice, as you chose. Give it one anytime.`
-      : `Until you do, I write your ${label} posts in your default voice. Start from one of these.`,
-    { className: `pb2-voice-net pb2-voice-net--${net}` },
-  );
+  // Under the tab's head (which names the network, says it uses the default
+  // voice meanwhile and carries Remove), one sentence, then the ways.
+  return voiceEmptyState(net, voiceWaysRows(tiles), `Give ${label} its own voice, from one of these.`, {
+    className: `pb2-voice-net pb2-voice-net--${net}`,
+    bare: true,
+  });
 }
 
 function networkVoiceLead(net, voice, data) {
@@ -3910,8 +3909,12 @@ function onClick(event) {
   }
   // Voice per network — the Voice profile's own tabs; Edit on a network without
   // a voice of its own starts from the default voice as it is.
-  const addNet = event.target.closest("[data-pb2-voice-own]");
-  if (addNet) return addNetworkVoice(addNet.dataset.pb2VoiceOwn);
+  const addNet = event.target.closest("[data-pb2-voice-add-net]");
+  if (addNet) return addNetworkVoice(addNet.dataset.pb2VoiceAddNet);
+  // Write it myself, on a network without rules: its editor, from the default
+  // voice as it is.
+  if (event.target.closest("[data-pb2-voice-own]") && voiceNet)
+    return editNetworkVoiceFrom(brandVoiceAsIs(cfg.getData()));
   const voiceTab = event.target.closest("[data-pb2-voice-net]");
   if (voiceTab) {
     const net = voiceTab.dataset.pb2VoiceNet || null;
