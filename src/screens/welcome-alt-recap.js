@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2735";
-import { catalogueRoute } from "../active-playbook.js?v=2735";
+import { navigate } from "../router.js?v=2736";
+import { catalogueRoute } from "../active-playbook.js?v=2736";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,17 +13,17 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2735";
+} from "../context-builder.js?v=2736";
 import {
   RECAP_SECTIONS,
   editVoiceNetwork,
   networkVoiceFilled,
   setNetworkRules,
   proposeVoiceInline,
-} from "../playbook-view.js?v=2735";
-import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2735";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2735";
-import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2735";
+} from "../playbook-view.js?v=2736";
+import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2736";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2736";
+import { getConnectedProfiles, networkIcon, networkLabel, normalizeNetwork } from "../social-profiles.js?v=2736";
 import {
   brandVoiceAsIs,
   canLearnFrom,
@@ -33,14 +33,14 @@ import {
   playbookNetworks,
   voiceNetworks,
   onlyNetwork,
-} from "../voice-parts.js?v=2735";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2735";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2735";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2735";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2735";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2735";
-import { showToast } from "../components/toast.js?v=2735";
-import { open as openConfirm } from "../components/confirm-modal.js?v=2735";
+} from "../voice-parts.js?v=2736";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2736";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2736";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2736";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2736";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2736";
+import { showToast } from "../components/toast.js?v=2736";
+import { open as openConfirm } from "../components/confirm-modal.js?v=2736";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -114,6 +114,9 @@ export function renderWelcomeAltVoice(_params, target) {
 
 // The first time on the Voice review: every network follows the default voice
 // (chosen), except one that already has rules of its own (learned from posts).
+// Marked `byDefault`: not added, so the fiche lists it to add (2026-11-05,
+// asked: « si je n'ai pas ajouté les voices lors de la FUX, pourquoi elles sont
+// visibles dans ma voice profile ? »); no draft asks for it either.
 // `voiceRulesFor` lists the networks picked for rules — the draft's, never saved.
 function startVoiceRules(sid) {
   const d = getDraft(sid);
@@ -123,7 +126,9 @@ function startVoiceRules(sid) {
   patchDraft(sid, {
     voiceRulesFor: own,
     voiceByNetwork: {
-      ...Object.fromEntries(nets.filter((n) => !own.includes(n)).map((n) => [n, brandVoiceAsIs(d)])),
+      ...Object.fromEntries(
+        nets.filter((n) => !own.includes(n)).map((n) => [n, { ...brandVoiceAsIs(d), byDefault: true }]),
+      ),
       ...Object.fromEntries(own.map((n) => [n, d.voiceByNetwork[n]])),
     },
   });
