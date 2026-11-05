@@ -1453,16 +1453,51 @@ body:not(.onboarding) .welcome-intro__wordmark {
   flex-shrink: 0;
   margin-right: var(--ref-spacing-xs);
 }
-/* Add a network voice: a hugging button, its DS menu under it. */
-.welcome-review__add {
-  position: relative;
-  margin-top: var(--ref-spacing-xs);
+/* A voice you can add: a dashed row under the ones you have, the network's
+   glyph, « X voice », and « + Add » on the right; hover = blue border. */
+.welcome-review__addables {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  margin: var(--ref-spacing-xs) 0 0;
+  padding: 0;
+  list-style: none;
 }
-.welcome-review__add-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 10;
+.welcome-review__addable {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--ref-spacing-sm);
+  border: 1px dashed var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--ref-color-grey-80);
+  cursor: pointer;
+}
+.welcome-review__addable:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+.welcome-review__addable:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+}
+.welcome-review__addable-name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+}
+/* The action, said: the interactive blue. */
+.welcome-review__addable-add {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  color: var(--ref-color-electric-blue-100);
+  font-weight: var(--ref-font-weight-bold);
 }
 
 /* An empty part's way on, under its options (the voice review's empty network). */
