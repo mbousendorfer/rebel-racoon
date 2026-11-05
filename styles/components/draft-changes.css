@@ -58,6 +58,14 @@
   gap: var(--ref-spacing-sm);
 }
 
+/* View changes: the diff read as a diff, added in the DS success green beside
+   the removed words in red. At rest the new words stay on butter. */
+.posts__card.is-viewing-changes .draft-diff__add {
+  background:
+    linear-gradient(var(--sys-color-success-text), var(--sys-color-success-text)) left bottom / 100% 2px no-repeat,
+    linear-gradient(var(--sys-color-success-light-bg), var(--sys-color-success-light-bg)) left top / 100% 100% no-repeat;
+}
+
 /* Just rewritten: the stroke, once. */
 .posts__card.has-fresh-changes .draft-diff__add {
   animation: draft-diff-sweep 700ms cubic-bezier(0.25, 0.7, 0.2, 1) 200ms both;
