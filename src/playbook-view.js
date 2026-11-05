@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2738";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2738";
-import { conceptHint } from "./concepts.js?v=2738";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2740";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2740";
+import { conceptHint } from "./concepts.js?v=2740";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2738";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2738";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2738";
-import { isFlagOn } from "./feature-flags.js?v=2738";
-import { clipLookOf } from "./videos-store.js?v=2738";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2738";
-import { parseHashParams } from "./url-state.js?v=2738";
+} from "./playbook-brand-kit.js?v=2740";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2740";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2740";
+import { isFlagOn } from "./feature-flags.js?v=2740";
+import { clipLookOf } from "./videos-store.js?v=2740";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2740";
+import { parseHashParams } from "./url-state.js?v=2740";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2738";
-import { showToast } from "./components/toast.js?v=2738";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2738";
+} from "./voice-parts.js?v=2740";
+import { showToast } from "./components/toast.js?v=2740";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2740";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -68,10 +68,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2738";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2738";
-import { consumeHandoff } from "./handoff.js?v=2738";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2738";
+} from "./network-voice-flow.js?v=2740";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2740";
+import { consumeHandoff } from "./handoff.js?v=2740";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2740";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -79,7 +79,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2738";
+} from "./social-profiles.js?v=2740";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2177,7 +2177,7 @@ function renderVoiceNav(data) {
   // voice, elle est en état added »). Never answered: a dashed row to add.
   const hasOwn = (n) => {
     const v = networkVoice(data, n);
-    return v.state === "own" || (v.chosen && !v.byDefault) || ownPending.has(n);
+    return v.state === "own" || v.chosen || ownPending.has(n);
   };
   const own = nets.filter(hasOwn);
   const rest = nets.filter((n) => !hasOwn(n));
@@ -3158,15 +3158,15 @@ export function networkVoiceFilled(data, net) {
   return state === "own" && voiceHasRules(voice);
 }
 
-// Picking: a network out of `voiceRulesFor` keeps the default voice,
-// chosen (its rules, if any, go), one in it waits for rules. Exported for the
+// Picking: a network out of `voiceRulesFor` is not added — never set (its
+// rules, if any, go; its first draft asks), one in it waits for rules. Exported for the
 // review's network select (welcome-alt-recap).
 export function setNetworkRules(net, on) {
   const d = cfg.getData();
   const picked = (d.voiceRulesFor || []).filter((n) => n !== net);
   d.voiceRulesFor = on ? [...picked, net] : picked;
   const rest = Object.fromEntries(Object.entries(d.voiceByNetwork || {}).filter(([n]) => n !== net));
-  d.voiceByNetwork = on ? rest : { ...rest, [net]: { ...brandVoiceAsIs(d), byDefault: true } };
+  d.voiceByNetwork = rest;
   repaint();
 }
 
@@ -3276,10 +3276,7 @@ function networkVoiceLead(net, voice, data) {
 function renderNetworkVoiceRead(data) {
   const net = voiceNet;
   const label = networkLabel(net);
-  const nv = networkVoice(data, net);
-  const { state, voice } = nv;
-  // Kept on the default voice by the run, never added: not a choice.
-  const chosen = nv.chosen && !nv.byDefault;
+  const { state, chosen, voice } = networkVoice(data, net);
   if (state === "default") {
     // Read-only: that voice on grey, as it is.
     if (!canEditView())

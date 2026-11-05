@@ -4,6 +4,7 @@
 // prompt) render here. The pure, dependency-free turns stay in thread-turns.js.
 // Moved out of session.js, unchanged.
 
+import { sessionPlaybookId } from "../../active-playbook.js?v=2740";
 import {
   renderExtractingNotice,
   renderSourceIntakeTurn,
@@ -13,27 +14,26 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2738";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2738";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2738";
-import { getTopPost } from "../../top-posts-store.js?v=2738";
-import { getTopicById } from "../../topics-store.js?v=2738";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2738";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2738";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2738";
-import { getIdeas } from "../../library.js?v=2738";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2738";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2738";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2738";
-import { getPlans } from "../../post-plan-store.js?v=2738";
-import { isFlagOn } from "../../feature-flags.js?v=2738";
-import { CURRENT_USER } from "../../org.js?v=2738";
-import { getSessionById } from "../../sessions-store.js?v=2738";
-import { getContextById } from "../../contexts-store.js?v=2738";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2738";
-import { getFocusKey } from "../../components/right-panel.js?v=2738";
-import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2738";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2738";
+} from "./thread-turns.js?v=2740";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2740";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2740";
+import { getTopPost } from "../../top-posts-store.js?v=2740";
+import { getTopicById } from "../../topics-store.js?v=2740";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2740";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2740";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2740";
+import { getIdeas } from "../../library.js?v=2740";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2740";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2740";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2740";
+import { getPlans } from "../../post-plan-store.js?v=2740";
+import { isFlagOn } from "../../feature-flags.js?v=2740";
+import { CURRENT_USER } from "../../org.js?v=2740";
+import { getContextById } from "../../contexts-store.js?v=2740";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2740";
+import { getFocusKey } from "../../components/right-panel.js?v=2740";
+import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2740";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2740";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -428,7 +428,7 @@ function renderProfilesTurn(message) {
 // look runs the first Generate an image on the batch's first draft, so the
 // answer lands as an image straight away.
 function renderImageLookNudge(message, sessionId) {
-  const brandId = getSessionById(sessionId)?.contextId;
+  const brandId = sessionPlaybookId(sessionId);
   const first = message.drafts?.[0]?.id;
   if (!first || !needsImageLook(brandId)) return "";
   const last = getThread(sessionId).findLast((m) => m.variant === "draft");

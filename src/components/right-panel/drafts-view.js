@@ -4,7 +4,8 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta } from "../../social-profiles.js?v=2738";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2740";
+import { networkMeta } from "../../social-profiles.js?v=2740";
 import {
   getPosts,
   removePost,
@@ -12,24 +13,23 @@ import {
   updatePostContent,
   attachImageToDraft,
   attachCarouselToDraft,
-} from "../../posts-store.js?v=2738";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2738";
-import { getSessionById } from "../../sessions-store.js?v=2738";
-import { renderPostCard } from "../post-card.js?v=2738";
-import { isPostValid } from "../../post-validation.js?v=2738";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2738";
-import { html, raw } from "../../utils.js?v=2738";
-import { isFlagOn } from "../../feature-flags.js?v=2738";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2738";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2738";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2738";
-import { open as openAssignModal } from "../assign-modal.js?v=2738";
-import { showToast } from "../toast.js?v=2738";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2738";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2738";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2738";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2738";
-import { blockInDemo } from "../../demo-flow.js?v=2738";
+} from "../../posts-store.js?v=2740";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2740";
+import { renderPostCard } from "../post-card.js?v=2740";
+import { isPostValid } from "../../post-validation.js?v=2740";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2740";
+import { html, raw } from "../../utils.js?v=2740";
+import { isFlagOn } from "../../feature-flags.js?v=2740";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2740";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2740";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2740";
+import { open as openAssignModal } from "../assign-modal.js?v=2740";
+import { showToast } from "../toast.js?v=2740";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2740";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2740";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2740";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2740";
+import { blockInDemo } from "../../demo-flow.js?v=2740";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -123,7 +123,7 @@ export function renderDraftsView() {
   // The Playbook behind this chat, resolved ONCE for the whole feed: an
   // image-less draft offers to go complete the brand kit, and the card must not
   // resolve a Context itself (it stays a pure render of a post).
-  const ctx = sid ? getContextById(getSessionById(sid)?.contextId) : null;
+  const ctx = sid ? getContextById(sessionPlaybookId(sid)) : null;
   const brandGaps = getBrandKitGaps(ctx);
   const playbookId = ctx?.id || null;
   // ONCE per feed, on the first image-less draft — not once per card. What the
@@ -374,7 +374,7 @@ export function onPostSchedule(postId) {
   openScheduleModal({
     posts: [post],
     // The chat's Playbook — whose saved posting rhythm the modal opens on.
-    playbookId: getSessionById(sid)?.contextId || null,
+    playbookId: sessionPlaybookId(sid) || null,
     onConfirm: () => {
       // The modal queues the post on confirm; here we just drop it from
       // the Drafts workspace.
@@ -463,7 +463,7 @@ export function onSectionSchedule(network) {
   if (target.length === 0 || !target.every(isPostValid)) return;
   openScheduleModal({
     posts: target,
-    playbookId: getSessionById(sid)?.contextId || null,
+    playbookId: sessionPlaybookId(sid) || null,
     onConfirm: () => {
       commitScheduled(sid, target);
       for (const p of target) selectedDraftIds.delete(p.id);
@@ -479,7 +479,7 @@ export function openScheduleForPosts(sid, posts, onScheduled) {
   if (!sid || !posts.length) return;
   openScheduleModal({
     posts,
-    playbookId: getSessionById(sid)?.contextId || null,
+    playbookId: sessionPlaybookId(sid) || null,
     onConfirm: (slots) => {
       commitScheduled(sid, posts);
       for (const p of posts) selectedDraftIds.delete(p.id);
@@ -554,7 +554,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2738"), import("../../folders-store.js?v=2738")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2740"), import("../../folders-store.js?v=2740")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -692,7 +692,7 @@ export function onPostStudio(postId) {
   if (!post) return;
   // The Image Generator's studio: the draft's Playbook as the brand, and the PNG back into the post.
   openDraftStudio({
-    brandId: getSessionById(sid)?.contextId || null,
+    brandId: sessionPlaybookId(sid) || null,
     network: post.network,
     text: Array.isArray(post.text) ? post.text.join("\n") : post.text || "",
     imageUrl: post.imageUrl || "",

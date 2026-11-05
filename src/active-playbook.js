@@ -42,9 +42,11 @@
 //   scopeSessions(list)    → the chat list, scoped
 //   isAccountScope(path)   → is this route ABOVE the workspaces?
 
-import { getContexts, getContextById, getDefaultContext } from "./contexts-store.js?v=2738";
-import { isFlagOn } from "./feature-flags.js?v=2738";
-import { createNotifier } from "./store-utils.js?v=2738";
+import { getContexts, getContextById, getDefaultContext } from "./contexts-store.js?v=2740";
+import { isFlagOn } from "./feature-flags.js?v=2740";
+import { createNotifier } from "./store-utils.js?v=2740";
+import { getSessionById } from "./sessions-store.js?v=2740";
+import { parseHashParams } from "./url-state.js?v=2740";
 
 const KEY = "archie-active-playbook";
 
@@ -115,6 +117,19 @@ export function isWorkspaceMode() {
 // on anyway.
 export function playbookForNewWork() {
   return isWorkspaceMode() ? getActivePlaybook() : getDefaultContext();
+}
+
+// The Playbook a chat writes for. A chat not created yet (`new`, `new-<id>`)
+// is in no store: its Playbook is the URL's (the composer pill writes it
+// there), else the one new work is born under — session.js's own rule. Read
+// from the store alone, the first chat after the run had none, so no gate on
+// it fired (the Voice step, the accounts — 2026-11-05).
+export function sessionPlaybookId(sessionId) {
+  const s = getSessionById(sessionId);
+  if (s) return s.contextId || null;
+  if (!sessionId || (sessionId !== "new" && !String(sessionId).startsWith("new-"))) return null;
+  const here = window.location.hash.match(/^#\/session\/([^?]+)/)?.[1];
+  return (here === sessionId && parseHashParams().get("contextId")) || playbookForNewWork()?.id || null;
 }
 
 // The chat list, scoped to the active brand.

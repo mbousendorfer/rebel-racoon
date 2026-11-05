@@ -33,6 +33,7 @@
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
+import { sessionPlaybookId } from "./active-playbook.js?v=2740";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -42,14 +43,13 @@ import {
   postVoiceTurn,
   resolveTurn,
   getThread,
-} from "./assistant.js?v=2738";
-import { getContextById, updateContext } from "./contexts-store.js?v=2738";
-import { getSessionById } from "./sessions-store.js?v=2738";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2738";
-import { setHandoff } from "./handoff.js?v=2738";
-import { navigate } from "./router.js?v=2738";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2738";
-import { getPosts } from "./posts-store.js?v=2738";
+} from "./assistant.js?v=2740";
+import { getContextById, updateContext } from "./contexts-store.js?v=2740";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2740";
+import { setHandoff } from "./handoff.js?v=2740";
+import { navigate } from "./router.js?v=2740";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2740";
+import { getPosts } from "./posts-store.js?v=2740";
 import {
   networkVoiceOn,
   networkVoice,
@@ -58,7 +58,7 @@ import {
   brandVoiceAsIs,
   voiceNetworks,
   adaptNetworkVoice,
-} from "./voice-parts.js?v=2738";
+} from "./voice-parts.js?v=2740";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;
@@ -88,7 +88,7 @@ export function missingNetworkVoices(ctx, networks) {
 }
 
 export function requireNetworkVoices(sessionId, networks, onReady, contextId = null) {
-  const ctx = getContextById(contextId || getSessionById(sessionId)?.contextId);
+  const ctx = getContextById(contextId || sessionPlaybookId(sessionId));
   const missing = missingNetworkVoices(ctx, networks);
   if (!missing.length) return onReady();
   askVoice(sessionId, ctx.id, missing, onReady);

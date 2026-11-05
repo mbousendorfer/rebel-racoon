@@ -10,9 +10,9 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2738";
-import { isFlagOn } from "./feature-flags.js?v=2738";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2738";
+import { escapeHtml } from "./utils.js?v=2740";
+import { isFlagOn } from "./feature-flags.js?v=2740";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2740";
 import {
   networkMeta,
   networkLabel,
@@ -22,7 +22,7 @@ import {
   getConnectedProfiles,
   profileForNetwork,
   NETWORKS,
-} from "./social-profiles.js?v=2738";
+} from "./social-profiles.js?v=2740";
 
 // `hint`: what the part holds, said under its title — on the Playbook's tab
 // and in a voice proposal (one source for both).
@@ -239,18 +239,13 @@ export function withNetworkVoices(ctx) {
   };
 }
 
-// The run's start, whatever way it ends: every network that can have a voice
-// keeps the default voice — not added, so `byDefault` (the fiche offers to add
-// it, no draft asks) — except one with a voice of its own. Nothing learned
-// behind the user's back, the Voice review opened or not (2026-11-05, asked:
-// « Draft my first post » learned a voice per account without showing it).
-export function defaultVoices(ctx) {
-  const kept = { ...(ctx?.voiceByNetwork || {}) };
-  for (const n of voiceNetworks(ctx)) {
-    const v = kept[n];
-    if (!v || v.optimizedBy === "brand") kept[n] = v && !v.byDefault ? v : { ...brandVoiceAsIs(ctx), byDefault: true };
-  }
-  return kept;
+// The run's start, whatever way it ends: only the voices of their own. A
+// network not added is never set — in the fiche a row to add, and its first
+// draft asks for its voice, like any network never answered (2026-11-05,
+// asked: « Toujours »). Nothing learned behind the user's back, the Voice
+// review opened or not (« Draft my first post » learned a voice per account).
+export function ownNetworkVoices(ctx) {
+  return Object.fromEntries(Object.entries(ctx?.voiceByNetwork || {}).filter(([, v]) => v?.optimizedBy !== "brand"));
 }
 
 // The default voice copied as it is: a defined voice, not optimized. Edit starts
@@ -271,7 +266,6 @@ export function cloneNetworkVoice(v) {
   LIST_PARTS.forEach((f) => (out[f] = cloneItems(v?.[f])));
   if (v?.learnedFrom) Object.assign(out, { learnedFrom: String(v.learnedFrom), postCount: Number(v.postCount) || 0 });
   if (v?.changedAt) out.changedAt = Number(v.changedAt) || 0;
-  if (v?.byDefault && out.optimizedBy === "brand") out.byDefault = true;
   return out;
 }
 
@@ -279,18 +273,13 @@ export function cloneNetworkVoice(v) {
 //   "brand"    the flag is off, or no network named
 //   "default"  the network writes in the default voice — never given one (`chosen` false: the next draft for it asks first,
 //              network-voice-flow.js), or « Use the default voice » picked
-//              (`chosen` true; `byDefault` too when the run kept it there, never
-//              added — the fiche still offers to add it). One state for the user, warned the same way.
+//              (`chosen` true). One state for the user, warned the same way.
 //   "own"      its own voice: learned, adapted, or edited
 // `network` as a draft names it ("twitter") or as a voice is keyed ("x").
 export function networkVoice(ctx, network) {
   if (!networkVoiceOn() || !network) return { state: "brand", voice: ctx };
   const own = ctx?.voiceByNetwork?.[normalizeNetwork(network)];
-  // `chosen`: the network has an answer (no Voice step before its draft).
-  // `byDefault`: that answer is the run's, for a network never added there —
-  // the fiche still offers to add it (2026-11-05).
-  if (!own || own.optimizedBy === "brand")
-    return { state: "default", chosen: !!own, byDefault: !!own?.byDefault, voice: ctx };
+  if (!own || own.optimizedBy === "brand") return { state: "default", chosen: !!own, voice: ctx };
   return { state: "own", voice: own };
 }
 
