@@ -1119,10 +1119,89 @@
    CSS-UI recipe), as a card on the page's grey: white, grey-20 all round,
    hugging its rows, sticky under the tabs like the head beside it. Visible
    overflow: Another network… opens its menu past the card. */
-/* The voice list's place on the tab (its look is components/voice-list.css). */
 .pb2-voice-nav {
   position: sticky;
   top: calc(var(--pb2-tabs-h, 0px) + var(--ref-spacing-xxs));
+  background: var(--ref-color-white);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+}
+
+/* Default voice, then the networks: one hairline between the two. */
+.pb2-voice-nav__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xxs);
+}
+
+.pb2-voice-nav__group + .pb2-voice-nav__group {
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+/* A row: what opens the voice, then (a network) its « Own voice » toggle —
+   two controls side by side, never one inside the other. Off, a network's
+   row is only a line: no hover, nothing to open. */
+.pb2-voice-nav__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  min-height: var(--comp-button-height);
+  padding: 0 var(--ref-spacing-xxs);
+  border-radius: var(--ref-border-radius-sm);
+  color: var(--ref-color-grey-100);
+}
+
+.pb2-voice-nav__row:not(.is-inert):hover {
+  background: var(--ref-color-grey-05);
+}
+
+.pb2-voice-nav__row[aria-current="true"] {
+  background: var(--ref-color-electric-blue-20);
+  color: var(--ref-color-electric-blue-150);
+}
+
+.pb2-voice-nav__row[aria-current="true"] .pb2-voice-nav__name {
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.pb2-voice-nav__open {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  flex: 1 1 auto;
+  min-width: 0;
+  align-self: stretch;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pb2-voice-nav__row.is-inert .pb2-voice-nav__open {
+  cursor: default;
+}
+
+.pb2-voice-nav__open:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+  border-radius: var(--ref-border-radius-sm);
+}
+
+.pb2-voice-nav__open > i,
+.pb2-voice-nav__toggle {
+  flex-shrink: 0;
+}
+
+.pb2-voice-nav__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* The voice on screen names itself: its title (h2) over its sentence. */

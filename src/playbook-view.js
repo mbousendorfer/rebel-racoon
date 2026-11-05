@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2709";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2709";
-import { conceptHint } from "./concepts.js?v=2709";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2710";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2710";
+import { conceptHint } from "./concepts.js?v=2710";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2709";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2709";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2709";
-import { isFlagOn } from "./feature-flags.js?v=2709";
-import { clipLookOf } from "./videos-store.js?v=2709";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2709";
-import { parseHashParams } from "./url-state.js?v=2709";
+} from "./playbook-brand-kit.js?v=2710";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2710";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2710";
+import { isFlagOn } from "./feature-flags.js?v=2710";
+import { clipLookOf } from "./videos-store.js?v=2710";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2710";
+import { parseHashParams } from "./url-state.js?v=2710";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2709";
-import { showToast } from "./components/toast.js?v=2709";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2709";
+} from "./voice-parts.js?v=2710";
+import { showToast } from "./components/toast.js?v=2710";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2710";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -67,11 +67,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2709";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2709";
-import { consumeHandoff } from "./handoff.js?v=2709";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2709";
-import { voiceListHtml } from "./components/voice-list.js?v=2709";
+} from "./network-voice-flow.js?v=2710";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2710";
+import { consumeHandoff } from "./handoff.js?v=2710";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2710";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -79,7 +78,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2709";
+} from "./social-profiles.js?v=2710";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2152,32 +2151,50 @@ function voiceIntroHtml(data) {
 // Angular-only): 36 px caption rows, the current one a blue fill, never an edge
 // bar. Default voice first, then the networks, each marked « Follows default »
 // when it has no voice of its own.
-// The Voice profile tab's list: the shared voice list (components/voice-list.js),
-// as in the run's Voice review — the default voice, then each network with its
-// « Own voice » toggle (2026-11-05, asked: « on pourrait mutualiser le
-// comportement entre ces 2 éléments »). On: the network has a voice of its own,
-// or is being given one (`ownPending`, until it has rules); off: it uses the
-// default voice and its row opens nothing.
+// The Voice profile tab's list (the secondary nav, recipe O4): the default
+// voice, a hairline, then a row per network with its « Own voice » toggle —
+// the logic of the run's Voice review, in this list's own look (2026-11-05,
+// asked: « on pourrait mutualiser le comportement entre ces 2 éléments », then
+// « je voulais juste que tu maintiennes la logique des toggles »; a shared
+// component restyling both was tried and removed the same day). On: the
+// network has a voice of its own, or is being given one (`ownPending`, until it
+// has rules), and its row opens it; off: it uses the default voice and its row
+// opens nothing. « Follows default » went with the toggle that says it.
 const ownPending = new Set();
 function renderVoiceNav(data) {
   const nets = voiceNets(data);
   // Creation shows each network as a card under the default voice instead.
   if (!nets.length || !isLibrary()) return "";
-  const rows = [
-    { key: "", icon: "ap-icon-quote", title: "Default voice", current: !voiceNet },
-    ...nets.map((n) => {
-      const on = networkVoice(data, n).state === "own" || ownPending.has(n);
-      return {
-        key: n,
-        icon: networkIcon(n),
-        title: networkLabel(n),
-        current: voiceNet === n,
-        inert: !on,
-        toggle: { on, disabled: !canEditView() },
-      };
-    }),
-  ];
-  return `<div class="pb2-voice-nav">${voiceListHtml(rows, { openAttr: "data-pb2-voice-net", toggleAttr: "data-pb2-voice-own" })}</div>`;
+  const row = (net, name, icon, toggle = null) => {
+    const opens = !toggle || toggle.on;
+    const here = opens && (net || null) === voiceNet;
+    const label = `<i class="${icon}" aria-hidden="true"></i><span class="ap-caption pb2-voice-nav__name">${esc(name)}</span>`;
+    return `<div class="pb2-voice-nav__row${opens ? "" : " is-inert"}"${here ? ' aria-current="true"' : ""}>
+      ${
+        opens
+          ? `<button type="button" class="pb2-voice-nav__open" data-pb2-voice-net="${net}">${label}</button>`
+          : `<span class="pb2-voice-nav__open">${label}</span>`
+      }
+      ${
+        toggle
+          ? `<label class="ap-toggle-container pb2-voice-nav__toggle"><input type="checkbox" data-pb2-voice-own="${esc(net)}" aria-label="Own voice for ${esc(name)}"${toggle.on ? " checked" : ""}${toggle.disabled ? " disabled" : ""} /><i></i></label>`
+          : ""
+      }
+    </div>`;
+  };
+  return `<nav class="pb2-voice-nav" aria-label="Voices">
+      <div class="pb2-voice-nav__group">${row("", "Default voice", "ap-icon-quote")}</div>
+      <div class="pb2-voice-nav__group">
+        ${nets
+          .map((n) =>
+            row(n, networkLabel(n), networkIcon(n), {
+              on: networkVoice(data, n).state === "own" || ownPending.has(n),
+              disabled: !canEditView(),
+            }),
+          )
+          .join("")}
+      </div>
+    </nav>`;
 }
 
 // The toggle. On: the network opens, its ways to a voice of its own. Off: a
