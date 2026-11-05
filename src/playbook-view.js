@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2731";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2731";
-import { conceptHint } from "./concepts.js?v=2731";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2732";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2732";
+import { conceptHint } from "./concepts.js?v=2732";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2731";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2731";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2731";
-import { isFlagOn } from "./feature-flags.js?v=2731";
-import { clipLookOf } from "./videos-store.js?v=2731";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2731";
-import { parseHashParams } from "./url-state.js?v=2731";
+} from "./playbook-brand-kit.js?v=2732";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2732";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2732";
+import { isFlagOn } from "./feature-flags.js?v=2732";
+import { clipLookOf } from "./videos-store.js?v=2732";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2732";
+import { parseHashParams } from "./url-state.js?v=2732";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2731";
-import { showToast } from "./components/toast.js?v=2731";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2731";
+} from "./voice-parts.js?v=2732";
+import { showToast } from "./components/toast.js?v=2732";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2732";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -68,10 +68,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2731";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2731";
-import { consumeHandoff } from "./handoff.js?v=2731";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2731";
+} from "./network-voice-flow.js?v=2732";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2732";
+import { consumeHandoff } from "./handoff.js?v=2732";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2732";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -79,7 +79,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2731";
+} from "./social-profiles.js?v=2732";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2183,14 +2183,19 @@ function renderVoiceNav(data) {
   // « comme sur la création du playbook, avec le network voice en bold… les
   // borders sont trop grosses ») — the default voice an option card with its
   // tinted tile, the network voices one framed list with hairlines, bold names.
+  // A network on the default voice, by choice, is marked as such: the default
+  // voice's own glyph on its state line, on a grey ground (2026-11-05, asked:
+  // « différencie d'une façon visuelle les voices qui utilisent la default voice »).
+  const onDefault = (n) => networkVoice(data, n).state !== "own" && !ownPending.has(n);
   const netRow = (n, state) => {
     const here = n === voiceNet;
-    return `<li class="welcome-review__net" aria-current="${here}">
+    const dflt = onDefault(n);
+    return `<li class="welcome-review__net${dflt ? " pb2-voice-nav__net--default" : ""}" aria-current="${here}">
       <button type="button" class="welcome-review__net-main" data-pb2-voice-net="${n}">
         <i class="${networkIcon(n)} welcome-review__net-icon" aria-hidden="true"></i>
         <span class="welcome-review__net-text">
           <span class="welcome-review__net-name">${esc(networkLabel(n))} voice</span>
-          <span class="welcome-review__net-state">${state}</span>
+          <span class="welcome-review__net-state">${dflt ? '<i class="ap-icon-quote pb2-voice-nav__default-glyph" aria-hidden="true"></i>' : ""}${state}</span>
         </span>
       </button>
       ${

@@ -1629,3 +1629,21 @@
   max-width: 560px;
   margin-inline: auto;
 }
+
+/* A network on the default voice: a grey ground, and the default voice's
+   purple quote before « Uses your default voice » — the same glyph and tint
+   as the Default voice card above. */
+.pb2-voice-nav .pb2-voice-nav__net--default:not([aria-current="true"]) {
+  background: var(--ref-color-grey-05);
+}
+
+.pb2-voice-nav__net--default .welcome-review__net-state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.pb2-voice-nav__default-glyph {
+  color: var(--ref-color-purple-150);
+  font-size: var(--sys-icon-css-xs);
+}
