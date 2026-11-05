@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2751";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2751";
-import { conceptHint } from "./concepts.js?v=2751";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2752";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2752";
+import { conceptHint } from "./concepts.js?v=2752";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2751";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2751";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2751";
-import { isFlagOn } from "./feature-flags.js?v=2751";
-import { clipLookOf } from "./videos-store.js?v=2751";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2751";
-import { parseHashParams } from "./url-state.js?v=2751";
+} from "./playbook-brand-kit.js?v=2752";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2752";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2752";
+import { isFlagOn } from "./feature-flags.js?v=2752";
+import { clipLookOf } from "./videos-store.js?v=2752";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2752";
+import { parseHashParams } from "./url-state.js?v=2752";
 import {
   isListPart,
   voiceParts,
@@ -57,9 +57,9 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2751";
-import { showToast } from "./components/toast.js?v=2751";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2751";
+} from "./voice-parts.js?v=2752";
+import { showToast } from "./components/toast.js?v=2752";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2752";
 import {
   voiceChoices,
   saveNetworkVoice,
@@ -68,10 +68,10 @@ import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2751";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2751";
-import { consumeHandoff } from "./handoff.js?v=2751";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2751";
+} from "./network-voice-flow.js?v=2752";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2752";
+import { consumeHandoff } from "./handoff.js?v=2752";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2752";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -79,7 +79,7 @@ import {
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
-} from "./social-profiles.js?v=2751";
+} from "./social-profiles.js?v=2752";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2192,7 +2192,9 @@ function renderVoiceNav(data) {
   // voice, elle est en état added »). Never answered: a dashed row to add.
   const hasOwn = (n) => {
     const v = networkVoice(data, n);
-    return v.state === "own" || v.chosen || ownPending.has(n);
+    // Being configured (`ownPending`) is not an answer: its row stays a dashed
+    // one, current (2026-11-05, asked: « pas besoin du "no rules yet" »).
+    return v.state === "own" || v.chosen;
   };
   const own = nets.filter(hasOwn);
   const rest = nets.filter((n) => !hasOwn(n));
@@ -2223,14 +2225,16 @@ function renderVoiceNav(data) {
     const { state, voice } = networkVoice(data, n);
     const count = state === "own" ? ruleCount(voice) : 0;
     if (state === "own" && voiceHasRules(voice)) return count ? `${count} rule${count === 1 ? "" : "s"}` : "Filled in";
-    // The default voice, chosen; else added and still empty (the default
-    // voice is a choice, at the foot of its page).
-    if (state !== "own" && !ownPending.has(n)) return "Uses your default voice";
-    return "No rules yet";
+    // The default voice, chosen (a voice of its own saved empty, the edge, too).
+    return "Uses your default voice";
   };
-  // The voices you can add: a dashed row each, the run's Voice review's own
-  // (its .welcome-review__addable, reused as asked: « on peut réutiliser la même
-  // chose dans l'édition du playbook », 2026-11-05); a click adds it and opens it.
+  // The networks with no answer yet: a dashed row each, the run's Voice
+  // review's own (its .welcome-review__addable, reused as asked: « on peut
+  // réutiliser la même chose dans l'édition du playbook », 2026-11-05); a click
+  // opens it to configure. « Configure », not « + Add »: until a choice is made
+  // the default voice is used anyway (2026-11-05, asked: « remplacer par
+  // configure si il n'y a pas de choix qui est fait, dans tous les cas, la
+  // default voice est utilisée »).
   const add =
     canEditView() && rest.length
       ? `<ul class="welcome-review__addables pb2-voice-nav__addables">${rest
@@ -2240,7 +2244,7 @@ function renderVoiceNav(data) {
             ) => `<li><button type="button" class="welcome-review__addable" data-pb2-voice-add-net="${esc(n)}"${n === voiceNet ? ' aria-current="true"' : ""}>
               <i class="${networkIcon(n)} welcome-review__net-icon" aria-hidden="true"></i>
               <span class="welcome-review__addable-name">${esc(networkLabel(n))} voice</span>
-              <span class="welcome-review__addable-add"><i class="ap-icon-plus" aria-hidden="true"></i><span>Add</span></span>
+              <span class="welcome-review__addable-add">Configure</span>
             </button></li>`,
           )
           .join("")}</ul>`
