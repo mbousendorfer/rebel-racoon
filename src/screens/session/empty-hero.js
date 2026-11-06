@@ -1,22 +1,22 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2765";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2765";
-import { getContextById } from "../../contexts-store.js?v=2765";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2765";
-import { renderTopicCard } from "../../components/topic-card.js?v=2765";
-import { findTopicSource } from "../../topics-catalog.js?v=2765";
-import { html, raw } from "../../utils.js?v=2765";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2765";
-import { renderStarterCards } from "../../components/starter-card.js?v=2765";
-import { isFlagOn } from "../../feature-flags.js?v=2765";
-import { isDemo } from "../../demo-mode.js?v=2765";
-import { voicesToFinish } from "../../voice-parts.js?v=2765";
-import { networkLabel } from "../../social-profiles.js?v=2765";
-import { parseHashParams } from "../../url-state.js?v=2765";
-import "../../archie-pixels.js?v=2765";
-import { activeHomeDirection } from "./home-directions.js?v=2765";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2766";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2766";
+import { getContextById } from "../../contexts-store.js?v=2766";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2766";
+import { renderTopicCard } from "../../components/topic-card.js?v=2766";
+import { findTopicSource } from "../../topics-catalog.js?v=2766";
+import { html, raw } from "../../utils.js?v=2766";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2766";
+import { renderStarterCards } from "../../components/starter-card.js?v=2766";
+import { isFlagOn } from "../../feature-flags.js?v=2766";
+import { isDemo } from "../../demo-mode.js?v=2766";
+import { voicesToFinish } from "../../voice-parts.js?v=2766";
+import { networkLabel } from "../../social-profiles.js?v=2766";
+import { parseHashParams } from "../../url-state.js?v=2766";
+import "../../archie-pixels.js?v=2766";
+import { activeHomeDirection } from "./home-directions.js?v=2766";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -229,7 +229,8 @@ function finishVoicesRow(session) {
   const desc = `${list} still ${nets.length === 1 ? "uses" : "use"} your default voice, so ${nets.length === 1 ? "its" : "their"} drafts may miss what works there.`;
   // A DS warning infobox (asked: « est-ce que ça ne devrait pas être une
   // infobox tout simplement ? ») — the same one the Playbooks catalogue shows,
-  // its action in the DS's button slot. A custom card was tried first.
+  // its action the DS infobox's own button (stroked grey, as <ap-infobox>
+  // renders buttonLabel). A custom card was tried first.
   return `
     <div class="ap-infobox warning has-title empty-chat__voices" role="status">
       <i class="ap-icon-warning_fill" aria-hidden="true"></i>
@@ -238,7 +239,7 @@ function finishVoicesRow(session) {
           <span class="ap-infobox-title">Finish your voices</span>
           <span class="ap-infobox-message">${desc}</span>
         </div>
-        <button type="button" class="ap-button secondary blue" data-finish-voices="${ctx.id}" data-finish-voices-net="${nets[0]}">
+        <button type="button" class="ap-button stroked grey" data-finish-voices="${ctx.id}" data-finish-voices-net="${nets[0]}">
           <span>${nets.length === 1 ? "Add its voice" : "Add their voices"}</span>
         </button>
       </div>
