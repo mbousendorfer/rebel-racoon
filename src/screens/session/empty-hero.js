@@ -1,22 +1,22 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2764";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2764";
-import { getContextById } from "../../contexts-store.js?v=2764";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2764";
-import { renderTopicCard } from "../../components/topic-card.js?v=2764";
-import { findTopicSource } from "../../topics-catalog.js?v=2764";
-import { html, raw } from "../../utils.js?v=2764";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2764";
-import { renderStarterCards } from "../../components/starter-card.js?v=2764";
-import { isFlagOn } from "../../feature-flags.js?v=2764";
-import { isDemo } from "../../demo-mode.js?v=2764";
-import { voicesToFinish } from "../../voice-parts.js?v=2764";
-import { networkLabel, networkIcon } from "../../social-profiles.js?v=2764";
-import { parseHashParams } from "../../url-state.js?v=2764";
-import "../../archie-pixels.js?v=2764";
-import { activeHomeDirection } from "./home-directions.js?v=2764";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2765";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2765";
+import { getContextById } from "../../contexts-store.js?v=2765";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2765";
+import { renderTopicCard } from "../../components/topic-card.js?v=2765";
+import { findTopicSource } from "../../topics-catalog.js?v=2765";
+import { html, raw } from "../../utils.js?v=2765";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2765";
+import { renderStarterCards } from "../../components/starter-card.js?v=2765";
+import { isFlagOn } from "../../feature-flags.js?v=2765";
+import { isDemo } from "../../demo-mode.js?v=2765";
+import { voicesToFinish } from "../../voice-parts.js?v=2765";
+import { networkLabel } from "../../social-profiles.js?v=2765";
+import { parseHashParams } from "../../url-state.js?v=2765";
+import "../../archie-pixels.js?v=2765";
+import { activeHomeDirection } from "./home-directions.js?v=2765";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -223,28 +223,26 @@ function finishVoicesRow(session) {
   const nets = voicesToFinish(ctx);
   if (!nets.length) return "";
   // Says what it costs (asked: « expliquer que la qualité de génération des
-  // drafts pour ce network ne sera pas terrible du coup »).
-  const desc =
-    nets.length === 1
-      ? `${networkLabel(nets[0])} still uses your default voice, so its drafts may miss what works on ${networkLabel(nets[0])}.`
-      : `${nets.length} networks still use your default voice, so their drafts may miss what works on each.`;
-  // Set apart from the starters (asked: « trop proche visuellement des autres
-  // starters ») — a card of its own under them, the networks it's about, and
-  // its action as a button, not a row to click.
+  // drafts pour ce network ne sera pas terrible du coup »), naming the networks.
+  const names = nets.map(networkLabel);
+  const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+  const desc = `${list} still ${nets.length === 1 ? "uses" : "use"} your default voice, so ${nets.length === 1 ? "its" : "their"} drafts may miss what works there.`;
+  // A DS warning infobox (asked: « est-ce que ça ne devrait pas être une
+  // infobox tout simplement ? ») — the same one the Playbooks catalogue shows,
+  // its action in the DS's button slot. A custom card was tried first.
   return `
-    <section class="voice-nudge" aria-label="Finish your voices">
-      <span class="voice-nudge__icon" aria-hidden="true"><i class="ap-icon-quote"></i></span>
-      <span class="voice-nudge__text">
-        <span class="voice-nudge__title">Finish your voices</span>
-        <span class="voice-nudge__desc">${desc}</span>
-      </span>
-      <span class="voice-nudge__nets" aria-hidden="true">${nets
-        .map((n) => `<i class="${networkIcon(n)}" title="${networkLabel(n)}"></i>`)
-        .join("")}</span>
-      <button type="button" class="ap-button secondary blue" data-finish-voices="${ctx.id}" data-finish-voices-net="${nets[0]}">
-        <span>${nets.length === 1 ? "Add its voice" : "Add their voices"}</span>
-      </button>
-    </section>`;
+    <div class="ap-infobox warning has-title empty-chat__voices" role="status">
+      <i class="ap-icon-warning_fill" aria-hidden="true"></i>
+      <div class="ap-infobox-content">
+        <div class="ap-infobox-texts">
+          <span class="ap-infobox-title">Finish your voices</span>
+          <span class="ap-infobox-message">${desc}</span>
+        </div>
+        <button type="button" class="ap-button secondary blue" data-finish-voices="${ctx.id}" data-finish-voices-net="${nets[0]}">
+          <span>${nets.length === 1 ? "Add its voice" : "Add their voices"}</span>
+        </button>
+      </div>
+    </div>`;
 }
 
 // The first chat after the run (`?welcome=1`, set by its « Draft my first
