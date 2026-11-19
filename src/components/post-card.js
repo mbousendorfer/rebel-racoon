@@ -19,21 +19,21 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2766";
-import { isPortraitFormat } from "../clip-formats.js?v=2766";
-import { presetById } from "../clip-captions.js?v=2766";
-import { renderFeedbackControl } from "./feedback-control.js?v=2766";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2767";
+import { isPortraitFormat } from "../clip-formats.js?v=2767";
+import { presetById } from "../clip-captions.js?v=2767";
+import { renderFeedbackControl } from "./feedback-control.js?v=2767";
 import {
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=2766";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2766";
-import { REVEAL_MS } from "../archie-pixels.js?v=2766";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2766";
-import { languageOf } from "../draft-rewrite.js?v=2766";
+} from "../social-profiles.js?v=2767";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2767";
+import { REVEAL_MS } from "../archie-pixels.js?v=2767";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2767";
+import { languageOf } from "../draft-rewrite.js?v=2767";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -136,7 +136,7 @@ function renderEmptyMedia(post, opts) {
   </div>`;
 }
 
-// The voice behind this draft (flag voicePerNetwork): `opts.voice` is
+// The voice behind this draft: `opts.voice` is
 // voice-parts' networkVoice() for the draft's network, `opts.voiceStale` whether
 // that voice changed after the draft was written — both resolved by the host
 // (the card never reads a Playbook). Said on the draft itself, its status card

@@ -1,4 +1,4 @@
-// The voice of a network (flag voicePerNetwork) — one module for every surface
+// The voice of a network — one module for every surface
 // that gives one.
 //
 // A network writes in its own voice, or in the Playbook's default voice. It
@@ -30,10 +30,10 @@
 //   useDefaultVoice(ctxId, net) · editNetworkVoiceInPlaybook(ctxId, net, voice?) ·
 //   documentName(url)
 //
-// onReady() runs IMMEDIATELY when every network already has a voice — always
-// the case with the flag off — so callers wrap unconditionally.
+// onReady() runs IMMEDIATELY when every network already has a voice, so
+// callers wrap unconditionally.
 
-import { sessionPlaybookId } from "./active-playbook.js?v=2766";
+import { sessionPlaybookId } from "./active-playbook.js?v=2767";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -43,22 +43,21 @@ import {
   postVoiceTurn,
   resolveTurn,
   getThread,
-} from "./assistant.js?v=2766";
-import { getContextById, updateContext } from "./contexts-store.js?v=2766";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2766";
-import { setHandoff } from "./handoff.js?v=2766";
-import { navigate } from "./router.js?v=2766";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2766";
-import { getPosts } from "./posts-store.js?v=2766";
+} from "./assistant.js?v=2767";
+import { getContextById, updateContext } from "./contexts-store.js?v=2767";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2767";
+import { setHandoff } from "./handoff.js?v=2767";
+import { navigate } from "./router.js?v=2767";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2767";
+import { getPosts } from "./posts-store.js?v=2767";
 import {
-  networkVoiceOn,
   networkVoice,
   canLearnFrom,
   learnNetworkVoice,
   brandVoiceAsIs,
   voiceNetworks,
   adaptNetworkVoice,
-} from "./voice-parts.js?v=2766";
+} from "./voice-parts.js?v=2767";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;
@@ -77,9 +76,9 @@ export function learnPhases(net, from = null, choice = null) {
   ];
 }
 
-// The networks of a batch never given a voice — none with the flag off.
+// The networks of a batch never given a voice.
 export function missingNetworkVoices(ctx, networks) {
-  if (!networkVoiceOn() || !ctx) return [];
+  if (!ctx) return [];
   const own = voiceNetworks(ctx);
   return [...new Set((networks || []).map(normalizeNetwork))].filter((n) => {
     const v = own.includes(n) && networkVoice(ctx, n);

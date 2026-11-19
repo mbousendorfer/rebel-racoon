@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml, fold } from "../../utils.js?v=2766";
-import { isFlagOn } from "../../feature-flags.js?v=2766";
+import { escapeHtml, fold } from "../../utils.js?v=2767";
+import { isFlagOn } from "../../feature-flags.js?v=2767";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -34,20 +34,26 @@ import {
   GENERIC_FAILURE,
   getThread,
   refreshThread,
-} from "../../assistant.js?v=2766";
-import { getSources, getIdeas } from "../../library.js?v=2766";
-import { getPosts } from "../../posts-store.js?v=2766";
-import { getTopPosts } from "../../top-posts-store.js?v=2766";
-import { getConnectedProfiles } from "../../social-profiles.js?v=2766";
-import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2766";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2766";
-import { detectUrlService } from "../../url-services.js?v=2766";
-import * as inlineQuestion from "../../inline-question.js?v=2766";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=2766";
-import { startTopicPickerInline } from "../../topic-flow.js?v=2766";
-import { askConnector } from "../../connector-ask.js?v=2766";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2766";
-import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2766";
+  postVoiceTurn,
+} from "../../assistant.js?v=2767";
+import { getSources, getIdeas } from "../../library.js?v=2767";
+import { getPosts } from "../../posts-store.js?v=2767";
+import { getTopPosts } from "../../top-posts-store.js?v=2767";
+import { getConnectedProfiles } from "../../social-profiles.js?v=2767";
+import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2767";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2767";
+import { detectUrlService } from "../../url-services.js?v=2767";
+import * as inlineQuestion from "../../inline-question.js?v=2767";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=2767";
+import { startTopicPickerInline } from "../../topic-flow.js?v=2767";
+import { askConnector } from "../../connector-ask.js?v=2767";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2767";
+import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2767";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2767";
+import { getContextById } from "../../contexts-store.js?v=2767";
+import { voiceNetworks, networkVoice, adaptNetworkVoice } from "../../voice-parts.js?v=2767";
+import { requireNetworkVoices, giveNetworkVoice } from "../../network-voice-flow.js?v=2767";
+import { offerVoiceUpdate } from "../../components/feedback-control.js?v=2767";
 
 // The intake sample plays the real lifecycle — loading, then ready — under a
 // sample id no source owns, so intake-lifecycle leaves it alone.
@@ -474,12 +480,65 @@ const FLOWS = [
   },
 ];
 
+// A voice per network: the chat's Playbook and its networks that can have one
+// (two connected accounts or more, voice-parts.js voiceNetworks).
+const ctxOf = (sid) => getContextById(sessionPlaybookId(sid));
+const voiceNets = (sid) => (ctxOf(sid) ? voiceNetworks(ctxOf(sid)) : []);
+const needsVoiceNets = (sid) => (voiceNets(sid).length ? null : "Needs a Playbook with 2+ connected networks");
+// A network never answered: no voice of its own, the default voice not chosen.
+const unsetNet = (sid) =>
+  voiceNets(sid).find((n) => {
+    const v = networkVoice(ctxOf(sid), n);
+    return v.state === "default" && !v.chosen;
+  });
+
+const VOICE = [
+  {
+    id: "v-ask",
+    label: "Voice step before a draft",
+    icon: "ap-icon-quote",
+    hint: "The blocking step for a network never set: learn, adapt, document, write, or the default voice",
+    when: (sid) => needsVoiceNets(sid) || (unsetNet(sid) ? null : "Every network is set. Admin › Reset network voices"),
+    run: (sid) =>
+      requireNetworkVoices(sid, [unsetNet(sid)], () => postAssistantMessage(sid, "Voices set. Back to the drafts.")),
+  },
+  {
+    id: "v-give",
+    label: "Give a network its own voice",
+    icon: "ap-icon-quote",
+    hint: "« Give X its own voice » from a draft: the same step, no default-voice answer",
+    when: needsVoiceNets,
+    run: (sid) => giveNetworkVoice(sid, ctxOf(sid).id, voiceNets(sid)[0]),
+  },
+  {
+    id: "v-learned",
+    label: "Voice change, in the chat",
+    icon: "ap-icon-sparkles",
+    hint: "What I learned for a network, shown before it's saved: Add to Voice profile or Edit",
+    when: needsVoiceNets,
+    run: (sid) => {
+      const ctx = ctxOf(sid);
+      const net = voiceNets(sid)[0];
+      postVoiceTurn(sid, "voice-learned", { contextId: ctx.id, network: net, voice: adaptNetworkVoice(ctx, net) });
+    },
+  },
+  {
+    id: "v-feedback",
+    label: "Feedback updates the voice",
+    icon: "ap-icon-thumb-down",
+    hint: "A thumbs down « Wrong tone » on a draft: the rule it would add to that network's voice",
+    when: needsVoiceNets,
+    run: (sid) => offerVoiceUpdate(ctxOf(sid).id, voiceNets(sid)[0], { reasons: ["wrong-tone"] }),
+  },
+];
+
 const GROUPS = [
   { title: "Components", items: COMPONENTS },
   { title: "Typed asks", items: PROMPTS.map(asPrompt) },
   { title: "Edit a draft", items: EDITS.map((p) => ({ ...asPrompt(p), icon: "ap-icon-pen" })) },
   { title: "Mention someone", items: MENTIONS.map((p) => ({ ...asPrompt(p), icon: "ap-icon-at" })) },
   { title: "Flows", items: FLOWS },
+  { title: "Voice", items: VOICE },
 ];
 const ALL = GROUPS.flatMap((g) => g.items);
 

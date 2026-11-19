@@ -20,13 +20,13 @@
 // list scroll position survives — same rationale as the clip/idea thumbs it
 // replaces.
 
-import { escapeAttr, escapeText } from "../utils.js?v=2766";
-import { showToast } from "./toast.js?v=2766";
-import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2766";
-import { getContextById } from "../contexts-store.js?v=2766";
-import { networkLabel } from "../social-profiles.js?v=2766";
-import { feedbackNetworkVoice } from "../voice-parts.js?v=2766";
-import { openVoiceProposal } from "./voice-proposal-modal.js?v=2766";
+import { escapeAttr, escapeText } from "../utils.js?v=2767";
+import { showToast } from "./toast.js?v=2767";
+import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2767";
+import { getContextById } from "../contexts-store.js?v=2767";
+import { networkLabel } from "../social-profiles.js?v=2767";
+import { feedbackNetworkVoice } from "../voice-parts.js?v=2767";
+import { openVoiceProposal } from "./voice-proposal-modal.js?v=2767";
 
 // "What was off?" reasons per element kind. value = stable key, label = UI.
 const REASONS = {
@@ -87,7 +87,7 @@ export function renderFeedbackThumbs(targetId, { kind } = {}) {
 // The collapsible "what was off?" panel. Hidden unless the host opens it on a
 // thumbs-down. Pre-checks any reasons / comment already on record so the
 // panel restores its answered state if it's re-opened.
-// `voice` ({ playbookId, net }, a draft under flag voicePerNetwork): feedback
+// `voice` ({ playbookId, net }, a draft): feedback
 // about how it's written can update its network's voice (offerVoiceUpdate).
 export function renderFeedbackPanel(targetId, { kind, voice = null } = {}) {
   const reasons = REASONS[kind] || REASONS.draft;
@@ -201,7 +201,7 @@ export function onFeedbackClick(event) {
 // generic / Formatting): the change it would make to the network's voice,
 // shown before it's used — the same proposal as everywhere. Returns whether
 // it offered one.
-function offerVoiceUpdate(playbookId, net, feedback) {
+export function offerVoiceUpdate(playbookId, net, feedback) {
   const proposal = feedbackNetworkVoice(getContextById(playbookId), net, feedback);
   if (!proposal) return false;
   const label = networkLabel(net);

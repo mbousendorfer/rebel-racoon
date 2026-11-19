@@ -1,4 +1,4 @@
-// What Archie learns for one network (flag voicePerNetwork) — voice-parts.js
+// What Archie learns for one network — voice-parts.js
 // `learnNetworkVoice` lays these over the default voice. In the product they come
 // from the account's own posts or the document it read; here, one set per
 // network, for any brand.

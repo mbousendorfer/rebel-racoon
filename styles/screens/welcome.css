@@ -308,75 +308,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
   isolation: isolate;
 }
 
-.welcome-intro__card {
-  position: relative;
-  z-index: 1;
-  width: min(580px, calc(100% - 2 * var(--ref-spacing-lg)));
-  max-height: calc(100% - 2 * var(--ref-spacing-lg));
-  overflow-y: auto;
-  padding: var(--ref-spacing-md);
-  background: var(--app-surface);
-  border-radius: var(--app-radius-modal);
-  box-shadow: var(--app-shadow-popover-lg);
-  animation: welcome-intro-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
-}
-
-/* The Playbook card, three levels (playbookCard in welcome-alt-shell.js):
-   WHO — the head: the brand's mark, its name at h1, the site and where it
-   publishes under it, the status on the right; WHAT — About, the lead, the one
-   paragraph a size up; then the PARTS, each under its Playbook name and tinted
-   glyph, a hairline between them. Field labels only inside a part that holds
-   several — caption, grey-80: the smallest, quietest thing on the card. */
-.welcome-intro__card-head {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-sm);
-}
-
-.welcome-intro__brand {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 56px;
-  height: 56px;
-  border-radius: var(--app-radius-card);
-  background: var(--app-surface-subtle);
-  color: var(--ref-color-grey-100);
-  font-size: var(--sys-text-style-h1-size);
-  font-weight: var(--sys-text-style-h1-weight);
-}
-
-.welcome-intro__brand i {
-  font-size: var(--sys-icon-css-lg);
-}
-
-.welcome-intro__card-title {
-  font-size: var(--sys-text-style-h1-size);
-  line-height: var(--sys-text-style-h1-line-height);
-  font-weight: var(--sys-text-style-h1-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.welcome-intro__card-status {
-  flex-shrink: 0;
-  margin-left: auto;
-  animation: app-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--t) both;
-}
-
-.welcome-intro__publish {
-  margin: var(--ref-spacing-xs) 0 0;
-}
-
-.welcome-intro__lead {
-  margin: var(--ref-spacing-md) 0 var(--ref-spacing-sm);
-}
-
-.welcome-intro__lead .welcome-flow__line {
-  font-size: var(--sys-text-style-subtitle-size);
-  line-height: var(--sys-text-style-subtitle-line-height);
-  color: var(--ref-color-grey-100);
-}
-
 .welcome-intro__part {
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr);
@@ -390,42 +321,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
   padding-bottom: 0;
 }
 
-.welcome-intro__part-tile.welcome-flow__glyph {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--ref-border-radius-md);
-  font-size: var(--sys-icon-css-xs);
-}
-
-.welcome-intro__part-name {
-  margin: 0;
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.welcome-intro__fields {
-  grid-column: 2;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  margin: var(--ref-spacing-xxs) 0 0;
-}
-
-.welcome-intro__row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  animation: app-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--t) both;
-}
-
-.welcome-intro__row dt {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
-}
-
 .welcome-intro__hidden {
   position: absolute;
   width: 1px;
@@ -433,63 +328,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
-}
-
-.welcome-intro__row dd {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  margin: 0;
-}
-
-/* Inside a line, its pieces land one after the other. */
-.welcome-intro__row dd > * {
-  animation: welcome-intro-pop 0.35s var(--app-ease-bounce) both;
-  animation-delay: calc(var(--t) + 0.12s);
-}
-.welcome-intro__row dd > :nth-child(2) {
-  animation-delay: calc(var(--t) + 0.2s);
-}
-.welcome-intro__row dd > :nth-child(3) {
-  animation-delay: calc(var(--t) + 0.28s);
-}
-.welcome-intro__row dd > :nth-child(4) {
-  animation-delay: calc(var(--t) + 0.36s);
-}
-
-.welcome-intro__net {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-lg);
-  font-size: var(--sys-icon-css-sm);
-}
-
-.welcome-intro__trait {
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
-  border-radius: var(--app-radius-pill);
-  background: var(--part-tint, var(--app-butter));
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.welcome-intro__plain {
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.welcome-intro__swatch {
-  width: 24px;
-  height: 24px;
-  border-radius: var(--app-radius-circle);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
 }
 
 @keyframes welcome-intro-rise {
@@ -548,13 +386,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
 
 .welcome-flow {
   --t: 0s;
-}
-
-.welcome-flow .welcome-intro__card,
-.welcome-flow .welcome-intro__card-status,
-.welcome-flow__row:not(.is-new),
-.welcome-flow__row:not(.is-new) dd > * {
-  animation: none;
 }
 
 /* Progress: the DS stepper, right above the step's title. */
@@ -805,54 +636,10 @@ body:not(.onboarding) .welcome-intro__wordmark {
   color: var(--ref-color-grey-100);
 }
 
-/* The live card */
-.welcome-flow__card-name {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.welcome-flow__card-sub {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
-}
-
-.welcome-intro__brand img {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-}
-
-.welcome-flow__line {
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-100);
-}
-
-/* Not answered yet: a quiet bar. Being learned: the same bar, breathing butter. */
-.welcome-flow__placeholder {
-  display: block;
-  width: 60%;
-  height: 10px;
-  border-radius: var(--app-radius-pill);
-  background: var(--app-surface-subtle);
-}
-
-.welcome-flow__row.is-pending .welcome-flow__placeholder {
-  background: var(--app-butter);
-  animation: welcome-flow-breathe 1.4s ease-in-out infinite;
-}
-
 @keyframes welcome-flow-breathe {
   50% {
     opacity: 0.45;
   }
-}
-
-/* The reveal: the card takes a breath. */
-.welcome-flow__card.is-revealed {
-  animation: welcome-flow-reveal 0.7s var(--app-ease-bounce) both;
 }
 
 @keyframes welcome-flow-reveal {
@@ -869,63 +656,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
   .welcome-flow__url-field {
     width: 100%;
   }
-}
-
-/* The live card's richer lines: a summary, chips, a sentence under them. */
-.welcome-flow__stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  min-width: 0;
-}
-
-.welcome-flow__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xxs);
-}
-
-/* Static facts: grey, like the Playbook's own tags — blue is for what you act on. */
-.welcome-flow__chip {
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
-  border-radius: var(--app-radius-pill);
-  background: var(--part-tint, var(--app-surface-subtle));
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.welcome-flow__row .welcome-flow__line {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.welcome-flow__font {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--ref-spacing-xxs);
-  margin-left: var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-}
-
-.welcome-flow__font > span {
-  font-size: var(--sys-text-style-h3-size);
-  font-weight: var(--sys-text-style-h3-weight);
-  color: var(--ref-color-grey-100);
-}
-
-/* Several placeholder bars stack like the lines they stand for. */
-.welcome-flow__row dd:has(.welcome-flow__placeholder) {
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.welcome-flow__placeholder + .welcome-flow__placeholder {
-  width: 40%;
 }
 
 /* The review: the same stage, no card around — the part's blocks dealt as a
@@ -3411,8 +3141,7 @@ button.recap__logotile:hover {
 }
 
 /* The run's steps and reviews (welcome-alt-shell.js), first time or not, and
-   the intro when it plays its scene (.is-plain, flag voicePerNetwork; flag
-   OFF the intro keeps its pixel stage and its card): edge to edge, only a
+   the intro's scene (.is-plain): edge to edge, only a
    grey-20 rule between it and the step; the cards bordered and lifted (they
    must read over the ground), no entrance.
    The ground is Archie's own (Brand Guidelines 2026, Visual elements; picked
@@ -3466,14 +3195,9 @@ button.recap__logotile:hover {
   content: none;
 }
 
-.welcome-intro.welcome-flow .welcome-intro__card,
 .welcome-intro.welcome-flow .welcome-flow__sheet.is-scroll .welcome-review__card {
   border: 1px solid var(--ref-color-grey-20);
   box-shadow: var(--app-shadow-card), var(--app-shadow-popover-md);
-}
-
-.welcome-intro.welcome-flow .welcome-intro__card {
-  animation: none;
 }
 
 /* The review's empty network voice is an empty state, not a card

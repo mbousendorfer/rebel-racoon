@@ -1,5 +1,4 @@
-// Building a Playbook — the first time or « Create a Playbook », one run (flag
-// voicePerNetwork, which took in playbookAnimations on 2026-11-04): instead of the card filling with bars, each step of the
+// Building a Playbook — the first time or « Create a Playbook », one run: each step of the
 // run plays a scene that teaches what the Playbook is made of, how its parts
 // connect, and what each one lets me do (welcome-alt-shell.js mountShell).
 //
@@ -17,15 +16,14 @@
 // The ready screen paints once and moves by attributes (`is-lit`, `is-done`)
 // so its stages light the parts one by one without replaying the scene.
 
-import { escapeHtml } from "../utils.js?v=2766";
-import { isFlagOn } from "../feature-flags.js?v=2766";
-import { networkIcon, networkLabel } from "../social-profiles.js?v=2766";
-import { playbookNetworks } from "../voice-parts.js?v=2766";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2766";
-import { tint, domainOf } from "./welcome-alt-shell.js?v=2766";
-import { styleArtSvg } from "../modules/image-studio/render/style-art.js?v=2766";
-import { resolvePalette } from "../modules/image-studio/render/palette.js?v=2766";
-import { svgToDataUrl } from "../modules/image-studio/render/visual.js?v=2766";
+import { escapeHtml } from "../utils.js?v=2767";
+import { networkIcon, networkLabel } from "../social-profiles.js?v=2767";
+import { playbookNetworks } from "../voice-parts.js?v=2767";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2767";
+import { tint, domainOf } from "./welcome-alt-shell.js?v=2767";
+import { styleArtSvg } from "../modules/image-studio/render/style-art.js?v=2767";
+import { resolvePalette } from "../modules/image-studio/render/palette.js?v=2767";
+import { svgToDataUrl } from "../modules/image-studio/render/visual.js?v=2767";
 
 const W = 560;
 const H = 540;
@@ -321,7 +319,6 @@ function documentsScene(d, gap = 0) {
 function voiceScene(d, gap = 0) {
   const b = brandOf(d);
   const Y = rowsOf([100, 142, 314], gap);
-  const perNetwork = isFlagOn("voicePerNetwork");
   const sources = [
     {
       icon: "ap-icon-post",
@@ -377,11 +374,9 @@ function voiceScene(d, gap = 0) {
         y: Y(314),
         d: 2.2,
         tagOf: (i) =>
-          !perNetwork
-            ? `<span class="wx-tag"><i class="ap-icon-quote"></i>Your voice</span>`
-            : i === 2
-              ? `<span class="wx-tag is-own">${e(networkLabel(b.networks[2] || b.networks[0]))} voice</span>`
-              : `<span class="wx-tag"><i class="ap-icon-quote"></i>Default voice</span>`,
+          i === 2
+            ? `<span class="wx-tag is-own">${e(networkLabel(b.networks[2] || b.networks[0]))} voice</span>`
+            : `<span class="wx-tag"><i class="ap-icon-quote"></i>Default voice</span>`,
       }),
     [92, 280, 468].map((x) => thread(x, 84, 280, Y(142), 0.4)).join("") + fanThreads(Y(294), Y(314), 2),
     { h: 454, Y },

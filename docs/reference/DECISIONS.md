@@ -283,7 +283,7 @@ Every token substitution is commented with the value it stands in for, because t
 
 ## Une voix par réseau : une seule règle partout
 
-Behind `voicePerNetwork` (défaut OFF). Revu avec l'utilisateur le 2026-10-27 (« tout a l'air très compliqué ») puis au fil des demandes jusqu'au 2026-11-05 ; ce qui suit est le modèle en vigueur, puis ce qui a été retiré en route — ne pas le reproposer. Code : [`network-voice-flow.js`](../../src/network-voice-flow.js) (le chat), [`voice-parts.js`](../../src/voice-parts.js) (l'état d'une voix), `playbook-view.js` (la fiche et la revue de création), [`voice-proposal-modal.js`](../../src/components/voice-proposal-modal.js) et [`network-voice-modal.js`](../../src/components/network-voice-modal.js) (hors chat), [`voice-intro-modal.js`](../../src/components/voice-intro-modal.js).
+Plus de flag : `voicePerNetwork` figé ON le 2026-11-19 (demandé : « bake in également les Voice per profile, plus besoin du feature switch »). Revu avec l'utilisateur le 2026-10-27 (« tout a l'air très compliqué ») puis au fil des demandes jusqu'au 2026-11-05 ; ce qui suit est le modèle en vigueur, puis ce qui a été retiré en route — ne pas le reproposer. Code : [`network-voice-flow.js`](../../src/network-voice-flow.js) (le chat), [`voice-parts.js`](../../src/voice-parts.js) (l'état d'une voix), `playbook-view.js` (la fiche et la revue de création), [`voice-proposal-modal.js`](../../src/components/voice-proposal-modal.js) et [`network-voice-modal.js`](../../src/components/network-voice-modal.js) (hors chat), [`voice-intro-modal.js`](../../src/components/voice-intro-modal.js).
 
 **Le modèle :**
 

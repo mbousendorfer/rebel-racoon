@@ -150,23 +150,6 @@ export const FLAGS = Object.freeze([
       "owner row on a Playbook, and the Your-role control in Admin.",
   },
   {
-    id: "voicePerNetwork",
-    group: "Playbook",
-    tip: "A default voice tied to no network; each network can have a voice of its own, learned or adapted by Archie and reviewed before it's saved.",
-    label: "Voice per network",
-    default: false,
-    hides:
-      "When OFF (default), a Playbook has one voice for every network. When " +
-      "ON, the Voice profile tab has a row of tabs: the default voice (generic, " +
-      "« All networks »), then one per network. A network gets its own voice from its posts, the default voice adapted, " +
-      "a document, a few questions, or by hand; Archie shows what he'd add and the user " +
-      "adds it to the Voice profile or edits it first. Until then it follows " +
-      "the default voice, warned. A draft written before its voice changed " +
-      "says so and can be rewritten. Building a Playbook (the first time, or " +
-      "Create a Playbook) also plays an animated scene on each step instead of " +
-      "the card filling in (the former Playbook animations flag).",
-  },
-  {
     id: "newScheduleModal",
     group: "Chat & drafts",
     tip: "The redesigned schedule modal: dates proposed on open, one list with what's already planned and clashes. Off: the previous modal.",

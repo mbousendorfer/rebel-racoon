@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { escapeHtml as esc, html, prettyUrl, raw } from "./utils.js?v=2766";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2766";
-import { conceptHint } from "./concepts.js?v=2766";
+import { escapeHtml as esc, html, prettyUrl, raw } from "./utils.js?v=2767";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2767";
+import { conceptHint } from "./concepts.js?v=2767";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,20 +31,19 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2766";
-import { analyzeWebsite } from "./context-mock-analysis.js?v=2766";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2766";
-import { isFlagOn } from "./feature-flags.js?v=2766";
-import { clipLookOf } from "./videos-store.js?v=2766";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2766";
-import { parseHashParams } from "./url-state.js?v=2766";
+} from "./playbook-brand-kit.js?v=2767";
+import { analyzeWebsite } from "./context-mock-analysis.js?v=2767";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2767";
+import { isFlagOn } from "./feature-flags.js?v=2767";
+import { clipLookOf } from "./videos-store.js?v=2767";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2767";
+import { parseHashParams } from "./url-state.js?v=2767";
 import {
   isListPart,
   voiceParts,
   baseValue,
   cloneItems,
   voiceItemsHtml,
-  networkVoiceOn,
   networkVoice,
   voiceNetworks,
   onlyNetwork,
@@ -57,19 +56,19 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2766";
-import { showToast } from "./components/toast.js?v=2766";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2766";
+} from "./voice-parts.js?v=2767";
+import { showToast } from "./components/toast.js?v=2767";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2767";
 import {
   voiceChoices,
   saveNetworkVoice,
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2766";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2766";
-import { consumeHandoff } from "./handoff.js?v=2766";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2766";
+} from "./network-voice-flow.js?v=2767";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2767";
+import { consumeHandoff } from "./handoff.js?v=2767";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2767";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -78,7 +77,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   NETWORKS,
-} from "./social-profiles.js?v=2766";
+} from "./social-profiles.js?v=2767";
 import {
   ROSTERS,
   REF_NETWORKS,
@@ -95,7 +94,7 @@ import {
   stopRosterScan,
   handleRosterClick,
   handleInfAddInput,
-} from "./playbook-rosters.js?v=2766";
+} from "./playbook-rosters.js?v=2767";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -221,7 +220,7 @@ let loadingTimer = null;
 let loadingStage = 0;
 let phase = "ready"; // "loading" | "ready"
 let activeTab = "goals"; // Playbook 2.0: the tab on screen
-let voiceNet = null; // Voice profile, flag voicePerNetwork: the network whose voice is on screen (null = the default network's, the Playbook's own parts)
+let voiceNet = null; // Voice profile: the network whose voice is on screen (null = the default network's, the Playbook's own parts)
 
 // `cfg.stack`: every tab it lists at once, all in edit — the edit scope is
 // then this, not one section.
@@ -1161,7 +1160,7 @@ function renderVoiceModeToggle(mode) {
 
 // "Learn from…" — a single DS dropdown that merges the old "Learn from my
 // posts" (social profiles) and document analysis, both scoped to Voice profile.
-// `net` (flag voicePerNetwork): on a network's tab it learns THAT network's
+// `net`: on a network's tab it learns THAT network's
 // voice — the only way, with Edit, that a network's voice gets optimized.
 function learnMenu(net = null) {
   const netAttr = net ? ` data-recap-learn-net="${esc(net)}"` : "";
@@ -1264,11 +1263,9 @@ const TABS = [
 // names it, so the panel head carries the sentence instead of repeating the title.
 const SECTION_LEADS = {
   goals: "What the business is, who the posts are for, and what they should make happen.",
-  // Flag voicePerNetwork: the model in one line — the default voice is where
-  // every network starts, a network's own voice is rules on top of it.
-  voice: networkVoiceOn()
-    ? "The voice I start from on every network. A network with a voice of its own adds its rules on top."
-    : "How the Brand sounds, in five parts. I follow them in every draft.",
+  // The model in one line — the default voice is where every network starts,
+  // a network's own voice is rules on top of it.
+  voice: "The voice I start from on every network. A network with a voice of its own adds its rules on top.",
   brand: "How the Brand looks: its logos, colors, type, and the rules its images follow.",
   images: "How I make the Brand's images, and what I start from.",
   competitors: "Who the Brand is measured against, so I can position it.",
@@ -1316,13 +1313,13 @@ function setTab(id) {
   history.replaceState(null, "", `#${path}${query ? `?${query}` : ""}`);
 }
 
-// ── Voice per network (flag voicePerNetwork) ───────────────────────────────
+// ── Voice per network ───────────────────────────────
 // The Voice profile tab lists its voices left (renderVoiceNav): the default voice — generic,
 // tied to no network, the Playbook's own parts — then one per network the
 // Playbook publishes on, each a variation of it. Which one is on screen is
 // `?voice=` — kept like `?tab=`, without a route change.
 function voiceNets(data) {
-  if (!networkVoiceOn() || data?.voiceMode === "manual") return [];
+  if (data?.voiceMode === "manual") return [];
   return voiceNetworks(data);
 }
 
@@ -1342,7 +1339,7 @@ export function editVoiceNetwork(net) {
 // the one open, being configured. The others: « Add a voice for another
 // network » (voiceMoreMenu).
 function ficheNets(data) {
-  if (!networkVoiceOn() || data?.voiceMode === "manual") return [];
+  if (data?.voiceMode === "manual") return [];
   const own = Object.keys(NETWORKS).filter((n) => networkVoice(data, n).state === "own");
   const open = voiceNet && NETWORKS[voiceNet] ? [voiceNet] : [];
   // The connected first, in their order; then the others with a voice.
@@ -1413,7 +1410,7 @@ const ruleCount = (v) =>
   ["voiceAlways", "voiceNever", "voiceByPost", "voiceSometimes"].reduce((n, f) => n + (v?.[f] || []).length, 0);
 function renderVoiceNav(data) {
   // Creation shows each network as a card under the default voice instead.
-  if (!isLibrary() || !networkVoiceOn() || data?.voiceMode === "manual") return "";
+  if (!isLibrary() || data?.voiceMode === "manual") return "";
   const nets = ficheNets(data);
   // A network has a voice of its own (a card, its rules counted) or uses the
   // default voice — a dashed row to configure. No third state: the default
@@ -1996,8 +1993,7 @@ function pb2AvoidRow(data, { edit = false } = {}) {
 }
 
 // The five parts of a voice (VOICE_PARTS), in one order everywhere — read and
-// edit. `lead`: trusted html on top of the first block. `net` (flag
-// voicePerNetwork): `data` is that network's voice and `brand` the Playbook —
+// edit. `lead`: trusted html on top of the first block. `net`: `data` is that network's voice and `brand` the Playbook —
 // its own rules are tagged, the default voice's traits and banned words stay the
 // Brand's (shown, not edited here).
 function pb2VoiceParts(data, { edit = false, lead = "", index = 2, brand = data, net = null } = {}) {
@@ -2036,7 +2032,7 @@ function renderVoiceRead2(data, learnMenu) {
   );
 }
 
-// The creation review (flag voicePerNetwork): a card per network the Playbook
+// The creation review: a card per network the Playbook
 // publishes on, after the default voice — where a new user gives each network
 // its rules. Rules learned from its posts: shown, with the way back to the
 // default voice. None yet: the Voice step's choices (the chat's, as tiles);
@@ -2081,7 +2077,7 @@ function voiceSplitBlock(data, index) {
   );
 }
 
-// The creation review (flag voicePerNetwork): after the default voice, the
+// The creation review: after the default voice, the
 // choice, then — rules for each network — a card per network the Playbook
 // publishes on, where a new user gives each network its rules. Rules learned
 // from its posts: shown, with the way back to the default voice. None yet: the
@@ -2250,7 +2246,7 @@ function voiceWaysCard(
 // `voiceRulesFor` is the draft's (never saved): a network out of it keeps the
 // default voice, chosen; in it and left empty, the default voice too, at save.
 function networkPickerCards(data, nets) {
-  if (!networkVoiceOn() || !nets.length) return [];
+  if (!nets.length) return [];
   const picked = data.voiceRulesFor || [];
   // A network picked with an empty voice: its card is the ways to fill it.
   return nets
@@ -2813,7 +2809,7 @@ function renderActivePanel(data) {
     // from its posts, else optimized — shown here before it's saved.
     // (Not in the run's voice review: a network's voice starts empty there,
     // to be filled — 2026-10-29, asked: « il ne faut pas qu'elles soient préremplies ».)
-    if (!isLibrary() && networkVoiceOn() && !cfg.networkPicker) data.voiceByNetwork = withNetworkVoices(data);
+    if (!isLibrary() && !cfg.networkPicker) data.voiceByNetwork = withNetworkVoices(data);
     // The run's voice review (cfg.networkPicker) opens a network's rules in edit.
     const keep = cfg.networkPicker ? voiceNetworks(data) : isLibrary() ? ficheNets(data) : [];
     if (voiceNet && !keep.includes(voiceNet)) setVoiceNet(null);

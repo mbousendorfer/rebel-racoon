@@ -125,7 +125,7 @@ src/
   social-profiles.js    — connected social accounts (STATE: which are connected, + a notifier),
                           the NETWORKS table (icon / label / limit / accent) and the profile renderers
   voice-parts.js        — a Playbook's voice in five parts (VOICE_PARTS) + a network's voice (networkVoice)
-  network-voice-flow.js — a network's voice: the shared choices, the proposal (propose / save), the chat's Voice step (requireNetworkVoices, giveNetworkVoice) — flag voicePerNetwork; without a chat: components/network-voice-modal.js (Clips) and components/voice-proposal-modal.js (questions + proposal)
+  network-voice-flow.js — a network's voice: the shared choices, the proposal (propose / save), the chat's Voice step (requireNetworkVoices, giveNetworkVoice); without a chat: components/network-voice-modal.js (Clips) and components/voice-proposal-modal.js (questions + proposal)
   connect-profiles-flow.js — requireConnectedProfiles(): the connect step every draft path asks
   draft-image-flow.js   — "Generate an image": one image straight into the draft, nothing asked
   post-plan-flow.js     — writing a post in a chat with no source (post plan → confirm → drafts)
@@ -231,7 +231,7 @@ src/
     assign-modal.js       assign drafts for review (one reviewer, due date, comment)
     clip-range-modal.js   « Add a clip »: the one moment a clip's Start / End are chosen
     network-voice-modal.js, voice-proposal-modal.js, voice-intro-modal.js — a network's voice where
-                          there is no chat (flag `voicePerNetwork`)
+                          there is no chat
     objective-modal.js, objective-catalog-panel.js, measure-scope-field.js — Insights' objectives
     bug-report-modal.js, feedback-modal.js, chat-picker-modal.js,
     confirm-modal.js, rename-modal.js, search-modal.js,

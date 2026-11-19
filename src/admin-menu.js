@@ -6,13 +6,15 @@
 // the side-effecting actions wired by the sidebar's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2766";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2766";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2766";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2766";
-import { getRole, setRole, ORG } from "./org.js?v=2766";
-import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2766";
-import { resetIntro } from "./components/voice-intro-modal.js?v=2766";
+import { html, raw, escapeHtml } from "./utils.js?v=2767";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2767";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2767";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2767";
+import { getRole, setRole, ORG } from "./org.js?v=2767";
+import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2767";
+import { resetIntro } from "./components/voice-intro-modal.js?v=2767";
+import { getContexts, updateContext } from "./contexts-store.js?v=2767";
+import { showToast } from "./components/toast.js?v=2767";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
@@ -68,10 +70,17 @@ export function toggleFlag(id) {
   window.location.reload();
 }
 
-// The voice intro (flag voicePerNetwork) shows once; this shows it again.
+// The voice intro shows once; this shows it again.
 export function replayVoiceIntro() {
   resetIntro();
   window.location.reload();
+}
+
+// Every Playbook's network voices dropped, until the next reload re-seeds them:
+// the Voice step, the nudges and the intro's cards start over.
+export function resetNetworkVoices() {
+  getContexts().forEach((c) => updateContext(c.id, { voiceByNetwork: {} }));
+  showToast("Network voices reset. Each network asks for its voice at its next draft.", { duration: 3200 });
 }
 
 export function renderAdminMenu() {
@@ -159,10 +168,8 @@ export function renderAdminMenu() {
         <div class="admin-menu__flags">${raw(networkRows)}</div>
       </div>
       ${raw(flagSections)}
-      ${raw(
-        isFlagOn("voicePerNetwork")
-          ? `<div class="admin-menu__section">
-        <span class="admin-menu__section-title">Onboarding</span>
+      <div class="admin-menu__section">
+        <span class="admin-menu__section-title">Voice</span>
         <button type="button" class="admin-menu__doc" data-admin-voice-intro>
           <span class="admin-menu__opt-text">
             <span class="admin-menu__opt-label">Replay the voice intro</span>
@@ -170,9 +177,19 @@ export function renderAdminMenu() {
           </span>
           <i class="ap-icon-refresh" aria-hidden="true"></i>
         </button>
-      </div>`
-          : "",
-      )}
+        <button type="button" class="admin-menu__doc" data-admin-voice-reset>
+          <span class="admin-menu__opt-text">
+            <span class="admin-menu__opt-label">Reset network voices</span>
+            <span class="admin-menu__opt-hint"
+              >Every network back on the default voice, never set: the Voice step asks again at the next draft</span
+            >
+          </span>
+          <i class="ap-icon-refresh" aria-hidden="true"></i>
+        </button>
+        <span class="admin-menu__opt-hint"
+          >In a chat, « Admin: preview in chat › Voice » plays the voice step, a voice change and feedback.</span
+        >
+      </div>
       <div class="admin-menu__section">
         <span class="admin-menu__section-title">Docs</span>
         <a class="admin-menu__doc" href="handoff/overlays.html" target="_blank" rel="noopener">

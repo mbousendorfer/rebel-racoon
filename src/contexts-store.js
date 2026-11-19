@@ -22,20 +22,20 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { newId } from "./utils.js?v=2766";
-import { contexts as seed, sharedContexts, DEMO_PLAYBOOK } from "./mocks.js?v=2766";
-import { isDemo } from "./demo-mode.js?v=2766";
-import { isNewUser } from "./user-mode.js?v=2766";
-import { CURRENT_USER } from "./org.js?v=2766";
-import { isFlagOn } from "./feature-flags.js?v=2766";
-import { createNotifier } from "./store-utils.js?v=2766";
+import { newId } from "./utils.js?v=2767";
+import { contexts as seed, sharedContexts, DEMO_PLAYBOOK } from "./mocks.js?v=2767";
+import { isDemo } from "./demo-mode.js?v=2767";
+import { isNewUser } from "./user-mode.js?v=2767";
+import { CURRENT_USER } from "./org.js?v=2767";
+import { isFlagOn } from "./feature-flags.js?v=2767";
+import { createNotifier } from "./store-utils.js?v=2767";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=2766";
-import { cloneItems, learnNetworkVoice, cloneNetworkVoice } from "./voice-parts.js?v=2766";
+} from "./languages.js?v=2767";
+import { cloneItems, learnNetworkVoice, cloneNetworkVoice } from "./voice-parts.js?v=2767";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -291,7 +291,7 @@ function normalizeImageryDefaults(ctx) {
 // never what changed. Like `usedIn` it is stored ON the Context but is never a
 // section OF it — it's read in the Share modal (see CONCEPTS.md §1, "exceptions
 // de stockage").
-// The voice of each network (flag voicePerNetwork, voice-parts.js). A seed names
+// The voice of each network(voice-parts.js). A seed names
 // only where a network's voice was learned — `{ learnedFrom, postCount }` — and
 // the voice itself is derived here, so the mocks don't repeat the default voice
 // once per network.

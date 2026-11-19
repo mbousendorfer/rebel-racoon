@@ -5,28 +5,20 @@
 //
 // Left, the steps, in the order the run will ask them: the account screen, the
 // chat's own steps (altSteps(), so a flag that adds or drops a question changes
-// this list too), then the review. Right, on Archie's warm pixel field, the
-// Playbook those steps build — each step lights up as the part of the Playbook
-// it produces lands on the card. One orchestrated load sequence, all CSS
-// (`--i` per step), nothing after it. Reduced motion: the finished state.
-//
-// The card is an illustration, not data: the Playbook's real parts (Voice
-// profile, Branding…) filled with example values.
+// this list too), then the review. Right, the scene that teaches what a
+// Playbook changes (welcome-alt-explainer.js).
 
-import "../archie-pixels.js?v=2766";
-import { startDemo } from "../demo-flow.js?v=2766";
-import { isFlagOn } from "../feature-flags.js?v=2766";
-import { networkVoiceOn } from "../voice-parts.js?v=2766";
-import { html, raw } from "../utils.js?v=2766";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2766";
-import { navigate } from "../router.js?v=2766";
-import { setHandoff } from "../handoff.js?v=2766";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2766";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2766";
-import { paintExplainer } from "./welcome-alt-explainer.js?v=2766";
+import { startDemo } from "../demo-flow.js?v=2767";
+import { isFlagOn } from "../feature-flags.js?v=2767";
+import { html, raw } from "../utils.js?v=2767";
+import { navigate } from "../router.js?v=2767";
+import { setHandoff } from "../handoff.js?v=2767";
+import { flowSteps, startFlow, STEP_TEXT, tint } from "./welcome-alt-shell.js?v=2767";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2767";
+import { paintExplainer } from "./welcome-alt-explainer.js?v=2767";
 
-// What a Playbook holds, shown rather than told: the parts the card on the
-// right fills, under their Playbook names, glyphs and tints.
+// What a Playbook holds, shown rather than told: its parts, under their
+// Playbook names, glyphs and tints.
 const PARTS = ["goals", "voice", "brand", "competitors"];
 
 // The rail stays quiet — the colour lives once, in the parts above. A step
@@ -40,63 +32,10 @@ const STEP_HINT = {
 };
 const OPTIONAL = new Set(["documents"]);
 
-const glyph = (net) =>
-  `<span class="welcome-intro__net"><i class="${NETWORK_ICON_BY_PLATFORM[net]}" aria-hidden="true"></i></span>`;
-
-const chips = (list, cls = "welcome-flow__chip") =>
-  `<span class="welcome-flow__chips">${list.map((t) => `<span class="${cls}">${t}</span>`).join("")}</span>`;
-const line = (t) => `<span class="welcome-flow__line">${t}</span>`;
-
-// The example card, line by line — each line belongs to the step that builds
-// it, and lands when that step lights up (the step names are STEP_TEXT). The
-// Playbook's real parts, filled with an example brand.
-const ROWS = [
-  { step: "voice", label: "Publishes on", value: ["linkedin", "instagram", "facebook", "x"].map(glyph).join("") },
-  {
-    step: "url",
-    label: "About",
-    value: line("Small-batch soap, made by hand in Lyon with plant oils and nothing you can't pronounce."),
-  },
-  {
-    step: "voice",
-    label: "Voice",
-    value: `<span class="welcome-flow__stack">${chips(["Warm", "Witty", "Never salesy"], "welcome-intro__trait")}${line(
-      "Talks like a friend who knows their stuff: short sentences, one idea per post.",
-    )}</span>`,
-  },
-  {
-    step: "url",
-    label: "Who you write for",
-    value: `<span class="welcome-flow__stack">${line("People who read the label")}${chips([
-      "Sensitive skin",
-      "Less plastic",
-    ])}</span>`,
-  },
-  { step: "url", label: "Goal", value: chips(["Brand awareness", "Visit the shop"]) },
-  // The fourth part the pills promise.
-  { step: "url", label: "Competitors", value: chips(["Savonnerie Marius", "Pure Bloc"]) },
-  { step: "language", label: "Writes in", value: `<span class="welcome-intro__plain">English</span>` },
-  {
-    step: "url",
-    label: "Colors and type",
-    // An example brand palette.
-    value: ["--app-convo-navy", "--ref-color-orange-100", "--ref-color-yellow-40", "--app-surface-subtle"]
-      .map((token) => `<span class="welcome-intro__swatch" style="background: var(${token})"></span>`)
-      .join(""),
-  },
-];
-
 export function renderWelcomeAltIntro(_params, target) {
   const steps = flowSteps();
-  const rows = ROWS.filter((r) => steps.includes(r.step));
-  const last = steps.length - 1;
-  // Flag voicePerNetwork (the former playbookAnimations, baked into it on
-  // 2026-11-04): the stage plays what a Playbook changes, on the run's plain
-  // stage, instead of the example card on the pixels.
-  const scene = networkVoiceOn();
-
   target.innerHTML = html`
-    <div class="welcome-intro ${scene ? "is-plain" : ""}">
+    <div class="welcome-intro is-plain">
       <section class="welcome-intro__lede" aria-labelledby="welcomeIntroTitle">
         <img class="welcome-intro__wordmark" src="assets/logos/archie-wordmark.svg" alt="Archie" />
         <div class="welcome-intro__copy">
@@ -161,28 +100,7 @@ export function renderWelcomeAltIntro(_params, target) {
         </div>
       </section>
 
-      ${scene
-        ? raw(`<div class="welcome-intro__stage"><div class="welcome-explainer" data-intro-explainer></div></div>`)
-        : raw(
-            html`<div class="welcome-intro__stage" aria-hidden="true">
-              <archie-pixels data-quiet></archie-pixels>
-              <div class="welcome-intro__card">
-                ${raw(
-                  playbookCard({
-                    mark: `<i class="ap-icon-buildings" aria-hidden="true"></i>`,
-                    name: "Your Playbook",
-                    status: `<span class="ap-status mermaid welcome-intro__card-status" style="--i: ${last}">Ready to write</span>`,
-                    // Several lines from one step land one after the other.
-                    rows: rows.map((r) => ({
-                      label: r.label,
-                      html: r.value,
-                      style: `--i: ${steps.indexOf(r.step) + rows.filter((o) => o.step === r.step).indexOf(r) * 0.18}`,
-                    })),
-                  }),
-                )}
-              </div>
-            </div>`,
-          )}
+      <div class="welcome-intro__stage"><div class="welcome-explainer" data-intro-explainer></div></div>
     </div>
   `;
   const sceneEl = target.querySelector("[data-intro-explainer]");

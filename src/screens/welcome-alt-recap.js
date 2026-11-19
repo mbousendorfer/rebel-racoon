@@ -4,9 +4,9 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { newChatPath } from "../utils.js?v=2766";
-import { navigate } from "../router.js?v=2766";
-import { catalogueRoute } from "../active-playbook.js?v=2766";
+import { newChatPath } from "../utils.js?v=2767";
+import { navigate } from "../router.js?v=2767";
+import { catalogueRoute } from "../active-playbook.js?v=2767";
 import {
   getDraft,
   isAnalysisReady,
@@ -14,40 +14,39 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2766";
+} from "../context-builder.js?v=2767";
 import {
   RECAP_SECTIONS,
   editVoiceNetwork,
   networkVoiceFilled,
   setNetworkRules,
   proposeVoiceInline,
-} from "../playbook-view.js?v=2766";
-import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2766";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2766";
+} from "../playbook-view.js?v=2767";
+import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2767";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2767";
 import {
   getConnectedProfiles,
   networkIcon,
   networkLabel,
   normalizeNetwork,
   NETWORKS,
-} from "../social-profiles.js?v=2766";
+} from "../social-profiles.js?v=2767";
 import {
   canLearnFrom,
   learnNetworkVoice,
   networkVoice,
-  networkVoiceOn,
   playbookNetworks,
   ownNetworkVoices,
   voiceNetworks,
   onlyNetwork,
-} from "../voice-parts.js?v=2766";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2766";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2766";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2766";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2766";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2766";
-import { showToast } from "../components/toast.js?v=2766";
-import { open as openConfirm } from "../components/confirm-modal.js?v=2766";
+} from "../voice-parts.js?v=2767";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2767";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2767";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2767";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2767";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2767";
+import { showToast } from "../components/toast.js?v=2767";
+import { open as openConfirm } from "../components/confirm-modal.js?v=2767";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -127,7 +126,7 @@ export function renderWelcomeAltVoice(_params, target) {
 // `voiceRulesFor` lists the networks picked for rules — the draft's, never saved.
 function startVoiceRules(sid) {
   const d = getDraft(sid);
-  if (!networkVoiceOn() || d.voiceRulesFor) return;
+  if (d.voiceRulesFor) return;
   // The networks the list shows (every connected one, voiceNetworks).
   const own = voiceNetworks(d).filter((n) => networkVoice(d, n).state === "own");
   patchDraft(sid, { voiceRulesFor: own, voiceByNetwork: ownNetworkVoices(d) });
@@ -144,8 +143,7 @@ const playbookReview = () => ({
   back: "/welcome-alt/ready",
 });
 
-// The Voice: the default voice (its five parts), then — flag voicePerNetwork,
-// a Playbook with networks — one row per network under it, each with a DS
+// The Voice: the default voice (its five parts), then — a Playbook with networks — one row per network under it, each with a DS
 // toggle « Own voice » (2026-11-04, replaced 2026-11-05 by « Network voices »,
 // a row per voice with its state, and « Add a network voice »; asked: « j'arrive pas à comprendre que je
 // vais customiser des voices pour les divers networks », then « too confusing,
@@ -158,8 +156,7 @@ function voiceReview(sid, overrides = {}) {
   const voice = RECAP_SECTIONS.find((t) => t.id === "voice");
   // The fiche's model (2026-11-05, « Oui, aligne »): the connected networks,
   // then any picked from « Add a voice for another network ».
-  const nets = () =>
-    networkVoiceOn() ? [...new Set([...voiceNetworks(getDraft(sid)), ...(getDraft(sid).voiceRulesFor || [])])] : [];
+  const nets = () => [...new Set([...voiceNetworks(getDraft(sid)), ...(getDraft(sid).voiceRulesFor || [])])];
   const netOf = (partId) => partId.startsWith("voice-net-") && partId.slice("voice-net-".length);
   const customizing = (n) => (getDraft(sid).voiceRulesFor || []).includes(n);
   // One network: the default voice is that network's, said in its words.
@@ -223,11 +220,9 @@ function voiceReview(sid, overrides = {}) {
     if (n && customizing(n) && !networkVoiceFilled(getDraft(sid), n)) setNetworkRules(n, false);
   };
   const moreNets = () =>
-    networkVoiceOn()
-      ? Object.keys(NETWORKS)
-          .filter((n) => !nets().includes(n))
-          .map((n) => ({ id: `voice-net-${n}`, title: networkLabel(n), icon: networkIcon(n) }))
-      : [];
+    Object.keys(NETWORKS)
+      .filter((n) => !nets().includes(n))
+      .map((n) => ({ id: `voice-net-${n}`, title: networkLabel(n), icon: networkIcon(n) }));
   const onToggle = (partId, on) => {
     if (on) patchDraft(sid, { reviewedParts: (getDraft(sid).reviewedParts || []).filter((id) => id !== partId) });
     setNetworkRules(netOf(partId), on);
@@ -348,9 +343,7 @@ function voiceReview(sid, overrides = {}) {
     title: "Check your voice",
     sub: only()
       ? `Your default voice is how your ${only()} posts sound. I save as you type.`
-      : networkVoiceOn()
-        ? "Your default voice works on every network. Give a network its own voice when it should sound different. I save as you type."
-        : "Every draft I write starts from this voice. I save as you type.",
+      : "Your default voice works on every network. Give a network its own voice when it should sound different. I save as you type.",
     parts,
     rows,
     onWay,

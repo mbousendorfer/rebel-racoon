@@ -6,7 +6,7 @@
 //   init()                       — inject markup + bind once on app boot
 //   open({ onConfirm, network? }) — onConfirm(selectedProfileIds: string[]);
 //                                  `network`: only its accounts, to learn that
-//                                  network's voice (flag voicePerNetwork)
+//                                  network's voice
 //
 // Behaviour:
 //   - Lists getConnectedProfiles() as a checkable list; profiles with no
@@ -21,15 +21,15 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2766";
-import { escapeHtml as esc } from "../utils.js?v=2766";
+} from "../modal-coordinator.js?v=2767";
+import { escapeHtml as esc } from "../utils.js?v=2767";
 import {
   getConnectedProfiles,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   BRAND_INITIALS,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=2766";
+} from "../social-profiles.js?v=2767";
 
 const MODAL_ID = "analyze-profiles";
 

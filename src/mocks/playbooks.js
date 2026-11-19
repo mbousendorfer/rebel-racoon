@@ -263,7 +263,7 @@ export const contexts = [
       },
     ],
     connectedSocials: ["linkedin", "instagram", "x"],
-    // flag voicePerNetwork — LinkedIn and Instagram have their voice, learned;
+    // LinkedIn and Instagram have their voice, learned;
     // X has none yet.
     voiceByNetwork: {
       linkedin: { learnedFrom: "Northwind Studio Co.", postCount: 312 },

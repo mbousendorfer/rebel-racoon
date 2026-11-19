@@ -21,12 +21,12 @@ import {
   postDraftResult,
   reportDraftFailure,
   GENERATION_TOOLS,
-} from "./assistant.js?v=2766";
-import { getIdeas } from "./library.js?v=2766";
-import { anglesByIdea } from "./mocks.js?v=2766";
-import { addPostDraft } from "./posts-store.js?v=2766";
-import { networkLabel, networkMeta } from "./social-profiles.js?v=2766";
-import { requireNetworkVoices } from "./network-voice-flow.js?v=2766";
+} from "./assistant.js?v=2767";
+import { getIdeas } from "./library.js?v=2767";
+import { anglesByIdea } from "./mocks.js?v=2767";
+import { addPostDraft } from "./posts-store.js?v=2767";
+import { networkLabel, networkMeta } from "./social-profiles.js?v=2767";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2767";
 
 // The set-up pass before a draft (reading the brief and the voice) — logged as
 // its own tools, so the generation that follows isn't counted twice.
@@ -169,7 +169,7 @@ export function startDraftFlow(sessionId, ideaId, count = 1, channelOverride = n
 export function executeDraft(sessionId, ideaId, selectedChannels, count = 1, angle = null, language = null) {
   const idea = resolveIdea(sessionId, ideaId);
   if (!idea || !selectedChannels || selectedChannels.length === 0) return;
-  // Every network gets its voice before a word is written (flag voicePerNetwork).
+  // Every network gets its voice before a word is written.
   requireNetworkVoices(sessionId, selectedChannels, () =>
     writeDraft(sessionId, idea, selectedChannels, count, angle, language),
   );

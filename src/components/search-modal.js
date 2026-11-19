@@ -25,11 +25,11 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2766";
-import { escapeHtml } from "../utils.js?v=2766";
-import { navigate } from "../router.js?v=2766";
-import { getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=2766";
-import { getContextById } from "../contexts-store.js?v=2766";
+} from "../modal-coordinator.js?v=2767";
+import { escapeHtml } from "../utils.js?v=2767";
+import { navigate } from "../router.js?v=2767";
+import { getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=2767";
+import { getContextById } from "../contexts-store.js?v=2767";
 
 const MODAL_ID = "search";
 

@@ -1092,7 +1092,7 @@
   color: var(--ref-color-grey-80);
 }
 
-/* ── Voice per network (flag voicePerNetwork) ──
+/* ── Voice per network ──
  * The voices as the DS list panel, left of the voice on screen — the page's
  * tabs stay the only row of tabs (2026-10-29). A network's own rules carry a
  * grey tag; a network that writes in the default voice shows it on grey (the

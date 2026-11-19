@@ -247,7 +247,7 @@ export const DEMO_PLAYBOOK = {
   dontRules: ["No corporate words", "No more than two emoji"],
   cta: "Come by for a cup — or order the beans online.",
   connectedSocials: DEMO_ACCOUNTS.map((a) => a.id),
-  // flag voicePerNetwork — every account's network, optimized at creation.
+  // Every account's network, optimized at creation.
   voiceByNetwork: Object.fromEntries(
     DEMO_ACCOUNTS.map((a) => [a.platform, { learnedFrom: a.handle, postCount: a.postCount || 24 }]),
   ),

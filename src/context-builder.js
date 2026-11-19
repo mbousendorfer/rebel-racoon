@@ -12,21 +12,21 @@
 // objective, contentAction, ctaLinks, language, color, suggestions, editingId,
 // onComplete }.
 
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2766";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2766";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2767";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2767";
 import {
   analyzeWebsite,
   analyzeSocialProfiles,
   analyzeDocument,
   analyzeBrandFiles,
   analyzeInterview,
-} from "./context-mock-analysis.js?v=2766";
-import { cloneItems, ownNetworkVoices, networkVoiceOn, voiceHasRules } from "./voice-parts.js?v=2766";
-import { markIntroSeen } from "./components/voice-intro-modal.js?v=2766";
-import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2766";
-import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2766";
-import { isFlagOn } from "./feature-flags.js?v=2766";
-import { createSessionNotifier } from "./store-utils.js?v=2766";
+} from "./context-mock-analysis.js?v=2767";
+import { cloneItems, ownNetworkVoices, voiceHasRules } from "./voice-parts.js?v=2767";
+import { markIntroSeen } from "./components/voice-intro-modal.js?v=2767";
+import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2767";
+import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2767";
+import { isFlagOn } from "./feature-flags.js?v=2767";
+import { createSessionNotifier } from "./store-utils.js?v=2767";
 
 const drafts = new Map(); // sessionId → draft
 const notifier = createSessionNotifier("context-builder");
@@ -435,7 +435,7 @@ export function save(sessionId) {
   const name = (d.name || "").trim();
   if (!name) return; // Save button is disabled in this state; defensive.
   // A new user never knew the app without network voices: no intro to show them (voice-intro-modal.js).
-  if (!d.editingId && networkVoiceOn()) markIntroSeen();
+  if (!d.editingId) markIntroSeen();
   const payload = {
     name,
     color: d.color,
@@ -469,8 +469,7 @@ export function save(sessionId) {
     voiceByPost: cloneItems(d.voiceByPost),
     voiceSometimes: cloneItems(d.voiceSometimes),
     // A NEW Playbook: each network it publishes on keeps what the review gave
-    // it — rules added there, or the default voice kept (flag voicePerNetwork —
-    // stored either way, shown under the flag). Never opened, the Voice review
+    // it — rules added there, or the default voice kept. Never opened, the Voice review
     // gives what it would have at its start (ownNetworkVoices): nothing learned,
     // no network added (2026-11-05).
     // Re-saving an existing one never rewrites them.

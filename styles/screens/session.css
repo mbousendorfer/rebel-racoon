@@ -839,7 +839,7 @@ body.playbook-revoked .session__composer-card {
   margin-top: calc(-1 * var(--ref-spacing-xs));
 }
 
-/* « Finish your voices » (flag voicePerNetwork): a DS warning infobox under
+/* « Finish your voices »: a DS warning infobox under
    the starters, in the composer's column. */
 .empty-chat__voices {
   width: 100%;

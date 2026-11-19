@@ -1,4 +1,4 @@
-// A network's voice, given where there is no chat (flag voicePerNetwork) — the
+// A network's voice, given where there is no chat — the
 // Playbook's network tab, the Clips space, a draft's feedback. One dialog, two
 // the same as the chat's (network-voice-flow.js):
 //   openVoiceProposal  — learning takes a moment (its phases), then what
@@ -22,18 +22,18 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2766";
-import { getContextById } from "../contexts-store.js?v=2766";
-import { networkLabel } from "../social-profiles.js?v=2766";
+} from "../modal-coordinator.js?v=2767";
+import { getContextById } from "../contexts-store.js?v=2767";
+import { networkLabel } from "../social-profiles.js?v=2767";
 import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
-} from "../network-voice-flow.js?v=2766";
-import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2766";
-import { escapeHtml } from "../utils.js?v=2766";
+} from "../network-voice-flow.js?v=2767";
+import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2767";
+import { escapeHtml } from "../utils.js?v=2767";
 
 const MODAL_ID = "voice-proposal";
 

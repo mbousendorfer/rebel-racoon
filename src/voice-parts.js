@@ -10,9 +10,8 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2766";
-import { isFlagOn } from "./feature-flags.js?v=2766";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2766";
+import { escapeHtml } from "./utils.js?v=2767";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2767";
 import {
   networkMeta,
   networkLabel,
@@ -22,7 +21,7 @@ import {
   getConnectedProfiles,
   profileForNetwork,
   NETWORKS,
-} from "./social-profiles.js?v=2766";
+} from "./social-profiles.js?v=2767";
 
 // `hint`: what the part holds, said under its title — on the Playbook's tab
 // and in a voice proposal (one source for both).
@@ -93,7 +92,7 @@ export function baseValue(ctx, field) {
   return Array.isArray(ctx?.[field]) ? ctx[field] : [];
 }
 
-// ── A voice per network (flag voicePerNetwork) ──────────────────────────────
+// ── A voice per network ──────────────────────────────
 // The flat parts above are the default voice. `ctx.voiceByNetwork[network]` is a
 // whole voice for one network the Playbook publishes on — the same five parts,
 // plus:
@@ -107,8 +106,6 @@ export function baseValue(ctx, field) {
 // a network's own voice.
 // A rule Archie (or the user) made for this network carries `adapted: true` and
 // reads « For LinkedIn »; a rule without it comes from the default voice.
-
-export const networkVoiceOn = () => isFlagOn("voicePerNetwork");
 
 // The networks a Playbook publishes on, once each, in its own order.
 // `connectedSocials` holds network slugs — or, in the demo, account ids.
@@ -143,7 +140,6 @@ export function voiceNetworks(ctx) {
 // The one network a Playbook writes for, when there is only one: its default
 // voice is that network's, and says so (« How your LinkedIn posts sound. »).
 export function onlyNetwork(ctx) {
-  if (!networkVoiceOn()) return "";
   const nets = connectedNetworks(ctx);
   return nets.length === 1 ? nets[0] : "";
 }
@@ -166,7 +162,7 @@ export function voiceHasRules(voice) {
 // voice of its own, the default voice not kept by choice) or its own and still
 // empty. The new chat's « Finish your voices » starter lists them.
 export function voicesToFinish(ctx) {
-  if (!networkVoiceOn() || !ctx) return [];
+  if (!ctx) return [];
   return voiceNetworks(ctx).filter((n) => {
     const { state, chosen, voice } = networkVoice(ctx, n);
     return state === "default" ? !chosen : state === "own" && !voiceHasRules(voice);
@@ -277,7 +273,7 @@ export function cloneNetworkVoice(v) {
 //   "own"      its own voice: learned, adapted, or edited
 // `network` as a draft names it ("twitter") or as a voice is keyed ("x").
 export function networkVoice(ctx, network) {
-  if (!networkVoiceOn() || !network) return { state: "brand", voice: ctx };
+  if (!network) return { state: "brand", voice: ctx };
   const own = ctx?.voiceByNetwork?.[normalizeNetwork(network)];
   if (!own || own.optimizedBy === "brand") return { state: "default", chosen: !!own, voice: ctx };
   return { state: "own", voice: own };

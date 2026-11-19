@@ -9,20 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2766";
-import { getPath, navigate } from "../router.js?v=2766";
-import { parseHashParams } from "../url-state.js?v=2766";
-import { isFlagOn } from "../feature-flags.js?v=2766";
-import {
-  altSteps,
-  createAltDraft,
-  getDraft,
-  isAnalysisReady,
-  restoreDraft,
-  subscribeDraft,
-} from "../context-builder.js?v=2766";
-import { getConnectedProfiles, networkIcon, networkLabel } from "../social-profiles.js?v=2766";
-import { playbookNetworks, networkVoiceOn } from "../voice-parts.js?v=2766";
+import { html, raw } from "../utils.js?v=2767";
+import { getPath, navigate } from "../router.js?v=2767";
+import { parseHashParams } from "../url-state.js?v=2767";
+import { altSteps, createAltDraft, getDraft, restoreDraft, subscribeDraft } from "../context-builder.js?v=2767";
+import { getConnectedProfiles } from "../social-profiles.js?v=2767";
 import {
   readSessionId,
   isIntegrated,
@@ -32,10 +23,9 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2766";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2766";
-import { paintExplainer } from "./welcome-alt-explainer.js?v=2766";
-import { setTopbarActions } from "../components/topbar.js?v=2766";
+} from "./welcome-alt-recap.js?v=2767";
+import { paintExplainer } from "./welcome-alt-explainer.js?v=2767";
+import { setTopbarActions } from "../components/topbar.js?v=2767";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -56,7 +46,7 @@ export const STEP_TEXT = {
     title: "Check your voice",
     // Flag OFF there is one voice, not one per network: say it the review's way.
     // (Flags change with a reload, so reading it at load is enough.)
-    desc: networkVoiceOn() ? "How you sound, on every network." : "How you sound, everywhere.",
+    desc: "How you sound, on every network.",
   },
   recap: { step: "Review", title: "Check what I learned", desc: "Fix anything that's off before I write." },
 };
@@ -170,230 +160,11 @@ export const tint = (id) =>
     ? `--part-tint: var(--ref-color-${PART_TINT[id]}-20); --part-ink: var(--ref-color-${PART_TINT[id]}-150)`
     : "";
 
-// The card's rows by label (the intro's example card uses the same labels),
-// IN THE PLAYBOOK'S ORDER, each with the part it fills. Publishes on is the
-// account, not a part of the Playbook: it sits in the card's head, with the
-// brand; About is the brand's lead, under its name.
-const ROW_PART = {
-  "Publishes on": "",
-  About: "",
-  "Writes in": "goals",
-  "Who you write for": "goals",
-  Goal: "goals",
-  Voice: "voice",
-  "Main voice": "voice",
-  "Colors and type": "brand",
-  Competitors: "competitors",
-};
-const ROW_ORDER = Object.keys(ROW_PART);
-const inPlaybookOrder = (rows) => [...rows].sort((a, b) => ROW_ORDER.indexOf(a.label) - ROW_ORDER.indexOf(b.label));
-
-// The Playbook card — the live one on every step and the intro's example.
-// Three levels, one per kind of thing: WHO (the head: the brand's mark, its
-// name at h1, where it is and where it publishes, the status on the right),
-// WHAT (About, the lead: the one paragraph set a size up), and the PARTS the
-// Playbook will hold, each under its own name and glyph from the Playbook
-// (RECAP_SECTIONS: Brief, Voice profile, Branding, Competitors) in its tint.
-// Inside a part, a field is named only when the part holds more than one.
-//   rows: [{ label, html, cls?, style? }] — html is the field's content
-//   (a value, or its placeholder bars); cls / style ride on the field.
-export function playbookCard({ mark, name, sub = "", status = "", rows }) {
-  const ordered = inPlaybookOrder(rows);
-  const field = (r, { named = true, cls = "" } = {}) => `
-    <div class="welcome-intro__row ${cls} ${r.cls || ""}" style="${r.style || ""}">
-      <dt class="${named ? "" : "welcome-intro__hidden"}">${escapeHtml(r.label)}</dt>
-      <dd>${r.html}</dd>
-    </div>`;
-  const publish = ordered.find((r) => r.label === "Publishes on");
-  const about = ordered.find((r) => r.label === "About");
-  const parts = [];
-  for (const r of ordered) {
-    const part = ROW_PART[r.label];
-    if (!part) continue;
-    if (parts.at(-1)?.id !== part) parts.push({ id: part, rows: [] });
-    parts.at(-1).rows.push(r);
-  }
-  return `
-    <div class="welcome-intro__card-head">
-      <span class="welcome-intro__brand">${mark}</span>
-      <div class="welcome-flow__card-name">
-        <span class="welcome-intro__card-title">${escapeHtml(name)}</span>
-        ${sub ? `<span class="welcome-flow__card-sub">${escapeHtml(sub)}</span>` : ""}
-        ${publish ? `<dl class="welcome-intro__publish">${field(publish, { named: false })}</dl>` : ""}
-      </div>
-      ${status}
-    </div>
-    ${about ? `<dl class="welcome-intro__lead">${field(about, { named: false })}</dl>` : ""}
-    ${parts
-      .map((p) => {
-        const head = RECAP_SECTIONS.find((t) => t.id === p.id);
-        const named = p.rows.length > 1;
-        return `
-          <section class="welcome-intro__part" style="${tint(p.id)}">
-            <span class="welcome-flow__glyph is-icon is-tinted welcome-intro__part-tile" aria-hidden="true"><i class="${head?.icon || ""}"></i></span>
-            <h3 class="welcome-intro__part-name">${escapeHtml(head?.title || "")}</h3>
-            <dl class="welcome-intro__fields">${p.rows.map((r) => field(r, { named })).join("")}</dl>
-          </section>`;
-      })
-      .join("")}
-  `;
-}
-
-// ── The live card ─────────────────────────────────────────────────────────
-
-// The default voice in a few words: the headline's traits, else its tones.
-function voiceTraits(d) {
-  const traits = (d?.voiceProfile?.headline || "")
-    .split(/\s*·\s*/)
-    .filter(Boolean)
-    .slice(0, 3)
-    // Display only: the review a step later reads « Professional • Clear • Helpful ».
-    .map((t) => t.charAt(0).toUpperCase() + t.slice(1));
-  return traits.length ? traits : (d?.tones || []).slice(0, 2);
-}
-
-const landed = new Set(); // `${sid}:${row}` already shown filled — it lands once, not on every step
-
 export const domainOf = (url) =>
   String(url || "")
     .replace(/^https?:\/\//, "")
     .replace(/^www\./, "")
     .replace(/\/.*$/, "");
-
-const chip = (t, cls = "welcome-flow__chip") => `<span class="${cls}">${escapeHtml(t)}</span>`;
-const stack = (...parts) => `<span class="welcome-flow__stack">${parts.filter(Boolean).join("")}</span>`;
-const chips = (list, cls) =>
-  list.length ? `<span class="welcome-flow__chips">${list.map((t) => chip(t, cls)).join("")}</span>` : "";
-const text = (t) => (t ? `<span class="welcome-flow__line">${escapeHtml(t)}</span>` : "");
-
-// Each line of the card — the Playbook's own parts, as they're learned: empty
-// (a quiet placeholder), pending (being learned) or filled.
-// The analysis lands on the draft in one go, a few seconds after the source is
-// given — but only the brand's look and its competitors can honestly be known
-// by then. The voice, the audience, the goal and the About wait for their
-// stage of "Building your Playbook" (the stage's `lands`), and land one stage
-// at a time; before it they stay quiet. `build`: where that screen is
-// ({ at, done }) — none on the steps before it.
-function cardRows(d, sid, build) {
-  const analysing = Boolean(d?.analysisStartedAt) && !isAnalysisReady(sid);
-  const at = d?.revealed || build?.done ? Infinity : (build?.at ?? -1);
-  const stageOf = new Map();
-  stagesFor(d).forEach((st, i) => (st.lands || []).forEach((k) => stageOf.set(k, i)));
-  const rows = [];
-  const push = (row, known) => {
-    const i = stageOf.get(row.key);
-    const due = i === undefined || i < at;
-    const working = i === undefined ? analysing : i <= at;
-    rows.push({ ...row, state: known && due ? "filled" : working && (analysing || known) ? "pending" : "empty" });
-  };
-  const summary = d?.businessSummary || "";
-  push({ key: "summary", label: "About", value: text(summary), lines: 3 }, Boolean(summary));
-  const nets = playbookNetworks(d);
-  rows.push({
-    key: "networks",
-    label: "Publishes on",
-    state: nets.length ? "filled" : "empty",
-    value: nets
-      .map(
-        (n) =>
-          `<span class="welcome-intro__net" title="${escapeHtml(networkLabel(n))}"><i class="${networkIcon(n)}" aria-hidden="true"></i></span>`,
-      )
-      .join(""),
-  });
-  const voice = voiceTraits(d);
-  push(
-    {
-      key: "voice",
-      label: "Voice",
-      value: stack(chips(voice, "welcome-intro__trait"), text(d?.voiceSummary)),
-      lines: 2,
-    },
-    voice.length > 0,
-  );
-  const audience = d?.audience?.[0];
-  push(
-    {
-      key: "audience",
-      label: "Who you write for",
-      value: stack(text(audience), chips((d?.audienceProblems || []).slice(0, 2))),
-      lines: 2,
-    },
-    Boolean(audience),
-  );
-  const goal = [d?.objective?.[0], d?.contentAction?.[0]].filter(Boolean);
-  push({ key: "goal", label: "Goal", value: chips(goal) }, goal.length > 0);
-  if (isFlagOn("multilingualPlaybook")) {
-    const lang = d?.primaryLanguage || (d?.languages || [])[0];
-    rows.push({
-      key: "language",
-      label: "Writes in",
-      state: lang ? "filled" : "empty",
-      value: lang ? `<span class="welcome-intro__plain">${escapeHtml(lang)}</span>` : "",
-    });
-  }
-  const colors = [...new Set((d?.brandColors || []).map((c) => c.hex).filter(Boolean))].slice(0, 5);
-  const font = d?.brandTypography?.headingFont;
-  push(
-    {
-      key: "branding",
-      label: "Colors and type",
-      value:
-        colors
-          .map((hex) => `<span class="welcome-intro__swatch" style="background: ${escapeHtml(hex)}"></span>`)
-          .join("") +
-        (font ? `<span class="welcome-flow__font"><span aria-hidden="true">Aa</span>${escapeHtml(font)}</span>` : ""),
-    },
-    colors.length > 0,
-  );
-  const competitors = (d?.competitors || [])
-    .map((c) => c.name)
-    .filter(Boolean)
-    .slice(0, 3);
-  push({ key: "competitors", label: "Competitors", value: chips(competitors) }, competitors.length > 0);
-  return { rows };
-}
-
-function renderCard(sid, build) {
-  const d = getDraft(sid);
-  const { rows } = cardRows(d, sid, build);
-  // "Ready" belongs to the reveal (/welcome-alt/ready sets `revealed`); until
-  // then a read source is still being learned, whatever has landed already.
-  const ready = d?.revealed === true;
-  const learning = !ready && Boolean(d?.analysisStartedAt);
-  // Revealed, the card shows what it knows: a line still empty then (a skipped
-  // account, no colours from an interview) would read as unfinished.
-  const shownRows = ready ? rows.filter((r) => r.state === "filled") : rows;
-  // The site only while it's the source — not on the interview or files path.
-  const domain = d?.sourceType === "website" && !d?.pendingInterview?.length ? domainOf(d.websiteUrl) : "";
-  const name = (d?.name && d.name !== "New Playbook" ? d.name : "") || "Your Playbook";
-  const mark = d?.brandLogo
-    ? `<img src="${escapeHtml(d.brandLogo)}" alt="" />`
-    : d?.name && d.name !== "New Playbook"
-      ? escapeHtml(d.name.slice(0, 1).toUpperCase())
-      : `<i class="ap-icon-buildings" aria-hidden="true"></i>`;
-  const status = ready
-    ? `<span class="ap-status mermaid welcome-intro__card-status">Ready to write</span>`
-    : learning
-      ? `<span class="ap-status mermaid is-working welcome-intro__card-status">Learning your Brand…</span>`
-      : "";
-  return playbookCard({
-    mark,
-    name,
-    sub: domain,
-    status,
-    rows: shownRows.map((r) => {
-      const id = `${sid}:${r.key}`;
-      const fresh = r.state === "filled" && !landed.has(id);
-      if (r.state === "filled") landed.add(id);
-      else landed.delete(id);
-      return {
-        label: r.label,
-        cls: `welcome-flow__row is-${r.state}${fresh ? " is-new" : ""}`,
-        html: r.state === "filled" ? r.value : `<span class="welcome-flow__placeholder"></span>`.repeat(r.lines || 1),
-      };
-    }),
-  });
-}
 
 function renderProgress(step, { all = false } = {}) {
   const steps = flowSteps();
@@ -433,15 +204,13 @@ function renderProgress(step, { all = false } = {}) {
 // Returns { paint, sheet, cleanup }.
 // One run for a first-time user and a returning user's « Create a Playbook »
 // (2026-11-04, asked: « il n'y a pas de raison d'en avoir 2 différents »): a
-// plain stage, no pixels; under `voicePerNetwork` (it took in the former
-// flag playbookAnimations, 2026-11-04), each step plays a scene
+// plain stage, no pixels; each step plays a scene
 // that teaches the Playbook's parts (welcome-alt-explainer.js) instead of the
 // card filling in. Only the frame differs: the first time is full-bleed with
 // the stepper in the column, a returning user's run (`isIntegrated()`) sits in
 // the app's chrome with the stepper in the topbar.
 export function mountShell(target, { step, sid, left, sheet = false, build }) {
   const integrated = isIntegrated();
-  const scenes = networkVoiceOn();
   target.innerHTML = html`
     <div class="welcome-intro welcome-flow ${sheet ? "is-review" : ""}">
       <section class="welcome-intro__lede" aria-labelledby="welcomeFlowTitle">
@@ -459,13 +228,7 @@ export function mountShell(target, { step, sid, left, sheet = false, build }) {
           ? raw(`<div class="welcome-flow__sheet" data-flow-sheet>
               <div class="welcome-flow__sheet-body" data-flow-sheet-body></div>
             </div>`)
-          : scenes
-            ? raw(`<div class="welcome-explainer" data-flow-explainer></div>`)
-            : raw(
-                // A labelled region, not live: what I found is readable, and
-                // nothing is announced as each line lands.
-                `<div class="welcome-intro__card welcome-flow__card" data-flow-card role="region" aria-label="Your Playbook"></div>`,
-              )}
+          : raw(`<div class="welcome-explainer" data-flow-explainer></div>`)}
       </div>
     </div>
   `;
@@ -477,10 +240,8 @@ export function mountShell(target, { step, sid, left, sheet = false, build }) {
     });
   }
   const leftEl = target.querySelector("[data-flow-left]");
-  const cardEl = target.querySelector("[data-flow-card]");
   const sceneEl = target.querySelector("[data-flow-explainer]");
   const paintCard = () => {
-    if (cardEl) cardEl.innerHTML = renderCard(sid, build?.());
     if (sceneEl) paintExplainer(sceneEl, step, getDraft(sid), build?.());
   };
   const paint = () => {

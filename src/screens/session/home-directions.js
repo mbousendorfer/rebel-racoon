@@ -25,19 +25,19 @@
 // the way the Clips space frames it; the top posts with their images and score;
 // the Topic Feed's fresh Topics.
 
-import { isFlagOn } from "../../feature-flags.js?v=2766";
-import { chatStarters } from "../../mocks.js?v=2766";
-import { getVideos, getVideo, exampleVideo } from "../../videos-store.js?v=2766";
-import { getTopPosts } from "../../top-posts-store.js?v=2766";
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2766";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2766";
-import { findTopicSource } from "../../topics-catalog.js?v=2766";
-import { getContextById } from "../../contexts-store.js?v=2766";
-import { voicesToFinish, networkVoiceOn } from "../../voice-parts.js?v=2766";
-import { networkLabel, networkIcon } from "../../social-profiles.js?v=2766";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2766";
-import { escapeHtml, formatClock } from "../../utils.js?v=2766";
-import "../../archie-pixels.js?v=2766";
+import { isFlagOn } from "../../feature-flags.js?v=2767";
+import { chatStarters } from "../../mocks.js?v=2767";
+import { getVideos, getVideo, exampleVideo } from "../../videos-store.js?v=2767";
+import { getTopPosts } from "../../top-posts-store.js?v=2767";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2767";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2767";
+import { findTopicSource } from "../../topics-catalog.js?v=2767";
+import { getContextById } from "../../contexts-store.js?v=2767";
+import { voicesToFinish } from "../../voice-parts.js?v=2767";
+import { networkLabel, networkIcon } from "../../social-profiles.js?v=2767";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2767";
+import { escapeHtml, formatClock } from "../../utils.js?v=2767";
+import "../../archie-pixels.js?v=2767";
 
 const DIRECTIONS = [
   ["homeOneInput", oneInput],
@@ -268,7 +268,7 @@ const fileToDrafts = (name = "notes.pdf") =>
 
 const brandImages = `<span class="nch-brand" aria-hidden="true"><span class="nch-brand__img nch-brand__img--a">Listen first, launch second</span><span class="nch-brand__img nch-brand__img--b">18% more activation</span></span>`;
 
-// The networks and where each one's voice stands (flag voicePerNetwork).
+// The networks and where each one's voice stands.
 const voiceRows = (voices) =>
   `<span class="nch-voices">${["linkedin", "x", "instagram"]
     .map(
@@ -315,17 +315,16 @@ function oneInput({ composer, session }) {
   const voices = voicesToFinish(ctx);
   // The third card: the voice per network when that feature is on, else the
   // brand's images — never a feature the app doesn't have.
-  const third =
-    networkVoiceOn() && ctx
-      ? card(
-          voices.length
-            ? DOORS.voice(ctx, voices[0])
-            : { attrs: `data-open-playbook="${ctx.id}" data-open-playbook-tab="voice"`, verb: "Open my voices" },
-          voiceRows(voices),
-          "A voice for each network",
-          "LinkedIn and X don't sound the same. Your drafts won't either.",
-        )
-      : card(DOORS.images(ctx), brandImages, "Images in your brand", "Your colours and fonts, made with each draft.");
+  const third = ctx
+    ? card(
+        voices.length
+          ? DOORS.voice(ctx, voices[0])
+          : { attrs: `data-open-playbook="${ctx.id}" data-open-playbook-tab="voice"`, verb: "Open my voices" },
+        voiceRows(voices),
+        "A voice for each network",
+        "LinkedIn and X don't sound the same. Your drafts won't either.",
+      )
+    : card(DOORS.images(ctx), brandImages, "Images in your brand", "Your colours and fonts, made with each draft.");
   return shell(
     "one",
     `
@@ -778,7 +777,7 @@ const voiceAsk = (ctx, voices, withIcon = false) =>
 
 function prompts({ composer, session }) {
   const ctx = ctxOf(session);
-  const voices = networkVoiceOn() && ctx ? voicesToFinish(ctx) : [];
+  const voices = voicesToFinish(ctx);
   const ask = (k, text) => askRow(k, text, { icon: flowIcon(k) });
   const tone = (f) => flowTone(f.k);
   const icon = (f) => flowIcon(f.k);
@@ -814,7 +813,7 @@ function prompts({ composer, session }) {
 // « Other examples » deals the next request of each flow (four sets).
 function promptList({ composer, session }) {
   const ctx = ctxOf(session);
-  const voices = networkVoiceOn() && ctx ? voicesToFinish(ctx) : [];
+  const voices = voicesToFinish(ctx);
   const sets = FLOWS[0].asks.map((_, i) => i);
   const list = (i) => `
     <ul class="nch-asks" data-nch-set="${i}" aria-label="Example requests"${i ? " hidden" : ""}>
@@ -844,7 +843,7 @@ function promptList({ composer, session }) {
 // Under them, the chosen flow's four requests. Same hover and click as 6.
 function drawer({ composer, session }) {
   const ctx = ctxOf(session);
-  const voices = networkVoiceOn() && ctx ? voicesToFinish(ctx) : [];
+  const voices = voicesToFinish(ctx);
   const tab = (f, i) => `
     <button type="button" class="nch-drawer__tab" role="tab" id="nchFlow-${f.k}" aria-controls="nchFlowPane-${f.k}"
       aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}" data-nch-flow="${f.k}"

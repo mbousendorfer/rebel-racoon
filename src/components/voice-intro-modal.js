@@ -1,4 +1,4 @@
-// The voice intro (flag voicePerNetwork) — the first time a returning user
+// The voice intro — the first time a returning user
 // meets « each network, its own voice », shown once:
 //   · arriving in the app, for a Playbook with a network on the default voice
 //     → this dialog: one post rewritten for each network's voice — starting
@@ -26,13 +26,12 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2766";
-import { getContextById } from "../contexts-store.js?v=2766";
-import { playbookForNewWork } from "../active-playbook.js?v=2766";
-import { isNewUser } from "../user-mode.js?v=2766";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2766";
+} from "../modal-coordinator.js?v=2767";
+import { getContextById } from "../contexts-store.js?v=2767";
+import { playbookForNewWork } from "../active-playbook.js?v=2767";
+import { isNewUser } from "../user-mode.js?v=2767";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2767";
 import {
-  networkVoiceOn,
   networkVoice,
   voiceNetworks,
   voiceParts,
@@ -40,7 +39,7 @@ import {
   baseValue,
   voiceItemsHtml,
   voiceNetTagHtml,
-} from "../voice-parts.js?v=2766";
+} from "../voice-parts.js?v=2767";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -49,11 +48,11 @@ import {
   voiceChoices,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2766";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2766";
-import "../archie-pixels.js?v=2766";
-import { navigate } from "../router.js?v=2766";
-import { escapeHtml } from "../utils.js?v=2766";
+} from "../network-voice-flow.js?v=2767";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2767";
+import "../archie-pixels.js?v=2767";
+import { navigate } from "../router.js?v=2767";
+import { escapeHtml } from "../utils.js?v=2767";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -406,7 +405,7 @@ function injectOnce() {
 // Arriving in the app: once, for a returning user whose Playbook still has a
 // network on the default voice — and never over another dialog or the first run.
 export function maybeOpenVoiceIntro(path) {
-  if (!networkVoiceOn() || introSeen() || isNewUser() || document.body.classList.contains("has-modal")) return;
+  if (introSeen() || isNewUser() || document.body.classList.contains("has-modal")) return;
   if (path.startsWith("/welcome-alt")) return;
   const ctx = playbookForNewWork();
   if (!ctx || !voiceNetworks(ctx).some((n) => networkVoice(ctx, n).state !== "own")) return;
