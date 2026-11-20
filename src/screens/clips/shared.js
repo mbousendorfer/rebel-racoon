@@ -2,12 +2,12 @@
 // editor share: time formatting, the video-wide options (format, subtitles),
 // and the live reframed previews.
 
-import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2786";
-import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2786";
-import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2786";
-import { escapeHtml } from "../../utils.js?v=2786";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2786";
-import { getVideo, removeVideo } from "../../videos-store.js?v=2786";
+import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2789";
+import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2789";
+import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2789";
+import { escapeHtml } from "../../utils.js?v=2789";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2789";
+import { getVideo, removeVideo } from "../../videos-store.js?v=2789";
 
 // A footage well shows a loading sheen until its first frame is in (clips.css,
 // `:not(.is-ready)`): every well is marked here, once, from the media events
@@ -153,31 +153,46 @@ export function bindSelectDismiss(root) {
   };
 }
 
-export function formatSelect(current, attr = "data-clips-ratio") {
-  return dsSelect({
-    label: "Format",
-    valueHtml: escapeHtml(formatLabel(current)),
-    current,
-    attr,
-    options: RATIO_IDS.map((id) => ({ id, label: formatLabel(id), meta: bestFor(id) })),
-  });
-}
-
-export function subtitleSelect(current, attr = "data-clips-preset") {
-  return dsSelect({
-    label: "Subtitles",
-    valueHtml: escapeHtml(presetLabel(current)),
-    current,
-    attr,
-    options: SUBTITLE_IDS.map((id) => ({
+// The video's look, one DS select (refonte B): Format then Subtitles, two
+// sections of one list (the DS has no nested menu: sections + divider). Each
+// option keeps its own attribute — data-clips-ratio / data-clips-preset.
+export function lookSelect(ratio, preset) {
+  const opt = (attr, id, label, on, lead = "", meta = "") =>
+    `<div class="ap-select-option${on ? " selected" : ""}" role="option" aria-selected="${on}" tabindex="0" ${attr}="${escapeHtml(id)}">
+      ${lead}<span class="ap-select-option-text">${escapeHtml(label)}</span>${meta}
+      ${on ? `<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}
+    </div>`;
+  const formats = RATIO_IDS.map((id) =>
+    opt("data-clips-ratio", id, formatLabel(id), id === ratio, "", bestFor(id)),
+  ).join("");
+  const subs = SUBTITLE_IDS.map((id) =>
+    opt(
+      "data-clips-preset",
       id,
-      label: presetLabel(id),
-      lead:
-        id === "none"
-          ? `<span class="clips-preset-swatch"><i class="ap-icon-close" aria-hidden="true"></i></span>`
-          : `<span class="clips-preset-swatch"><span class="cap-ed-preview-${id}">Aa</span></span>`,
-    })),
-  });
+      presetLabel(id),
+      id === preset,
+      id === "none"
+        ? `<span class="clips-preset-swatch"><i class="ap-icon-close" aria-hidden="true"></i></span>`
+        : `<span class="clips-preset-swatch"><span class="cap-ed-preview-${id}">Aa</span></span>`,
+    ),
+  ).join("");
+  const value = `${formatLabel(ratio)} · ${presetLabel(preset)}`;
+  return `<details class="ap-select clips-look">
+    <summary class="ap-select-trigger" aria-label="Look of every clip without its own: ${escapeHtml(value)}">
+      <span class="ap-select-inline-label">Look</span>
+      <span class="ap-select-value">${escapeHtml(value)}</span>
+      <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
+    </summary>
+    <div class="ap-select-dropdown" role="listbox" aria-label="Look of every clip without its own">
+      <div class="ap-select-options">
+        <div class="ap-select-group"><span class="ap-select-group-label">Format</span></div>
+        ${formats}
+        <div class="ap-select-divider"></div>
+        <div class="ap-select-group"><span class="ap-select-group-label">Subtitles</span></div>
+        ${subs}
+      </div>
+    </div>
+  </details>`;
 }
 
 // ── Live reframed previews ───────────────────────────────────────────

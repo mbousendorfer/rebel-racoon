@@ -7,32 +7,32 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2786";
-import { isFlagOn } from "../../feature-flags.js?v=2786";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2786";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2786";
-import { showToast } from "../../components/toast.js?v=2786";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2786";
-import { open as openClipRange } from "../../components/clip-range-modal.js?v=2786";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2786";
-import { startRewrite } from "../../draft-rewrite.js?v=2786";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2786";
-import { renderPostCard } from "../../components/post-card.js?v=2786";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2786";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2786";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2786";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2786";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2786";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2786";
-import { buildTranscript } from "../../clip-captions.js?v=2786";
+import { navigate } from "../../router.js?v=2789";
+import { isFlagOn } from "../../feature-flags.js?v=2789";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2789";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2789";
+import { showToast } from "../../components/toast.js?v=2789";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2789";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2789";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2789";
+import { startRewrite } from "../../draft-rewrite.js?v=2789";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2789";
+import { renderPostCard } from "../../components/post-card.js?v=2789";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2789";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2789";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2789";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2789";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2789";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2789";
+import { buildTranscript } from "../../clip-captions.js?v=2789";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2786";
-import { escapeHtml, plural } from "../../utils.js?v=2786";
+} from "../../posts-store.js?v=2789";
+import { escapeHtml, plural } from "../../utils.js?v=2789";
 import {
   getVideo,
   draftKey,
@@ -43,11 +43,10 @@ import {
   subscribe as subscribeVideos,
   retryAnalysis,
   reviewClip,
-} from "../../videos-store.js?v=2786";
+} from "../../videos-store.js?v=2789";
 import {
   fmtMs,
-  formatSelect,
-  subtitleSelect,
+  lookSelect,
   previewMarkup,
   mountPreviews,
   bindSelectDismiss,
@@ -59,7 +58,7 @@ import {
   clipSegments,
   CTA_OPTIONS,
   confirmRemoveVideo,
-} from "./shared.js?v=2786";
+} from "./shared.js?v=2789";
 
 let target = null;
 let videoId = null;
@@ -199,17 +198,12 @@ function patchSelection(v) {
 const ctaLabel = (n) => (n ? `Write posts for ${n} clip${n === 1 ? "" : "s"}` : "Keep a clip to post it");
 
 // The topbar names the video and leads back. Its right side holds the video's
-// own settings — the look of every clip that has none of its own (a clip
-// overrides it in its panel or the editor) — then, on step 1, the page's next
-// step (O3: the page's primary, rightmost), counted in clips.
+// own setting, one « Look » select: the format and subtitles of every clip
+// that has none of its own (a clip overrides it in the editor).
 function paintTopbarActions(v) {
   const look =
     v.status === "ready"
-      ? `<div class="clips-topbar-look" role="group" aria-label="Every clip's look, unless it has its own">
-          <span class="clips-topbar-look__label">All clips</span>
-          ${formatSelect(v.settings.ratio)}
-          ${subtitleSelect(v.settings.subtitlePreset)}
-        </div>`
+      ? `<div class="clips-topbar-look">${lookSelect(v.settings.ratio, v.settings.subtitlePreset)}</div>`
       : "";
   const right = look ? `<div class="clips-topbar-actions">${look}</div>` : "<span></span>";
   setTopbarActions(`/clips/${v.id}`, right, {

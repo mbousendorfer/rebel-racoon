@@ -35,14 +35,20 @@
   gap: var(--ref-spacing-xs);
 }
 
-.clips-topbar-look__label {
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-  white-space: nowrap;
-}
-
 .clips-topbar-look .ap-select {
   width: auto;
+}
+
+/* One list, two sections: it opens under the trigger's end (the right edge of
+   the top bar) and scrolls if the screen is short. */
+.clips-look .ap-select-dropdown {
+  right: 0;
+  left: auto;
+  min-width: 320px;
+}
+
+.clips-look .ap-select-options {
+  max-height: min(72vh, 660px);
 }
 
 .clips-topbar-title {
@@ -2935,4 +2941,31 @@ body.clips-editing .app-content {
   white-space: nowrap;
   text-overflow: ellipsis;
   pointer-events: none;
+}
+
+/* The library's search and sort, past a row of cards: at the end of its head. */
+.clips-library__tools {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  margin-left: auto;
+}
+
+.clips-library__search {
+  width: 240px;
+}
+
+.clips-library__sort {
+  width: auto;
+}
+
+.clips-library__sort .ap-select-dropdown {
+  right: 0;
+  left: auto;
+  min-width: 200px;
+}
+
+.clips-library__none {
+  margin: 0;
+  color: var(--ref-color-grey-80);
 }

@@ -2,13 +2,13 @@
 // videos, and the one way in, adding a video. The flow starts with the video;
 // the posts come last (screens/clips/project.js).
 
-import { navigate } from "../../router.js?v=2786";
-import { isFlagOn } from "../../feature-flags.js?v=2786";
-import { renderTopbar } from "../../components/topbar.js?v=2786";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2786";
-import { isDemo } from "../../demo-mode.js?v=2786";
-import { getPosts } from "../../posts-store.js?v=2786";
-import { escapeHtml } from "../../utils.js?v=2786";
+import { navigate } from "../../router.js?v=2789";
+import { isFlagOn } from "../../feature-flags.js?v=2789";
+import { renderTopbar } from "../../components/topbar.js?v=2789";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2789";
+import { isDemo } from "../../demo-mode.js?v=2789";
+import { getPosts } from "../../posts-store.js?v=2789";
+import { escapeHtml } from "../../utils.js?v=2789";
 import {
   getVideos,
   exampleVideo,
@@ -18,9 +18,16 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2786";
-import { fmtMs, previewMarkup, mountPreviews, confirmRemoveVideo } from "./shared.js?v=2786";
-import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2786";
+} from "../../videos-store.js?v=2789";
+import {
+  fmtMs,
+  previewMarkup,
+  mountPreviews,
+  confirmRemoveVideo,
+  dsSelect,
+  bindSelectDismiss,
+} from "./shared.js?v=2789";
+import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2789";
 
 let target = null;
 let disposeShowcase = null;
@@ -38,18 +45,18 @@ export function renderClipsLibrary(_params, el) {
   el.addEventListener("click", onClick);
   el.addEventListener("submit", onSubmit);
   el.addEventListener("change", onChange);
-  el.addEventListener("input", clearAddError);
+  el.addEventListener("input", onInput);
   el.addEventListener("dragover", onDragOver);
   el.addEventListener("dragleave", onDragLeave);
   el.addEventListener("drop", onDrop);
   el.addEventListener("pointerover", onHover);
   el.addEventListener("pointerout", onHover);
-  disposers.push(subscribeVideos(onStore), subscribeScope(paint));
+  disposers.push(subscribeVideos(onStore), subscribeScope(paint), bindSelectDismiss(el));
   return () => {
     el.removeEventListener("click", onClick);
     el.removeEventListener("submit", onSubmit);
     el.removeEventListener("change", onChange);
-    el.removeEventListener("input", clearAddError);
+    el.removeEventListener("input", onInput);
     el.removeEventListener("dragover", onDragOver);
     el.removeEventListener("dragleave", onDragLeave);
     el.removeEventListener("drop", onDrop);
@@ -78,8 +85,9 @@ function onStore() {
     const bar = target.querySelector(`[data-clips-progress="${v.id}"]`);
     if (!bar) continue;
     bar.querySelector(".clips-progress__fill").style.width = `${Math.round(v.progress * 100)}%`;
-    bar.querySelector(".clips-progress__label").textContent =
-      `${v.stage || "Analyzing"}… ${Math.round(v.progress * 100)}%`;
+    // The stage on its own line, the percentage on the bar: one name each.
+    bar.querySelector(".clips-video__veil-stage").textContent = `${v.stage || "Analyzing"}…`;
+    bar.querySelector(".clips-progress__label").textContent = `${Math.round(v.progress * 100)}%`;
   }
 }
 
@@ -137,6 +145,7 @@ function paint() {
       </div>
     </div>`;
   if (showcase) disposeShowcase = mountPreviews(target.querySelector(".clips-showcase"), showcase);
+  applySearch();
 }
 
 // The hero shows what the space makes, with the space's own work: a real
@@ -204,15 +213,73 @@ const STEPS = [
   },
 ];
 
+// Past a row of cards (Loom, Frame.io), the library is searched and sorted:
+// the search hides cards in place (no repaint, the thumbnails keep their
+// streams), the sort repaints the grid. Both live as long as the page.
+const SEARCH_FROM = 4;
+const SORTS = [
+  { id: "newest", label: "Newest first" },
+  { id: "oldest", label: "Oldest first" },
+  { id: "name", label: "Name (A to Z)" },
+];
+const list = { query: "", sort: "newest" };
+
+function sorted(videos) {
+  const by = {
+    newest: (a, b) => b.addedAt.localeCompare(a.addedAt),
+    oldest: (a, b) => a.addedAt.localeCompare(b.addedAt),
+    name: (a, b) => a.name.localeCompare(b.name),
+  }[list.sort];
+  return [...videos].sort(by);
+}
+
 function renderGrid(videos) {
+  const tools =
+    videos.length >= SEARCH_FROM
+      ? `<div class="clips-library__tools">
+          <div class="ap-input-group clips-library__search">
+            <i class="ap-icon-search" aria-hidden="true"></i>
+            <input type="search" data-clips-search placeholder="Search videos" aria-label="Search videos" value="${escapeHtml(list.query)}" />
+          </div>
+          ${dsSelect({
+            label: "Sort",
+            valueHtml: escapeHtml(SORTS.find((x) => x.id === list.sort).label),
+            current: list.sort,
+            attr: "data-clips-sort",
+            options: SORTS,
+            ariaLabel: "Sort videos",
+            extraClass: "clips-library__sort",
+          })}
+        </div>`
+      : "";
   return `
     <section class="clips-library" aria-labelledby="clips-library-title">
       <header class="clips-library__head">
         <h2 class="clips-library__title" id="clips-library-title">Your videos</h2>
         <span class="ap-counter normal grey">${videos.length}</span>
+        ${tools}
       </header>
-      <div class="clips-library__grid">${videos.map(renderCard).join("")}</div>
+      <div class="clips-library__grid">${sorted(videos).map(renderCard).join("")}</div>
+      <p class="clips-library__none" data-clips-no-match hidden></p>
     </section>`;
+}
+
+// The search: a card stays when its name holds every word typed.
+function applySearch() {
+  if (!target) return;
+  const words = list.query.toLowerCase().split(/\s+/).filter(Boolean);
+  let shown = 0;
+  target.querySelectorAll(".clips-library__grid > [data-clips-card]").forEach((card) => {
+    const name = card.querySelector(".clips-video__name")?.textContent.toLowerCase() || "";
+    const on = words.every((w) => name.includes(w));
+    card.hidden = !on;
+    if (on) shown++;
+  });
+  const none = target.querySelector("[data-clips-no-match]");
+  if (none) {
+    none.hidden = shown > 0 || !words.length;
+    none.textContent = `No video matches « ${list.query.trim()} ».`;
+  }
 }
 
 // A failed analysis is not a link: the card says why, in place, and holds its
@@ -343,10 +410,23 @@ function clearAddError() {
 
 function onClick(e) {
   if (e.target.closest("[data-clips-browse]")) target.querySelector("[data-clips-file]")?.click();
+  const sort = e.target.closest("[data-clips-sort]");
+  if (sort) {
+    list.sort = sort.dataset.clipsSort;
+    return paint();
+  }
   const retry = e.target.closest("[data-clips-retry]");
   if (retry) retryAnalysis(retry.dataset.clipsRetry);
   const remove = e.target.closest("[data-clips-remove-video]");
   if (remove) confirmRemoveVideo(remove.dataset.clipsRemoveVideo);
+}
+
+function onInput(e) {
+  if (e.target.matches("[data-clips-search]")) {
+    list.query = e.target.value;
+    return applySearch();
+  }
+  return clearAddError();
 }
 
 function onChange(e) {
