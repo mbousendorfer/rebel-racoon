@@ -15,27 +15,28 @@
 // whole screen. clipContext is exported alongside because the clip-studio
 // finalize path in session.js builds the same generationContext object.
 
-import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2799";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2799";
+import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2800";
+import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2800";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "../../social-profiles.js?v=2799";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2799";
-import { requireNetworkVoices } from "../../network-voice-flow.js?v=2799";
+} from "../../social-profiles.js?v=2800";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2800";
+import { requireNetworkVoices } from "../../network-voice-flow.js?v=2800";
 import {
   postAssistantMessage,
   postUserTurn,
   postUserProfilesTurn,
   postSelectionEcho,
   postDraftResult,
+  setGreeting,
   startPending,
   finishPending,
   GENERATION_TOOLS,
-} from "../../assistant.js?v=2799";
-import * as inlineQuestion from "../../inline-question.js?v=2799";
-import { addPostDraft } from "../../posts-store.js?v=2799";
+} from "../../assistant.js?v=2800";
+import * as inlineQuestion from "../../inline-question.js?v=2800";
+import { addPostDraft } from "../../posts-store.js?v=2800";
 
 // The generationContext a clip-derived draft carries — the "why this draft
 // exists" header shown on the post card. Shared with session.js's clip-studio
@@ -69,6 +70,11 @@ export function startClipDraftFlow(sessionId, entries) {
 // subtitles, chosen in the space, so the flow asks only for the accounts.
 export function startClipDraftFromSpace(sessionId, { entries, format, style }) {
   if (!entries?.length) return;
+  const n = entries.length;
+  setGreeting(
+    sessionId,
+    `Hi. ${n === 1 ? "Your clip from" : `Your ${n} clips from`} « ${entries[0].sourceName.replace(/\.[a-z0-9]+$/i, "")} » ${n === 1 ? "is" : "are"} here, in the look you set in Clips. Let's write the posts.`,
+  );
   postSelectionEcho(sessionId, {
     icon: "ap-icon-file--video",
     title: entries.length === 1 ? entries[0].clip.title : `${entries.length} clips`,

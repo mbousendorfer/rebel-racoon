@@ -6,15 +6,15 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { newId } from "./utils.js?v=2799";
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2799";
-import { findConnector } from "./connectors-store.js?v=2799";
-import { createSessionNotifier } from "./store-utils.js?v=2799";
-import { addPostDraft } from "./posts-store.js?v=2799";
-import { showToast } from "./components/toast.js?v=2799";
-import { isFlagOn } from "./feature-flags.js?v=2799";
-import { offerMentions } from "./mention-flow.js?v=2799";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2799";
+import { newId } from "./utils.js?v=2800";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2800";
+import { findConnector } from "./connectors-store.js?v=2800";
+import { createSessionNotifier } from "./store-utils.js?v=2800";
+import { addPostDraft } from "./posts-store.js?v=2800";
+import { showToast } from "./components/toast.js?v=2800";
+import { isFlagOn } from "./feature-flags.js?v=2800";
+import { offerMentions } from "./mention-flow.js?v=2800";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2800";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -49,6 +49,16 @@ export function getThread(sessionId) {
 }
 
 export const subscribe = notifier.subscribe;
+
+// A chat that opens on something already there (the Clips space's Write
+// posts) says so instead of asking for a source: the opening line is replaced
+// while it is still the only turn.
+export function setGreeting(sessionId, text) {
+  const thread = getThread(sessionId);
+  if (thread.length !== 1 || thread[0].role !== "assistant") return;
+  thread[0] = { ...thread[0], text };
+  notify(sessionId);
+}
 
 // Drop all state for a session — used by the conversation-delete flow in
 // the sidebar. Subscribers are flushed too; any DOM still mounted will
