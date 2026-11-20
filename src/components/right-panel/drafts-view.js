@@ -4,8 +4,8 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { sessionPlaybookId } from "../../active-playbook.js?v=2817";
-import { NETWORK_LABEL, networkMeta } from "../../social-profiles.js?v=2817";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2818";
+import { NETWORK_LABEL, networkMeta } from "../../social-profiles.js?v=2818";
 import {
   getPosts,
   removePost,
@@ -15,28 +15,28 @@ import {
   attachCarouselToDraft,
   updatePostClip,
   undoRevision,
-} from "../../posts-store.js?v=2817";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2817";
-import { renderPostCard } from "../post-card.js?v=2817";
-import { isPostValid } from "../../post-validation.js?v=2817";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2817";
-import { html, raw } from "../../utils.js?v=2817";
-import { isFlagOn } from "../../feature-flags.js?v=2817";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2817";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2817";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2817";
-import { open as openAssignModal } from "../assign-modal.js?v=2817";
-import { showToast } from "../toast.js?v=2817";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2817";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2817";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2817";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2817";
-import { blockInDemo } from "../../demo-flow.js?v=2817";
-import { navigate } from "../../router.js?v=2817";
-import { giveNetworkVoice } from "../../network-voice-flow.js?v=2817";
-import { startRewrite } from "../../draft-rewrite.js?v=2817";
-import { getSources as getStreamSources, updateSourceClips } from "../../sources-stream.js?v=2817";
-import { open as openVideoClipsModal } from "../video-clips-modal.js?v=2817";
+} from "../../posts-store.js?v=2818";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2818";
+import { renderPostCard } from "../post-card.js?v=2818";
+import { isPostValid } from "../../post-validation.js?v=2818";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2818";
+import { html, raw } from "../../utils.js?v=2818";
+import { isFlagOn } from "../../feature-flags.js?v=2818";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2818";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2818";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2818";
+import { open as openAssignModal } from "../assign-modal.js?v=2818";
+import { showToast } from "../toast.js?v=2818";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2818";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2818";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2818";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2818";
+import { blockInDemo } from "../../demo-flow.js?v=2818";
+import { navigate } from "../../router.js?v=2818";
+import { giveNetworkVoice } from "../../network-voice-flow.js?v=2818";
+import { startRewrite } from "../../draft-rewrite.js?v=2818";
+import { getSources as getStreamSources, updateSourceClips } from "../../sources-stream.js?v=2818";
+import { open as openVideoClipsModal } from "../video-clips-modal.js?v=2818";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -556,7 +556,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2817"), import("../../folders-store.js?v=2817")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2818"), import("../../folders-store.js?v=2818")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -989,7 +989,7 @@ export function handleDraftsClick(event) {
     if (!source) return true;
     // flag clipsSpace: one editor — the clip opens in the Clips space's.
     if (isFlagOn("clipsSpace")) {
-      import("../../screens/clips/open-in-clips.js?v=2817").then(({ openInClips }) =>
+      import("../../screens/clips/open-in-clips.js?v=2818").then(({ openInClips }) =>
         openInClips(sid, source, ref.clipId),
       );
       return true;

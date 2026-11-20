@@ -25,19 +25,19 @@
 // the way the Clips space frames it; the top posts with their images and score;
 // the Topic Feed's fresh Topics.
 
-import { isFlagOn } from "../../feature-flags.js?v=2817";
-import { chatStarters } from "../../mocks.js?v=2817";
-import { getVideos, getVideo, exampleVideo } from "../../videos-store.js?v=2817";
-import { getTopPosts } from "../../top-posts-store.js?v=2817";
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2817";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2817";
-import { findTopicSource } from "../../topics-catalog.js?v=2817";
-import { getContextById } from "../../contexts-store.js?v=2817";
-import { voicesToFinish } from "../../voice-parts.js?v=2817";
-import { networkLabel, networkIcon } from "../../social-profiles.js?v=2817";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2817";
-import { escapeHtml, formatClock } from "../../utils.js?v=2817";
-import "../../archie-pixels.js?v=2817";
+import { isFlagOn } from "../../feature-flags.js?v=2818";
+import { chatStarters } from "../../mocks.js?v=2818";
+import { getVideos, getVideo, exampleVideo } from "../../videos-store.js?v=2818";
+import { getTopPosts } from "../../top-posts-store.js?v=2818";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2818";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2818";
+import { findTopicSource } from "../../topics-catalog.js?v=2818";
+import { getContextById } from "../../contexts-store.js?v=2818";
+import { voicesToFinish } from "../../voice-parts.js?v=2818";
+import { networkLabel, networkIcon } from "../../social-profiles.js?v=2818";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2818";
+import { escapeHtml, formatClock } from "../../utils.js?v=2818";
+import "../../archie-pixels.js?v=2818";
 
 const DIRECTIONS = [
   ["homeOneInput", oneInput],

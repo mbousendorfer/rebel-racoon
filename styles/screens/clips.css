@@ -3140,17 +3140,6 @@ removed {
   gap: var(--ref-spacing-xs);
 }
 
-/* The editor's save state, where the Save button was. */
-.clips-ed__sync {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  padding: 0 var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-  white-space: nowrap;
-}
-
 /* ── The fixed frame (A,
 2026-11-20,
 after Opus Clip and Riverside) ──────

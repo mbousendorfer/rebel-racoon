@@ -23,7 +23,7 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2817";
+} from "../modal-coordinator.js?v=2818";
 
 const MODAL_ID = "confirm";
 
