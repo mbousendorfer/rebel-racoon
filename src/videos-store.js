@@ -16,16 +16,18 @@
 //             failure: { stage, reason } (status failed),
 //             settings: { ratio, subtitlePreset, cta }, analysis, fallback,
 //             clips[], fromSource? }
-//   clip  = { id, startMs, endMs, title, summary, why, tags, network, selected,
+//   clip  = { id, startMs, endMs, title, summary, why, tags, network,
+//             reviewed, selected (the review: kept = reviewed + selected,
+//             skipped = reviewed + not selected, to review = not reviewed),
 //             ratio (null = the video's), captionState (null = the video's
 //             preset), transcript, segments (null = auto framing), texts[],
 //             brand (null = the Playbook's clip look) }
 
-import { newId } from "./utils.js?v=2779";
-import { seedVideos } from "./mocks.js?v=2779";
-import { isNewUser } from "./user-mode.js?v=2779";
-import { createNotifier } from "./store-utils.js?v=2779";
-import { getDefaultContext, getContextById } from "./contexts-store.js?v=2779";
+import { newId } from "./utils.js?v=2782";
+import { seedVideos } from "./mocks.js?v=2782";
+import { isNewUser } from "./user-mode.js?v=2782";
+import { createNotifier } from "./store-utils.js?v=2782";
+import { getDefaultContext, getContextById } from "./contexts-store.js?v=2782";
 
 const MIN_VIDEO_MS = 30 * 1000;
 const MAX_VIDEO_MS = 2 * 60 * 60 * 1000;
@@ -63,7 +65,9 @@ export const exampleVideo = () => hydrate({ ...seedVideos[0], id: "example" }, n
 
 function freshClip(c) {
   return {
-    selected: true,
+    // Every clip Archie cuts starts « to review »: neither kept nor skipped.
+    reviewed: false,
+    selected: false,
     ratio: null,
     captionState: null,
     transcript: null,
@@ -253,14 +257,36 @@ export function setSelection(videoId, ids) {
   const v = getVideo(videoId);
   if (!v) return;
   const keep = new Set(ids);
-  for (const c of v.clips) c.selected = keep.has(c.id);
+  for (const c of v.clips) {
+    c.selected = keep.has(c.id);
+    if (c.selected) c.reviewed = true;
+  }
+  notify();
+}
+
+// The review's two verbs: Keep (the clip gets posted) or Skip.
+export function reviewClip(videoId, clipId, keep) {
+  const c = getClip(videoId, clipId);
+  if (!c) return;
+  c.reviewed = true;
+  c.selected = keep;
   notify();
 }
 
 export function addClip(videoId, { startMs, endMs, title = "New clip" }) {
   const v = getVideo(videoId);
   if (!v) return null;
-  const clip = freshClip({ id: newId("clip"), startMs, endMs, title, summary: "", why: "Added by you." });
+  // A clip you add yourself is kept: you chose it.
+  const clip = freshClip({
+    id: newId("clip"),
+    startMs,
+    endMs,
+    title,
+    summary: "",
+    why: "Added by you.",
+    reviewed: true,
+    selected: true,
+  });
   v.clips.push(clip);
   v.clips.sort((a, b) => a.startMs - b.startMs);
   notify();

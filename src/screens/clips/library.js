@@ -2,13 +2,13 @@
 // videos, and the one way in, adding a video. The flow starts with the video;
 // the posts come last (screens/clips/project.js).
 
-import { navigate } from "../../router.js?v=2779";
-import { isFlagOn } from "../../feature-flags.js?v=2779";
-import { renderTopbar } from "../../components/topbar.js?v=2779";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2779";
-import { isDemo } from "../../demo-mode.js?v=2779";
-import { getPosts } from "../../posts-store.js?v=2779";
-import { escapeHtml } from "../../utils.js?v=2779";
+import { navigate } from "../../router.js?v=2782";
+import { isFlagOn } from "../../feature-flags.js?v=2782";
+import { renderTopbar } from "../../components/topbar.js?v=2782";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2782";
+import { isDemo } from "../../demo-mode.js?v=2782";
+import { getPosts } from "../../posts-store.js?v=2782";
+import { escapeHtml } from "../../utils.js?v=2782";
 import {
   getVideos,
   exampleVideo,
@@ -18,9 +18,9 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2779";
-import { fmtMs, previewMarkup, mountPreviews, confirmRemoveVideo } from "./shared.js?v=2779";
-import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2779";
+} from "../../videos-store.js?v=2782";
+import { fmtMs, previewMarkup, mountPreviews, confirmRemoveVideo } from "./shared.js?v=2782";
+import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2782";
 
 let target = null;
 let disposeShowcase = null;
@@ -272,7 +272,7 @@ function renderCard(v) {
       : !v.clips.length
         ? { text: "Add a clip", tab: "" }
         : !posts.length
-          ? { text: "Pick clips and write posts", tab: "" }
+          ? { text: "Review the clips", tab: "" }
           : toSchedule
             ? { text: `Schedule ${toSchedule} draft${toSchedule === 1 ? "" : "s"}`, tab: "?tab=drafts" }
             : { text: "Write more posts", tab: "?tab=drafts" };
