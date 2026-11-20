@@ -11,19 +11,19 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=2809";
-import { isFlagOn } from "../../feature-flags.js?v=2809";
-import { escapeAttr, escapeText } from "../../utils.js?v=2809";
-import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2809";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2809";
-import { getSessions } from "../../sessions-store.js?v=2809";
-import { renderEmptyState } from "../../components/empty-state.js?v=2809";
-import { getSources, getIdeas } from "../../library.js?v=2809";
-import { getPosts } from "../../posts-store.js?v=2809";
-import { getContextById } from "../../contexts-store.js?v=2809";
-import { voicesToFinish } from "../../voice-parts.js?v=2809";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2809";
-import { pageState } from "../home.js?v=2809";
+} from "../../playbook-access.js?v=2811";
+import { isFlagOn } from "../../feature-flags.js?v=2811";
+import { escapeAttr, escapeText } from "../../utils.js?v=2811";
+import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2811";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2811";
+import { getSessions } from "../../sessions-store.js?v=2811";
+import { renderEmptyState } from "../../components/empty-state.js?v=2811";
+import { getSources, getIdeas } from "../../library.js?v=2811";
+import { getPosts } from "../../posts-store.js?v=2811";
+import { getContextById } from "../../contexts-store.js?v=2811";
+import { voicesToFinish } from "../../voice-parts.js?v=2811";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2811";
+import { pageState } from "../home.js?v=2811";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //

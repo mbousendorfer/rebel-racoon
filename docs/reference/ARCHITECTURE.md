@@ -229,7 +229,7 @@ src/
                           (+ schedule-modal-legacy.js behind `newScheduleModal`),
     connect-account-modal.js the network's consent dialog
     assign-modal.js       assign drafts for review (one reviewer, due date, comment)
-    clip-range-modal.js   « Add a clip »: the one moment a clip's Start / End are chosen
+    clip-trim-modal.js    Trim (a clip's ends, ±2 min) and « Add a clip » (find the moment on the whole video, then cut it like a Trim)
     network-voice-modal.js, voice-proposal-modal.js, voice-intro-modal.js — a network's voice where
                           there is no chat
     objective-modal.js, objective-catalog-panel.js, measure-scope-field.js — Insights' objectives

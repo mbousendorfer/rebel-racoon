@@ -3326,6 +3326,28 @@ body.clips-editing .app-content {
   pointer-events: none;
 }
 
+/* Add a clip, the find step: the clips already cut as grey marks along the
+   strip's foot, the playhead always shown. */
+.clips-trim__lane {
+  position: relative;
+  height: 8px;
+  margin-top: var(--ref-spacing-xxs);
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-grey-10);
+}
+
+.clips-trim__mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 2px;
+  background: var(--ref-color-grey-60);
+}
+
+.clips-trim__head.is-at {
+  background: var(--ref-color-electric-blue-100);
+}
+
 /* Two native ranges over the strip: only their thumbs take the pointer, so
    either handle can be grabbed; the keyboard moves them too. */
 .clips-trim__h {
