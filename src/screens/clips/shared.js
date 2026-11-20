@@ -2,20 +2,20 @@
 // editor share: time formatting, the video-wide options (format, subtitles),
 // and the live reframed previews.
 
-import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2816";
-import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2816";
-import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2816";
-import { escapeHtml } from "../../utils.js?v=2816";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2816";
-import { showToast } from "../../components/toast.js?v=2816";
-import { navigate } from "../../router.js?v=2816";
-import { getVideo, getVideos, removeVideo, subscribe as subscribeVideos } from "../../videos-store.js?v=2816";
+import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2817";
+import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2817";
+import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2817";
+import { escapeHtml } from "../../utils.js?v=2817";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2817";
+import { showToast } from "../../components/toast.js?v=2817";
+import { navigate } from "../../router.js?v=2817";
+import { getVideo, getVideos, removeVideo, subscribe as subscribeVideos } from "../../videos-store.js?v=2817";
 
 // A footage well shows a loading sheen until its first frame is in (clips.css,
 // `:not(.is-ready)`): every well is marked here, once, from the media events
 // of whatever <video> it holds, so no screen has to wire it.
 const WELLS =
-  ".clips-video__thumb, .clips-showcase__source, .clips-recap__player, .clips-preview, .clips-clip, .clips-ed__stage";
+  ".media-card__stage, .clips-showcase__source, .clips-recap__player, .clips-preview, .clips-clip, .clips-ed__stage";
 for (const type of ["loadeddata", "seeked"]) {
   document.addEventListener(type, (e) => e.target.closest?.(WELLS)?.classList.add("is-ready"), true);
 }
@@ -332,3 +332,64 @@ export function confirmRemoveVideo(id, { onRemoved } = {}) {
     },
   });
 }
+
+// ── The media card ───────────────────────────────────────────────────
+// ONE card for everything that shows a video or a clip with its facts —
+// the library's videos, the clips page's clips, the waiting ones (2026-11-20:
+// « toutes ces cards ne sont pas cohérentes… un composant commun décliné en
+// plusieurs tailles/variantes »). Anatomy, always the same:
+//   stage — a dark 4:3 well, the media at its real shape; four corner slots
+//           (tl: a box or a status · tr: ⋯ · bl: what it is · br: its length),
+//           all chips alike; `over` for a veil or the clips' map
+//   body  — the title (two lines), a meta line (« · »-joined), a two-line
+//           description, facts (icon + number named in words)
+//   foot  — the actions, or what the card leads to, under a hairline
+// Hover: the blue border; kept / selected (.is-kept): the blue border, held.
+// CSS: styles/components/media-card.css.
+
+export const chip = (text) => `<span class="media-card__chip">${text}</span>`;
+export const fact = (icon, html) =>
+  `<span class="media-card__fact"><i class="ap-icon-${icon}" aria-hidden="true"></i><span>${html}</span></span>`;
+
+export function mediaCard({
+  tag = "article",
+  attrs = "",
+  cls = "",
+  stage = "",
+  tl = "",
+  tr = "",
+  bl = "",
+  br = "",
+  over = "",
+  title = "",
+  titleTip = "",
+  meta = [],
+  desc = "",
+  facts = [],
+  foot = "",
+}) {
+  const m = meta.filter(Boolean);
+  const f = facts.filter(Boolean);
+  return `<${tag} class="media-card ${cls}" ${attrs}>
+    <span class="media-card__stage">${stage}${over}${tl ? `<span class="media-card__tl">${tl}</span>` : ""}${tr ? `<span class="media-card__tr">${tr}</span>` : ""}${bl ? `<span class="media-card__bl">${bl}</span>` : ""}${br ? `<span class="media-card__br">${br}</span>` : ""}</span>
+    <span class="media-card__body">
+      <span class="media-card__title"${titleTip ? ` title="${escapeHtml(titleTip)}"` : ""}>${title}</span>
+      ${m.length ? `<span class="media-card__meta">${m.join(" · ")}</span>` : ""}
+      ${desc ? `<span class="media-card__desc">${desc}</span>` : ""}
+      ${f.length ? `<span class="media-card__facts">${f.join("")}</span>` : ""}
+    </span>
+    ${foot ? `<span class="media-card__foot">${foot}</span>` : ""}
+  </${tag}>`;
+}
+
+// A card still to come: the same frame, shimmering.
+export const waitingCard = () =>
+  `<div class="media-card is-waiting" aria-hidden="true"><span class="media-card__stage"></span><span class="media-card__body"><span class="media-card__line"></span><span class="media-card__line is-short"></span></span></div>`;
+
+// A veil over the stage: a line, and a bar when something is running.
+export const veil = (text, { running = true, warn = false, attrs = "" } = {}) =>
+  `<span class="media-card__veil" ${attrs}>${warn ? `<i class="ap-icon-warning" aria-hidden="true"></i>` : ""}<span>${text}</span>${
+    running
+      ? `<span class="clips-progress__track is-indeterminate"><span class="clips-progress__fill"></span></span>`
+      : ""
+  }</span>`;

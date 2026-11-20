@@ -9,13 +9,13 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2816";
-import { isFlagOn } from "../../feature-flags.js?v=2816";
-import { renderTopbar } from "../../components/topbar.js?v=2816";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2816";
-import { isDemo } from "../../demo-mode.js?v=2816";
-import { getPosts } from "../../posts-store.js?v=2816";
-import { escapeHtml, plural } from "../../utils.js?v=2816";
+import { navigate } from "../../router.js?v=2817";
+import { isFlagOn } from "../../feature-flags.js?v=2817";
+import { renderTopbar } from "../../components/topbar.js?v=2817";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2817";
+import { isDemo } from "../../demo-mode.js?v=2817";
+import { getPosts } from "../../posts-store.js?v=2817";
+import { escapeHtml, plural } from "../../utils.js?v=2817";
 import {
   getVideos,
   exampleVideo,
@@ -25,7 +25,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2816";
+} from "../../videos-store.js?v=2817";
 import {
   fmtMs,
   previewMarkup,
@@ -33,7 +33,12 @@ import {
   confirmRemoveVideo,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2816";
+  mediaCard,
+  chip,
+  fact,
+  veil,
+  formatLabel,
+} from "./shared.js?v=2817";
 
 let target = null;
 let disposeShowcase = null;
@@ -358,7 +363,7 @@ function renderCollection(videos) {
           ? `<table class="ap-table outer-border header-background clickable-rows clips-library__table">
               <thead><tr><th scope="col">Video</th><th scope="col">Status</th><th scope="col" class="right">Length</th><th scope="col" class="right">Clips</th><th scope="col" class="right">Kept</th><th scope="col" class="right">Posts</th><th scope="col" class="right"><span class="clips-library__sr">Next</span></th></tr></thead>
               <tbody>${items.map(renderRow).join("")}</tbody></table>`
-          : `<div class="clips-library__grid">${items.map(renderCard).join("")}</div>`
+          : `<div class="clips-library__grid media-cards">${items.map(renderCard).join("")}</div>`
       }
       <p class="clips-library__none" data-clips-no-match hidden></p>
     </section>`;
@@ -382,7 +387,7 @@ function renderRow(v) {
     <td class="right clips-library__num">${v.status === "ready" ? v.clips.length : "–"}</td>
     <td class="right clips-library__num">${v.status === "ready" ? v.clips.filter((c) => c.selected).length : "–"}</td>
     <td class="right clips-library__num">${posts || "–"}</td>
-    <td class="right">${next ? `<span class="clips-video__next">${next.text}<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>` : ""}</td>
+    <td class="right">${next ? `<span class="media-card__next">${next.text}<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>` : ""}</td>
   </tr>`;
 }
 
@@ -408,30 +413,47 @@ function applySearch() {
 }
 
 // A failed analysis is not a link: the card says why, in place, and holds its
-// two ways out (Try again, Remove) — buttons can't sit inside a link.
-// No clips (prod's NO_SPEECH) is the video's doing: Remove only. A crash is
-// the job's: Try again.
+// ways out (Try again, Remove) — buttons can't sit inside a link. No clips
+// (prod's NO_SPEECH) is the video's doing: Remove only. A crash is the job's:
+// Try again. The shared media card, like every video and clip.
 function renderFailedCard(v) {
-  const added = new Date(v.addedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
   const crash = v.failure?.kind === "crash";
-  return `
-    <div class="clips-video is-failed" data-clips-card data-state="empty" data-name="${escapeHtml(v.name.toLowerCase())}">
-      <span class="clips-video__thumb">
-        <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline tabindex="-1" aria-hidden="true" data-poster-s="${(v.posterMs || 0) / 1000}"></video>
-        <span class="clips-video__duration">${fmtMs(v.durationMs)}</span>
-        <span class="clips-video__veil is-failed"><i class="ap-icon-warning" aria-hidden="true"></i><span>${crash ? `Stopped at ${escapeHtml((v.failure?.stage || "the analysis").toLowerCase())}` : "No clips found"}</span></span>
-      </span>
-      <span class="clips-video__body">
-        <span class="clips-video__name" title="${escapeHtml(v.name)}">${escapeHtml(v.name)}</span>
-        <span class="clips-video__meta">Added ${added}</span>
-        <p class="ap-form-message error clips-video__error" role="alert">${escapeHtml(v.failure?.reason || "I couldn't analyze this video.")}</p>
-        <span class="clips-video__actions">
-          ${crash ? `<button type="button" class="ap-button stroked grey" data-clips-retry="${escapeHtml(v.id)}"><i class="ap-icon-refresh" aria-hidden="true"></i><span>Try again</span></button>` : ""}
-          <button type="button" class="ap-button ghost grey" data-clips-remove-video="${escapeHtml(v.id)}"><span>Remove</span></button>
-        </span>
-      </span>
-    </div>`;
+  return mediaCard({
+    tag: "div",
+    attrs: `data-clips-card data-state="empty" data-name="${escapeHtml(v.name.toLowerCase())}"`,
+    stage: thumb(v),
+    over: veil(
+      crash ? `Stopped at ${escapeHtml((v.failure?.stage || "the analysis").toLowerCase())}` : "No clips found",
+      { running: false, warn: true },
+    ),
+    bl: chip(sourceFormat(v)),
+    br: chip(fmtMs(v.durationMs)),
+    title: escapeHtml(v.name),
+    titleTip: v.name,
+    meta: [`Added ${addedOn(v)}`, ORIGIN[v.origin] || "Uploaded"],
+    desc: `<span class="ap-form-message error" role="alert">${escapeHtml(v.failure?.reason || "I couldn't analyze this video.")}</span>`,
+    foot: `${crash ? `<button type="button" class="ap-button stroked grey" data-clips-retry="${escapeHtml(v.id)}"><i class="ap-icon-refresh" aria-hidden="true"></i><span>Try again</span></button>` : ""}
+      <button type="button" class="ap-button ghost grey" data-clips-remove-video="${escapeHtml(v.id)}"><span>Remove</span></button>`,
+  });
 }
+
+const ORIGIN = { upload: "Uploaded", url: "From YouTube", chat: "From a chat", seed: "Uploaded" };
+const addedOn = (v) => new Date(v.addedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+// A source video's format, named like a clip's (« Landscape 16:9 »).
+function sourceFormat(v) {
+  const r = v.width / v.height;
+  const ids = ["16:9", "4:3", "1:1", "4:5", "9:16"];
+  const near = ids.reduce(
+    (a, id) => {
+      const [w, h] = id.split(":").map(Number);
+      return Math.abs(w / h - r) < Math.abs(a.r - r) ? { id, r: w / h } : a;
+    },
+    { id: "16:9", r: 16 / 9 },
+  );
+  return escapeHtml(formatLabel(near.id));
+}
+const thumb = (v) =>
+  `<video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline tabindex="-1" aria-hidden="true" data-poster-s="${(v.posterMs || 0) / 1000}"></video>`;
 
 const stageLabel = (v) =>
   v.stage === "Uploading"
@@ -453,21 +475,10 @@ function renderCard(v) {
   if (v.status === "failed") return renderFailedCard(v);
   const posts = getPosts(draftKey(v.id));
   const scheduled = posts.filter((p) => p.status === "scheduled").length;
-  const added = new Date(v.addedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  const fact = (icon, text) =>
-    `<span class="clips-video__fact"><i class="${icon}" aria-hidden="true"></i>${text}</span>`;
-  const facts =
-    v.status === "ready"
-      ? [
-          fact("ap-icon-video", `${v.clips.length} clip${v.clips.length === 1 ? "" : "s"}`),
-          posts.length ? fact("ap-icon-file--text", `${posts.length} draft${posts.length === 1 ? "" : "s"}`) : "",
-          scheduled ? fact("ap-icon-calendar", `${scheduled} scheduled`) : "",
-        ].join("")
-      : "";
-  // Where the clips sit in the video, at the foot of the thumbnail.
+  // Where the clips sit in the video, along the stage's foot.
   const map =
     v.status === "ready" && v.clips.length
-      ? `<span class="clips-video__map">${v.clips
+      ? `<span class="media-card__map">${v.clips
           .map(
             (c) =>
               `<span style="left:${(c.startMs / v.durationMs) * 100}%;width:max(3px, ${((c.endMs - c.startMs) / v.durationMs) * 100}%)"></span>`,
@@ -475,28 +486,35 @@ function renderCard(v) {
           .join("")}</span>`
       : "";
   const next = nextOf(v);
-  return `
-    <a class="clips-video${v.status === "analyzing" ? " is-analyzing" : ""}" href="#/clips/${encodeURIComponent(v.id)}${next?.tab || ""}" data-clips-card data-state="${stateOf(v)}" data-name="${escapeHtml(v.name.toLowerCase())}">
-      <span class="clips-video__thumb">
-        <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline tabindex="-1" aria-hidden="true" data-poster-s="${(v.posterMs || 0) / 1000}"></video>
-        <span class="clips-video__duration">${fmtMs(v.durationMs)}</span>
-        ${map}
-        ${
-          v.status === "analyzing"
-            ? `<span class="clips-video__veil" data-clips-progress="${v.id}">
-                 <span class="clips-video__veil-stage" data-clips-stage-of="${escapeHtml(v.id)}">${escapeHtml(stageLabel(v))}</span>
-                 <span class="clips-progress"><span class="clips-progress__track is-indeterminate"><span class="clips-progress__fill"></span></span></span>
-               </span>`
-            : ""
-        }
-      </span>
-      <span class="clips-video__body">
-        <span class="clips-video__name" title="${escapeHtml(v.name)}">${escapeHtml(v.name)}</span>
-        <span class="clips-video__meta">Added ${added}</span>
-        ${facts ? `<span class="clips-video__facts">${facts}</span>` : ""}
-        ${next ? `<span class="clips-video__next">${next.text}<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>` : ""}
-      </span>
-    </a>`;
+  const n = v.clips.length;
+  return mediaCard({
+    tag: "a",
+    attrs: `href="#/clips/${encodeURIComponent(v.id)}${next?.tab || ""}" data-clips-card data-state="${stateOf(v)}" data-name="${escapeHtml(v.name.toLowerCase())}"`,
+    stage: thumb(v),
+    over:
+      map +
+      (v.status === "analyzing"
+        ? veil(`<span data-clips-stage-of="${escapeHtml(v.id)}">${escapeHtml(stageLabel(v))}</span>`, {
+            attrs: `data-clips-progress="${escapeHtml(v.id)}"`,
+          })
+        : ""),
+    bl: chip(sourceFormat(v)),
+    br: chip(fmtMs(v.durationMs)),
+    title: escapeHtml(v.name),
+    titleTip: v.name,
+    meta: [`Added ${addedOn(v)}`, ORIGIN[v.origin] || "Uploaded"],
+    facts:
+      v.status === "ready"
+        ? [
+            fact("video", `<b>${n}</b> ${n === 1 ? "clip" : "clips"}`),
+            posts.length ? fact("file--text", `<b>${posts.length}</b> ${posts.length === 1 ? "draft" : "drafts"}`) : "",
+            scheduled ? fact("calendar", `<b>${scheduled}</b> scheduled`) : "",
+          ]
+        : [],
+    foot: next
+      ? `<span class="media-card__next">${next.text}<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>`
+      : "",
+  });
 }
 
 // A thumbnail plays its video, muted, while the pointer is on it.

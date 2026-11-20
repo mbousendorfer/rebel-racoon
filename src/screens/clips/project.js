@@ -7,32 +7,32 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2816";
-import { isFlagOn } from "../../feature-flags.js?v=2816";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2816";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2816";
-import { showToast } from "../../components/toast.js?v=2816";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2816";
-import { open as openTrim, openAdd } from "../../components/clip-trim-modal.js?v=2816";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2816";
-import { startRewrite } from "../../draft-rewrite.js?v=2816";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2816";
-import { renderPostCard } from "../../components/post-card.js?v=2816";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2816";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2816";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2816";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2816";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2816";
-import { open as openRename } from "../../components/rename-modal.js?v=2816";
-import { writePostsInChat } from "../../clips-chat.js?v=2816";
+import { navigate } from "../../router.js?v=2817";
+import { isFlagOn } from "../../feature-flags.js?v=2817";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2817";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2817";
+import { showToast } from "../../components/toast.js?v=2817";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2817";
+import { open as openTrim, openAdd } from "../../components/clip-trim-modal.js?v=2817";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2817";
+import { startRewrite } from "../../draft-rewrite.js?v=2817";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2817";
+import { renderPostCard } from "../../components/post-card.js?v=2817";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2817";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2817";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2817";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2817";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2817";
+import { open as openRename } from "../../components/rename-modal.js?v=2817";
+import { writePostsInChat } from "../../clips-chat.js?v=2817";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2816";
-import { escapeHtml, plural } from "../../utils.js?v=2816";
+} from "../../posts-store.js?v=2817";
+import { escapeHtml, plural } from "../../utils.js?v=2817";
 import {
   getVideo,
   draftKey,
@@ -50,7 +50,7 @@ import {
   askForClips,
   trimClip,
   updateClip,
-} from "../../videos-store.js?v=2816";
+} from "../../videos-store.js?v=2817";
 import {
   fmtMs,
   lookSelect,
@@ -63,7 +63,12 @@ import {
   presetLabel,
   CTA_OPTIONS,
   confirmRemoveVideo,
-} from "./shared.js?v=2816";
+  mediaCard,
+  waitingCard,
+  chip,
+  fact,
+  veil,
+} from "./shared.js?v=2817";
 
 let target = null;
 let videoId = null;
@@ -300,11 +305,7 @@ function renderComing(v) {
         <h2 class="clips-group-sec__title">${ask ? "From your request" : "The best moments"}</h2>
         <span class="clips-group-sec__meta">${ask ? `« ${escapeHtml(ask.text)} » · ` : ""}${ask ? "the clips" : plural(n, "clip")}, as soon as I've found them</span>
       </header>
-      <div class="clips-cards" aria-hidden="true">${Array.from(
-        { length: n },
-        () => `<div class="clips-card clips-frame is-waiting"><span class="clips-card__wait-media"></span>
-          <span class="clips-card__wait-body"><span></span><span></span></span></div>`,
-      ).join("")}</div>
+      <div class="media-cards" aria-hidden="true">${waitingCard().repeat(n)}</div>
     </section>`;
 }
 
@@ -346,7 +347,7 @@ function renderPage(v) {
           <span class="clips-group-sec__meta">${plural(best.length, "clip")} · in video order</span>
           ${tools}
         </header>
-        ${best.length ? `<div class="clips-cards">${best.map((c) => renderCard(v, c)).join("")}</div>` : `<p class="clips-group-sec__none">No clips left. Add one, or ask for other clips.</p>`}
+        ${best.length ? `<div class="media-cards">${best.map((c) => renderCard(v, c)).join("")}</div>` : `<p class="clips-group-sec__none">No clips left. Add one, or ask for other clips.</p>`}
       </section>`
       }
       ${renderRemoved(v)}
@@ -356,10 +357,7 @@ function renderPage(v) {
 
 // Where the video came from, said with the date and its size.
 const ORIGIN = { upload: "Uploaded", url: "From YouTube", chat: "From a chat", seed: "Uploaded" };
-// A fact: its icon, then the number named in words (house rule: a metric is
-// named in text — the icon alone never says what the number is).
-const fact = (icon, html) =>
-  `<span class="clips-recap__fact"><i class="ap-icon-${icon}" aria-hidden="true"></i><span>${html}</span></span>`;
+// The facts are the media card's (shared.js `fact`): one vocabulary for numbers.
 
 // The recap: what the video is before what was cut from it. Polished
 // 2026-11-20 (« c'est pauvre visuellement »): a meta line under the title, the
@@ -388,9 +386,9 @@ function renderRecap(v) {
             <div class="ap-action-dropdown clips-more__menu" role="menu">${menuItem("Remove this video", "trash", "data-clips-remove-video", true)}</div>
           </details>
         </div>
-        <p class="clips-recap__meta">Added ${added(v.addedAt)} · ${ORIGIN[v.origin] || "Uploaded"} · ${v.width}×${v.height}</p>
+        <p class="media-card__meta clips-recap__meta">Added ${added(v.addedAt)} · ${ORIGIN[v.origin] || "Uploaded"} · ${v.width}×${v.height}</p>
         ${v.summary ? `<p class="clips-recap__summary">${escapeHtml(v.summary)}</p>` : ""}
-        <p class="clips-recap__facts">
+        <p class="media-card__facts">
           ${fact("clock", `<b>${fmtMs(v.durationMs)}</b> long`)}
           ${
             v.status === "ready"
@@ -456,7 +454,7 @@ function renderRequest(v, r, tools = "") {
     r.status === "speaker"
       ? renderSpeakerQuestion(r)
       : r.status === "running"
-        ? `<p class="clips-group-sec__meta" role="status">Finding these moments…</p><div class="clips-cards" aria-hidden="true">${'<div class="clips-card clips-frame is-waiting"><span class="clips-card__wait-media"></span><span class="clips-card__wait-body"><span></span><span></span></span></div>'.repeat(2)}</div>`
+        ? `<p class="clips-group-sec__meta" role="status">Finding these moments…</p><div class="media-cards" aria-hidden="true">${waitingCard().repeat(2)}</div>`
         : r.status === "none"
           ? // Prod's NO_MATCH, as the DS infobox; its × drops the request.
             `<div class="ap-infobox info has-title" role="status">
@@ -467,7 +465,7 @@ function renderRequest(v, r, tools = "") {
               </div></div>
               <button type="button" class="ap-infobox-close" data-clips-speaker-cancel="${escapeHtml(r.id)}" aria-label="Remove this request"><i class="ap-icon-close" aria-hidden="true"></i></button>
             </div>`
-          : `<div class="clips-cards">${clips.map((c) => renderCard(v, c)).join("")}</div>`;
+          : `<div class="media-cards">${clips.map((c) => renderCard(v, c)).join("")}</div>`;
   return `<section class="clips-group-sec">${head}${body}</section>`;
 }
 
@@ -487,39 +485,34 @@ function menuItem(label, icon, attr, danger = false) {
 function renderCard(v, c) {
   const id = escapeHtml(c.id);
   const title = escapeHtml(c.title);
-  // « Le cadre fixe » (A, 2026-11-20, after Opus Clip and Riverside): every
-  // card the same size, whatever the clip's format — the clip sits at its real
-  // shape in a dark 4:3 stage, its format written on it. Under it, the title,
-  // where it runs and its subtitles, why I picked it; the actions always shown.
-  return `<article class="clips-card clips-frame${c.selected ? " is-kept" : ""}" data-clips-card="${id}">
-    <div class="clips-frame__stage">
-      ${previewMarkup(v, c, { captions: false })}
-      <label class="clips-frame__keep"><span class="ap-checkbox-container"><input type="checkbox" data-clips-keep="${id}" ${c.selected ? "checked" : ""} aria-label="Keep « ${title} »" /><i></i></span></label>
-      <span class="clips-frame__fmt">${escapeHtml(formatLabel(clipRatioId(v, c)))}</span>
-      <span class="clips-card__dur">${fmtMs(c.endMs - c.startMs)}</span>
-      ${
-        c.rendering
-          ? `<span class="clips-card__render" role="status"><span>Rendering your edited clip…</span><span class="clips-progress__track is-indeterminate"><span class="clips-progress__fill"></span></span></span>`
-          : ""
-      }
-    </div>
-    <div class="clips-frame__body">
-      <span class="clips-card__title">${title}</span>
-      <span class="clips-card__at">${fmtMs(c.startMs)} – ${fmtMs(c.endMs)} in the video${c.trimmed ? " · Trimmed" : ""} · Subtitles: ${escapeHtml(presetLabel(clipCaptionState(v, c).presetId))}</span>
-      ${c.why ? `<p class="clips-card__why">${escapeHtml(c.why)}</p>` : ""}
-    </div>
-    <div class="clips-frame__foot">
-      <button type="button" class="ap-button ghost grey" data-clips-trim="${id}"><i class="ap-icon-shorten" aria-hidden="true"></i><span>Trim</span></button>
+  // The shared media card (shared.js): the clip at its real shape on the
+  // stage, its box top left, its format and length below; where it runs and
+  // its subtitles, why I picked it; Trim, Edit clip, ⋯.
+  return mediaCard({
+    attrs: `data-clips-card="${id}"`,
+    cls: c.selected ? "is-kept" : "",
+    stage: previewMarkup(v, c, { captions: false }),
+    over: c.rendering ? veil("Rendering your edited clip…", { attrs: 'role="status"' }) : "",
+    tl: `<label class="media-card__keep"><span class="ap-checkbox-container"><input type="checkbox" data-clips-keep="${id}" ${c.selected ? "checked" : ""} aria-label="Keep « ${title} »" /><i></i></span></label>`,
+    bl: chip(escapeHtml(formatLabel(clipRatioId(v, c)))),
+    br: chip(fmtMs(c.endMs - c.startMs)),
+    title,
+    meta: [
+      `${fmtMs(c.startMs)} – ${fmtMs(c.endMs)} in the video`,
+      c.trimmed ? "Trimmed" : "",
+      `Subtitles: ${escapeHtml(presetLabel(clipCaptionState(v, c).presetId))}`,
+    ],
+    desc: c.why ? escapeHtml(c.why) : "",
+    foot: `<button type="button" class="ap-button ghost grey" data-clips-trim="${id}"><i class="ap-icon-shorten" aria-hidden="true"></i><span>Trim</span></button>
       <a class="ap-button ghost grey" href="#/clips/${encodeURIComponent(v.id)}/edit/${encodeURIComponent(c.id)}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit clip</span></a>
-      <details class="clips-more clips-frame__more">
+      <details class="clips-more">
         <summary class="ap-icon-button transparent grey" aria-label="More actions for « ${title} »" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
         <div class="ap-action-dropdown clips-more__menu" role="menu">
           ${menuItem("Rename", "pen", `data-clips-rename="${id}"`)}
           ${menuItem("Remove this clip", "trash", `data-clips-remove="${id}"`, true)}
         </div>
-      </details>
-    </div>
-  </article>`;
+      </details>`,
+  });
 }
 // ── Drafts ───────────────────────────────────────────────────────────
 

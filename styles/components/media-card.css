@@ -1,0 +1,286 @@
+/* The media card (src/screens/clips/shared.js · mediaCard) — one card for
+   every video and clip with its facts: the library's videos, the clips page's
+   clips, the cards still to come. Stage → body → foot, always in that order. */
+
+.media-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+  background: var(--ref-color-white);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+
+/* House rule: card hover = the blue border; kept / selected holds it. */
+.media-card:hover,
+.media-card:focus-within,
+.media-card.is-kept {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+a.media-card:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+}
+
+/* ── The stage: a dark 4:3 well, the media at its real shape ── */
+.media-card__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  padding: var(--ref-spacing-sm);
+  border-radius: var(--app-radius-lg) var(--app-radius-lg) 0 0;
+  background: var(--ref-color-grey-150);
+  overflow: hidden;
+}
+
+/* A source video: letterboxed in the well. */
+.media-card__stage > video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* A clip's reframed preview: taller than the well → its height; wider → its width. */
+.media-card__stage .clips-preview {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  border-radius: var(--app-radius-md);
+  overflow: hidden;
+}
+
+.media-card__stage .clips-preview[data-ratio="16:9"],
+.media-card__stage .clips-preview[data-ratio="4:3"] {
+  width: 100%;
+  height: auto;
+}
+
+/* The four corners. */
+.media-card__tl,
+.media-card__tr,
+.media-card__bl,
+.media-card__br {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+}
+
+.media-card__tl {
+  top: var(--ref-spacing-xs);
+  left: var(--ref-spacing-xs);
+}
+
+.media-card__tr {
+  top: var(--ref-spacing-xs);
+  right: var(--ref-spacing-xs);
+}
+
+.media-card__bl {
+  left: var(--ref-spacing-xs);
+  bottom: var(--ref-spacing-xs);
+}
+
+.media-card__br {
+  right: var(--ref-spacing-xs);
+  bottom: var(--ref-spacing-xs);
+}
+
+/* Every chip on a stage is this one. */
+.media-card__chip {
+  padding: 0 var(--ref-spacing-xxs);
+  border-radius: var(--app-radius-sm);
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: 700;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* A box on the stage (keep): on white, so it reads on any frame. */
+.media-card__tl .ap-checkbox-container {
+  padding: 2px;
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-white);
+}
+
+.media-card__keep {
+  display: flex;
+  cursor: pointer;
+}
+
+/* The veil: something runs, or went wrong, over the frame. */
+.media-card__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm);
+  background: rgba(0, 0, 0, 0.64);
+  color: #fff;
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: 700;
+  text-align: center;
+}
+
+.media-card__veil .clips-progress__track {
+  flex: none;
+  width: 60%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Where the clips sit in the video, along the stage's foot. */
+.media-card__map {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.media-card__map span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+/* ── The body ── */
+.media-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+  padding: var(--ref-spacing-sm) var(--ref-spacing-sm) var(--ref-spacing-xs);
+}
+
+.media-card__title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--ref-color-grey-100);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.media-card__meta {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  font-variant-numeric: tabular-nums;
+}
+
+.media-card__desc {
+  display: -webkit-box;
+  margin-top: var(--ref-spacing-xxxs);
+  overflow: hidden;
+  line-height: 1.4;
+  color: var(--ref-color-grey-80);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Facts: an icon, then the number named in words (house rule). */
+.media-card__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  margin-top: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.media-card__fact {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.media-card__fact b {
+  color: var(--ref-color-grey-100);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── The foot ── */
+.media-card__foot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  min-height: 44px;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.media-card__foot > .clips-more {
+  position: relative;
+  margin-left: auto;
+}
+
+.media-card__foot .clips-more__menu {
+  left: auto;
+  right: 0;
+}
+
+/* What the card leads to (a link card): the interactive blue, an arrow. */
+.media-card__next {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: 0 var(--ref-spacing-xxs);
+  font-weight: 700;
+  color: var(--ref-color-electric-blue-100);
+}
+
+.media-card:hover .media-card__next i {
+  transform: translateX(2px);
+  transition: transform 0.15s ease;
+}
+
+/* ── Still to come ── */
+.media-card.is-waiting .media-card__stage,
+.media-card__line {
+  background: var(--ref-color-grey-10);
+  animation: media-card-pulse 1.4s ease-in-out infinite;
+}
+
+.media-card__line {
+  height: 12px;
+  border-radius: var(--app-radius-sm);
+}
+
+.media-card__line.is-short {
+  width: 60%;
+}
+
+@keyframes media-card-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .media-card.is-waiting .media-card__stage,
+  .media-card__line {
+    animation: none;
+  }
+}
+
+/* The grids that hold them: one width rule everywhere. */
+.media-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--ref-spacing-sm);
+}

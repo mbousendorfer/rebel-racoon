@@ -123,6 +123,17 @@ Exemples en place : [`screens/topics.js`](../../src/screens/topics.js) (la toolb
 - **Le lu / non-lu se lit à la graisse.** Dans une file à trier, l'élément qui attend encore une réponse garde la graisse pleine et ceux qui ont été traités reculent d'un cran. La graisse **seulement** : l'encre ne change pas.
 - **Une carte qui doit changer de mise en page selon la place qu'elle a reçue** se déclare `container-type: inline-size` et utilise une **`@container` query**, pas une media query : sidebar repliable + panneau de droite qui overlay, la largeur du viewport ne dit jamais la largeur du contenu. Cas en place : le split liste / article de `/topics` (`@container topics-feed`, empilé sous 760px) et la grille de `/topics/settings` (une colonne sous 920px).
 
+### La carte média — une seule pour les vidéos et les clips (Clips space)
+
+`mediaCard()` dans [`screens/clips/shared.js`](../../src/screens/clips/shared.js), styles dans [`styles/components/media-card.css`](../../styles/components/media-card.css) (2026-11-20 : « un composant commun décliné en plusieurs tailles/variantes »). Toute carte qui montre une vidéo ou un clip avec ses faits passe par elle : les vidéos de la bibliothèque, les clips de la page de clips, les cartes à venir (`waitingCard()`, aussi les vidéos en échec). Anatomie fixe :
+
+- **La scène** : un puits `grey-150` en 4:3, le média à sa vraie forme (vidéo source en `object-fit: contain`, aperçu de clip à son format). Quatre coins : en haut à gauche la case (garder) ou un statut, en haut à droite ⋯, en bas à gauche **ce que c'est** (le format nommé : « Landscape 16:9 », « Vertical 9:16 »), en bas à droite **la durée** — toutes en `chip()` (fond noir 72 %, légende blanche). `over` pour un voile (`veil()` : analyse en cours, rendu, échec) ou la carte des clips au pied de la scène.
+- **Le corps** : le titre (deux lignes), une ligne de méta (« · »), une description (deux lignes), des faits (`fact()` : icône + nombre nommé en mots — le même vocabulaire que le récap de la vidéo).
+- **Le pied** (filet `grey-20`) : les actions (`ghost grey`, ⋯ à droite) ou, pour une carte-lien, ce vers quoi elle mène (`media-card__next`, bleu + flèche).
+- Survol / focus : bordure bleue ; gardé (`.is-kept`) : bordure bleue tenue. Les grilles : `.media-cards` (`minmax(280px, 1fr)`).
+
+Ne pas recréer une carte de clip ou de vidéo à côté : décliner celle-ci.
+
 ### Boutons / CTAs
 
 DS `.ap-button` avec `primary|stroked|ghost` × `orange|blue`. Icon = `.ap-icon-button`, transparent par défaut dans le DS 22 (le modificateur `transparent` n'agit qu'avec `.stroked` ; il n'y a pas de taille `sm` / `lg`). Lien-bouton = `button.ap-link` (patché). Pas de `.ap-button.danger` : une confirmation destructive est l'orange primaire portant le verbe ; une action destructive secondaire du Quickpicker est `stroked red`. **Jamais full-width** (voir mémoire _buttons-never-full-width_).
