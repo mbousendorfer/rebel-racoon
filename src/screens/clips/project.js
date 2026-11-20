@@ -7,32 +7,32 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2811";
-import { isFlagOn } from "../../feature-flags.js?v=2811";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2811";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2811";
-import { showToast } from "../../components/toast.js?v=2811";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2811";
-import { open as openTrim, openAdd } from "../../components/clip-trim-modal.js?v=2811";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2811";
-import { startRewrite } from "../../draft-rewrite.js?v=2811";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2811";
-import { renderPostCard } from "../../components/post-card.js?v=2811";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2811";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2811";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2811";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2811";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2811";
-import { open as openRename } from "../../components/rename-modal.js?v=2811";
-import { writePostsInChat } from "../../clips-chat.js?v=2811";
+import { navigate } from "../../router.js?v=2812";
+import { isFlagOn } from "../../feature-flags.js?v=2812";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2812";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2812";
+import { showToast } from "../../components/toast.js?v=2812";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2812";
+import { open as openTrim, openAdd } from "../../components/clip-trim-modal.js?v=2812";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2812";
+import { startRewrite } from "../../draft-rewrite.js?v=2812";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2812";
+import { renderPostCard } from "../../components/post-card.js?v=2812";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2812";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2812";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2812";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2812";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2812";
+import { open as openRename } from "../../components/rename-modal.js?v=2812";
+import { writePostsInChat } from "../../clips-chat.js?v=2812";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2811";
-import { escapeHtml, plural } from "../../utils.js?v=2811";
+} from "../../posts-store.js?v=2812";
+import { escapeHtml, plural } from "../../utils.js?v=2812";
 import {
   getVideo,
   draftKey,
@@ -50,7 +50,7 @@ import {
   askForClips,
   trimClip,
   updateClip,
-} from "../../videos-store.js?v=2811";
+} from "../../videos-store.js?v=2812";
 import {
   fmtMs,
   lookSelect,
@@ -63,7 +63,7 @@ import {
   presetLabel,
   CTA_OPTIONS,
   confirmRemoveVideo,
-} from "./shared.js?v=2811";
+} from "./shared.js?v=2812";
 
 let target = null;
 let videoId = null;
@@ -351,6 +351,14 @@ function renderPage(v) {
     </div>`;
 }
 
+// Where the video came from, said with the date and its size.
+const ORIGIN = { upload: "Uploaded", url: "From YouTube", chat: "From a chat", seed: "Uploaded" };
+// A named number (house rule: a metric is named in text), as a small tile.
+const stat = (label, value) => `<div class="clips-recap__stat"><dt>${label}</dt><dd>${value}</dd></div>`;
+
+// The recap: what the video is before what was cut from it. Polished
+// 2026-11-20 (« c'est pauvre visuellement »): a meta line under the title, the
+// summary in full ink, the facts as four named tiles, a key on the band.
 // The recap: what the video is before what was cut from it.
 function renderRecap(v) {
   const k = kept(v);
@@ -375,24 +383,20 @@ function renderRecap(v) {
             <div class="ap-action-dropdown clips-more__menu" role="menu">${menuItem("Remove this video", "trash", "data-clips-remove-video", true)}</div>
           </details>
         </div>
+        <p class="clips-recap__meta">Added ${added(v.addedAt)} · ${ORIGIN[v.origin] || "Uploaded"} · ${v.width}×${v.height}</p>
         ${v.summary ? `<p class="clips-recap__summary">${escapeHtml(v.summary)}</p>` : ""}
-        <p class="clips-recap__facts">
-          <span><strong>${fmtMs(v.durationMs)}</strong> long</span>
+        <dl class="clips-recap__stats">
+          ${stat("Length", fmtMs(v.durationMs))}
           ${
             v.status === "ready"
-              ? `<span><strong>${v.clips.length}</strong> ${v.clips.length === 1 ? "clip" : "clips"}</span>
-          <span><strong>${fmtMs(totalMs(v.clips))}</strong> of clips</span>
-          <span><strong data-clips-kept-n>${k.length}</strong> kept</span>`
-              : v.status === "analyzing"
-                ? `<span><strong>${comingCount(v)}</strong> clips coming</span>`
-                : `<span><strong>0</strong> clips</span>`
+              ? `${stat("Clips", v.clips.length)}${stat("Clip time", fmtMs(totalMs(v.clips)))}${stat("Kept", `<span data-clips-kept-n>${k.length}</span><span class="clips-recap__of"> of ${v.clips.length}</span>`)}`
+              : stat(v.status === "analyzing" ? "Clips coming" : "Clips", v.status === "analyzing" ? comingCount(v) : 0)
           }
-          <span class="clips-recap__added">Added ${added(v.addedAt)}</span>
-        </p>
+        </dl>
         ${
           v.status === "ready"
             ? `<div class="clips-recap__map">
-          <span class="clips-recap__map-label">Where the clips are</span>
+          <span class="clips-recap__map-label">Where the clips are <span class="clips-recap__key"><i class="is-kept"></i>Kept <i></i>Not kept</span></span>
           <div class="clips-recap__band" aria-hidden="true">${band}</div>
           <div class="clips-recap__ends"><span>0:00</span><span>${fmtMs(v.durationMs)}</span></div>
         </div>`
