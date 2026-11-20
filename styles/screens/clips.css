@@ -2619,49 +2619,9 @@ body.clips-editing .app-content {
   background: var(--ref-color-electric-blue-100);
 }
 
+/* The ask: the chat's composer card as is; only its width is the page's. */
 .clips-ask {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-sm);
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
-.clips-ask__row {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-}
-
-/* Archie, small: the butter disc and its olive mark, before the field. */
-.clips-ask__mark {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--app-butter);
-  color: var(--app-butter-accent);
-  font-size: 16px;
-}
-
-.clips-ask__field {
-  flex: 1 1 auto;
-}
-
-.clips-ask__try {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  padding-left: 40px; /* under the field, past the mark */
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-}
-
-.clips-ask__try .ap-tag {
-  cursor: pointer;
+  display: block;
 }
 
 /* The request a group answers, named on the butter of Archie. */

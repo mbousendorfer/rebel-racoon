@@ -27,19 +27,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2813";
-import { isFlagOn } from "../../feature-flags.js?v=2813";
-import { parseHashParams } from "../../url-state.js?v=2813";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2813";
-import { showToast } from "../../components/toast.js?v=2813";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2813";
-import { open as openRename } from "../../components/rename-modal.js?v=2813";
-import { getContextById } from "../../contexts-store.js?v=2813";
-import { escapeHtml } from "../../utils.js?v=2813";
-import * as ce from "../../caption-editor.js?v=2813";
-import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2813";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2813";
-import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2813";
+import { navigate } from "../../router.js?v=2814";
+import { isFlagOn } from "../../feature-flags.js?v=2814";
+import { parseHashParams } from "../../url-state.js?v=2814";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2814";
+import { showToast } from "../../components/toast.js?v=2814";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2814";
+import { open as openRename } from "../../components/rename-modal.js?v=2814";
+import { getContextById } from "../../contexts-store.js?v=2814";
+import { escapeHtml } from "../../utils.js?v=2814";
+import * as ce from "../../caption-editor.js?v=2814";
+import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2814";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2814";
+import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2814";
 import {
   framingContext,
   initialSegments,
@@ -58,7 +58,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2813";
+} from "../../clip-framing.js?v=2814";
 import {
   fmtMs,
   fmtPrecise,
@@ -73,8 +73,8 @@ import {
   dsSelect,
   bindSelectDismiss,
   EDITOR_TOOLS as TOOLS,
-} from "./shared.js?v=2813";
-import { writePostsInChat } from "../../clips-chat.js?v=2813";
+} from "./shared.js?v=2814";
+import { writePostsInChat } from "../../clips-chat.js?v=2814";
 
 const FRAME_MS = 40;
 const CARD_MS = 2000; // intro / outro card length

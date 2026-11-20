@@ -7,32 +7,32 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2813";
-import { isFlagOn } from "../../feature-flags.js?v=2813";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2813";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2813";
-import { showToast } from "../../components/toast.js?v=2813";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2813";
-import { open as openTrim, openAdd } from "../../components/clip-trim-modal.js?v=2813";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2813";
-import { startRewrite } from "../../draft-rewrite.js?v=2813";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2813";
-import { renderPostCard } from "../../components/post-card.js?v=2813";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2813";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2813";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2813";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2813";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2813";
-import { open as openRename } from "../../components/rename-modal.js?v=2813";
-import { writePostsInChat } from "../../clips-chat.js?v=2813";
+import { navigate } from "../../router.js?v=2814";
+import { isFlagOn } from "../../feature-flags.js?v=2814";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2814";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2814";
+import { showToast } from "../../components/toast.js?v=2814";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2814";
+import { open as openTrim, openAdd } from "../../components/clip-trim-modal.js?v=2814";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2814";
+import { startRewrite } from "../../draft-rewrite.js?v=2814";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2814";
+import { renderPostCard } from "../../components/post-card.js?v=2814";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2814";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2814";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2814";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2814";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2814";
+import { open as openRename } from "../../components/rename-modal.js?v=2814";
+import { writePostsInChat } from "../../clips-chat.js?v=2814";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2813";
-import { escapeHtml, plural } from "../../utils.js?v=2813";
+} from "../../posts-store.js?v=2814";
+import { escapeHtml, plural } from "../../utils.js?v=2814";
 import {
   getVideo,
   draftKey,
@@ -50,7 +50,7 @@ import {
   askForClips,
   trimClip,
   updateClip,
-} from "../../videos-store.js?v=2813";
+} from "../../videos-store.js?v=2814";
 import {
   fmtMs,
   lookSelect,
@@ -63,7 +63,7 @@ import {
   presetLabel,
   CTA_OPTIONS,
   confirmRemoveVideo,
-} from "./shared.js?v=2813";
+} from "./shared.js?v=2814";
 
 let target = null;
 let videoId = null;
@@ -104,6 +104,7 @@ export function renderClipsProject(params, el) {
   el.addEventListener("click", onClick);
   el.addEventListener("change", onChange);
   el.addEventListener("submit", onSubmit);
+  el.addEventListener("keydown", onAskKey);
   topbar?.addEventListener("click", onClick);
   disposers.push(
     subscribeVideos(onStore),
@@ -117,6 +118,7 @@ export function renderClipsProject(params, el) {
     el.removeEventListener("click", onClick);
     el.removeEventListener("change", onChange);
     el.removeEventListener("submit", onSubmit);
+    el.removeEventListener("keydown", onAskKey);
     topbar?.removeEventListener("click", onClick);
     disposers.splice(0).forEach((d) => d());
     disposePreviews?.();
@@ -334,6 +336,7 @@ function renderPage(v) {
   return `
     <div class="clips-view__page clips-page">
       ${renderRecap(v)}
+      ${renderAsk()}
       ${groups}
       ${
         noBest
@@ -409,26 +412,31 @@ function renderRecap(v) {
         }
       </div>
       </div>
-      ${v.status === "ready" ? renderAsk() : ""}
     </section>`;
 }
 
-// « La vidéo et sa commande » (A, 2026-11-20, after Opus Clip): the request
-// lives in the video's card, as its last row — it asks about THIS video. No
-// butter band across the page: Archie is the small butter mark before the
-// field; Find clips is stroked, the page's strong move stays Write posts.
+// Asking for other clips: the app's own composer (the new chat's), standing
+// on its own under the video's card — not a row of it (2026-11-20: « on dirait
+// que la partie Archie est intégrée au bloc du clip… ça ne ressemble pas du
+// tout au composer »). The same card, field and orange send; the examples sit
+// in its toolbar. Enter sends, Shift+Enter a new line.
 function renderAsk() {
-  return `<form class="clips-ask" data-clips-ask novalidate>
-      <span class="clips-ask__row">
-        <span class="clips-ask__mark" aria-hidden="true"><i class="ap-icon-archie-official"></i></span>
-        <span class="ap-input-group clips-ask__field"><i class="ap-icon-search" aria-hidden="true"></i>
-          <input type="text" data-clips-ask-input placeholder="Ask for other clips: a topic, a person, a part of the video, a length" aria-label="Ask for other clips" /></span>
-        <button type="submit" class="ap-button stroked grey"><span>Find clips</span></button>
-      </span>
-      <span class="clips-ask__try"><span>For example</span>${ASK_EXAMPLES.map(
-        (x) =>
-          `<button type="button" class="ap-tag grey" data-clips-ask-try="${escapeHtml(x)}">${escapeHtml(x)}</button>`,
-      ).join("")}</span>
+  return `<form class="clips-ask" data-clips-ask novalidate aria-label="Ask for other clips">
+      <div class="session__composer-card">
+        <div class="session__composer-input-row">
+          <textarea class="session__composer-input-field" data-clips-ask-input rows="2" aria-label="Ask for other clips"
+            placeholder="Ask me for other clips: a topic, a person, a part of the video, a length…"></textarea>
+        </div>
+        <div class="session__composer-toolbar">
+          ${ASK_EXAMPLES.map(
+            (x) =>
+              `<button type="button" class="ap-button stroked grey" data-clips-ask-try="${escapeHtml(x)}"><span>${escapeHtml(x)}</span></button>`,
+          ).join("")}
+          <button type="submit" class="ap-button primary orange session__composer-send" aria-label="Find clips" title="Find clips (Enter)">
+            <i class="ap-icon-arrow-up" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
     </form>`;
 }
 
@@ -1118,4 +1126,11 @@ function renderRemoved(v) {
         )
         .join("")}</ul>
     </details>`;
+}
+
+// The ask's composer sends on Enter, like the chat's.
+function onAskKey(e) {
+  if (e.key !== "Enter" || e.shiftKey || e.isComposing || !e.target.matches("[data-clips-ask-input]")) return;
+  e.preventDefault();
+  e.target.closest("form")?.requestSubmit();
 }

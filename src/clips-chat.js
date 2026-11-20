@@ -6,11 +6,11 @@
 // Kept out of screens/clips/ so the session screen can import it statically
 // (the attach must land before the chat's intake starts watching).
 
-import { navigate } from "./router.js?v=2813";
-import { setHandoff, consumeHandoff } from "./handoff.js?v=2813";
-import { newChatPath } from "./utils.js?v=2813";
-import { getVideo } from "./videos-store.js?v=2813";
-import { addReadySource } from "./sources-stream.js?v=2813";
+import { navigate } from "./router.js?v=2814";
+import { setHandoff, consumeHandoff } from "./handoff.js?v=2814";
+import { newChatPath } from "./utils.js?v=2814";
+import { getVideo } from "./videos-store.js?v=2814";
+import { addReadySource } from "./sources-stream.js?v=2814";
 
 const CLIPS_CHAT_HANDOFF = "clipsToChat";
 
