@@ -7,37 +7,37 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2772";
-import { isFlagOn } from "../../feature-flags.js?v=2772";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2772";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2772";
-import { showToast } from "../../components/toast.js?v=2772";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2772";
-import { open as openClipRange } from "../../components/clip-range-modal.js?v=2772";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2772";
-import { startRewrite } from "../../draft-rewrite.js?v=2772";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2772";
-import { renderPostCard } from "../../components/post-card.js?v=2772";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2772";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2772";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2772";
+import { navigate } from "../../router.js?v=2773";
+import { isFlagOn } from "../../feature-flags.js?v=2773";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2773";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2773";
+import { showToast } from "../../components/toast.js?v=2773";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2773";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2773";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2773";
+import { startRewrite } from "../../draft-rewrite.js?v=2773";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2773";
+import { renderPostCard } from "../../components/post-card.js?v=2773";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2773";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2773";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2773";
 import {
   getConnectedProfiles,
   renderProfileTag,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-} from "../../social-profiles.js?v=2772";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2772";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2772";
-import { captionStateFor } from "../../clip-captions.js?v=2772";
+} from "../../social-profiles.js?v=2773";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2773";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2773";
+import { captionStateFor } from "../../clip-captions.js?v=2773";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2772";
-import { escapeHtml, plural } from "../../utils.js?v=2772";
+} from "../../posts-store.js?v=2773";
+import { escapeHtml, plural } from "../../utils.js?v=2773";
 import {
   getVideo,
   draftKey,
@@ -48,7 +48,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2772";
+} from "../../videos-store.js?v=2773";
 import {
   fmtMs,
   formatSelect,
@@ -68,7 +68,7 @@ import {
   bestFor,
   CTA_OPTIONS,
   EDITOR_TOOLS,
-} from "./shared.js?v=2772";
+} from "./shared.js?v=2773";
 
 let target = null;
 let videoId = null;
@@ -128,6 +128,7 @@ export function renderClipsProject(params, el) {
   el.addEventListener("click", onClick);
   el.addEventListener("change", onChange);
   el.addEventListener("input", onInput);
+  el.addEventListener("keydown", onKeyDown);
   topbar?.addEventListener("click", onClick);
   disposers.push(
     subscribeVideos(onStore),
@@ -141,6 +142,7 @@ export function renderClipsProject(params, el) {
     el.removeEventListener("click", onClick);
     el.removeEventListener("change", onChange);
     el.removeEventListener("input", onInput);
+    el.removeEventListener("keydown", onKeyDown);
     topbar?.removeEventListener("click", onClick);
     stopPlayback();
     disposers.splice(0).forEach((d) => d());
@@ -362,7 +364,7 @@ function renderWorkspace(v) {
         <label class="ap-checkbox-container clips-bin__check" data-tooltip="Post this clip">
           <input type="checkbox" data-clips-select="${c.id}" aria-label="Post clip ${i + 1}: ${escapeHtml(c.title)}" ${c.selected ? "checked" : ""} /><i></i>
         </label>
-        <button type="button" class="clips-bin__open" data-clips-watch="${c.id}" aria-label="Watch clip ${i + 1}: ${escapeHtml(c.title)}">
+        <button type="button" class="clips-bin__open" data-clips-watch="${c.id}" aria-label="Watch clip ${i + 1}: ${escapeHtml(c.title)}" ${c.id === ws.focusId ? 'aria-current="true"' : ""}>
           <span class="clips-bin__thumb">${previewMarkup(v, { ...c, ratio: "9:16" }, { captions: false })}</span>
           <span class="clips-bin__text">
             <span class="clips-bin__meta"><span class="clips-bin__num">${i + 1}</span>${fmtMs(c.endMs - c.startMs)}</span>
@@ -383,7 +385,7 @@ function renderWorkspace(v) {
             <i class="ap-icon-plus" aria-hidden="true"></i><span>Add a clip</span>
           </button>
         </header>
-        <p class="clips-bin__hint">Tick the clips to turn into posts. Click one to open it.</p>
+        <p class="clips-bin__hint">Tick the clips to turn into posts. Click one to open it, or move with ↑ ↓.</p>
         <ol class="clips-bin__list">${rows}</ol>
       </aside>
       <section class="clips-clip" aria-label="The clip" data-clips-monitors>
@@ -392,7 +394,7 @@ function renderWorkspace(v) {
           <div class="clips-clip__body" data-clips-program></div>
           <div class="clips-transport">
             <button type="button" class="ap-icon-button stroked" data-clips-ws="play" aria-label="Play the clip" data-tooltip="Play / pause (Space)"><i class="ap-icon-play" aria-hidden="true" data-clips-play-icon></i></button>
-            <input type="range" class="ap-slider clips-transport__scrub" min="0" max="1000" step="1" value="0" data-clips-clip-scrub aria-label="Position in the clip" />
+            <input type="range" class="ap-slider clips-transport__scrub" min="0" max="1000" step="1" value="0" data-clips-clip-scrub aria-label="Position in the clip" aria-valuetext="0:00 of 0:00" />
             <span class="clips-transport__tc"><span data-clips-clip-tc>0:00</span> / <span data-clips-clip-len>0:00</span></span>
           </div>
         </div>
@@ -435,7 +437,7 @@ function paintFocus(v) {
         </details>
       </div>
       <p class="clips-inspector__of">Clip ${i + 1} of ${v.clips.length} · ${escapeHtml(formatLabel(ratio))} · ${fmtMs(c.endMs - c.startMs)}</p>
-      <div class="clips-place" aria-label="${fmtMs(c.startMs)} to ${fmtMs(c.endMs)} in the video">
+      <div class="clips-place" role="img" aria-label="${fmtMs(c.startMs)} to ${fmtMs(c.endMs)} in the video">
         <div class="clips-place__track"><span class="clips-place__clip" style="left:${(c.startMs / v.durationMs) * 100}%;width:max(3px, ${((c.endMs - c.startMs) / v.durationMs) * 100}%)"></span></div>
         <span class="clips-place__label">${fmtMs(c.startMs)} → ${fmtMs(c.endMs)} in the ${fmtMs(v.durationMs)} video</span>
       </div>
@@ -484,9 +486,10 @@ function paintFocus(v) {
       </div>`;
   const len = target.querySelector("[data-clips-clip-len]");
   if (len) len.textContent = fmtMs(c.endMs - c.startMs);
-  target
-    .querySelectorAll("[data-clips-focus]")
-    .forEach((n) => n.classList.toggle("is-focused", n.dataset.clipsFocus === c.id));
+  target.querySelectorAll("[data-clips-focus]").forEach((n) => {
+    n.classList.toggle("is-focused", n.dataset.clipsFocus === c.id);
+    n.querySelector("[data-clips-watch]")?.toggleAttribute("aria-current", n.dataset.clipsFocus === c.id);
+  });
   sizeProgram();
   paintProgram(v);
 }
@@ -576,6 +579,7 @@ function syncClock(v) {
     scrub.max = String(len);
     scrub.value = String(Math.max(0, Math.min(len, t - c.startMs)));
     scrub.style.setProperty("--fill", `${(scrub.value / len) * 100}%`);
+    scrub.setAttribute("aria-valuetext", `${fmtMs(Number(scrub.value))} of ${fmtMs(len)}`);
   }
   paintProgram(v);
 }
@@ -1203,6 +1207,20 @@ function scheduleDrafts(v, posts) {
 }
 
 // The clip's scrubber: a position inside the clip, nowhere else.
+// The clip list walks with ↑ / ↓ (Home / End): the next clip opens and takes
+// the focus, the way a media bin moves in an editor.
+function onKeyDown(e) {
+  const from = e.target.closest?.("[data-clips-watch]");
+  if (!from || !["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
+  const all = [...target.querySelectorAll("[data-clips-watch]")];
+  const i = all.indexOf(from);
+  const to = all[{ ArrowDown: i + 1, ArrowUp: i - 1, Home: 0, End: all.length - 1 }[e.key]];
+  e.preventDefault();
+  if (!to || to === from) return;
+  to.focus();
+  to.click();
+}
+
 function onInput(e) {
   if (!e.target.matches("[data-clips-clip-scrub]")) return;
   const v = getVideo(videoId);

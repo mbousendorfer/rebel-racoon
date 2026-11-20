@@ -23,19 +23,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2772";
-import { isFlagOn } from "../../feature-flags.js?v=2772";
-import { parseHashParams } from "../../url-state.js?v=2772";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2772";
-import { showToast } from "../../components/toast.js?v=2772";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2772";
-import { open as openRename } from "../../components/rename-modal.js?v=2772";
-import { getContextById } from "../../contexts-store.js?v=2772";
-import { escapeHtml } from "../../utils.js?v=2772";
-import * as ce from "../../caption-editor.js?v=2772";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2772";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2772";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2772";
+import { navigate } from "../../router.js?v=2773";
+import { isFlagOn } from "../../feature-flags.js?v=2773";
+import { parseHashParams } from "../../url-state.js?v=2773";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2773";
+import { showToast } from "../../components/toast.js?v=2773";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2773";
+import { open as openRename } from "../../components/rename-modal.js?v=2773";
+import { getContextById } from "../../contexts-store.js?v=2773";
+import { escapeHtml } from "../../utils.js?v=2773";
+import * as ce from "../../caption-editor.js?v=2773";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2773";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2773";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2773";
 import {
   framingContext,
   initialSegments,
@@ -54,7 +54,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2772";
+} from "../../clip-framing.js?v=2773";
 import {
   fmtMs,
   fmtPrecise,
@@ -69,8 +69,8 @@ import {
   dsSelect,
   bindSelectDismiss,
   EDITOR_TOOLS as TOOLS,
-} from "./shared.js?v=2772";
-import { primeDraftSetup } from "./project.js?v=2772";
+} from "./shared.js?v=2773";
+import { primeDraftSetup } from "./project.js?v=2773";
 
 const FRAME_MS = 40;
 const CARD_MS = 2000; // intro / outro card length
@@ -205,7 +205,7 @@ function shellHTML() {
   return `
   <div class="clips-ed" data-clips-ed-root>
     <nav class="clips-ed__rail" role="tablist" aria-label="Editing tools">${rail}</nav>
-    <aside class="clips-ed__panel" data-clips-panel aria-live="polite"></aside>
+    <aside class="clips-ed__panel" data-clips-panel role="tabpanel" aria-label="Tool settings"></aside>
 
     <main class="clips-ed__main">
       <div class="clips-ed__stage" data-clips-stage>
@@ -1438,8 +1438,27 @@ function handleKey(e) {
     applySplit(splitPct + (e.key === "ArrowLeft" ? -2 : 2));
     return;
   }
+  // The rail is a tablist: ↑ / ↓ walk the tools.
+  const tool = e.target.closest?.("[data-clips-tool]");
+  if (tool && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
+    e.preventDefault();
+    const all = [...ed.el.querySelectorAll("[data-clips-tool]")];
+    const next = all[(all.indexOf(tool) + (e.key === "ArrowDown" ? 1 : all.length - 1)) % all.length];
+    next.click();
+    ed.el.querySelector(`[data-clips-tool="${next.dataset.clipsTool}"]`)?.focus();
+    return;
+  }
   if (e.target.closest?.("input, textarea, select, [contenteditable=true]")) return;
   if (document.body.classList.contains("has-modal")) return;
+  // Space and the arrows belong to a control reached with the keyboard (a
+  // button presses, a radio moves). After a mouse click the focus ring isn't
+  // shown (:focus-visible), and Space plays, as in every editor.
+  if (
+    (e.code === "Space" || e.key.startsWith("Arrow")) &&
+    e.target.matches?.(":focus-visible") &&
+    e.target.closest("button, a[href], summary, [role=option], [role=menuitem], [tabindex]")
+  )
+    return;
   if (e.code === "Space") {
     e.preventDefault();
     togglePlay();

@@ -2,10 +2,19 @@
 // editor share: time formatting, the video-wide options (format, subtitles),
 // and the live reframed previews.
 
-import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2772";
-import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2772";
-import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2772";
-import { escapeHtml } from "../../utils.js?v=2772";
+import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2773";
+import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2773";
+import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2773";
+import { escapeHtml } from "../../utils.js?v=2773";
+
+// A footage well shows a loading sheen until its first frame is in (clips.css,
+// `:not(.is-ready)`): every well is marked here, once, from the media events
+// of whatever <video> it holds, so no screen has to wire it.
+const WELLS =
+  ".clips-video__thumb, .clips-showcase__source, .clips-analyzing__player, .clips-preview, .clips-clip, .clips-ed__stage";
+for (const type of ["loadeddata", "seeked"]) {
+  document.addEventListener(type, (e) => e.target.closest?.(WELLS)?.classList.add("is-ready"), true);
+}
 
 // m:ss for a duration or a playhead, from ms.
 export function fmtMs(ms) {
@@ -83,7 +92,7 @@ export function dsSelect({ label, valueHtml, options, attr, current, ariaLabel, 
   const items = options
     .map((o) => {
       const on = o.id === current;
-      return `<div class="ap-select-option${on ? " selected" : ""}" role="option" aria-selected="${on}" ${attr}="${escapeHtml(o.id)}">
+      return `<div class="ap-select-option${on ? " selected" : ""}" role="option" aria-selected="${on}" tabindex="0" ${attr}="${escapeHtml(o.id)}">
         ${o.lead || ""}<span class="ap-select-option-text">${escapeHtml(o.label)}</span>${o.meta || ""}
         ${on ? `<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}
       </div>`;
@@ -107,12 +116,33 @@ export function bindSelectDismiss(root) {
   const close = (except) =>
     root.querySelectorAll("details.ap-select[open]").forEach((d) => d !== except && d.removeAttribute("open"));
   const onDown = (e) => close(e.target.closest?.("details.ap-select"));
-  const onKey = (e) => e.key === "Escape" && close(null);
+  // The options are focusable (tabindex 0): Enter or Space picks one, the
+  // arrows walk the list, Escape closes and hands focus back to the trigger.
+  const onKey = (e) => {
+    const opt = root.contains(e.target) && e.target.closest?.(".ap-select-option");
+    if (opt && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      e.stopPropagation();
+      const sel = opt.closest("details.ap-select");
+      opt.click();
+      sel?.removeAttribute("open");
+      sel?.querySelector("summary")?.focus();
+    } else if (opt && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
+      e.preventDefault();
+      e.stopPropagation();
+      const all = [...opt.parentElement.querySelectorAll(".ap-select-option")];
+      all[(all.indexOf(opt) + (e.key === "ArrowDown" ? 1 : all.length - 1)) % all.length].focus();
+    } else if (e.key === "Escape") {
+      const open = e.target.closest?.("details.ap-select[open]");
+      close(null);
+      open?.querySelector("summary")?.focus();
+    }
+  };
   document.addEventListener("pointerdown", onDown);
-  document.addEventListener("keydown", onKey);
+  document.addEventListener("keydown", onKey, true);
   return () => {
     document.removeEventListener("pointerdown", onDown);
-    document.removeEventListener("keydown", onKey);
+    document.removeEventListener("keydown", onKey, true);
   };
 }
 

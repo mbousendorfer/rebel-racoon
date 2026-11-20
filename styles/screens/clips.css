@@ -2931,3 +2931,41 @@ body.clips-editing .app-content {
 .clips-drafts .posts__row-check:empty {
   display: none;
 }
+
+/* Footage loading: until a well's first frame is in (shared.js marks it
+   .is-ready), it shows a sheen on the DS's darkest surface, never a black
+   rectangle, and holds back what sits on the footage (subtitle lines). */
+.clips-video__thumb:not(.is-ready),
+.clips-showcase__source:not(.is-ready),
+.clips-analyzing__player:not(.is-ready),
+.clips-preview:not(.is-ready),
+.clips-clip:not(.is-ready) .clips-monitor__screen,
+.clips-ed__stage:not(.is-ready) .clips-ed__source,
+.clips-ed__stage:not(.is-ready) .clips-ed__output {
+  background: linear-gradient(
+      100deg,
+      var(--ref-color-grey-150) 30%,
+      var(--ref-color-grey-100) 50%,
+      var(--ref-color-grey-150) 70%
+    )
+    var(--ref-color-grey-150);
+  background-size: 200% 100%;
+  animation: app-shimmer 1.4s linear infinite;
+}
+
+.clips-preview:not(.is-ready) .clips-preview__caption,
+.clips-clip:not(.is-ready) .clips-preview__caption {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clips-video__thumb,
+  .clips-showcase__source,
+  .clips-analyzing__player,
+  .clips-preview,
+  .clips-monitor__screen,
+  .clips-ed__source,
+  .clips-ed__output {
+    animation: none;
+  }
+}

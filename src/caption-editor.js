@@ -28,7 +28,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock, plural } from "./utils.js?v=2772";
+import { escapeHtml, formatClock, plural } from "./utils.js?v=2773";
 import {
   PRESETS,
   presetById,
@@ -43,7 +43,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=2772";
+} from "./clip-captions.js?v=2773";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -402,7 +402,7 @@ function pick(key, current, opts) {
     .map(
       (
         o,
-      ) => `<div class="ap-select-option${o.v === current ? " selected" : ""}" role="option" aria-selected="${o.v === current}"
+      ) => `<div class="ap-select-option${o.v === current ? " selected" : ""}" role="option" aria-selected="${o.v === current}" tabindex="0"
         data-ce-pick="${key}" data-ce-pick-val="${escapeHtml(String(o.v))}">
         <span class="ap-select-option-text">${escapeHtml(o.label)}</span>
         ${o.v === current ? `<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}

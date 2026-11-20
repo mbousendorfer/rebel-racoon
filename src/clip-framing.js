@@ -242,9 +242,11 @@ export function segmentAt(segments, t) {
 // The CDN serves no CORS headers, so the canvas is tainted: it is only ever
 // drawn to, never read back.
 export function drawOutput(c2d, video, ctx, res, ow, oh) {
+  // No frame yet: leave the canvas clear, so the well's loading sheen shows
+  // through instead of a black rectangle.
+  if (!video || video.readyState < 2) return c2d.clearRect(0, 0, ow, oh);
   c2d.fillStyle = "#000";
   c2d.fillRect(0, 0, ow, oh);
-  if (!video || video.readyState < 2) return;
   const { W, H } = ctx;
   const src = (r) => [r.x * W, r.y * H, r.w * W, r.h * H];
   if (res.kind === "one") c2d.drawImage(video, ...src(res.rects[0]), 0, 0, ow, oh);
