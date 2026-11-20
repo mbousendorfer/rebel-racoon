@@ -7,32 +7,32 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2814";
-import { isFlagOn } from "../../feature-flags.js?v=2814";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2814";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2814";
-import { showToast } from "../../components/toast.js?v=2814";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2814";
-import { open as openTrim, openAdd } from "../../components/clip-trim-modal.js?v=2814";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2814";
-import { startRewrite } from "../../draft-rewrite.js?v=2814";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2814";
-import { renderPostCard } from "../../components/post-card.js?v=2814";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2814";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2814";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2814";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2814";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2814";
-import { open as openRename } from "../../components/rename-modal.js?v=2814";
-import { writePostsInChat } from "../../clips-chat.js?v=2814";
+import { navigate } from "../../router.js?v=2816";
+import { isFlagOn } from "../../feature-flags.js?v=2816";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2816";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2816";
+import { showToast } from "../../components/toast.js?v=2816";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2816";
+import { open as openTrim, openAdd } from "../../components/clip-trim-modal.js?v=2816";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2816";
+import { startRewrite } from "../../draft-rewrite.js?v=2816";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2816";
+import { renderPostCard } from "../../components/post-card.js?v=2816";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2816";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2816";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2816";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2816";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2816";
+import { open as openRename } from "../../components/rename-modal.js?v=2816";
+import { writePostsInChat } from "../../clips-chat.js?v=2816";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2814";
-import { escapeHtml, plural } from "../../utils.js?v=2814";
+} from "../../posts-store.js?v=2816";
+import { escapeHtml, plural } from "../../utils.js?v=2816";
 import {
   getVideo,
   draftKey,
@@ -50,7 +50,7 @@ import {
   askForClips,
   trimClip,
   updateClip,
-} from "../../videos-store.js?v=2814";
+} from "../../videos-store.js?v=2816";
 import {
   fmtMs,
   lookSelect,
@@ -63,7 +63,7 @@ import {
   presetLabel,
   CTA_OPTIONS,
   confirmRemoveVideo,
-} from "./shared.js?v=2814";
+} from "./shared.js?v=2816";
 
 let target = null;
 let videoId = null;
@@ -336,7 +336,6 @@ function renderPage(v) {
   return `
     <div class="clips-view__page clips-page">
       ${renderRecap(v)}
-      ${renderAsk()}
       ${groups}
       ${
         noBest
@@ -351,6 +350,7 @@ function renderPage(v) {
       </section>`
       }
       ${renderRemoved(v)}
+      ${renderAsk()}
     </div>`;
 }
 
@@ -416,14 +416,18 @@ function renderRecap(v) {
 }
 
 // Asking for other clips: the app's own composer (the new chat's), standing
-// on its own under the video's card — not a row of it (2026-11-20: « on dirait
-// que la partie Archie est intégrée au bloc du clip… ça ne ressemble pas du
-// tout au composer »). The same card, field and orange send; the examples sit
-// in its toolbar. Enter sends, Shift+Enter a new line.
+// not a row of the video's card (2026-11-20: « on dirait que la partie Archie
+// est intégrée au bloc du clip… ça ne ressemble pas du tout au composer »).
+// It floats at the foot of the screen, narrower than the page, Archie's mark
+// at the start of its field so it reads as the way to talk about the clips
+// (« flottante en bas de l'écran… pas toute la largeur… une icône Archie »).
+// The same card, field and orange send; the examples in its toolbar. Enter
+// sends, Shift+Enter a new line.
 function renderAsk() {
   return `<form class="clips-ask" data-clips-ask novalidate aria-label="Ask for other clips">
       <div class="session__composer-card">
         <div class="session__composer-input-row">
+          <span class="clips-ask__mark" aria-hidden="true"><i class="ap-icon-archie-official"></i></span>
           <textarea class="session__composer-input-field" data-clips-ask-input rows="2" aria-label="Ask for other clips"
             placeholder="Ask me for other clips: a topic, a person, a part of the video, a length…"></textarea>
         </div>
@@ -1071,6 +1075,10 @@ function onSubmit(e) {
   if (!input.value.trim()) return input.focus();
   askForClips(videoId, input.value);
   input.value = "";
+  // The composer floats at the foot; the answer opens at the top of the clips.
+  requestAnimationFrame(() =>
+    target?.querySelector(".clips-group-sec")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+  );
 }
 
 function onChange(e) {

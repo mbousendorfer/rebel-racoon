@@ -9,13 +9,13 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2814";
-import { isFlagOn } from "../../feature-flags.js?v=2814";
-import { renderTopbar } from "../../components/topbar.js?v=2814";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2814";
-import { isDemo } from "../../demo-mode.js?v=2814";
-import { getPosts } from "../../posts-store.js?v=2814";
-import { escapeHtml, plural } from "../../utils.js?v=2814";
+import { navigate } from "../../router.js?v=2816";
+import { isFlagOn } from "../../feature-flags.js?v=2816";
+import { renderTopbar } from "../../components/topbar.js?v=2816";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2816";
+import { isDemo } from "../../demo-mode.js?v=2816";
+import { getPosts } from "../../posts-store.js?v=2816";
+import { escapeHtml, plural } from "../../utils.js?v=2816";
 import {
   getVideos,
   exampleVideo,
@@ -25,7 +25,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2814";
+} from "../../videos-store.js?v=2816";
 import {
   fmtMs,
   previewMarkup,
@@ -33,7 +33,7 @@ import {
   confirmRemoveVideo,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2814";
+} from "./shared.js?v=2816";
 
 let target = null;
 let disposeShowcase = null;

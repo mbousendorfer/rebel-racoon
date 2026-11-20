@@ -2619,9 +2619,33 @@ body.clips-editing .app-content {
   background: var(--ref-color-electric-blue-100);
 }
 
-/* The ask: the chat's composer card as is; only its width is the page's. */
+/* The ask: the chat's composer card as is, floating at the foot of the
+   screen (sticky at the end of the page), narrower than the page. */
 .clips-ask {
-  display: block;
+  position: sticky;
+  bottom: var(--ref-spacing-md);
+  z-index: 5;
+  align-self: center;
+  width: min(720px, 100%);
+  margin-top: var(--ref-spacing-md);
+}
+
+.clips-ask .session__composer-card {
+  box-shadow: var(--app-shadow-popover-lg);
+}
+
+/* Archie, at the start of the field: the butter disc and its olive mark. */
+.clips-ask__mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: 2px 0 0 var(--ref-spacing-xxs);
+  border-radius: 50%;
+  background: var(--app-butter);
+  color: var(--app-butter-accent);
+  font-size: 16px;
 }
 
 /* The request a group answers, named on the butter of Archie. */
