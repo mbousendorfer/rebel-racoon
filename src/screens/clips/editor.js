@@ -5,37 +5,38 @@
 // template) and the crop-editor playground (per-segment reframing). They are
 // one surface here, Opus / Descript-style:
 //
-//   tool rail + the tool's panel (left) · stage (right) · one timeline for
-//   every tool (bottom).
+//   tool rail + the tool's panel (left) · the clip as it will come out, large
+//   (right) · a quick bar under it (format, subtitles, safe area) · prod's
+//   transport (−5 s, play, +5 s, the scrubber).
 //
-// Every control sits where it acts: what you pick (the tool and its settings)
-// is on the left; what shapes the image (format, safe area) is on the Output
-// monitor; what acts on time (play, split / merge / snap) is on the
-// timeline's toolbar. Tools: Reframe · Transcript (words + cleanup) ·
-// Subtitles · Text · Brand.
+// « L'aperçu d'abord » (picked 2026-11-20, after ElevenLabs Studio and VEED):
+// the result is the largest image on screen. The Source monitor and the
+// framing parts' strip show in Reframe only; prod has no multi-track timeline.
+// Tools, prod's sections: Format · Subtitles · Transcript (words + cleanup) ·
+// Reframe · Text · Teaser, plus Brand.
 // The editor owns the clock and the source <video>; caption-editor.js renders
 // the subtitles, the transcript and the cleanup on that clock (mount opts.clock),
 // and clip-framing.js is the crop editor's engine.
 //
-// A clip's range is fixed once it exists (prod can't retrim): it is set by the
-// analysis or by « Add a clip ». Nothing is written to the clip until Save;
+// The editor never retrims (the clips page's Trim does). Nothing is written to
+// the clip until Save;
 // Undo / Redo cover the framing, the text overlays, the format and the brand settings.
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2791";
-import { isFlagOn } from "../../feature-flags.js?v=2791";
-import { parseHashParams } from "../../url-state.js?v=2791";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2791";
-import { showToast } from "../../components/toast.js?v=2791";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2791";
-import { open as openRename } from "../../components/rename-modal.js?v=2791";
-import { getContextById } from "../../contexts-store.js?v=2791";
-import { escapeHtml } from "../../utils.js?v=2791";
-import * as ce from "../../caption-editor.js?v=2791";
-import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2791";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2791";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2791";
+import { navigate } from "../../router.js?v=2792";
+import { isFlagOn } from "../../feature-flags.js?v=2792";
+import { parseHashParams } from "../../url-state.js?v=2792";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2792";
+import { showToast } from "../../components/toast.js?v=2792";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2792";
+import { open as openRename } from "../../components/rename-modal.js?v=2792";
+import { getContextById } from "../../contexts-store.js?v=2792";
+import { escapeHtml } from "../../utils.js?v=2792";
+import * as ce from "../../caption-editor.js?v=2792";
+import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2792";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2792";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2792";
 import {
   framingContext,
   initialSegments,
@@ -54,7 +55,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2791";
+} from "../../clip-framing.js?v=2792";
 import {
   fmtMs,
   fmtPrecise,
@@ -69,8 +70,8 @@ import {
   dsSelect,
   bindSelectDismiss,
   EDITOR_TOOLS as TOOLS,
-} from "./shared.js?v=2791";
-import { primeDraftSetup } from "./project.js?v=2791";
+} from "./shared.js?v=2792";
+import { primeDraftSetup } from "./project.js?v=2792";
 
 const FRAME_MS = 40;
 const CARD_MS = 2000; // intro / outro card length
@@ -92,7 +93,7 @@ function toolFromUrl() {
   const t = parseHashParams().get("tool");
   if (t === "cleanup") return "transcript";
   if (t === "trim") return "reframe";
-  return TOOLS.some((x) => x.id === t) ? t : "reframe";
+  return TOOLS.some((x) => x.id === t) ? t : "subtitles";
 }
 
 export function renderClipEditor(params, el) {
@@ -126,6 +127,8 @@ export function renderClipEditor(params, el) {
       segments: JSON.parse(JSON.stringify(clip.segments || initialSegments(ctx, clip.startMs, clip.endMs))),
       texts: JSON.parse(JSON.stringify(clip.texts || [])),
       brand: { ...look.brand, ...(clip.brand || {}) },
+      // Prod's « Open with a teaser »: a moment of the clip, in clip time.
+      teaser: clip.teaser ? { ...clip.teaser } : suggestTeaser(clip),
     },
     caption: null, // latest caption-editor patch
     capOwn: !!clip.captionCustom, // the clip has its own subtitle style (else the video's)
@@ -163,6 +166,14 @@ function teardown() {
   ed.video_el?.pause();
   ed.disposers.splice(0).forEach((d) => d());
   ed = null;
+}
+
+// ponytail: prod's model picks the teaser (teaserStartTime); the proto offers
+// 3 s at 40 % of the clip.
+function suggestTeaser(c) {
+  const len = c.endMs - c.startMs;
+  const startMs = Math.round(len * 0.4);
+  return { on: false, startMs, endMs: Math.min(len, startMs + 3000) };
 }
 
 const ratio = () => ratioOf(ed.w.ratioId);
@@ -258,10 +269,15 @@ function shellHTML() {
         </section>
       </div>
 
+      <div class="clips-ed__quick" data-clips-quick role="group" aria-label="This clip's look"></div>
+
       <div class="clips-ed__transport" role="toolbar" aria-label="Playback">
-        <button type="button" class="ap-icon-button transparent" data-clips-ed="play" aria-label="Play" data-tooltip="Play / pause (Space)">
+        <button type="button" class="ap-button ghost grey" data-clips-ed="back5" aria-label="Back 5 seconds"><span>−5 s</span></button>
+        <button type="button" class="ap-icon-button stroked" data-clips-ed="play" aria-label="Play" data-tooltip="Play / pause (Space)">
           <i class="ap-icon-play" aria-hidden="true" data-clips-play-icon></i>
         </button>
+        <button type="button" class="ap-button ghost grey" data-clips-ed="fwd5" aria-label="Forward 5 seconds"><span>+5 s</span></button>
+        <input type="range" class="ap-slider clips-ed__scrub" min="0" max="1000" step="1" value="0" data-clips-scrubber aria-label="Position in the clip" />
         <span class="clips-ed__time"><span data-clips-cur>0:00.0</span> / <span data-clips-len>0:00.0</span></span>
         <span class="clips-ed__at-sep" aria-hidden="true"></span>
         <div class="clips-ed__at" role="group" aria-label="At the playhead">
@@ -313,6 +329,7 @@ function mountCaptions() {
       const src = ed.el.querySelector("[data-clips-cap-source]");
       if (src) src.innerHTML = capSourceHTML();
       paintCleanMarks();
+      paintFormatPicker();
       setDirty();
     },
   });
@@ -348,8 +365,14 @@ function togglePlay() {
   if (!ed) return;
   if (ed.playing) return stop();
   ed.playing = true;
-  // From the very start with an intro card: the card first, then the clip.
-  if (ed.w.brand.intro && ed.t <= ed.w.startMs + 60) {
+  const tz = ed.w.teaser;
+  // The teaser first (from the very start, or « Play the teaser »), then the clip.
+  if (tz.on && (ed.teaserOnly || ed.t <= ed.w.startMs + 60)) {
+    ed.phase = "teaser";
+    ed.t = ed.w.startMs + tz.startMs;
+    ed.video_el.currentTime = ed.t / 1000;
+    ed.video_el.play().catch(() => {});
+  } else if (ed.w.brand.intro && ed.t <= ed.w.startMs + 60) {
     ed.phase = "intro";
     ed.phaseEnd = performance.now() + CARD_MS;
   } else {
@@ -365,7 +388,8 @@ function stop() {
   ed.playing = false;
   ed.video_el.pause();
   cancelAnimationFrame(ed.raf);
-  if (ed.phase !== "clip") seek(ed.phase === "intro" ? ed.w.startMs : ed.w.startMs);
+  ed.teaserOnly = false;
+  if (ed.phase !== "clip") seek(ed.w.startMs);
   setPlayIcon();
   syncTime();
   paintFrame();
@@ -373,7 +397,19 @@ function stop() {
 
 function tick(now) {
   if (!ed || !ed.playing) return;
-  if (ed.phase === "intro" && now >= ed.phaseEnd) {
+  if (ed.phase === "teaser") {
+    ed.t = ed.video_el.currentTime * 1000;
+    if (ed.t >= ed.w.startMs + ed.w.teaser.endMs) {
+      if (ed.teaserOnly) return stop();
+      ed.t = ed.w.startMs;
+      ed.video_el.currentTime = ed.t / 1000;
+      if (ed.w.brand.intro) {
+        ed.video_el.pause();
+        ed.phase = "intro";
+        ed.phaseEnd = now + CARD_MS;
+      } else ed.phase = "clip";
+    }
+  } else if (ed.phase === "intro" && now >= ed.phaseEnd) {
     ed.phase = "clip";
     ed.video_el.play().catch(() => {});
   } else if (ed.phase === "clip") {
@@ -409,7 +445,10 @@ function syncTime() {
   ed.el.querySelector("[data-clips-ed-root]").dataset.phase = ed.phase;
   const cur = ed.el.querySelector("[data-clips-cur]");
   if (cur)
-    cur.textContent = ed.phase === "clip" ? fmtPrecise(ed.t - ed.w.startMs) : ed.phase === "intro" ? "Intro" : "Outro";
+    cur.textContent =
+      ed.phase === "clip"
+        ? fmtPrecise(ed.t - ed.w.startMs)
+        : { intro: "Intro", outro: "Outro", teaser: "Teaser" }[ed.phase];
   const len = ed.el.querySelector("[data-clips-len]");
   if (len) len.textContent = fmtPrecise(clipLen());
   const stc = ed.el.querySelector("[data-clips-src-tc]");
@@ -417,6 +456,13 @@ function syncTime() {
   ce.setTime(relSec(), ed.playing);
   const ph = ed.el.querySelector("[data-clips-playhead]");
   if (ph) ph.style.left = pctIn(ed.t);
+  const sc = ed.el.querySelector("[data-clips-scrubber]");
+  if (sc) {
+    sc.max = String(clipLen());
+    sc.value = String(Math.max(0, ed.t - ed.w.startMs));
+    sc.style.setProperty("--fill", `${(sc.value / clipLen()) * 100}%`);
+    sc.setAttribute("aria-valuetext", `${fmtPrecise(ed.t - ed.w.startMs)} of ${fmtPrecise(clipLen())}`);
+  }
   const seg = segmentAt(ed.w.segments, ed.t);
   if (seg.id !== ed.panelSeg) {
     if (ed.tool === "reframe") paintPanel();
@@ -466,12 +512,14 @@ function sizeCanvases() {
   paintFormatPicker();
 }
 
-// The output's shape lives on the Output monitor, like a canvas ratio in an
-// editing app — a setting of the frame, not a tool. The video's format by
-// default; a clip can take its own.
+// The quick bar under the preview (VEED's): the clip's format, its subtitles
+// (a chip that opens the Subtitles section) and the safe-area guide.
 function paintFormatPicker() {
-  const host = ed.el.querySelector("[data-clips-output-label]");
+  const host = ed.el.querySelector("[data-clips-quick]");
   if (!host) return;
+  const preset = ce.getState()?.presetId || "none";
+  const label = ed.el.querySelector("[data-clips-output-label]");
+  if (label) label.textContent = formatLabel(ed.w.ratioId);
   const videoRatio = ed.video.settings.ratio;
   const own = ed.w.ratioId !== videoRatio;
   host.innerHTML =
@@ -495,7 +543,8 @@ function paintFormatPicker() {
         { id: "video", label: `Same as the video · ${formatLabel(videoRatio)}` },
         ...RATIO_IDS.map((id) => ({ id, label: formatLabel(id), meta: bestFor(id) })),
       ],
-    });
+    }) +
+    `<button type="button" class="ap-button stroked grey clips-ed__quick-subs" data-clips-tool="subtitles"><i class="ap-icon-closed-captions" aria-hidden="true"></i><span>${escapeHtml(presetLabel(preset))}</span></button>`;
 }
 
 function currentRes() {
@@ -507,7 +556,7 @@ function paintFrame() {
   const oc = ed.el.querySelector("[data-clips-out]");
   if (!oc.width) sizeCanvases();
   const c2d = oc.getContext("2d");
-  if (ed.phase !== "clip") paintCard(c2d, oc.width, oc.height);
+  if (ed.phase === "intro" || ed.phase === "outro") paintCard(c2d, oc.width, oc.height);
   else drawOutput(c2d, ed.video_el, ed.ctx, currentRes(), oc.width, oc.height);
   if (ed.tool === "reframe") paintOverlay();
   paintLogo();
@@ -821,6 +870,8 @@ function paintPanel() {
     subtitles: subtitlesPanel,
     text: textPanel,
     brand: brandPanel,
+    format: formatPanel,
+    teaser: teaserPanel,
   }[ed.tool]();
   host.innerHTML = `${introHtml()}<h2 class="clips-ed__panel-title">${tool.label}</h2>${body}`;
   // The caption engine renders into the panel's hooks (presets, transcript,
@@ -851,6 +902,42 @@ function introHtml() {
         </div>
       </div>
       <button type="button" class="ap-infobox-close" aria-label="Got it" data-clips-intro-close><i class="ap-icon-close" aria-hidden="true"></i></button>
+    </div>`;
+}
+
+// Prod's Ratio section: the five formats as cards, each with what it's best
+// for; « Same as the video » first. A new format re-frames from the auto (a
+// confirm first when the framing holds edits, as in the select).
+function formatPanel() {
+  const videoRatio = ed.video.settings.ratio;
+  const own = ed.w.ratioId !== videoRatio || !!ed.clip.ratio;
+  const card = (id, label, meta, on) => `
+    <button type="button" class="clips-ed__fmt${on ? " is-on" : ""}" data-clips-format="${id}" aria-pressed="${on}">
+      <span class="clips-ed__fmt-shape" style="aspect-ratio:${(id === "video" ? videoRatio : id).replace(":", "/")}" aria-hidden="true"></span>
+      <span class="clips-ed__fmt-text"><span class="clips-ed__fmt-name">${escapeHtml(label)}</span>${meta}</span>
+    </button>`;
+  return `<p class="clips-ed__panel-lead">A new format starts over from my framing. Every clip without its own uses the video's.</p>
+    <div class="clips-ed__fmts">
+      ${card("video", `Same as the video · ${formatLabel(videoRatio)}`, "", !own)}
+      ${RATIO_IDS.map((id) => card(id, formatLabel(id), bestFor(id), own && ed.w.ratioId === id)).join("")}
+    </div>`;
+}
+
+// Prod's Teaser section: a short moment of the clip plays first, then the
+// clip from the start. Its range is in clip time; set at the playhead.
+function teaserPanel() {
+  const tz = ed.w.teaser;
+  const off = tz.on ? "" : "disabled";
+  return `<p class="clips-ed__panel-lead">A short moment of the clip plays first, then the clip from the start.</p>
+    <label class="ap-toggle-container"><input type="checkbox" data-clips-teaser ${tz.on ? "checked" : ""} /><i></i><span>Open with a teaser</span></label>
+    <div class="clips-ed__teaser${tz.on ? "" : " is-off"}">
+      <p class="clips-ed__teaser-range">From <strong>${fmtPrecise(tz.startMs)}</strong> → <strong>${fmtPrecise(tz.endMs)}</strong> of the clip · ${((tz.endMs - tz.startMs) / 1000).toFixed(1)} s</p>
+      <div class="clips-ed__teaser-acts">
+        <button type="button" class="ap-button stroked grey" data-clips-ed="teaser-start" ${off}><span>Start at the playhead</span></button>
+        <button type="button" class="ap-button stroked grey" data-clips-ed="teaser-end" ${off}><span>End at the playhead</span></button>
+      </div>
+      <button type="button" class="ap-button ghost grey" data-clips-ed="teaser-play" ${off}><i class="ap-icon-play" aria-hidden="true"></i><span>Play the teaser</span></button>
+      <p class="clips-ed__panel-lead">Video length: ${fmtPrecise(clipLen() + (tz.on ? tz.endMs - tz.startMs : 0))}</p>
     </div>`;
 }
 
@@ -1115,6 +1202,7 @@ function save() {
     endMs: ed.w.endMs,
     segments: ed.w.segments,
     texts: ed.w.texts,
+    teaser: ed.w.teaser,
     ratio: ed.w.ratioId === ed.video.settings.ratio && !c.ratio ? null : ed.w.ratioId,
     brand: JSON.stringify(ed.w.brand) === JSON.stringify(ed.look.brand) ? null : ed.w.brand,
   };
@@ -1227,6 +1315,26 @@ function handleClick(e) {
       primeDraftSetup(ed.video.id);
       return navigate(`/clips/${ed.video.id}?tab=drafts`);
     case "play":
+      return togglePlay();
+    case "back5":
+    case "fwd5":
+      if (ed.playing) stop();
+      return seek(ed.t + (act === "fwd5" ? 5000 : -5000));
+    case "teaser-start":
+    case "teaser-end":
+      return edit(
+        () => {
+          const rel = Math.max(0, ed.t - ed.w.startMs);
+          const tz = ed.w.teaser;
+          if (act === "teaser-start") Object.assign(tz, { startMs: rel, endMs: Math.max(rel + 1000, tz.endMs) });
+          else tz.endMs = Math.max(tz.startMs + 1000, rel);
+          tz.endMs = Math.min(clipLen(), tz.endMs);
+        },
+        { timeline: false },
+      );
+    case "teaser-play":
+      if (ed.playing) stop();
+      ed.teaserOnly = true;
       return togglePlay();
     case "split":
       return doSplit();
@@ -1398,6 +1506,11 @@ function doSplit() {
 function handleInput(e) {
   if (!ed) return;
   const t = e.target;
+  if (t.matches("[data-clips-scrubber]")) {
+    if (ed.playing) stop();
+    seek(ed.w.startMs + Number(t.value));
+    return;
+  }
   const seg = segmentAt(ed.w.segments, ed.t);
   if (t.matches("[data-clips-logo-size]")) {
     ed.w.brand.logoSize = Number(t.value);
@@ -1435,6 +1548,7 @@ function handleChange(e) {
     ed.snap = t.checked;
     return undefined;
   }
+  if (t.matches("[data-clips-teaser]")) return edit(() => (ed.w.teaser.on = t.checked), { timeline: false });
   if (t.matches("[data-clips-brand]")) {
     const key = t.dataset.clipsBrand;
     edit(() => (ed.w.brand[key] = t.checked));

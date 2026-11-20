@@ -6,16 +6,16 @@
 // the side-effecting actions wired by the sidebar's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2791";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2791";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2791";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2791";
-import { getRole, setRole, ORG } from "./org.js?v=2791";
-import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2791";
-import { resetIntro } from "./components/voice-intro-modal.js?v=2791";
-import { getContexts, updateContext } from "./contexts-store.js?v=2791";
-import { showToast } from "./components/toast.js?v=2791";
-import { failNextAnalysis } from "./videos-store.js?v=2791";
+import { html, raw, escapeHtml } from "./utils.js?v=2792";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2792";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2792";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2792";
+import { getRole, setRole, ORG } from "./org.js?v=2792";
+import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2792";
+import { resetIntro } from "./components/voice-intro-modal.js?v=2792";
+import { getContexts, updateContext } from "./contexts-store.js?v=2792";
+import { showToast } from "./components/toast.js?v=2792";
+import { failNextAnalysis } from "./videos-store.js?v=2792";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.

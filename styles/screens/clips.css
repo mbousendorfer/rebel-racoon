@@ -1195,11 +1195,12 @@ body.clips-editing .app-content {
   color: var(--ref-color-grey-100);
 }
 
+/* The panel's title is a level above its sub-labels (h4, 14/700): h2. */
 .clips-ed__panel-title {
   margin: 0;
-  font-size: var(--sys-text-style-h4-size);
-  line-height: var(--sys-text-style-h4-line-height);
-  font-weight: var(--sys-text-style-h4-weight);
+  font-size: var(--sys-text-style-h2-size);
+  line-height: var(--sys-text-style-h2-line-height);
+  font-weight: var(--sys-text-style-h2-weight);
   color: var(--ref-color-grey-100);
 }
 
@@ -2250,7 +2251,8 @@ body.clips-editing .app-content {
 }
 
 /* An intro / outro card is shown alone, without the subtitles. */
-.clips-ed:not([data-phase="clip"]) .cap-ed-box {
+.clips-ed[data-phase="intro"] .cap-ed-box,
+.clips-ed[data-phase="outro"] .cap-ed-box {
   visibility: hidden;
 }
 
@@ -2268,13 +2270,6 @@ body.clips-editing .app-content {
   height: 16px;
   margin-right: var(--ref-spacing-xxs);
   vertical-align: -3px;
-}
-
-/* A typed time that can't be used: said under its edge, in the track. */
-.clips-tl__readout.is-error {
-  top: 22px;
-  border-color: var(--ref-color-red-100);
-  color: var(--ref-color-red-100);
 }
 
 .clips-more {
@@ -2983,4 +2978,129 @@ body.clips-editing .app-content {
 .clips-library__none {
   margin: 0;
   color: var(--ref-color-grey-80);
+}
+
+/* ── Editor « l'aperçu d'abord » (2026-11-20) ─────────────────────────
+   The clip as it will come out is the largest image: outside Reframe the
+   Output is alone, without its bar; a quick bar under it (format, subtitles,
+   safe area), then prod's transport. The timeline shows in Reframe only, cut
+   down to the framing parts. */
+.clips-ed:not([data-tool="reframe"]) .clips-ed__monitor-bar,
+.clips-ed:not([data-tool="reframe"]) .clips-ed__timeline,
+.clips-ed:not([data-tool="reframe"]) .clips-ed__at-sep,
+.clips-ed:not([data-tool="reframe"]) .clips-ed__at {
+  display: none;
+}
+
+.clips-ed:not([data-tool="reframe"]) .clips-ed__stage {
+  border-bottom: 0;
+  padding-top: var(--ref-spacing-sm);
+}
+
+.clips-ed[data-tool="reframe"] .clips-tl__labels,
+.clips-ed[data-tool="reframe"] .clips-tl__tracks {
+  grid-template-rows: 20px 40px;
+}
+
+.clips-ed[data-tool="reframe"] .clips-tl__labels > :nth-child(2),
+.clips-ed[data-tool="reframe"] .clips-tl__labels > :nth-child(3),
+.clips-ed[data-tool="reframe"] .clips-tl__labels > :nth-child(5),
+.clips-ed[data-tool="reframe"] .clips-tl__subs,
+.clips-ed[data-tool="reframe"] .clips-tl__trim,
+.clips-ed[data-tool="reframe"] .clips-tl__texts {
+  display: none;
+}
+
+.clips-ed__quick {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md) 0;
+}
+
+.clips-ed__quick .ap-select-dropdown {
+  top: auto;
+  bottom: calc(100% + var(--ref-spacing-xxxs));
+}
+
+.clips-ed__transport {
+  justify-content: center;
+}
+
+.clips-ed__scrub {
+  flex: 0 1 420px;
+}
+
+.clips-ed__fmts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-ed__fmt {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface);
+  color: var(--ref-color-grey-100);
+  text-align: left;
+  cursor: pointer;
+}
+
+.clips-ed__fmt:hover,
+.clips-ed__fmt.is-on {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.clips-ed__fmt.is-on {
+  background: var(--ref-color-electric-blue-05);
+}
+
+.clips-ed__fmt-shape {
+  justify-self: center;
+  height: 40px;
+  max-width: 56px;
+  border: 2px solid var(--ref-color-grey-80);
+  border-radius: var(--app-radius-sm);
+}
+
+.clips-ed__fmt-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-ed__fmt-name {
+  font-size: var(--sys-text-style-body-size);
+  font-weight: 700;
+  color: var(--ref-color-grey-100);
+}
+
+.clips-ed__teaser {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-ed__teaser.is-off {
+  opacity: 0.5;
+}
+
+.clips-ed__teaser-range {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.clips-ed__teaser-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
 }

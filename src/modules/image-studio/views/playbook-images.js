@@ -15,15 +15,15 @@
 // Styles and reference images save as they change, like the styles always did:
 // no Edit. The Generate block's look and formats wait for its Save changes.
 
-import { html, raw, toString } from "../lib/html.js?v=2791";
-import { navigate } from "../../../router.js?v=2791";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=2791";
-import { toast } from "../ui/toast.js?v=2791";
-import { renderEmpty } from "../ui/empty.js?v=2791";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=2791";
-import { shapesFor } from "../config/formats.js?v=2791";
-import { networkById } from "../config/networks.js?v=2791";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=2791";
+import { html, raw, toString } from "../lib/html.js?v=2792";
+import { navigate } from "../../../router.js?v=2792";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=2792";
+import { toast } from "../ui/toast.js?v=2792";
+import { renderEmpty } from "../ui/empty.js?v=2792";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=2792";
+import { shapesFor } from "../config/formats.js?v=2792";
+import { networkById } from "../config/networks.js?v=2792";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=2792";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -32,8 +32,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=2791";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=2791";
+} from "../state/playbook-brand.js?v=2792";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=2792";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");

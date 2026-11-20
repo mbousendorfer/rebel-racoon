@@ -17,10 +17,10 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=2791";
-import { parseHashParams } from "../url-state.js?v=2791";
-import { escapeHtml as esc, newChatPath, prettyUrl } from "../utils.js?v=2791";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2791";
+import { navigate, getPath } from "../router.js?v=2792";
+import { parseHashParams } from "../url-state.js?v=2792";
+import { escapeHtml as esc, newChatPath, prettyUrl } from "../utils.js?v=2792";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2792";
 import {
   getContextById,
   getContexts,
@@ -28,15 +28,15 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=2791";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2791";
-import { mount, snapshotEditable, learnNetworkVoiceInline } from "../playbook-view.js?v=2791";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2791";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2791";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2791";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2791";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2791";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=2791";
+} from "../contexts-store.js?v=2792";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2792";
+import { mount, snapshotEditable, learnNetworkVoiceInline } from "../playbook-view.js?v=2792";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2792";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2792";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2792";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2792";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2792";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=2792";
 import {
   canView,
   canEdit,
@@ -48,11 +48,11 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=2791";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2791";
-import { showToast } from "../components/toast.js?v=2791";
-import { learnNetworkVoice } from "../voice-parts.js?v=2791";
-import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2791";
+} from "../playbook-access.js?v=2792";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2792";
+import { showToast } from "../components/toast.js?v=2792";
+import { learnNetworkVoice } from "../voice-parts.js?v=2792";
+import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2792";
 
 const AUTOFILL_MS = 1500;
 

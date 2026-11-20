@@ -14,8 +14,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2791";
-import { navigate } from "../router.js?v=2791";
+import { html, raw, escapeHtml } from "../utils.js?v=2792";
+import { navigate } from "../router.js?v=2792";
 import {
   getDraft,
   patchDraft,
@@ -24,12 +24,12 @@ import {
   writeAltManually,
   analyzeAltInterview,
   setAltVoiceSource,
-} from "../context-builder.js?v=2791";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2791";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2791";
-import { connectors as connectorMocks } from "../mocks.js?v=2791";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2791";
-import { networkIcon } from "../social-profiles.js?v=2791";
+} from "../context-builder.js?v=2792";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2792";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2792";
+import { connectors as connectorMocks } from "../mocks.js?v=2792";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2792";
+import { networkIcon } from "../social-profiles.js?v=2792";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {

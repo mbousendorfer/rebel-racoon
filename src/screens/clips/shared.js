@@ -2,12 +2,12 @@
 // editor share: time formatting, the video-wide options (format, subtitles),
 // and the live reframed previews.
 
-import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2791";
-import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2791";
-import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2791";
-import { escapeHtml } from "../../utils.js?v=2791";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2791";
-import { getVideo, removeVideo } from "../../videos-store.js?v=2791";
+import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2792";
+import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2792";
+import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2792";
+import { escapeHtml } from "../../utils.js?v=2792";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2792";
+import { getVideo, removeVideo } from "../../videos-store.js?v=2792";
 
 // A footage well shows a loading sheen until its first frame is in (clips.css,
 // `:not(.is-ready)`): every well is marked here, once, from the media events
@@ -56,11 +56,15 @@ export const SUBTITLE_IDS = PROD_PRESET_IDS;
 
 // The editor's rail: one tool each, in its order. The project page lists them
 // too, so a clip says what can be changed on it before the editor opens.
+// Prod's sections (clip-editor-modal: Ratio, Subtitles, Reframe, Text,
+// Teaser), the transcript set apart, plus Brand (the proto's).
 export const EDITOR_TOOLS = [
-  { id: "reframe", label: "Reframe", icon: "ap-icon-cropper", hint: "Who's in the frame, part by part" },
-  { id: "transcript", label: "Transcript", icon: "ap-icon-file--text", hint: "Fix a word, hide fillers and pauses" },
+  { id: "format", label: "Format", icon: "ap-icon-view-cards", hint: "Its shape: vertical, square, landscape…" },
   { id: "subtitles", label: "Subtitles", icon: "ap-icon-closed-captions", hint: "Their style, font and effects" },
+  { id: "transcript", label: "Transcript", icon: "ap-icon-file--text", hint: "Fix a word, hide fillers and pauses" },
+  { id: "reframe", label: "Reframe", icon: "ap-icon-cropper", hint: "Who's in the frame, part by part" },
   { id: "text", label: "Text", icon: "ap-icon-alt-text", hint: "Titles and text on the video" },
+  { id: "teaser", label: "Teaser", icon: "ap-icon-play", hint: "A short moment that plays first" },
   { id: "brand", label: "Brand", icon: "ap-icon-target", hint: "Your logo, an intro and an outro" },
 ];
 export const presetLabel = (id) => (id === "none" ? "No subtitles" : presetById(id)?.label || id);
