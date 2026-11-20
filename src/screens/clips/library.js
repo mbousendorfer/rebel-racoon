@@ -2,14 +2,13 @@
 // videos, and the one way in, adding a video. The flow starts with the video;
 // the posts come last (screens/clips/project.js).
 
-import { navigate } from "../../router.js?v=2767";
-import { isFlagOn } from "../../feature-flags.js?v=2767";
-import { renderTopbar } from "../../components/topbar.js?v=2767";
-import { showToast } from "../../components/toast.js?v=2767";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2767";
-import { isDemo } from "../../demo-mode.js?v=2767";
-import { getPosts } from "../../posts-store.js?v=2767";
-import { escapeHtml } from "../../utils.js?v=2767";
+import { navigate } from "../../router.js?v=2770";
+import { isFlagOn } from "../../feature-flags.js?v=2770";
+import { renderTopbar } from "../../components/topbar.js?v=2770";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2770";
+import { isDemo } from "../../demo-mode.js?v=2770";
+import { getPosts } from "../../posts-store.js?v=2770";
+import { escapeHtml } from "../../utils.js?v=2770";
 import {
   getVideos,
   exampleVideo,
@@ -18,9 +17,9 @@ import {
   lengthProblem,
   standInForUrl,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2767";
-import { fmtMs, previewMarkup, mountPreviews } from "./shared.js?v=2767";
-import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2767";
+} from "../../videos-store.js?v=2770";
+import { fmtMs, previewMarkup, mountPreviews } from "./shared.js?v=2770";
+import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2770";
 
 let target = null;
 let disposeShowcase = null;
@@ -38,6 +37,7 @@ export function renderClipsLibrary(_params, el) {
   el.addEventListener("click", onClick);
   el.addEventListener("submit", onSubmit);
   el.addEventListener("change", onChange);
+  el.addEventListener("input", clearAddError);
   el.addEventListener("dragover", onDragOver);
   el.addEventListener("dragleave", onDragLeave);
   el.addEventListener("drop", onDrop);
@@ -48,6 +48,7 @@ export function renderClipsLibrary(_params, el) {
     el.removeEventListener("click", onClick);
     el.removeEventListener("submit", onSubmit);
     el.removeEventListener("change", onChange);
+    el.removeEventListener("input", clearAddError);
     el.removeEventListener("dragover", onDragOver);
     el.removeEventListener("dragleave", onDragLeave);
     el.removeEventListener("drop", onDrop);
@@ -109,10 +110,10 @@ function paint() {
               }.
             </p>`
             }
-            <form class="clips-hero__form" data-clips-url-form>
+            <form class="clips-hero__form" data-clips-url-form novalidate>
               <div class="ap-input-group clips-hero__url">
                 <i class="ap-icon-link" aria-hidden="true"></i>
-                <input type="text" data-clips-url placeholder="Paste a YouTube or Google Drive link" aria-label="Video link" ${off} />
+                <input type="url" data-clips-url placeholder="Paste a YouTube or Google Drive link" aria-label="Video link" ${off} />
               </div>
               <button type="submit" class="ap-button primary orange" ${off}>
                 <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Get clips</span>
@@ -125,6 +126,7 @@ function paint() {
               <span class="clips-hero__rules">or drop a file here · from 30 seconds to 2 hours</span>
               <input type="file" accept="video/*" data-clips-file hidden />
             </div>
+            <p class="ap-form-message error clips-hero__error" id="clipsAddError" role="alert" hidden></p>
           </div>
           ${showcase ? renderShowcase(showcase) : ""}
           <div class="clips-hero__drop" aria-hidden="true"><i class="ap-icon-upload"></i><span>Drop your video to start</span></div>
@@ -289,11 +291,37 @@ function onHover(e) {
 
 // ── Adding a video ───────────────────────────────────────────────────
 
+// What went wrong when adding says so under the add controls, not in a toast
+// across the screen; a bad link also marks the field (DS invalid state).
+function addError(msg, onField = false) {
+  const el = target?.querySelector("#clipsAddError");
+  if (!el) return;
+  el.textContent = msg;
+  el.hidden = false;
+  if (!onField) return;
+  const field = target.querySelector("[data-clips-url]");
+  field.setAttribute("aria-invalid", "true");
+  field.setAttribute("aria-describedby", "clipsAddError");
+  field.closest(".ap-input-group")?.classList.add("invalid");
+  field.focus();
+}
+
+function clearAddError() {
+  const el = target?.querySelector("#clipsAddError");
+  if (!el || el.hidden) return;
+  el.hidden = true;
+  const field = target.querySelector("[data-clips-url]");
+  field.removeAttribute("aria-invalid");
+  field.removeAttribute("aria-describedby");
+  field.closest(".ap-input-group")?.classList.remove("invalid");
+}
+
 function onClick(e) {
   if (e.target.closest("[data-clips-browse]")) target.querySelector("[data-clips-file]")?.click();
 }
 
 function onChange(e) {
+  clearAddError();
   if (e.target.matches("[data-clips-file]") && e.target.files?.[0]) addFile(e.target.files[0]);
 }
 
@@ -301,7 +329,9 @@ function onSubmit(e) {
   if (!e.target.closest("[data-clips-url-form]")) return;
   e.preventDefault();
   const url = target.querySelector("[data-clips-url]")?.value.trim();
-  if (!url) return showToast("Paste a video link first.", { variant: "error" });
+  if (!url) return addError("Paste a link to your video first.", true);
+  if (!/^(https?:\/\/)?[\w-]+(\.[\w-]+)+(\/\S*)?$/i.test(url))
+    return addError("This isn't a link I can open. Paste the video's address, like youtube.com/watch?v=…", true);
   // The prototype can't stream YouTube: a beta video stands in for the footage.
   const s = standInForUrl();
   const name = url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
@@ -326,7 +356,7 @@ function onDrop(e) {
   e.preventDefault();
   zone.classList.remove("is-dragover");
   const file = [...(e.dataTransfer?.files || [])].find((f) => f.type.startsWith("video/"));
-  if (!file) return showToast("Drop a video file: MP4, MOV or WebM.", { variant: "error" });
+  if (!file) return addError("That's not a video. Drop an MP4, a MOV or a WebM.");
   addFile(file);
 }
 
@@ -341,7 +371,7 @@ function addFile(file) {
     const problem = lengthProblem(durationMs);
     if (problem) {
       URL.revokeObjectURL(url);
-      showToast(problem, { variant: "error" });
+      addError(problem);
       return;
     }
     const v = addVideo({
@@ -354,6 +384,6 @@ function addFile(file) {
     });
     navigate(`/clips/${v.id}`);
   };
-  probe.onerror = () => showToast("I can't read this video. Try an MP4 or a MOV.", { variant: "error" });
+  probe.onerror = () => addError("I can't read this video. Try an MP4 or a MOV.");
   probe.src = url;
 }

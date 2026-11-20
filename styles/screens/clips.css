@@ -2750,17 +2750,25 @@ body.clips-editing .app-content {
   font-weight: var(--sys-text-style-h3-weight);
 }
 
+/* Title + line on the first row; the two ways in (link, upload) side by side on
+   the second, so they read as alternatives. */
 .clips-hero--compact .clips-hero__sub {
-  flex: 1 1 50%;
+  flex: 1 0 calc(100% - 200px);
+  max-width: none;
   margin: 0;
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
 }
 
 .clips-hero--compact .clips-hero__form {
-  flex: 2 1 420px;
+  flex: 1 1 420px;
   flex-wrap: nowrap;
   min-width: 0;
+}
+
+.clips-hero__error {
+  flex-basis: 100%;
+  margin: 0;
 }
 
 .clips-hero--compact .clips-hero__url {

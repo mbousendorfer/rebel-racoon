@@ -7,37 +7,37 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2767";
-import { isFlagOn } from "../../feature-flags.js?v=2767";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2767";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2767";
-import { showToast } from "../../components/toast.js?v=2767";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2767";
-import { open as openClipRange } from "../../components/clip-range-modal.js?v=2767";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2767";
-import { startRewrite } from "../../draft-rewrite.js?v=2767";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2767";
-import { renderPostCard } from "../../components/post-card.js?v=2767";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2767";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2767";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2767";
+import { navigate } from "../../router.js?v=2770";
+import { isFlagOn } from "../../feature-flags.js?v=2770";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2770";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2770";
+import { showToast } from "../../components/toast.js?v=2770";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2770";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2770";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2770";
+import { startRewrite } from "../../draft-rewrite.js?v=2770";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2770";
+import { renderPostCard } from "../../components/post-card.js?v=2770";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2770";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2770";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2770";
 import {
   getConnectedProfiles,
   renderProfileTag,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-} from "../../social-profiles.js?v=2767";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2767";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2767";
-import { captionStateFor } from "../../clip-captions.js?v=2767";
+} from "../../social-profiles.js?v=2770";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2770";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2770";
+import { captionStateFor } from "../../clip-captions.js?v=2770";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2767";
-import { escapeHtml, plural } from "../../utils.js?v=2767";
+} from "../../posts-store.js?v=2770";
+import { escapeHtml, plural } from "../../utils.js?v=2770";
 import {
   getVideo,
   draftKey,
@@ -48,7 +48,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2767";
+} from "../../videos-store.js?v=2770";
 import {
   fmtMs,
   formatSelect,
@@ -68,7 +68,7 @@ import {
   bestFor,
   CTA_OPTIONS,
   EDITOR_TOOLS,
-} from "./shared.js?v=2767";
+} from "./shared.js?v=2770";
 
 let target = null;
 let videoId = null;
@@ -359,8 +359,8 @@ function renderWorkspace(v) {
         c,
         i,
       ) => `<li class="clips-bin__item${c.selected ? " is-selected" : ""}${c.id === ws.focusId ? " is-focused" : ""}" data-clips-focus="${c.id}" style="--i:${i}">
-        <label class="ap-checkbox-container clips-bin__check" aria-label="Post clip ${i + 1}" data-tooltip="Post this clip">
-          <input type="checkbox" data-clips-select="${c.id}" ${c.selected ? "checked" : ""} /><i></i>
+        <label class="ap-checkbox-container clips-bin__check" data-tooltip="Post this clip">
+          <input type="checkbox" data-clips-select="${c.id}" aria-label="Post clip ${i + 1}: ${escapeHtml(c.title)}" ${c.selected ? "checked" : ""} /><i></i>
         </label>
         <button type="button" class="clips-bin__open" data-clips-watch="${c.id}" aria-label="Watch clip ${i + 1}: ${escapeHtml(c.title)}">
           <span class="clips-bin__thumb">${previewMarkup(v, { ...c, ratio: "9:16" }, { captions: false })}</span>
@@ -376,8 +376,8 @@ function renderWorkspace(v) {
     <div class="clips-ws">
       <aside class="clips-bin" aria-label="Clips">
         <header class="clips-bin__head">
-          <label class="ap-checkbox-container" aria-label="Post every clip">
-            <input type="checkbox" data-clips-select-all ${all ? "checked" : ""} /><i></i><span>Clips</span>
+          <label class="ap-checkbox-container">
+            <input type="checkbox" data-clips-select-all aria-label="Post every clip" ${all ? "checked" : ""} /><i></i><span>Clips</span>
           </label>
           <button type="button" class="ap-button ghost blue" data-clips-add-clip data-tooltip="A new clip: you pick where it starts and ends">
             <i class="ap-icon-plus" aria-hidden="true"></i><span>Add a clip</span>
@@ -458,7 +458,7 @@ function paintFocus(v) {
         ).join("")}
       </nav>
       <div class="clips-inspector__controls">
-        <span class="clips-inspector__label">How it looks</span>
+        <span class="clips-inspector__label">This clip's look</span>
         ${dsSelect({
           label: "Format",
           valueHtml: escapeHtml(c.ratio ? formatLabel(c.ratio) : `Video's · ${formatLabel(v.settings.ratio)}`),
