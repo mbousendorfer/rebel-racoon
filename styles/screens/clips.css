@@ -55,67 +55,109 @@
   gap: var(--ref-spacing-xl);
 }
 
-.clips-hero {
+/* « La boîte d'abord » (B1, 2026-11-20): one box adds a video — a file
+   first, a YouTube link second — and starts the analysis, automatic by
+   default; « Looking for something specific? » opens the request. */
+.clips-box {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-  align-items: center;
-  gap: var(--ref-spacing-xl);
-  padding: var(--ref-spacing-xl);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-xl);
-  background: var(--ref-color-white);
-  overflow: hidden;
-}
-
-.clips-hero__copy {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--ref-spacing-sm);
-  min-width: 0;
+  padding: var(--ref-spacing-lg);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-xl);
+  background: var(--ref-color-white);
 }
 
-.clips-hero__title {
+.clips-box__title {
   margin: 0;
-  font-size: var(--sys-text-style-h1-size);
-  line-height: var(--sys-text-style-h1-line-height);
-  font-weight: var(--sys-text-style-h1-weight);
+  font-size: var(--sys-text-style-h2-size);
+  line-height: var(--sys-text-style-h2-line-height);
+  font-weight: var(--sys-text-style-h2-weight);
   color: var(--ref-color-grey-100);
 }
 
-.clips-hero__sub {
-  margin: 0 0 var(--ref-spacing-xs);
-  max-width: 46ch;
-  font-size: var(--sys-text-style-subtitle-size);
-  line-height: var(--sys-text-style-subtitle-line-height);
+/* The two ways in on one line: the file, then « or » the link. */
+.clips-box__zone {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  width: 100%;
+  padding: var(--ref-spacing-md);
+  border: 1px dashed var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+  background: var(--ref-color-grey-05);
+}
+
+.clips-box__grow {
+  flex: 1 1 0;
+}
+
+.clips-box__rules,
+.clips-box__or,
+.clips-box__hint {
+  font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
 }
 
-.clips-hero__form {
-  display: flex;
-  flex-wrap: wrap; /* the button goes under the link rather than over the showcase */
+.clips-box__file {
+  display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xs);
-  width: 100%;
-  max-width: 520px;
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
 }
 
-.clips-hero__url {
-  flex: 1 1 240px;
-  min-width: 0;
+.clips-box__link {
+  flex: 0 1 360px;
+  min-width: 220px;
 }
 
-.clips-hero__upload {
+.clips-box__rights {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-box__specific {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  max-width: 640px;
+}
+
+.clips-box__label {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-box__examples {
+  display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-box__examples .ap-tag {
+  cursor: pointer;
+}
+
+.clips-box__go {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--ref-spacing-sm);
 }
 
-.clips-hero__rules {
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
+.clips-box__ask {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
 }
 
 /* Dragging a file over the hero says where it goes. */
@@ -135,7 +177,7 @@
   pointer-events: none;
 }
 
-.clips-hero.is-dragover .clips-hero__drop {
+.clips-box.is-dragover .clips-hero__drop {
   display: flex;
 }
 
@@ -310,21 +352,7 @@
   }
 }
 
-/* Too narrow for copy and showcase side by side: the showcase goes under the
-   copy, full width. Narrower still, the source and its arrow go — the three
-   clips alone say what the space makes. */
-@container (max-width: 1040px) {
-  .clips-hero {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--ref-spacing-lg);
-  }
-}
-
 @container (max-width: 520px) {
-  .clips-hero {
-    padding: var(--ref-spacing-md);
-  }
-
   .clips-showcase__in,
   .clips-showcase__arrow {
     display: none;
@@ -2234,52 +2262,9 @@ body.clips-editing .app-content {
   margin-left: auto;
 }
 
-/* Returning: the hero becomes the library's add bar, one line under its title. */
-.clips-hero--compact {
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0;
-  padding: var(--ref-spacing-md) var(--ref-spacing-lg);
-  border-radius: var(--app-radius-md);
-}
-
-.clips-hero--compact .clips-hero__copy {
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-sm) var(--ref-spacing-md);
-}
-
-.clips-hero--compact .clips-hero__title {
-  flex: none;
-  font-size: var(--sys-text-style-h3-size);
-  line-height: var(--sys-text-style-h3-line-height);
-  font-weight: var(--sys-text-style-h3-weight);
-}
-
-/* Title + line on the first row; the two ways in (link, upload) side by side on
-   the second, so they read as alternatives. */
-.clips-hero--compact .clips-hero__sub {
-  flex: 1 0 calc(100% - 200px);
-  max-width: none;
-  margin: 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-}
-
-.clips-hero--compact .clips-hero__form {
-  flex: 1 1 420px;
-  flex-wrap: nowrap;
-  min-width: 0;
-}
-
 .clips-hero__error {
   flex-basis: 100%;
   margin: 0;
-}
-
-.clips-hero--compact .clips-hero__url {
-  flex: 1 1 auto;
-  min-width: 0;
 }
 
 /* « Pick one or more accounts » in the bar scrolls here: clear the page's top. */
@@ -2744,12 +2729,54 @@ body.clips-editing .app-content {
   pointer-events: none;
 }
 
-/* The library's search and sort, past a row of cards: at the end of its head. */
+/* The collection's filters, search, sort and view, under its title. */
 .clips-library__tools {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--ref-spacing-xs);
-  margin-left: auto;
+}
+
+.clips-library__grow {
+  flex: 1 1 0;
+}
+
+.clips-library__vid {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+}
+
+.clips-library__thumb {
+  flex: none;
+  width: 72px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--app-radius-sm);
+  overflow: hidden;
+  background: var(--ref-color-grey-150);
+}
+
+.clips-library__thumb video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.clips-library__num {
+  font-variant-numeric: tabular-nums;
+}
+
+.clips-library__table tr[hidden] {
+  display: none;
+}
+
+.clips-library__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
 }
 
 .clips-library__search {

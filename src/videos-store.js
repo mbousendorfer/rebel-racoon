@@ -28,11 +28,11 @@
 //             preset), transcript, segments (null = auto framing), texts[],
 //             brand (null = the Playbook's clip look) }
 
-import { newId } from "./utils.js?v=2793";
-import { seedVideos } from "./mocks.js?v=2793";
-import { isNewUser } from "./user-mode.js?v=2793";
-import { createNotifier } from "./store-utils.js?v=2793";
-import { getDefaultContext, getContextById } from "./contexts-store.js?v=2793";
+import { newId } from "./utils.js?v=2794";
+import { seedVideos } from "./mocks.js?v=2794";
+import { isNewUser } from "./user-mode.js?v=2794";
+import { createNotifier } from "./store-utils.js?v=2794";
+import { getDefaultContext, getContextById } from "./contexts-store.js?v=2794";
 
 const MIN_VIDEO_MS = 30 * 1000;
 const MAX_VIDEO_MS = 2 * 60 * 60 * 1000;
@@ -144,6 +144,7 @@ export function addVideo({
   analysis = null,
   fallback = null,
   posterMs = null,
+  focus = "",
 }) {
   const video = {
     id: newId("vid"),
@@ -164,6 +165,8 @@ export function addVideo({
     fallback,
     fromSource: null,
     clips: [],
+    // Asked for at launch (prod's focus): the analysis answers it alone.
+    requests: focus ? [{ id: newId("ask"), text: focus, at: new Date().toISOString(), status: "running" }] : [],
   };
   seeded().push(video);
   runAnalysis(video);
@@ -210,7 +213,7 @@ function runAnalysis(video) {
     }
     if (p >= 1) {
       clearInterval(timer);
-      if (!video.clips.length) video.clips = momentsFor(video);
+      if (!video.clips.length) video.clips = launchRequest(video) ? focusedMoments(video) : momentsFor(video);
       video.status = "ready";
       video.stage = null;
     }
@@ -353,6 +356,27 @@ export function askForClips(videoId, text) {
     req.status = open.length ? "done" : "none";
     notify();
   }, ASK_MS);
+}
+
+// A request written before the analysis (the library's « Looking for something
+// specific? »): prod runs the same job with a focus, and only its clips come back.
+const launchRequest = (v) => (v.requests || []).find((r) => r.status === "running");
+
+// ponytail: the proto can't search the transcript; it takes three of the
+// evenly spaced moments and names them after the request.
+function focusedMoments(v) {
+  const req = launchRequest(v);
+  const titles = Object.entries(ASK_TITLES).find(([k]) => req.text.toLowerCase().includes(k))?.[1];
+  const clips = momentsFor(v)
+    .slice(0, 3)
+    .map((c, i) => ({
+      ...c,
+      title: titles?.[i] || `${req.text[0].toUpperCase()}${req.text.slice(1)}, moment ${i + 1}`,
+      why: `You asked for « ${req.text} ».`,
+      requestId: req.id,
+    }));
+  req.status = "done";
+  return clips;
 }
 
 // Trim: a suggested clip's new start and end, like prod's (modal.videoTrim).

@@ -7,31 +7,31 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2793";
-import { isFlagOn } from "../../feature-flags.js?v=2793";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2793";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2793";
-import { showToast } from "../../components/toast.js?v=2793";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2793";
-import { open as openClipRange } from "../../components/clip-range-modal.js?v=2793";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2793";
-import { startRewrite } from "../../draft-rewrite.js?v=2793";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2793";
-import { renderPostCard } from "../../components/post-card.js?v=2793";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2793";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2793";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2793";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2793";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2793";
-import { open as openRename } from "../../components/rename-modal.js?v=2793";
+import { navigate } from "../../router.js?v=2794";
+import { isFlagOn } from "../../feature-flags.js?v=2794";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2794";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2794";
+import { showToast } from "../../components/toast.js?v=2794";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2794";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2794";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2794";
+import { startRewrite } from "../../draft-rewrite.js?v=2794";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2794";
+import { renderPostCard } from "../../components/post-card.js?v=2794";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2794";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2794";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2794";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2794";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2794";
+import { open as openRename } from "../../components/rename-modal.js?v=2794";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2793";
-import { escapeHtml, plural } from "../../utils.js?v=2793";
+} from "../../posts-store.js?v=2794";
+import { escapeHtml, plural } from "../../utils.js?v=2794";
 import {
   getVideo,
   draftKey,
@@ -47,7 +47,7 @@ import {
   askForClips,
   trimClip,
   updateClip,
-} from "../../videos-store.js?v=2793";
+} from "../../videos-store.js?v=2794";
 import {
   fmtMs,
   lookSelect,
@@ -60,7 +60,7 @@ import {
   presetLabel,
   CTA_OPTIONS,
   confirmRemoveVideo,
-} from "./shared.js?v=2793";
+} from "./shared.js?v=2794";
 
 let target = null;
 let videoId = null;
@@ -292,12 +292,18 @@ function renderRunStatus(v) {
 }
 
 // The clips to come: as many waiting fiches as prod will cut.
+// A request written at launch comes back with three clips (videos-store's
+// focusedMoments); the automatic run with prod's count.
+const launchAsk = (v) => (v.requests || []).find((r) => r.status === "running");
+const comingCount = (v) => (launchAsk(v) ? 3 : clipCountFor(v.durationMs));
+
 function renderComing(v) {
-  const n = clipCountFor(v.durationMs);
+  const ask = launchAsk(v);
+  const n = comingCount(v);
   return `<section class="clips-group-sec" aria-label="The clips to come">
       <header class="clips-group-sec__head">
-        <h2 class="clips-group-sec__title">The best moments</h2>
-        <span class="clips-group-sec__meta">${plural(n, "clip")}, as soon as I've found them</span>
+        <h2 class="clips-group-sec__title">${ask ? "From your request" : "The best moments"}</h2>
+        <span class="clips-group-sec__meta">${ask ? `« ${escapeHtml(ask.text)} » · ` : ""}${ask ? "the clips" : plural(n, "clip")}, as soon as I've found them</span>
       </header>
       <div class="clips-cards" aria-hidden="true">${Array.from(
         { length: n },
@@ -324,7 +330,14 @@ const ASK_EXAMPLES = ["In the first 10 minutes", "Under 30 seconds", "Where some
 function renderPage(v) {
   const requests = v.requests || [];
   const best = v.clips.filter((c) => !c.requestId);
-  const groups = requests.map((r) => renderRequest(v, r)).join("");
+  // Asked for at launch, the analysis cut no « best moments »: the section
+  // goes, its tools move to the first request.
+  const noBest = !best.length && requests.length > 0;
+  const tools = `<span class="clips-group-sec__tools">
+            <button type="button" class="ap-button ghost grey" data-clips-select-all>Keep all</button>
+            <button type="button" class="ap-button ghost grey" data-clips-add-clip><i class="ap-icon-plus" aria-hidden="true"></i><span>Add a clip</span></button>
+          </span>`;
+  const groups = requests.map((r, i) => renderRequest(v, r, noBest && i === requests.length - 1 ? tools : "")).join("");
   return `
     <div class="clips-view__page clips-page">
       ${renderRecap(v)}
@@ -340,17 +353,18 @@ function renderPage(v) {
         ).join("")}</span>
       </form>
       ${groups}
-      <section class="clips-group-sec" aria-labelledby="clips-best-title">
+      ${
+        noBest
+          ? ""
+          : `<section class="clips-group-sec" aria-labelledby="clips-best-title">
         <header class="clips-group-sec__head">
           <h2 class="clips-group-sec__title" id="clips-best-title">The best moments</h2>
           <span class="clips-group-sec__meta">${plural(best.length, "clip")} · in video order</span>
-          <span class="clips-group-sec__tools">
-            <button type="button" class="ap-button ghost grey" data-clips-select-all>Keep all</button>
-            <button type="button" class="ap-button ghost grey" data-clips-add-clip><i class="ap-icon-plus" aria-hidden="true"></i><span>Add a clip</span></button>
-          </span>
+          ${tools}
         </header>
         ${best.length ? `<div class="clips-cards">${best.map((c) => renderCard(v, c)).join("")}</div>` : `<p class="clips-group-sec__none">No clips left. Add one, or ask for other clips.</p>`}
-      </section>
+      </section>`
+      }
     </div>`;
 }
 
@@ -386,7 +400,7 @@ function renderRecap(v) {
           <span><strong>${fmtMs(totalMs(v.clips))}</strong> of clips</span>
           <span><strong data-clips-kept-n>${k.length}</strong> kept</span>`
               : v.status === "analyzing"
-                ? `<span><strong>${clipCountFor(v.durationMs)}</strong> clips coming</span>`
+                ? `<span><strong>${comingCount(v)}</strong> clips coming</span>`
                 : `<span><strong>0</strong> clips</span>`
           }
           <span class="clips-recap__added">Added ${added(v.addedAt)}</span>
@@ -404,11 +418,12 @@ function renderRecap(v) {
     </section>`;
 }
 
-function renderRequest(v, r) {
+function renderRequest(v, r, tools = "") {
   const clips = v.clips.filter((c) => c.requestId === r.id);
   const head = `<header class="clips-group-sec__head">
       <h2 class="clips-group-sec__title">From your request</h2>
       <span class="clips-group-sec__meta">« ${escapeHtml(r.text)} »${r.status === "done" ? ` · ${plural(clips.length, "clip")}` : ""}</span>
+      ${tools}
     </header>`;
   const body =
     r.status === "running"
@@ -856,7 +871,10 @@ function onClick(e) {
   if (t.closest("[data-clips-select-all]"))
     return setSelection(
       v.id,
-      [...kept(v), ...v.clips.filter((c) => !c.requestId)].map((c) => c.id),
+      // The best moments, or, when the launch asked for something, those clips.
+      [...kept(v), ...(v.clips.some((c) => !c.requestId) ? v.clips.filter((c) => !c.requestId) : v.clips)].map(
+        (c) => c.id,
+      ),
     );
   const tryAsk = t.closest("[data-clips-ask-try]");
   if (tryAsk) {

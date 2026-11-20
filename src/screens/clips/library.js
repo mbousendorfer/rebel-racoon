@@ -1,14 +1,21 @@
 // /clips — the Clips space's library (flag clipsSpace): the active Playbook's
-// videos, and the one way in, adding a video. The flow starts with the video;
-// the posts come last (screens/clips/project.js).
+// videos, and the way in, adding one. The flow starts with the video; the
+// clips page comes next (screens/clips/project.js).
+//
+// « La boîte d'abord, automatique par défaut » (B1, picked 2026-11-20): one box
+// stages a video — a file first, then a YouTube link (prod's order; no Drive)
+// — and Find the best moments starts the analysis. Asking for something
+// specific (prod's focus) is a link that opens a field, never a step. Under
+// it the collection, filtered by state, in a grid or a list (Vimeo,
+// ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2793";
-import { isFlagOn } from "../../feature-flags.js?v=2793";
-import { renderTopbar } from "../../components/topbar.js?v=2793";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2793";
-import { isDemo } from "../../demo-mode.js?v=2793";
-import { getPosts } from "../../posts-store.js?v=2793";
-import { escapeHtml } from "../../utils.js?v=2793";
+import { navigate } from "../../router.js?v=2794";
+import { isFlagOn } from "../../feature-flags.js?v=2794";
+import { renderTopbar } from "../../components/topbar.js?v=2794";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2794";
+import { isDemo } from "../../demo-mode.js?v=2794";
+import { getPosts } from "../../posts-store.js?v=2794";
+import { escapeHtml, plural } from "../../utils.js?v=2794";
 import {
   getVideos,
   exampleVideo,
@@ -18,7 +25,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2793";
+} from "../../videos-store.js?v=2794";
 import {
   fmtMs,
   previewMarkup,
@@ -26,8 +33,7 @@ import {
   confirmRemoveVideo,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2793";
-import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2793";
+} from "./shared.js?v=2794";
 
 let target = null;
 let disposeShowcase = null;
@@ -75,17 +81,14 @@ function sig(videos) {
   return videos.map((v) => `${v.id}:${v.status}:${v.clips.length}`).join("|");
 }
 
-// The analysis ticks every 300 ms: patch the progress in place rather than
-// repaint the grid, which would reload every thumbnail's <video>.
+// The analysis ticks every 300 ms: patch its step in place rather than
+// repaint the collection, which would reload every thumbnail's <video>.
 function onStore() {
   if (!target) return;
   const videos = getVideos(scope()?.id);
   if (sig(videos) !== signature) return paint();
   for (const v of videos) {
-    const bar = target.querySelector(`[data-clips-progress="${v.id}"]`);
-    if (!bar) continue;
-    // Prod's step; a percentage only while uploading.
-    bar.querySelector(".clips-video__veil-stage").textContent = stageLabel(v);
+    target.querySelectorAll(`[data-clips-stage-of="${v.id}"]`).forEach((n) => (n.textContent = stageLabel(v)));
   }
 }
 
@@ -93,57 +96,118 @@ function paint() {
   if (!target) return;
   disposeShowcase?.();
   disposeShowcase = null;
-  const pb = scope();
-  const videos = getVideos(pb?.id);
+  const videos = getVideos(scope()?.id);
   signature = sig(videos);
-  const off = isDemo() ? "disabled" : "";
-  // Once videos exist the space is a library: the add bar shrinks to one line
-  // and the videos come up; the explainer (showcase + steps) is for the first
-  // visit only (2026-10-28).
-  const returning = videos.length > 0;
-  const showcase = returning ? null : exampleVideo();
+  const showcase = videos.length ? null : exampleVideo();
   target.innerHTML = `
     <div class="clips-view">
       <div class="clips-view__page clips-library-page">
-        <section class="clips-hero${returning ? " clips-hero--compact" : ""}" data-clips-drop aria-labelledby="clips-hero-title">
-          <div class="clips-hero__copy">
-            <h1 class="clips-hero__title" id="clips-hero-title">${returning ? "Add a video" : "Turn a long video into clips"}</h1>
-            ${
-              returning
-                ? `<p class="clips-hero__sub">I'll cut it into short clips, framed and subtitled, ready to post.</p>`
-                : `<p class="clips-hero__sub">
-              I find the best moments, frame the speakers and add subtitles. You refine, then I write the posts${
-                pb ? ` in ${escapeHtml(pb.name)}'s voice` : ""
-              }.
-            </p>`
-            }
-            <form class="clips-hero__form" data-clips-url-form novalidate>
-              <div class="ap-input-group clips-hero__url">
-                <i class="ap-icon-link" aria-hidden="true"></i>
-                <input type="url" data-clips-url placeholder="Paste a YouTube or Google Drive link" aria-label="Video link" ${off} />
-              </div>
-              <button type="submit" class="ap-button primary orange" ${off}>
-                <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Get clips</span>
-              </button>
-            </form>
-            <div class="clips-hero__upload">
-              <button type="button" class="ap-button stroked grey" data-clips-browse ${off}>
-                <i class="ap-icon-upload" aria-hidden="true"></i><span>Upload a video</span>
-              </button>
-              <span class="clips-hero__rules">or drop a file here · from 30 seconds to 2 hours</span>
-              <input type="file" accept="video/*" data-clips-file hidden />
-            </div>
-            <p class="ap-form-message error clips-hero__error" id="clipsAddError" role="alert" hidden></p>
-          </div>
-          ${showcase ? renderShowcase(showcase) : ""}
-          <div class="clips-hero__drop" aria-hidden="true"><i class="ap-icon-upload"></i><span>Drop your video to start</span></div>
-        </section>
-        ${returning ? "" : buildWorkflowFlow(STEPS)}
-        ${returning ? renderGrid(videos) : ""}
+        ${renderAddBox()}
+        ${
+          showcase
+            ? `<section class="clips-library" aria-labelledby="clips-example-title">
+                <header class="clips-library__head"><h2 class="clips-library__title" id="clips-example-title">What you'll get</h2></header>
+                ${renderShowcase(showcase)}
+              </section>`
+            : renderCollection(videos)
+        }
       </div>
     </div>`;
   if (showcase) disposeShowcase = mountPreviews(target.querySelector(".clips-showcase"), showcase);
   applySearch();
+}
+
+// ── The add box ──────────────────────────────────────────────────────
+
+const RULES = "MP4, MOV or WebM · 30 seconds to 2 hours · up to 5 GB";
+const FOCUS_EXAMPLES = ["About pricing", "With a guest", "In the first 10 minutes", "Under 30 seconds"];
+// What the box holds until Find: a staged file, a YouTube link, a request.
+const add = { file: null, link: false, url: "", specific: false, focus: "" };
+const ready = () => !!add.file || (add.link && !!add.url.trim());
+const ctaLabel = () => (add.specific && add.focus.trim() ? "Find these moments" : "Find the best moments");
+
+function renderAddBox() {
+  const off = isDemo() ? "disabled" : "";
+  const f = add.file;
+  const zone = f
+    ? `<span class="clips-box__file"><i class="ap-icon-video" aria-hidden="true"></i><span>${escapeHtml(f.name)} · ${fmtMs(f.durationMs)}</span>
+        <button type="button" class="ap-icon-button transparent grey" data-clips-unstage aria-label="Remove the file"><i class="ap-icon-close" aria-hidden="true"></i></button></span>
+       <span class="clips-box__rules">or drop another file</span>`
+    : `<button type="button" class="ap-button stroked grey" data-clips-browse ${off}><i class="ap-icon-upload" aria-hidden="true"></i><span>Upload a video</span></button>
+       <span class="clips-box__rules">or drop it here · ${RULES}</span>`;
+  const link = add.link
+    ? `<div class="ap-input-group clips-box__link"><i class="ap-icon-link" aria-hidden="true"></i>
+        <input type="url" data-clips-url placeholder="https://www.youtube.com/watch?v=…" aria-label="YouTube link" value="${escapeHtml(add.url)}" ${off} /></div>`
+    : `<span class="clips-box__or">or</span><button type="button" class="ap-button ghost grey" data-clips-link-open ${off}><i class="ap-icon-link" aria-hidden="true"></i><span>Paste a YouTube link</span></button>`;
+  const specific = add.specific
+    ? `<div class="clips-box__specific">
+        <label class="clips-box__label" for="clipsFocus">What should the clips be about?</label>
+        <div class="ap-input-group"><i class="ap-icon-sparkles" aria-hidden="true"></i>
+          <input id="clipsFocus" type="text" data-clips-focus placeholder="A topic, a person, a part of the video, a length" value="${escapeHtml(add.focus)}" /></div>
+        <div class="clips-box__examples"><span>For example</span>${FOCUS_EXAMPLES.map(
+          (x) =>
+            `<button type="button" class="ap-tag grey" data-clips-focus-try="${escapeHtml(x)}">${escapeHtml(x)}</button>`,
+        ).join("")}</div>
+      </div>`
+    : "";
+  return `
+    <section class="clips-box" data-clips-drop data-clips-addbox aria-labelledby="clips-box-title">
+      <h1 class="clips-box__title" id="clips-box-title">Turn a long video into clips</h1>
+      <div class="clips-box__zone">${zone}<span class="clips-box__grow"></span>${link}
+        <input type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" data-clips-file hidden /></div>
+      ${add.link ? `<p class="clips-box__rights">Using a video you don't own may violate copyright laws. By continuing, you confirm this is your own content.</p>` : ""}
+      ${specific}
+      <div class="clips-box__go">
+        <button type="button" class="ap-button primary orange" data-clips-start ${ready() && !off ? "" : "disabled"}>
+          <i class="ap-icon-archie-official" aria-hidden="true"></i><span data-clips-start-label>${ctaLabel()}</span></button>
+        ${
+          add.specific
+            ? `<button type="button" class="ap-link" data-clips-specific="off">Back to the best moments</button>`
+            : `<span class="clips-box__hint">I'll pick the strongest moments: one clip per 2 minutes, framed and subtitled.</span>`
+        }
+      </div>
+      ${add.specific ? "" : `<button type="button" class="ap-link clips-box__ask" data-clips-specific="on"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Looking for something specific?</span></button>`}
+      <p class="ap-form-message error clips-hero__error" id="clipsAddError" role="alert" hidden></p>
+      <div class="clips-hero__drop" aria-hidden="true"><i class="ap-icon-upload"></i><span>Drop your video to start</span></div>
+    </section>`;
+}
+
+// The box repaints alone: the collection's thumbnails keep their streams.
+function paintBox(focusSel) {
+  const box = target?.querySelector("[data-clips-addbox]");
+  if (!box) return;
+  box.outerHTML = renderAddBox();
+  if (focusSel) target.querySelector(focusSel)?.focus();
+}
+
+function syncGo() {
+  const b = target?.querySelector("[data-clips-start]");
+  if (!b) return;
+  b.disabled = !ready() || isDemo();
+  b.querySelector("[data-clips-start-label]").textContent = ctaLabel();
+}
+
+// Find: the staged video goes in, its analysis starts (prod: at once), with
+// the request when one was written.
+function start() {
+  if (!ready()) return;
+  const focus = add.specific ? add.focus.trim() : "";
+  let v;
+  if (add.file) v = addVideo({ ...add.file, contextId: scope()?.id, focus });
+  else {
+    const url = add.url.trim();
+    if (!/^(https?:\/\/)?(www\.|m\.)?(youtube\.com\/(watch\?v=|shorts\/)|youtu\.be\/)[\w-]{6,}/i.test(url))
+      return addError(
+        "That isn't a YouTube video link. Paste a youtube.com or youtu.be link, or drop the video file here.",
+        true,
+      );
+    // The prototype can't stream YouTube: a beta video stands in for the footage.
+    const name = url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+    v = addVideo({ ...standInForUrl(), name, origin: "url", contextId: scope()?.id, focus });
+  }
+  Object.assign(add, { file: null, link: false, url: "", specific: false, focus: "" });
+  navigate(`/clips/${v.id}`);
+  return undefined;
 }
 
 // The hero shows what the space makes, with the space's own work: a real
@@ -190,37 +254,33 @@ function renderShowcase(v) {
     </figure>`;
 }
 
-const STEPS = [
-  {
-    tone: "in",
-    icon: "ap-icon-file--video",
-    title: "Add a video",
-    text: "A podcast, a webinar, a keynote. Up to two hours.",
-  },
-  {
-    tone: "ai",
-    icon: "ap-icon-archie-official",
-    title: "I cut the best moments",
-    text: "Framed on the speakers, subtitled in your brand's style.",
-  },
-  {
-    tone: "out",
-    icon: "ap-icon-calendar",
-    title: "You refine, then post",
-    text: "Reframe, restyle. Then one draft per clip and account.",
-  },
-];
+// ── The collection ───────────────────────────────────────────────────
+// Filtered by what each video waits for, searched, sorted, in a grid or a
+// list. The search and the filter hide items in place (no repaint, the
+// thumbnails keep their streams); the sort and the view repaint.
 
-// Past a row of cards (Loom, Frame.io), the library is searched and sorted:
-// the search hides cards in place (no repaint, the thumbnails keep their
-// streams), the sort repaints the grid. Both live as long as the page.
-const SEARCH_FROM = 4;
 const SORTS = [
   { id: "newest", label: "Newest first" },
   { id: "oldest", label: "Oldest first" },
   { id: "name", label: "Name (A to Z)" },
 ];
-const list = { query: "", sort: "newest" };
+const FILTERS = [
+  { id: "all", label: "All" },
+  { id: "running", label: "In progress" },
+  { id: "pick", label: "To pick" },
+  { id: "posts", label: "With posts" },
+  { id: "empty", label: "No clips" },
+];
+const list = { query: "", sort: "newest", filter: "all", view: "grid" };
+
+const stateOf = (v) =>
+  v.status === "analyzing"
+    ? "running"
+    : v.status === "failed"
+      ? "empty"
+      : getPosts(draftKey(v.id)).length
+        ? "posts"
+        : "pick";
 
 function sorted(videos) {
   const by = {
@@ -231,52 +291,95 @@ function sorted(videos) {
   return [...videos].sort(by);
 }
 
-function renderGrid(videos) {
-  const tools =
-    videos.length >= SEARCH_FROM
-      ? `<div class="clips-library__tools">
-          <div class="ap-input-group clips-library__search">
-            <i class="ap-icon-search" aria-hidden="true"></i>
-            <input type="search" data-clips-search placeholder="Search videos" aria-label="Search videos" value="${escapeHtml(list.query)}" />
-          </div>
-          ${dsSelect({
-            label: "Sort",
-            valueHtml: escapeHtml(SORTS.find((x) => x.id === list.sort).label),
-            current: list.sort,
-            attr: "data-clips-sort",
-            options: SORTS,
-            ariaLabel: "Sort videos",
-            extraClass: "clips-library__sort",
-          })}
-        </div>`
-      : "";
+function renderCollection(videos) {
+  const count = (id) => (id === "all" ? videos.length : videos.filter((v) => stateOf(v) === id).length);
+  const tabs = FILTERS.filter((f) => f.id === "all" || count(f.id)).map(
+    (f) =>
+      `<button type="button" class="ap-tabs-tab${list.filter === f.id ? " active" : ""}" role="tab" aria-selected="${list.filter === f.id}" data-clips-filter="${f.id}">${f.label} · ${count(f.id)}</button>`,
+  );
+  const viewBtn = (id, icon, label) =>
+    `<button type="button" class="ap-icon-button ${list.view === id ? "stroked" : "transparent"} grey" data-clips-view="${id}" aria-pressed="${list.view === id}" aria-label="${label}" data-tooltip="${label}"><i class="ap-icon-${icon}" aria-hidden="true"></i></button>`;
+  const items = sorted(videos);
   return `
     <section class="clips-library" aria-labelledby="clips-library-title">
       <header class="clips-library__head">
         <h2 class="clips-library__title" id="clips-library-title">Your videos</h2>
         <span class="ap-counter normal grey">${videos.length}</span>
-        ${tools}
       </header>
-      <div class="clips-library__grid">${sorted(videos).map(renderCard).join("")}</div>
+      <div class="clips-library__tools">
+        <div class="ap-tabs clips-library__filters"><div class="ap-tabs-nav" role="tablist" aria-label="Filter videos">${tabs.join("")}</div></div>
+        <span class="clips-library__grow"></span>
+        <div class="ap-input-group clips-library__search">
+          <i class="ap-icon-search" aria-hidden="true"></i>
+          <input type="search" data-clips-search placeholder="Search videos" aria-label="Search videos" value="${escapeHtml(list.query)}" />
+        </div>
+        ${dsSelect({
+          label: "Sort",
+          valueHtml: escapeHtml(SORTS.find((x) => x.id === list.sort).label),
+          current: list.sort,
+          attr: "data-clips-sort",
+          options: SORTS,
+          ariaLabel: "Sort videos",
+          extraClass: "clips-library__sort",
+        })}
+        ${viewBtn("grid", "view-grid", "Grid")}${viewBtn("list", "view-list", "List")}
+      </div>
+      ${
+        list.view === "list"
+          ? `<table class="ap-table outer-border header-background clickable-rows clips-library__table">
+              <thead><tr><th scope="col">Video</th><th scope="col">Status</th><th scope="col" class="right">Length</th><th scope="col" class="right">Clips</th><th scope="col" class="right">Kept</th><th scope="col" class="right">Posts</th><th scope="col" class="right"><span class="clips-library__sr">Next</span></th></tr></thead>
+              <tbody>${items.map(renderRow).join("")}</tbody></table>`
+          : `<div class="clips-library__grid">${items.map(renderCard).join("")}</div>`
+      }
       <p class="clips-library__none" data-clips-no-match hidden></p>
     </section>`;
 }
 
-// The search: a card stays when its name holds every word typed.
+// A row of the list: the video, its state, its facts in named columns, what's next.
+function renderRow(v) {
+  const st = stateOf(v);
+  const posts = getPosts(draftKey(v.id)).length;
+  const status = {
+    running: `<span class="ap-status blue no-dot" data-clips-stage-of="${escapeHtml(v.id)}">${escapeHtml(stageLabel(v))}</span>`,
+    empty: `<span class="ap-status red">${v.failure?.kind === "crash" ? "Stopped" : "No clips"}</span>`,
+    pick: `<span class="ap-status orange">${plural(v.clips.length, "clip")} to pick</span>`,
+    posts: `<span class="ap-status green">${plural(posts, "post")}</span>`,
+  }[st];
+  const next = {
+    running: "",
+    empty: v.failure?.kind === "crash" ? "Try again" : "",
+    pick: "Pick your clips",
+    posts: "See the posts",
+  }[st];
+  return `<tr data-clips-card data-state="${st}" data-name="${escapeHtml(v.name.toLowerCase())}" data-href="#/clips/${encodeURIComponent(v.id)}${st === "posts" ? "?tab=drafts" : ""}">
+    <td><span class="clips-library__vid"><span class="clips-library__thumb"><video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline tabindex="-1" aria-hidden="true"></video></span><b>${escapeHtml(v.name)}</b></span></td>
+    <td>${status}</td>
+    <td class="right clips-library__num">${fmtMs(v.durationMs)}</td>
+    <td class="right clips-library__num">${v.status === "ready" ? v.clips.length : "–"}</td>
+    <td class="right clips-library__num">${v.status === "ready" ? v.clips.filter((c) => c.selected).length : "–"}</td>
+    <td class="right clips-library__num">${posts || "–"}</td>
+    <td class="right">${next ? `<span class="clips-video__next">${next}<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>` : ""}</td>
+  </tr>`;
+}
+
+// The search and the filter: an item stays when its name holds every word
+// typed and it is in the filter.
 function applySearch() {
   if (!target) return;
   const words = list.query.toLowerCase().split(/\s+/).filter(Boolean);
   let shown = 0;
-  target.querySelectorAll(".clips-library__grid > [data-clips-card]").forEach((card) => {
-    const name = card.querySelector(".clips-video__name")?.textContent.toLowerCase() || "";
-    const on = words.every((w) => name.includes(w));
-    card.hidden = !on;
-    if (on) shown++;
-  });
+  target
+    .querySelectorAll(".clips-library__grid > [data-clips-card], .clips-library__table [data-clips-card]")
+    .forEach((card) => {
+      const name = card.dataset.name || "";
+      const on = words.every((w) => name.includes(w)) && (list.filter === "all" || card.dataset.state === list.filter);
+      card.hidden = !on;
+      if (on) shown++;
+    });
   const none = target.querySelector("[data-clips-no-match]");
   if (none) {
-    none.hidden = shown > 0 || !words.length;
-    none.textContent = `No video matches « ${list.query.trim()} ».`;
+    none.hidden = shown > 0;
+    none.textContent = words.length ? `No video matches « ${list.query.trim()} ».` : "No video here yet.";
   }
 }
 
@@ -288,7 +391,7 @@ function renderFailedCard(v) {
   const added = new Date(v.addedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
   const crash = v.failure?.kind === "crash";
   return `
-    <div class="clips-video is-failed" data-clips-card>
+    <div class="clips-video is-failed" data-clips-card data-state="empty" data-name="${escapeHtml(v.name.toLowerCase())}">
       <span class="clips-video__thumb">
         <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline tabindex="-1" aria-hidden="true" data-poster-s="${(v.posterMs || 0) / 1000}"></video>
         <span class="clips-video__duration">${fmtMs(v.durationMs)}</span>
@@ -349,7 +452,7 @@ function renderCard(v) {
             ? { text: `Schedule ${toSchedule} draft${toSchedule === 1 ? "" : "s"}`, tab: "?tab=drafts" }
             : { text: "Write more posts", tab: "?tab=drafts" };
   return `
-    <a class="clips-video${v.status === "analyzing" ? " is-analyzing" : ""}" href="#/clips/${encodeURIComponent(v.id)}${next?.tab || ""}" data-clips-card>
+    <a class="clips-video${v.status === "analyzing" ? " is-analyzing" : ""}" href="#/clips/${encodeURIComponent(v.id)}${next?.tab || ""}" data-clips-card data-state="${stateOf(v)}" data-name="${escapeHtml(v.name.toLowerCase())}">
       <span class="clips-video__thumb">
         <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline tabindex="-1" aria-hidden="true" data-poster-s="${(v.posterMs || 0) / 1000}"></video>
         <span class="clips-video__duration">${fmtMs(v.durationMs)}</span>
@@ -357,7 +460,7 @@ function renderCard(v) {
         ${
           v.status === "analyzing"
             ? `<span class="clips-video__veil" data-clips-progress="${v.id}">
-                 <span class="clips-video__veil-stage">${escapeHtml(stageLabel(v))}</span>
+                 <span class="clips-video__veil-stage" data-clips-stage-of="${escapeHtml(v.id)}">${escapeHtml(stageLabel(v))}</span>
                  <span class="clips-progress"><span class="clips-progress__track is-indeterminate"><span class="clips-progress__fill"></span></span></span>
                </span>`
             : ""
@@ -387,8 +490,8 @@ function onHover(e) {
 
 // ── Adding a video ───────────────────────────────────────────────────
 
-// What went wrong when adding says so under the add controls, not in a toast
-// across the screen; a bad link also marks the field (DS invalid state).
+// What went wrong when adding says so under the box, not in a toast across
+// the screen; a bad link also marks the field (DS invalid state).
 function addError(msg, onField = false) {
   const el = target?.querySelector("#clipsAddError");
   if (!el) return;
@@ -396,6 +499,7 @@ function addError(msg, onField = false) {
   el.hidden = false;
   if (!onField) return;
   const field = target.querySelector("[data-clips-url]");
+  if (!field) return;
   field.setAttribute("aria-invalid", "true");
   field.setAttribute("aria-describedby", "clipsAddError");
   field.closest(".ap-input-group")?.classList.add("invalid");
@@ -407,49 +511,81 @@ function clearAddError() {
   if (!el || el.hidden) return;
   el.hidden = true;
   const field = target.querySelector("[data-clips-url]");
-  field.removeAttribute("aria-invalid");
-  field.removeAttribute("aria-describedby");
-  field.closest(".ap-input-group")?.classList.remove("invalid");
+  field?.removeAttribute("aria-invalid");
+  field?.removeAttribute("aria-describedby");
+  field?.closest(".ap-input-group")?.classList.remove("invalid");
 }
 
 function onClick(e) {
-  if (e.target.closest("[data-clips-browse]")) target.querySelector("[data-clips-file]")?.click();
-  const sort = e.target.closest("[data-clips-sort]");
+  const t = e.target;
+  if (t.closest("[data-clips-browse]")) return target.querySelector("[data-clips-file]")?.click();
+  if (t.closest("[data-clips-unstage]")) {
+    add.file = null;
+    return paintBox();
+  }
+  if (t.closest("[data-clips-link-open]")) {
+    add.link = true;
+    return paintBox("[data-clips-url]");
+  }
+  const spec = t.closest("[data-clips-specific]");
+  if (spec) {
+    add.specific = spec.dataset.clipsSpecific === "on";
+    return paintBox(add.specific ? "[data-clips-focus]" : null);
+  }
+  const tryIt = t.closest("[data-clips-focus-try]");
+  if (tryIt) {
+    add.focus = tryIt.dataset.clipsFocusTry;
+    return paintBox("[data-clips-focus]");
+  }
+  if (t.closest("[data-clips-start]")) return start();
+  const filter = t.closest("[data-clips-filter]");
+  if (filter) {
+    list.filter = filter.dataset.clipsFilter;
+    target.querySelectorAll("[data-clips-filter]").forEach((b) => {
+      const on = b === filter;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-selected", String(on));
+    });
+    return applySearch();
+  }
+  const view = t.closest("[data-clips-view]");
+  if (view) {
+    list.view = view.dataset.clipsView;
+    return paint();
+  }
+  const sort = t.closest("[data-clips-sort]");
   if (sort) {
     list.sort = sort.dataset.clipsSort;
     return paint();
   }
-  const retry = e.target.closest("[data-clips-retry]");
-  if (retry) retryAnalysis(retry.dataset.clipsRetry);
-  const remove = e.target.closest("[data-clips-remove-video]");
-  if (remove) confirmRemoveVideo(remove.dataset.clipsRemoveVideo);
+  const retry = t.closest("[data-clips-retry]");
+  if (retry) return retryAnalysis(retry.dataset.clipsRetry);
+  const remove = t.closest("[data-clips-remove-video]");
+  if (remove) return confirmRemoveVideo(remove.dataset.clipsRemoveVideo);
+  const row = t.closest("tr[data-href]");
+  if (row) return navigate(row.dataset.href.slice(1));
+  return undefined;
 }
 
 function onInput(e) {
-  if (e.target.matches("[data-clips-search]")) {
-    list.query = e.target.value;
+  const t = e.target;
+  if (t.matches("[data-clips-search]")) {
+    list.query = t.value;
     return applySearch();
   }
-  return clearAddError();
+  if (t.matches("[data-clips-url]")) add.url = t.value;
+  if (t.matches("[data-clips-focus]")) add.focus = t.value;
+  clearAddError();
+  return syncGo();
 }
 
 function onChange(e) {
   clearAddError();
-  if (e.target.matches("[data-clips-file]") && e.target.files?.[0]) addFile(e.target.files[0]);
+  if (e.target.matches("[data-clips-file]") && e.target.files?.[0]) stageFile(e.target.files[0]);
 }
 
 function onSubmit(e) {
-  if (!e.target.closest("[data-clips-url-form]")) return;
   e.preventDefault();
-  const url = target.querySelector("[data-clips-url]")?.value.trim();
-  if (!url) return addError("Paste a link to your video first.", true);
-  if (!/^(https?:\/\/)?[\w-]+(\.[\w-]+)+(\/\S*)?$/i.test(url))
-    return addError("This isn't a link I can open. Paste the video's address, like youtube.com/watch?v=…", true);
-  // The prototype can't stream YouTube: a beta video stands in for the footage.
-  const s = standInForUrl();
-  const name = url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
-  const v = addVideo({ ...s, name, origin: "url", contextId: scope()?.id });
-  navigate(`/clips/${v.id}`);
 }
 
 function onDragOver(e) {
@@ -470,12 +606,13 @@ function onDrop(e) {
   zone.classList.remove("is-dragover");
   const file = [...(e.dataTransfer?.files || [])].find((f) => f.type.startsWith("video/"));
   if (!file) return addError("That's not a video. Drop an MP4, a MOV or a WebM.");
-  addFile(file);
+  return stageFile(file);
 }
 
-// The file plays for real, from memory: read its length and size first, refuse
-// what prod refuses, then start the analysis.
-function addFile(file) {
+// The file plays for real, from memory: read its length first, refuse what
+// prod refuses, then stage it in the box (prod: the preview, then the CTA).
+function stageFile(file) {
+  if (file.size > 5 * 1024 * 1024 * 1024) return addError("Video too large. Maximum size is 5GB");
   const url = URL.createObjectURL(file);
   const probe = document.createElement("video");
   probe.preload = "metadata";
@@ -487,16 +624,10 @@ function addFile(file) {
       addError(problem);
       return;
     }
-    const v = addVideo({
-      name: file.name,
-      url,
-      durationMs,
-      width: probe.videoWidth,
-      height: probe.videoHeight,
-      contextId: scope()?.id,
-    });
-    navigate(`/clips/${v.id}`);
+    add.file = { name: file.name, url, durationMs, width: probe.videoWidth, height: probe.videoHeight };
+    paintBox();
   };
   probe.onerror = () => addError("I can't read this video. Try an MP4 or a MOV.");
   probe.src = url;
+  return undefined;
 }

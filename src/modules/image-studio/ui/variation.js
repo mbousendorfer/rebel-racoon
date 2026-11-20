@@ -2,14 +2,14 @@
 // layers (text, logo…) laid over it in the DOM, exactly where the PNG export
 // will draw them. One function for the results grid, the editor and exports.
 
-import { html, raw } from "../lib/html.js?v=2793";
-import { formatById } from "../config/formats.js?v=2793";
-import { renderVisual, svgToDataUrl } from "../render/visual.js?v=2793";
-import { subjectKindFor } from "../render/subjects.js?v=2793";
-import { defaultLayers, resolveLayers } from "../render/layout.js?v=2793";
-import { storageService as storage } from "../services/index.js?v=2793";
-import { getAsset, getStyle } from "../state/store.js?v=2793";
-import { assetUrlSync } from "./asset.js?v=2793";
+import { html, raw } from "../lib/html.js?v=2794";
+import { formatById } from "../config/formats.js?v=2794";
+import { renderVisual, svgToDataUrl } from "../render/visual.js?v=2794";
+import { subjectKindFor } from "../render/subjects.js?v=2794";
+import { defaultLayers, resolveLayers } from "../render/layout.js?v=2794";
+import { storageService as storage } from "../services/index.js?v=2794";
+import { getAsset, getStyle } from "../state/store.js?v=2794";
+import { assetUrlSync } from "./asset.js?v=2794";
 
 export function productHref(productId) {
   if (!productId) return "";
