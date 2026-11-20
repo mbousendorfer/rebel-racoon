@@ -9,23 +9,23 @@
 //   appendExtractedIdeas(sessionId, sources)  bulk "extract more" flow
 //   removeIdeasForSources(sessionId, sourceIds)  cleanup after bulk-delete
 
-import { newId } from "./utils.js?v=2783";
+import { newId } from "./utils.js?v=2786";
 import {
   ideasBySession as seedIdeasBySession,
   allSeedSessions as seedRecentSessions,
   DEMO_IDEA_TEMPLATES,
   DEMO_VIDEO_IDEAS,
-} from "./mocks.js?v=2783";
-import { isDemo } from "./demo-mode.js?v=2783";
-import { isNewUser } from "./user-mode.js?v=2783";
+} from "./mocks.js?v=2786";
+import { isDemo } from "./demo-mode.js?v=2786";
+import { isNewUser } from "./user-mode.js?v=2786";
 
 // Demo session ids — the recentSessions seed (s-acme-launch / s-riverside /
 // etc.). Only these sessions get the seeded ideas mock; brand-new
 // conversations (created at runtime via "+ New conversation") start empty
 // to match the user's mental model. Anything else looked-up — same path.
 const DEMO_SESSION_IDS = new Set(seedRecentSessions.map((s) => s.id));
-import { postExtractionResult, startPending, finishPending } from "./assistant.js?v=2783";
-import { setIdeasReader } from "./assistant.js?v=2783";
+import { postExtractionResult, startPending, finishPending } from "./assistant.js?v=2786";
+import { setIdeasReader } from "./assistant.js?v=2786";
 
 // Hand the assistant a way to read a session's ideas. The dependency only runs
 // this way — library imports assistant, never the reverse — so the mock replies
@@ -36,7 +36,7 @@ import {
   subscribeSources,
   pushScriptedSource,
   completeScriptedSource,
-} from "./sources-stream.js?v=2783";
+} from "./sources-stream.js?v=2786";
 
 // --- Module state -------------------------------------------------------
 

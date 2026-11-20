@@ -1650,7 +1650,7 @@ body.clips-editing .app-content {
 
 .clips-tl__labels {
   display: grid;
-  grid-template-rows: 20px 48px 40px 24px;
+  grid-template-rows: 20px 28px 48px 40px 24px;
   gap: 6px;
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
@@ -1691,36 +1691,10 @@ body.clips-editing .app-content {
   display: none;
 }
 
-/* The clip's start and end, on its edges in the ruler — read only: the range
-   is fixed once the clip exists. */
-.clips-tl__edge {
-  position: absolute;
-  top: 0;
-  z-index: 3;
-}
-
-.clips-tl__edge--start {
-  transform: translateX(-100%);
-}
-
-.clips-tl__edge-time {
-  display: inline-flex;
-  align-items: center;
-  height: 18px;
-  padding: 0 var(--ref-spacing-xxs);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-sm);
-  background: var(--ref-color-white);
-  color: var(--ref-color-grey-100);
-  font: inherit;
-  font-size: var(--sys-text-style-caption-size);
-  font-variant-numeric: tabular-nums;
-}
-
 .clips-tl__tracks {
   position: relative;
   display: grid;
-  grid-template-rows: 20px 48px 40px 24px;
+  grid-template-rows: 20px 28px 48px 40px 24px;
   gap: 6px;
 }
 
@@ -1729,6 +1703,7 @@ body.clips-editing .app-content {
    (ew-resize), parts and texts are
    picked (pointer). Never a resize cursor on what doesn't resize. */
 .clips-tl__ruler,
+.clips-tl__subs,
 .clips-tl__trim,
 .clips-tl__frames,
 .clips-tl__texts {
@@ -1778,22 +1753,13 @@ body.clips-editing .app-content {
   background: var(--ref-color-grey-40);
 }
 
-.clips-tl__dim {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  background: color-mix(in srgb, var(--ref-color-white) 70%, transparent);
-}
-
 .clips-tl__window {
   position: absolute;
   top: 0;
   bottom: 0;
-  /* See-through: the clip's own waveform reads inside it (what's outside is
-     veiled). */
+  /* The whole track now (the timeline is the clip): it only holds the
+     intro / outro cards. */
   background: transparent;
-  border: 2px solid var(--ref-color-electric-blue-100);
-  border-radius: var(--app-radius-sm);
 }
 
 .clips-tl__card {
@@ -2927,4 +2893,46 @@ body.clips-editing .app-content {
   .clips-review {
     grid-template-columns: minmax(0, 1fr) 320px;
   }
+}
+
+/* ── Editor, refonte B passe 3 ─────────────────────────────────────── */
+
+/* The video's other clips, from the top bar: ‹ Clip 2 of 10 ›. */
+.clips-ed__clipnav {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin-left: var(--ref-spacing-sm);
+  padding-left: var(--ref-spacing-sm);
+  border-left: 1px solid var(--ref-color-grey-20);
+}
+
+.clips-ed__clipnav-label {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* The subtitle lines, on their own track. */
+.clips-tl__subs {
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-grey-05);
+}
+
+.clips-tl__cue {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  overflow: hidden;
+  padding: 0 var(--ref-spacing-xxs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: 20px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
 }

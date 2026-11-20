@@ -28,7 +28,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock, plural } from "./utils.js?v=2783";
+import { escapeHtml, formatClock, plural } from "./utils.js?v=2786";
 import {
   PRESETS,
   presetById,
@@ -43,7 +43,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=2783";
+} from "./clip-captions.js?v=2786";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -1365,6 +1365,12 @@ export function setDeadZones(v) {
   if (!mounted) return;
   state.deadZones = v;
   renderDeadzones();
+}
+
+// The words, in clip seconds (a copy) — the host draws their subtitle lines on
+// its timeline.
+export function getWords() {
+  return mounted ? words.map((w) => ({ ...w })) : [];
 }
 
 // What's hidden from the subtitles, in clip seconds — the host marks it on its

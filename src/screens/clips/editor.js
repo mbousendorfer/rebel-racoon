@@ -23,19 +23,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2783";
-import { isFlagOn } from "../../feature-flags.js?v=2783";
-import { parseHashParams } from "../../url-state.js?v=2783";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2783";
-import { showToast } from "../../components/toast.js?v=2783";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2783";
-import { open as openRename } from "../../components/rename-modal.js?v=2783";
-import { getContextById } from "../../contexts-store.js?v=2783";
-import { escapeHtml } from "../../utils.js?v=2783";
-import * as ce from "../../caption-editor.js?v=2783";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2783";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2783";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2783";
+import { navigate } from "../../router.js?v=2786";
+import { isFlagOn } from "../../feature-flags.js?v=2786";
+import { parseHashParams } from "../../url-state.js?v=2786";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2786";
+import { showToast } from "../../components/toast.js?v=2786";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2786";
+import { open as openRename } from "../../components/rename-modal.js?v=2786";
+import { getContextById } from "../../contexts-store.js?v=2786";
+import { escapeHtml } from "../../utils.js?v=2786";
+import * as ce from "../../caption-editor.js?v=2786";
+import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2786";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2786";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2786";
 import {
   framingContext,
   initialSegments,
@@ -54,7 +54,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2783";
+} from "../../clip-framing.js?v=2786";
 import {
   fmtMs,
   fmtPrecise,
@@ -69,8 +69,8 @@ import {
   dsSelect,
   bindSelectDismiss,
   EDITOR_TOOLS as TOOLS,
-} from "./shared.js?v=2783";
-import { primeDraftSetup } from "./project.js?v=2783";
+} from "./shared.js?v=2786";
+import { primeDraftSetup } from "./project.js?v=2786";
 
 const FRAME_MS = 40;
 const CARD_MS = 2000; // intro / outro card length
@@ -169,7 +169,7 @@ const ratio = () => ratioOf(ed.w.ratioId);
 const clipLen = () => ed.w.endMs - ed.w.startMs;
 const relSec = () => Math.max(0, ed.t - ed.w.startMs) / 1000;
 
-// ── Topbar: back · title │ undo redo · Save · Create draft ───────────
+// ── Topbar: back · title · ‹ clip › │ undo redo · Save · Write a post ──
 
 function paintTopbar() {
   const left = `<button type="button" class="ap-icon-button" data-clips-ed="back" aria-label="Back to the video" data-tooltip="Back to the video">
@@ -178,15 +178,32 @@ function paintTopbar() {
     <h1 class="ap-h2 clips-ed__title" data-clips-ed-title>${escapeHtml(ed.w.title)}</h1>
     <button type="button" class="ap-icon-button" data-clips-ed="rename" aria-label="Rename the clip" data-tooltip="Rename the clip">
       <i class="ap-icon-pen" aria-hidden="true"></i>
-    </button>`;
+    </button>
+    ${clipNavHTML()}`;
   const right = `
     <button type="button" class="ap-button ghost grey" data-clips-ed="undo" data-tooltip="⌘Z" ${ed.undo.length ? "" : "disabled"}><span>Undo</span></button>
     <button type="button" class="ap-button ghost grey" data-clips-ed="redo" data-tooltip="⇧⌘Z" ${ed.redo.length ? "" : "disabled"}><span>Redo</span></button>
     <button type="button" class="ap-button stroked grey" data-clips-ed="save" ${ed.dirty ? "" : "disabled"}><span>Save</span></button>
-    <button type="button" class="ap-button primary orange" data-clips-ed="draft"><i class="ap-icon-archie-official" aria-hidden="true"></i><span>Create draft</span></button>`;
+    <button type="button" class="ap-button primary orange" data-clips-ed="draft"><i class="ap-icon-archie-official" aria-hidden="true"></i><span>Write a post</span></button>`;
   setTopbarActions(`/clips/${ed.video.id}/edit/${ed.clip.id}`, `<div class="clips-ed__topbar-actions">${right}</div>`, {
     left,
   });
+}
+
+// The video's other clips, one step away: the editor goes through the series
+// without going back to the review (a clip with edits asks first, as leaving).
+function clipNavHTML() {
+  const clips = ed.video.clips;
+  const i = clips.findIndex((c) => c.id === ed.clip.id);
+  if (clips.length < 2 || i < 0) return "";
+  const btn = (dir, k, label) =>
+    `<button type="button" class="ap-icon-button stroked" data-clips-ed-goto="${clips[k]?.id || ""}" aria-label="${label}" data-tooltip="${label}" ${clips[k] ? "" : "disabled"}>
+      <i class="ap-icon-chevron-${dir}" aria-hidden="true"></i></button>`;
+  return `<span class="clips-ed__clipnav" role="group" aria-label="Clips of this video">
+      ${btn("left", i - 1, "Previous clip")}
+      <span class="clips-ed__clipnav-label">Clip ${i + 1} of ${clips.length}</span>
+      ${btn("right", i + 1, "Next clip")}
+    </span>`;
 }
 
 // ── Shell ────────────────────────────────────────────────────────────
@@ -602,24 +619,16 @@ function paintTextsVisibility() {
 
 // ── The timeline (every tool's) ──────────────────────────────────────
 
+// The timeline is the clip, edge to edge, on the clip's own clock (0:00 → its
+// length): its range is fixed, so there's nothing to see around it. The
+// video's time stays on the Source monitor.
 function view() {
-  const pad = Math.max(5000, clipLen() * 0.25);
-  const from = Math.max(0, ed.w.startMs - pad);
-  const to = Math.min(ed.video.durationMs, ed.w.endMs + pad);
-  return { from, to, span: to - from };
+  return { from: ed.w.startMs, to: ed.w.endMs, span: clipLen() };
 }
 
 function pctIn(ms) {
   const v = ed.viewport || view();
   return `${((ms - v.from) / v.span) * 100}%`;
-}
-
-// The clip's start and end, written on its edges in the ruler (the video's
-// time). Read only: the range is fixed once the clip exists.
-function edgeTime(edge) {
-  const ms = edge === "start" ? ed.w.startMs : ed.w.endMs;
-  return `<span class="clips-tl__edge clips-tl__edge--${edge}" style="left:${pctIn(ms)}">
-      <span class="clips-tl__edge-time" aria-label="Clip ${edge}: ${fmtPrecise(ms)} in the video">${fmtPrecise(ms)}</span></span>`;
 }
 
 // A track's header: its name. What acts at the playhead is named above the
@@ -640,13 +649,9 @@ function paintTimeline() {
   const v = ed.viewport;
   const step = niceStep(v.span);
   let ticks = "";
-  // The timeline is a window on the video, so its ruler reads the video's time
-  // — the time written on the clip's edges.
-  // A tick the clip's edge times would cover is left out.
-  const clear = v.span * 0.045;
-  for (let t = Math.ceil(v.from / step) * step; t <= v.to; t += step)
-    if (Math.abs(t - ed.w.startMs) > clear && Math.abs(t - ed.w.endMs) > clear)
-      ticks += `<span class="clips-tl__tick" style="left:${pctIn(t)}"><span>${fmtMs(t)}</span></span>`;
+  // The ruler reads the clip's time; the last tick leaves room for the end.
+  for (let t = 0; t < v.span - step * 0.4; t += step)
+    ticks += `<span class="clips-tl__tick" style="left:${pctIn(v.from + t)}"><span>${fmtMs(t)}</span></span>`;
   // A faux waveform — no audio analysis in the prototype — keyed on source
   // time so the shape doesn't slide when the window moves.
   let wave = "";
@@ -698,16 +703,16 @@ function paintTimeline() {
     <div class="clips-tl" data-clips-tl>
       <div class="clips-tl__labels">
         <span></span>
+        ${trackHead("Subtitles")}
         ${trackHead("Clip")}
         ${trackHead("Framing")}
         ${trackHead("Text")}
       </div>
       <div class="clips-tl__tracks" data-clips-tracks>
-        <div class="clips-tl__ruler" data-clips-scrub>${ticks}${edgeTime("start")}${edgeTime("end")}</div>
+        <div class="clips-tl__ruler" data-clips-scrub>${ticks}</div>
+        <div class="clips-tl__subs" data-clips-scrub data-clips-cues>${cueBlocks()}</div>
         <div class="clips-tl__trim" data-clips-scrub>
           <div class="clips-tl__wave">${wave}</div>
-          <div class="clips-tl__dim" style="left:0;width:${pctIn(ed.w.startMs)}"></div>
-          <div class="clips-tl__dim" style="left:${pctIn(ed.w.endMs)};right:0"></div>
           <div class="clips-tl__cleans" data-clips-cleans>${cleanMarks()}</div>
           <div class="clips-tl__window" style="left:${pctIn(ed.w.startMs)};width:${(clipLen() / v.span) * 100}%">
             ${b.intro ? `<span class="clips-tl__card clips-tl__card--intro">Intro</span>` : ""}
@@ -740,6 +745,22 @@ function cleanMarks() {
 function paintCleanMarks() {
   const host = ed.el.querySelector("[data-clips-cleans]");
   if (host) host.innerHTML = cleanMarks();
+  const cues = ed.el.querySelector("[data-clips-cues]");
+  if (cues) cues.innerHTML = cueBlocks();
+}
+
+// The subtitle lines on their own track (CapCut, Descript): each says its words
+// where it shows. A click seeks there, like any track; the words are fixed in
+// Transcript, their look in Subtitles.
+function cueBlocks() {
+  const st = ce.getState();
+  if (!st || st.presetId === "none") return "";
+  return deriveCues(ce.getWords(), st)
+    .map((c) => {
+      const text = c.words.map((w) => w.text).join(" ");
+      return `<span class="clips-tl__cue" style="left:${pctIn(ed.w.startMs + c.start * 1000)};width:calc(${(((c.end - c.start) * 1000) / ed.viewport.span) * 100}% - 2px)" title="${escapeHtml(text)}">${escapeHtml(text)}</span>`;
+    })
+    .join("");
 }
 
 // A camera's short name on the framing track: the wide shot of both speakers
@@ -1178,6 +1199,8 @@ function handleClick(e) {
     applyTool();
     return;
   }
+  const goto = t.closest("[data-clips-ed-goto]")?.dataset.clipsEdGoto;
+  if (goto) return leave(`/clips/${ed.video.id}/edit/${goto}?tool=${ed.tool}`);
   const act = t.closest("[data-clips-ed]")?.dataset.clipsEd;
   const seg = segmentAt(ed.w.segments, ed.t);
   switch (act) {
