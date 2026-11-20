@@ -3527,6 +3527,7 @@ body.clips-editing .app-content {
 }
 
 .clips-card.clips-poster {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxxs);
@@ -3600,6 +3601,11 @@ body.clips-editing .app-content {
 .clips-poster__more .clips-more__menu {
   left: auto;
   right: 0;
+}
+
+.clips-poster__more .clips-more__menu.is-flipped {
+  left: 0;
+  right: auto;
 }
 
 .clips-poster:hover .clips-poster__acts,

@@ -7,32 +7,32 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2803";
-import { isFlagOn } from "../../feature-flags.js?v=2803";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2803";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2803";
-import { showToast } from "../../components/toast.js?v=2803";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2803";
-import { open as openClipRange } from "../../components/clip-range-modal.js?v=2803";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2803";
-import { startRewrite } from "../../draft-rewrite.js?v=2803";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2803";
-import { renderPostCard } from "../../components/post-card.js?v=2803";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2803";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2803";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2803";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2803";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2803";
-import { open as openRename } from "../../components/rename-modal.js?v=2803";
-import { writePostsInChat } from "../../clips-chat.js?v=2803";
+import { navigate } from "../../router.js?v=2805";
+import { isFlagOn } from "../../feature-flags.js?v=2805";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2805";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2805";
+import { showToast } from "../../components/toast.js?v=2805";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2805";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2805";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2805";
+import { startRewrite } from "../../draft-rewrite.js?v=2805";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2805";
+import { renderPostCard } from "../../components/post-card.js?v=2805";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2805";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2805";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2805";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2805";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2805";
+import { open as openRename } from "../../components/rename-modal.js?v=2805";
+import { writePostsInChat } from "../../clips-chat.js?v=2805";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2803";
-import { escapeHtml, plural } from "../../utils.js?v=2803";
+} from "../../posts-store.js?v=2805";
+import { escapeHtml, plural } from "../../utils.js?v=2805";
 import {
   getVideo,
   draftKey,
@@ -50,7 +50,7 @@ import {
   askForClips,
   trimClip,
   updateClip,
-} from "../../videos-store.js?v=2803";
+} from "../../videos-store.js?v=2805";
 import {
   fmtMs,
   lookSelect,
@@ -63,7 +63,7 @@ import {
   presetLabel,
   CTA_OPTIONS,
   confirmRemoveVideo,
-} from "./shared.js?v=2803";
+} from "./shared.js?v=2805";
 
 let target = null;
 let videoId = null;
@@ -106,6 +106,7 @@ export function renderClipsProject(params, el) {
   el.addEventListener("submit", onSubmit);
   el.addEventListener("input", onInput);
   el.addEventListener("keydown", onKey);
+  el.addEventListener("toggle", placeMenu, true);
   topbar?.addEventListener("click", onClick);
   disposers.push(
     subscribeVideos(onStore),
@@ -121,6 +122,7 @@ export function renderClipsProject(params, el) {
     el.removeEventListener("submit", onSubmit);
     el.removeEventListener("input", onInput);
     el.removeEventListener("keydown", onKey);
+    el.removeEventListener("toggle", placeMenu, true);
     stopTrimPlay();
     trimming = null;
     topbar?.removeEventListener("click", onClick);
@@ -479,13 +481,6 @@ function renderCard(v, c) {
         <button type="button" class="ap-button stroked grey" data-clips-trim="${id}"><i class="ap-icon-shorten" aria-hidden="true"></i><span>Trim</span></button>
         <a class="ap-button stroked grey" href="#/clips/${encodeURIComponent(v.id)}/edit/${encodeURIComponent(c.id)}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></a>
       </span>
-      <details class="clips-more clips-poster__more">
-        <summary class="ap-icon-button stroked grey" aria-label="More actions for « ${title} »" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
-        <div class="ap-action-dropdown clips-more__menu" role="menu">
-          ${menuItem("Rename", "pen", `data-clips-rename="${id}"`)}
-          ${menuItem("Remove this clip", "trash", `data-clips-remove="${id}"`, true)}
-        </div>
-      </details>
       ${
         c.rendering
           ? `<span class="clips-card__render" role="status"><span>Rendering your edited clip…</span><span class="clips-progress__track is-indeterminate"><span class="clips-progress__fill"></span></span></span>`
@@ -494,6 +489,14 @@ function renderCard(v, c) {
     </div>
     <span class="clips-card__title">${title}</span>
     <span class="clips-card__at">${fmtMs(c.startMs)} – ${fmtMs(c.endMs)}${c.trimmed ? " · Trimmed" : ""}</span>
+    <!-- Outside the image: its overflow would clip the menu. -->
+    <details class="clips-more clips-poster__more">
+        <summary class="ap-icon-button stroked grey" aria-label="More actions for « ${title} »" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
+        <div class="ap-action-dropdown clips-more__menu" role="menu">
+          ${menuItem("Rename", "pen", `data-clips-rename="${id}"`)}
+          ${menuItem("Remove this clip", "trash", `data-clips-remove="${id}"`, true)}
+        </div>
+      </details>
   </article>`;
 }
 // ── Drafts ───────────────────────────────────────────────────────────
@@ -1283,4 +1286,14 @@ function onKey(e) {
     e.preventDefault();
     closeTrim(false);
   }
+}
+
+// A poster's ⋯ menu opens to the left of its button; on the first column that
+// runs under the sidebar, so it flips to open rightward.
+function placeMenu(e) {
+  const d = e.target;
+  if (!d.matches?.(".clips-poster__more") || !d.open) return;
+  const menu = d.querySelector(".clips-more__menu");
+  menu.classList.remove("is-flipped");
+  if (menu.getBoundingClientRect().left < target.getBoundingClientRect().left) menu.classList.add("is-flipped");
 }

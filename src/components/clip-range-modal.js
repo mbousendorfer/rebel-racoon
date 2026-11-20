@@ -12,8 +12,8 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2803";
-import { fmtPrecise, parseTime, MIN_CLIP_MS, MAX_CLIP_MS } from "../screens/clips/shared.js?v=2803";
+} from "../modal-coordinator.js?v=2805";
+import { fmtPrecise, parseTime, MIN_CLIP_MS, MAX_CLIP_MS } from "../screens/clips/shared.js?v=2805";
 
 const MODAL_ID = "clip-range";
 
