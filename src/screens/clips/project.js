@@ -7,32 +7,32 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2802";
-import { isFlagOn } from "../../feature-flags.js?v=2802";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2802";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2802";
-import { showToast } from "../../components/toast.js?v=2802";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2802";
-import { open as openClipRange } from "../../components/clip-range-modal.js?v=2802";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2802";
-import { startRewrite } from "../../draft-rewrite.js?v=2802";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2802";
-import { renderPostCard } from "../../components/post-card.js?v=2802";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2802";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2802";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2802";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2802";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2802";
-import { open as openRename } from "../../components/rename-modal.js?v=2802";
-import { writePostsInChat } from "../../clips-chat.js?v=2802";
+import { navigate } from "../../router.js?v=2803";
+import { isFlagOn } from "../../feature-flags.js?v=2803";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2803";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2803";
+import { showToast } from "../../components/toast.js?v=2803";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2803";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2803";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2803";
+import { startRewrite } from "../../draft-rewrite.js?v=2803";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2803";
+import { renderPostCard } from "../../components/post-card.js?v=2803";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2803";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2803";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2803";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2803";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2803";
+import { open as openRename } from "../../components/rename-modal.js?v=2803";
+import { writePostsInChat } from "../../clips-chat.js?v=2803";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2802";
-import { escapeHtml, plural } from "../../utils.js?v=2802";
+} from "../../posts-store.js?v=2803";
+import { escapeHtml, plural } from "../../utils.js?v=2803";
 import {
   getVideo,
   draftKey,
@@ -50,7 +50,7 @@ import {
   askForClips,
   trimClip,
   updateClip,
-} from "../../videos-store.js?v=2802";
+} from "../../videos-store.js?v=2803";
 import {
   fmtMs,
   lookSelect,
@@ -63,7 +63,7 @@ import {
   presetLabel,
   CTA_OPTIONS,
   confirmRemoveVideo,
-} from "./shared.js?v=2802";
+} from "./shared.js?v=2803";
 
 let target = null;
 let videoId = null;
@@ -307,8 +307,8 @@ function renderComing(v) {
       </header>
       <div class="clips-cards" aria-hidden="true">${Array.from(
         { length: n },
-        () => `<div class="clips-card is-waiting"><span class="clips-card__wait-media"></span>
-          <span class="clips-card__wait-body"><span></span><span></span><span></span></span></div>`,
+        () => `<div class="clips-card clips-poster is-waiting"><span class="clips-card__wait-media"></span>
+          <span class="clips-card__wait-body"><span></span><span></span></span></div>`,
       ).join("")}</div>
     </section>`;
 }
@@ -341,17 +341,6 @@ function renderPage(v) {
   return `
     <div class="clips-view__page clips-page">
       ${renderRecap(v)}
-      <form class="clips-ask" data-clips-ask novalidate>
-        <i class="ap-icon-archie-official clips-ask__mark" aria-hidden="true"></i>
-        <div class="ap-input-group clips-ask__field">
-          <input type="text" data-clips-ask-input placeholder="Ask for other clips: a topic, a person, a part of the video, a length…" aria-label="Ask for other clips" />
-        </div>
-        <button type="submit" class="ap-button primary blue"><span>Find clips</span></button>
-        <span class="clips-ask__try"><span>Try</span>${ASK_EXAMPLES.map(
-          (x) =>
-            `<button type="button" class="ap-tag grey" data-clips-ask-try="${escapeHtml(x)}">${escapeHtml(x)}</button>`,
-        ).join("")}</span>
-      </form>
       ${groups}
       ${
         noBest
@@ -380,6 +369,7 @@ function renderRecap(v) {
     .join("");
   return `
     <section class="clips-recap" aria-labelledby="clips-recap-title">
+      <div class="clips-recap__main">
       <div class="clips-recap__player">
         <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" controls playsinline></video>
       </div>
@@ -392,7 +382,7 @@ function renderRecap(v) {
             <div class="ap-action-dropdown clips-more__menu" role="menu">${menuItem("Remove this video", "trash", "data-clips-remove-video", true)}</div>
           </details>
         </div>
-        ${v.summary ? `<p class="clips-recap__summary"><span class="ap-tag grey mini">Summary</span> ${escapeHtml(v.summary)}</p>` : ""}
+        ${v.summary ? `<p class="clips-recap__summary">${escapeHtml(v.summary)}</p>` : ""}
         <p class="clips-recap__facts">
           <span><strong>${fmtMs(v.durationMs)}</strong> long</span>
           ${
@@ -416,21 +406,43 @@ function renderRecap(v) {
             : renderRunStatus(v)
         }
       </div>
+      </div>
+      ${v.status === "ready" ? renderAsk() : ""}
     </section>`;
+}
+
+// « La vidéo et sa commande » (A, 2026-11-20, after Opus Clip): the request
+// lives in the video's card, as its last row — it asks about THIS video. No
+// butter band across the page: Archie is the small butter mark before the
+// field; Find clips is stroked, the page's strong move stays Write posts.
+function renderAsk() {
+  return `<form class="clips-ask" data-clips-ask novalidate>
+      <span class="clips-ask__row">
+        <span class="clips-ask__mark" aria-hidden="true"><i class="ap-icon-archie-official"></i></span>
+        <span class="ap-input-group clips-ask__field"><i class="ap-icon-search" aria-hidden="true"></i>
+          <input type="text" data-clips-ask-input placeholder="Ask for other clips: a topic, a person, a part of the video, a length" aria-label="Ask for other clips" /></span>
+        <button type="submit" class="ap-button stroked grey"><span>Find clips</span></button>
+      </span>
+      <span class="clips-ask__try"><span>For example</span>${ASK_EXAMPLES.map(
+        (x) =>
+          `<button type="button" class="ap-tag grey" data-clips-ask-try="${escapeHtml(x)}">${escapeHtml(x)}</button>`,
+      ).join("")}</span>
+    </form>`;
 }
 
 function renderRequest(v, r, tools = "") {
   const clips = v.clips.filter((c) => c.requestId === r.id);
   const head = `<header class="clips-group-sec__head">
       <h2 class="clips-group-sec__title">From your request</h2>
-      <span class="clips-group-sec__meta">« ${escapeHtml(r.text)} »${r.status === "done" ? ` · ${plural(clips.length, "clip")}` : ""}</span>
+      <span class="clips-ask__tag"><i class="ap-icon-archie-official" aria-hidden="true"></i>« ${escapeHtml(r.text)} »</span>
+      ${r.status === "done" ? `<span class="clips-group-sec__meta">${plural(clips.length, "clip")}</span>` : ""}
       ${tools}
     </header>`;
   const body =
     r.status === "speaker"
       ? renderSpeakerQuestion(r)
       : r.status === "running"
-        ? `<div class="clips-group-sec__run" role="status"><span>Finding the best moments…</span><span class="clips-progress"><span class="clips-progress__track is-indeterminate"><span class="clips-progress__fill"></span></span></span></div>`
+        ? `<p class="clips-group-sec__meta" role="status">Finding these moments…</p><div class="clips-cards" aria-hidden="true">${'<div class="clips-card clips-poster is-waiting"><span class="clips-card__wait-media"></span><span class="clips-card__wait-body"><span></span><span></span></span></div>'.repeat(2)}</div>`
         : r.status === "none"
           ? `<p class="clips-group-sec__none">I didn't find a part of the video that matches what you asked for, so I made no new clips. The clips you already had are still there.</p>`
           : `<div class="clips-cards">${clips.map((c) => renderCard(v, c)).join("")}</div>`;
@@ -454,35 +466,34 @@ function renderCard(v, c) {
   if (trimming?.id === c.id) return renderTrim(v, c);
   const id = escapeHtml(c.id);
   const title = escapeHtml(c.title);
-  return `<article class="clips-card${c.selected ? " is-kept" : ""}" data-clips-card="${id}">
-    <div class="clips-card__media">
+  // The poster (A, 2026-11-20): the clip as it will render, large; its box ON
+  // the image (keeping is the page's main move); Trim and Edit over it on hover
+  // or focus, ⋯ in its corner; under it the title and where it runs. Why I
+  // picked it is the image's tooltip.
+  return `<article class="clips-card clips-poster${c.selected ? " is-kept" : ""}" data-clips-card="${id}">
+    <div class="clips-card__media"${c.why ? ` title="${escapeHtml(c.why)}"` : ""}>
       ${previewMarkup(v, c, { captions: false })}
+      <label class="clips-poster__keep"><span class="ap-checkbox-container"><input type="checkbox" data-clips-keep="${id}" ${c.selected ? "checked" : ""} aria-label="Keep « ${title} »" /><i></i></span></label>
       <span class="clips-card__dur">${fmtMs(c.endMs - c.startMs)}</span>
+      <span class="clips-poster__acts">
+        <button type="button" class="ap-button stroked grey" data-clips-trim="${id}"><i class="ap-icon-shorten" aria-hidden="true"></i><span>Trim</span></button>
+        <a class="ap-button stroked grey" href="#/clips/${encodeURIComponent(v.id)}/edit/${encodeURIComponent(c.id)}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></a>
+      </span>
+      <details class="clips-more clips-poster__more">
+        <summary class="ap-icon-button stroked grey" aria-label="More actions for « ${title} »" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
+        <div class="ap-action-dropdown clips-more__menu" role="menu">
+          ${menuItem("Rename", "pen", `data-clips-rename="${id}"`)}
+          ${menuItem("Remove this clip", "trash", `data-clips-remove="${id}"`, true)}
+        </div>
+      </details>
       ${
         c.rendering
           ? `<span class="clips-card__render" role="status"><span>Rendering your edited clip…</span><span class="clips-progress__track is-indeterminate"><span class="clips-progress__fill"></span></span></span>`
           : ""
       }
     </div>
-    <div class="clips-card__body">
-      <label class="clips-card__head">
-        <span class="ap-checkbox-container"><input type="checkbox" data-clips-keep="${id}" ${c.selected ? "checked" : ""} /><i></i></span>
-        <span class="clips-card__title">${title}</span>
-      </label>
-      <span class="clips-card__at">${fmtMs(c.startMs)} – ${fmtMs(c.endMs)} in the video${c.trimmed ? " · Trimmed" : ""}</span>
-      ${c.why ? `<p class="clips-card__why">${escapeHtml(c.why)}</p>` : ""}
-      <span class="clips-card__actions">
-        <button type="button" class="ap-button ghost grey" data-clips-trim="${id}"><i class="ap-icon-shorten" aria-hidden="true"></i><span>Trim</span></button>
-        <a class="ap-button ghost grey" href="#/clips/${encodeURIComponent(v.id)}/edit/${encodeURIComponent(c.id)}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit clip</span></a>
-        <details class="clips-more">
-          <summary class="ap-icon-button transparent grey" aria-label="More actions for « ${title} »" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
-          <div class="ap-action-dropdown clips-more__menu" role="menu">
-            ${menuItem("Rename", "pen", `data-clips-rename="${id}"`)}
-            ${menuItem("Remove this clip", "trash", `data-clips-remove="${id}"`, true)}
-          </div>
-        </details>
-      </span>
-    </div>
+    <span class="clips-card__title">${title}</span>
+    <span class="clips-card__at">${fmtMs(c.startMs)} – ${fmtMs(c.endMs)}${c.trimmed ? " · Trimmed" : ""}</span>
   </article>`;
 }
 // ── Drafts ───────────────────────────────────────────────────────────
