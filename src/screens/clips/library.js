@@ -9,13 +9,13 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2794";
-import { isFlagOn } from "../../feature-flags.js?v=2794";
-import { renderTopbar } from "../../components/topbar.js?v=2794";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2794";
-import { isDemo } from "../../demo-mode.js?v=2794";
-import { getPosts } from "../../posts-store.js?v=2794";
-import { escapeHtml, plural } from "../../utils.js?v=2794";
+import { navigate } from "../../router.js?v=2796";
+import { isFlagOn } from "../../feature-flags.js?v=2796";
+import { renderTopbar } from "../../components/topbar.js?v=2796";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2796";
+import { isDemo } from "../../demo-mode.js?v=2796";
+import { getPosts } from "../../posts-store.js?v=2796";
+import { escapeHtml, plural } from "../../utils.js?v=2796";
 import {
   getVideos,
   exampleVideo,
@@ -25,7 +25,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2794";
+} from "../../videos-store.js?v=2796";
 import {
   fmtMs,
   previewMarkup,
@@ -33,7 +33,7 @@ import {
   confirmRemoveVideo,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2794";
+} from "./shared.js?v=2796";
 
 let target = null;
 let disposeShowcase = null;
@@ -345,20 +345,15 @@ function renderRow(v) {
     pick: `<span class="ap-status orange">${plural(v.clips.length, "clip")} to pick</span>`,
     posts: `<span class="ap-status green">${plural(posts, "post")}</span>`,
   }[st];
-  const next = {
-    running: "",
-    empty: v.failure?.kind === "crash" ? "Try again" : "",
-    pick: "Pick your clips",
-    posts: "See the posts",
-  }[st];
-  return `<tr data-clips-card data-state="${st}" data-name="${escapeHtml(v.name.toLowerCase())}" data-href="#/clips/${encodeURIComponent(v.id)}${st === "posts" ? "?tab=drafts" : ""}">
+  const next = nextOf(v);
+  return `<tr data-clips-card data-state="${st}" data-name="${escapeHtml(v.name.toLowerCase())}" data-href="#/clips/${encodeURIComponent(v.id)}${next?.tab || ""}">
     <td><span class="clips-library__vid"><span class="clips-library__thumb"><video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline tabindex="-1" aria-hidden="true"></video></span><b>${escapeHtml(v.name)}</b></span></td>
     <td>${status}</td>
     <td class="right clips-library__num">${fmtMs(v.durationMs)}</td>
     <td class="right clips-library__num">${v.status === "ready" ? v.clips.length : "–"}</td>
     <td class="right clips-library__num">${v.status === "ready" ? v.clips.filter((c) => c.selected).length : "–"}</td>
     <td class="right clips-library__num">${posts || "–"}</td>
-    <td class="right">${next ? `<span class="clips-video__next">${next}<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>` : ""}</td>
+    <td class="right">${next ? `<span class="clips-video__next">${next.text}<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>` : ""}</td>
   </tr>`;
 }
 
@@ -414,6 +409,17 @@ const stageLabel = (v) =>
     ? `Uploading · ${Math.min(100, Math.round(v.progress * 400))}%`
     : `${v.stage || "Analyzing"}…`;
 
+// What the video waits for, said on the card and the row: the click goes there.
+function nextOf(v) {
+  if (v.status !== "ready") return null;
+  const posts = getPosts(draftKey(v.id));
+  const toSchedule = posts.filter((p) => p.status !== "scheduled").length;
+  if (!v.clips.length) return { text: "Add a clip", tab: "" };
+  if (!posts.length) return { text: "Review the clips", tab: "" };
+  if (toSchedule) return { text: `Schedule ${toSchedule} draft${toSchedule === 1 ? "" : "s"}`, tab: "?tab=drafts" };
+  return { text: "Write more posts", tab: "?tab=drafts" };
+}
+
 function renderCard(v) {
   if (v.status === "failed") return renderFailedCard(v);
   const posts = getPosts(draftKey(v.id));
@@ -439,18 +445,7 @@ function renderCard(v) {
           )
           .join("")}</span>`
       : "";
-  // What the video waits for, said on the card: the click goes there.
-  const toSchedule = posts.length - scheduled;
-  const next =
-    v.status !== "ready"
-      ? null
-      : !v.clips.length
-        ? { text: "Add a clip", tab: "" }
-        : !posts.length
-          ? { text: "Review the clips", tab: "" }
-          : toSchedule
-            ? { text: `Schedule ${toSchedule} draft${toSchedule === 1 ? "" : "s"}`, tab: "?tab=drafts" }
-            : { text: "Write more posts", tab: "?tab=drafts" };
+  const next = nextOf(v);
   return `
     <a class="clips-video${v.status === "analyzing" ? " is-analyzing" : ""}" href="#/clips/${encodeURIComponent(v.id)}${next?.tab || ""}" data-clips-card data-state="${stateOf(v)}" data-name="${escapeHtml(v.name.toLowerCase())}">
       <span class="clips-video__thumb">

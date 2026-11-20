@@ -1,22 +1,22 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2794";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2794";
-import { getContextById } from "../../contexts-store.js?v=2794";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2794";
-import { renderTopicCard } from "../../components/topic-card.js?v=2794";
-import { findTopicSource } from "../../topics-catalog.js?v=2794";
-import { html, raw } from "../../utils.js?v=2794";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2794";
-import { renderStarterCards } from "../../components/starter-card.js?v=2794";
-import { isFlagOn } from "../../feature-flags.js?v=2794";
-import { isDemo } from "../../demo-mode.js?v=2794";
-import { voicesToFinish } from "../../voice-parts.js?v=2794";
-import { networkLabel } from "../../social-profiles.js?v=2794";
-import { parseHashParams } from "../../url-state.js?v=2794";
-import "../../archie-pixels.js?v=2794";
-import { activeHomeDirection } from "./home-directions.js?v=2794";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2796";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2796";
+import { getContextById } from "../../contexts-store.js?v=2796";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2796";
+import { renderTopicCard } from "../../components/topic-card.js?v=2796";
+import { findTopicSource } from "../../topics-catalog.js?v=2796";
+import { html, raw } from "../../utils.js?v=2796";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2796";
+import { renderStarterCards } from "../../components/starter-card.js?v=2796";
+import { isFlagOn } from "../../feature-flags.js?v=2796";
+import { isDemo } from "../../demo-mode.js?v=2796";
+import { voicesToFinish } from "../../voice-parts.js?v=2796";
+import { networkLabel } from "../../social-profiles.js?v=2796";
+import { parseHashParams } from "../../url-state.js?v=2796";
+import "../../archie-pixels.js?v=2796";
+import { activeHomeDirection } from "./home-directions.js?v=2796";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
