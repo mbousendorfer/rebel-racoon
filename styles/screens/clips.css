@@ -1754,6 +1754,14 @@ body.clips-editing .app-content {
   }
 }
 
+/* Narrower still (Reframe at 1280 px): the safe area keeps only its network's
+   logo, so the format select stays on screen. */
+@container (max-width: 380px) {
+  .clips-ed__monitor-bar .clips-ed__dz-text {
+    display: none;
+  }
+}
+
 .clips-ed__monitor-body {
   flex: 1;
   min-height: 0;
@@ -2340,6 +2348,12 @@ body.clips-editing .app-content {
   overflow-y: auto;
   padding: var(--ref-spacing-md);
   border-right: 1px solid var(--ref-color-grey-20);
+}
+
+/* The panel scrolls; its blocks keep their height (on a short screen the
+   intro infobox was squeezed to one clipped line). */
+.clips-ed__panel > * {
+  flex-shrink: 0;
 }
 
 /* A button keeps its own width (CTAs never full width) — the panel's other
