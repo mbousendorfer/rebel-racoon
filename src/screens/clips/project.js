@@ -7,33 +7,33 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2808";
-import { isFlagOn } from "../../feature-flags.js?v=2808";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2808";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2808";
-import { showToast } from "../../components/toast.js?v=2808";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2808";
-import { open as openClipRange } from "../../components/clip-range-modal.js?v=2808";
-import { open as openTrim } from "../../components/clip-trim-modal.js?v=2808";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2808";
-import { startRewrite } from "../../draft-rewrite.js?v=2808";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2808";
-import { renderPostCard } from "../../components/post-card.js?v=2808";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2808";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2808";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2808";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2808";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2808";
-import { open as openRename } from "../../components/rename-modal.js?v=2808";
-import { writePostsInChat } from "../../clips-chat.js?v=2808";
+import { navigate } from "../../router.js?v=2809";
+import { isFlagOn } from "../../feature-flags.js?v=2809";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2809";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2809";
+import { showToast } from "../../components/toast.js?v=2809";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2809";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2809";
+import { open as openTrim } from "../../components/clip-trim-modal.js?v=2809";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2809";
+import { startRewrite } from "../../draft-rewrite.js?v=2809";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2809";
+import { renderPostCard } from "../../components/post-card.js?v=2809";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2809";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2809";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2809";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2809";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2809";
+import { open as openRename } from "../../components/rename-modal.js?v=2809";
+import { writePostsInChat } from "../../clips-chat.js?v=2809";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2808";
-import { escapeHtml, plural } from "../../utils.js?v=2808";
+} from "../../posts-store.js?v=2809";
+import { escapeHtml, plural } from "../../utils.js?v=2809";
 import {
   getVideo,
   draftKey,
@@ -51,7 +51,7 @@ import {
   askForClips,
   trimClip,
   updateClip,
-} from "../../videos-store.js?v=2808";
+} from "../../videos-store.js?v=2809";
 import {
   fmtMs,
   lookSelect,
@@ -64,7 +64,7 @@ import {
   presetLabel,
   CTA_OPTIONS,
   confirmRemoveVideo,
-} from "./shared.js?v=2808";
+} from "./shared.js?v=2809";
 
 let target = null;
 let videoId = null;
@@ -438,7 +438,15 @@ function renderRequest(v, r, tools = "") {
       : r.status === "running"
         ? `<p class="clips-group-sec__meta" role="status">Finding these moments…</p><div class="clips-cards" aria-hidden="true">${'<div class="clips-card clips-frame is-waiting"><span class="clips-card__wait-media"></span><span class="clips-card__wait-body"><span></span><span></span></span></div>'.repeat(2)}</div>`
         : r.status === "none"
-          ? `<p class="clips-group-sec__none">I didn't find a part of the video that matches what you asked for, so I made no new clips. The clips you already had are still there.</p>`
+          ? // Prod's NO_MATCH, as the DS infobox; its × drops the request.
+            `<div class="ap-infobox info has-title" role="status">
+              <i class="ap-icon-info_fill" aria-hidden="true"></i>
+              <div class="ap-infobox-content"><div class="ap-infobox-texts">
+                <span class="ap-infobox-title">No new clips</span>
+                <span class="ap-infobox-message">I didn't find a part of the video that matches what you asked for, so I made no new clips. The clips you already had are still there.</span>
+              </div></div>
+              <button type="button" class="ap-infobox-close" data-clips-speaker-cancel="${escapeHtml(r.id)}" aria-label="Remove this request"><i class="ap-icon-close" aria-hidden="true"></i></button>
+            </div>`
           : `<div class="clips-cards">${clips.map((c) => renderCard(v, c)).join("")}</div>`;
   return `<section class="clips-group-sec">${head}${body}</section>`;
 }
