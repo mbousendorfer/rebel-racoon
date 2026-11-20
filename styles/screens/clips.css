@@ -3619,41 +3619,27 @@ body.clips-editing .app-content {
   color: var(--ref-color-grey-80);
 }
 
-.clips-recap__stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--ref-spacing-xs);
-  margin: var(--ref-spacing-xxs) 0 0;
-}
-
-.clips-recap__stat {
+.clips-recap__facts {
   display: flex;
-  flex-direction: column-reverse; /* the value reads first, its name under it */
-  gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-md);
-  background: var(--ref-color-grey-05);
-}
-
-.clips-recap__stat dt {
-  font-size: var(--sys-text-style-caption-size);
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs) var(--ref-spacing-md);
+  margin: 0;
   color: var(--ref-color-grey-80);
 }
 
-.clips-recap__stat dd {
-  margin: 0;
-  font-size: var(--sys-text-style-h3-size);
-  line-height: var(--sys-text-style-h3-line-height);
-  font-weight: var(--sys-text-style-h3-weight);
+.clips-recap__fact {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.clips-recap__fact i {
+  color: var(--ref-color-grey-80);
+}
+
+.clips-recap__fact b {
   color: var(--ref-color-grey-100);
   font-variant-numeric: tabular-nums;
-}
-
-.clips-recap__of {
-  font-size: var(--sys-text-style-body-size);
-  font-weight: 400;
-  color: var(--ref-color-grey-80);
 }
 
 /* The band's key: kept is the user's blue, the rest grey. */
@@ -3679,10 +3665,4 @@ body.clips-editing .app-content {
 
 .clips-recap__key i.is-kept {
   background: var(--ref-color-electric-blue-100);
-}
-
-@container (max-width: 900px) {
-  .clips-recap__stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
