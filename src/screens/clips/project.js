@@ -7,32 +7,33 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2806";
-import { isFlagOn } from "../../feature-flags.js?v=2806";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2806";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2806";
-import { showToast } from "../../components/toast.js?v=2806";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2806";
-import { open as openClipRange } from "../../components/clip-range-modal.js?v=2806";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2806";
-import { startRewrite } from "../../draft-rewrite.js?v=2806";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2806";
-import { renderPostCard } from "../../components/post-card.js?v=2806";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2806";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2806";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2806";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2806";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2806";
-import { open as openRename } from "../../components/rename-modal.js?v=2806";
-import { writePostsInChat } from "../../clips-chat.js?v=2806";
+import { navigate } from "../../router.js?v=2808";
+import { isFlagOn } from "../../feature-flags.js?v=2808";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2808";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2808";
+import { showToast } from "../../components/toast.js?v=2808";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2808";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2808";
+import { open as openTrim } from "../../components/clip-trim-modal.js?v=2808";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2808";
+import { startRewrite } from "../../draft-rewrite.js?v=2808";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2808";
+import { renderPostCard } from "../../components/post-card.js?v=2808";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2808";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2808";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2808";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2808";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2808";
+import { open as openRename } from "../../components/rename-modal.js?v=2808";
+import { writePostsInChat } from "../../clips-chat.js?v=2808";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2806";
-import { escapeHtml, plural } from "../../utils.js?v=2806";
+} from "../../posts-store.js?v=2808";
+import { escapeHtml, plural } from "../../utils.js?v=2808";
 import {
   getVideo,
   draftKey,
@@ -50,7 +51,7 @@ import {
   askForClips,
   trimClip,
   updateClip,
-} from "../../videos-store.js?v=2806";
+} from "../../videos-store.js?v=2808";
 import {
   fmtMs,
   lookSelect,
@@ -63,7 +64,7 @@ import {
   presetLabel,
   CTA_OPTIONS,
   confirmRemoveVideo,
-} from "./shared.js?v=2806";
+} from "./shared.js?v=2808";
 
 let target = null;
 let videoId = null;
@@ -104,8 +105,6 @@ export function renderClipsProject(params, el) {
   el.addEventListener("click", onClick);
   el.addEventListener("change", onChange);
   el.addEventListener("submit", onSubmit);
-  el.addEventListener("input", onInput);
-  el.addEventListener("keydown", onKey);
   topbar?.addEventListener("click", onClick);
   disposers.push(
     subscribeVideos(onStore),
@@ -119,10 +118,6 @@ export function renderClipsProject(params, el) {
     el.removeEventListener("click", onClick);
     el.removeEventListener("change", onChange);
     el.removeEventListener("submit", onSubmit);
-    el.removeEventListener("input", onInput);
-    el.removeEventListener("keydown", onKey);
-    stopTrimPlay();
-    trimming = null;
     topbar?.removeEventListener("click", onClick);
     disposers.splice(0).forEach((d) => d());
     disposePreviews?.();
@@ -221,7 +216,6 @@ function paint() {
     </div>`;
   if (t === "drafts") swapPlayers(v, posts);
   disposePreviews = mountPreviews(target, v);
-  if (trimming) mountTrim(v);
 }
 
 // The post card draws a faux player (a chat draft has no footage). Here the
@@ -463,7 +457,6 @@ function menuItem(label, icon, attr, danger = false) {
 // length, why I picked it on two lines; then Trim, Edit clip and ⋯ (Rename,
 // Remove). Three to a row.
 function renderCard(v, c) {
-  if (trimming?.id === c.id) return renderTrim(v, c);
   const id = escapeHtml(c.id);
   const title = escapeHtml(c.title);
   // « Le cadre fixe » (A, 2026-11-20, after Opus Clip and Riverside): every
@@ -906,20 +899,13 @@ function onClick(e) {
     input.value = tryAsk.dataset.clipsAskTry;
     return input.focus();
   }
+  // Trim: its own dialog, which does nothing else (clip-trim-modal.js).
   const trim = t.closest("[data-clips-trim]");
   if (trim) {
     const c = v.clips.find((x) => x.id === trim.dataset.clipsTrim);
     if (!c) return undefined;
-    trimming = { id: c.id, startMs: c.startMs, endMs: c.endMs, from: { startMs: c.startMs, endMs: c.endMs } };
-    paint();
-    return target.querySelector(`[data-clips-trim-h="start"]`)?.focus();
+    return openTrim({ video: v, clip: c, onSave: (range) => trimClip(v.id, c.id, range) });
   }
-  if (t.closest("[data-clips-trim-play]")) return playTrim();
-  if (t.closest("[data-clips-trim-reset]")) {
-    Object.assign(trimming, trimming.from);
-    return syncTrim("start");
-  }
-  if (t.closest("[data-clips-trim-done]")) return closeTrim(true);
   const restore = t.closest("[data-clips-restore]");
   if (restore) return restoreClip(v.id, restore.dataset.clipsRestore);
   const ans = t.closest("[data-clips-speaker-cancel]");
@@ -1121,170 +1107,4 @@ function renderRemoved(v) {
         )
         .join("")}</ul>
     </details>`;
-}
-
-// ── Trim in place ────────────────────────────────────────────────────
-// « Rien ne bloque » (2026-11-20), after Opus Clip and Riverside: the fiche
-// opens across its row on the source itself — a filmstrip of the stretch
-// around the clip with two handles, the frame under the handle you move, Play
-// for the cut. Prod's window: 2 minutes either side of the clip
-// (TRIM_PADDING_SECONDS), no length rule. Done saves (prod's Save trim), Esc
-// leaves it as it was.
-
-const TRIM_PAD = 120000;
-const TRIM_THUMBS = 12;
-let trimming = null; // { id, startMs, endMs, from }
-let trimPlay = null;
-
-const trimWindow = (v) => ({
-  lo: Math.max(0, trimming.from.startMs - TRIM_PAD),
-  hi: Math.min(v.durationMs, trimming.from.endMs + TRIM_PAD),
-});
-
-function renderTrim(v, c) {
-  const { lo, hi } = trimWindow(v);
-  const handle = (which, label) =>
-    `<input type="range" class="clips-trim__h" data-clips-trim-h="${which}" min="${lo}" max="${hi}" step="500" value="${trimming[which === "start" ? "startMs" : "endMs"]}" aria-label="${label}" />`;
-  return `<article class="clips-card is-trimming" data-clips-card="${escapeHtml(c.id)}" aria-label="Trim « ${escapeHtml(c.title)} »">
-    <div class="clips-trim__player">
-      <video data-clips-trim-video src="${escapeHtml(v.url)}" muted playsinline preload="metadata"></video>
-      <button type="button" class="ap-icon-button stroked grey clips-trim__play" data-clips-trim-play aria-label="Play the clip"><i class="ap-icon-play" aria-hidden="true"></i></button>
-    </div>
-    <div class="clips-trim__body">
-      <span class="clips-card__title">Trim: ${escapeHtml(c.title)}</span>
-      <div class="clips-trim__strip">
-        <div class="clips-trim__thumbs" aria-hidden="true">${"<canvas></canvas>".repeat(TRIM_THUMBS)}</div>
-        <span class="clips-trim__out is-before" data-clips-trim-out="before"></span>
-        <span class="clips-trim__out is-after" data-clips-trim-out="after"></span>
-        <span class="clips-trim__sel" data-clips-trim-sel></span>
-        <span class="clips-trim__head" data-clips-trim-head hidden></span>
-        ${handle("start", "Start")}${handle("end", "End")}
-      </div>
-      <span class="clips-trim__scale"><span>${fmtMs(lo)}</span><span>${fmtMs(hi)}</span></span>
-      <span class="clips-trim__acts">
-        <span class="clips-trim__read" data-clips-trim-read aria-live="polite"></span>
-        <button type="button" class="ap-button ghost grey" data-clips-trim-reset>Reset</button>
-        <button type="button" class="ap-button primary blue" data-clips-trim-done>Done</button>
-      </span>
-    </div>
-  </article>`;
-}
-
-function mountTrim(v) {
-  const card = target.querySelector(".clips-card.is-trimming");
-  if (!card) return;
-  syncTrim("start");
-  // The filmstrip: one more stream, seeked across the window, each frame
-  // painted into its canvas.
-  const { lo, hi } = trimWindow(v);
-  const canvases = [...card.querySelectorAll(".clips-trim__thumbs canvas")];
-  const src = document.createElement("video");
-  src.muted = true;
-  src.preload = "auto";
-  src.src = v.url;
-  let i = 0;
-  const next = () => {
-    if (i >= canvases.length || !card.isConnected) return src.removeAttribute("src");
-    src.currentTime = (lo + ((hi - lo) * (i + 0.5)) / canvases.length) / 1000;
-    return undefined;
-  };
-  src.addEventListener("seeked", () => {
-    const cv = canvases[i];
-    cv.width = 160;
-    cv.height = 90;
-    try {
-      cv.getContext("2d").drawImage(src, 0, 0, 160, 90);
-    } catch {}
-    i++;
-    next();
-  });
-  src.addEventListener("loadedmetadata", next, { once: true });
-}
-
-// The handles can't cross (a clip lasts a second at least); the frame under
-// the handle being moved shows in the player.
-function syncTrim(moved) {
-  const card = target?.querySelector(".clips-card.is-trimming");
-  const v = getVideo(videoId);
-  if (!card || !v) return;
-  const { lo, hi } = trimWindow(v);
-  const pct = (ms) => `${((ms - lo) / (hi - lo)) * 100}%`;
-  card.querySelector('[data-clips-trim-h="start"]').value = trimming.startMs;
-  card.querySelector('[data-clips-trim-h="end"]').value = trimming.endMs;
-  card.querySelector('[data-clips-trim-out="before"]').style.width = pct(trimming.startMs);
-  card.querySelector('[data-clips-trim-out="after"]').style.left = pct(trimming.endMs);
-  const sel = card.querySelector("[data-clips-trim-sel]");
-  sel.style.left = pct(trimming.startMs);
-  sel.style.right = `calc(100% - ${pct(trimming.endMs)})`;
-  const changed = trimming.startMs !== trimming.from.startMs || trimming.endMs !== trimming.from.endMs;
-  card.querySelector("[data-clips-trim-read]").textContent =
-    `Start ${fmtMs(trimming.startMs)} · End ${fmtMs(trimming.endMs)} · ${fmtMs(trimming.endMs - trimming.startMs)} long`;
-  card.querySelector("[data-clips-trim-reset]").disabled = !changed;
-  const video = card.querySelector("[data-clips-trim-video]");
-  stopTrimPlay();
-  video.currentTime = (moved === "end" ? trimming.endMs - 300 : trimming.startMs) / 1000;
-}
-
-function playTrim() {
-  const card = target?.querySelector(".clips-card.is-trimming");
-  const video = card?.querySelector("[data-clips-trim-video]");
-  if (!video) return;
-  if (trimPlay) return stopTrimPlay();
-  const head = card.querySelector("[data-clips-trim-head]");
-  const { lo, hi } = trimWindow(getVideo(videoId));
-  video.currentTime = trimming.startMs / 1000;
-  video.play().catch(() => {});
-  head.hidden = false;
-  const tick = () => {
-    const ms = video.currentTime * 1000;
-    head.style.left = `${((ms - lo) / (hi - lo)) * 100}%`;
-    if (ms >= trimming.endMs) return stopTrimPlay();
-    trimPlay = requestAnimationFrame(tick);
-    return undefined;
-  };
-  trimPlay = requestAnimationFrame(tick);
-  card.querySelector("[data-clips-trim-play]").setAttribute("aria-label", "Pause");
-  card.querySelector("[data-clips-trim-play] i").className = "ap-icon-pause";
-}
-
-function stopTrimPlay() {
-  if (!trimPlay) return;
-  cancelAnimationFrame(trimPlay);
-  trimPlay = null;
-  const card = target?.querySelector(".clips-card.is-trimming");
-  card?.querySelector("[data-clips-trim-video]")?.pause();
-  const head = card?.querySelector("[data-clips-trim-head]");
-  if (head) head.hidden = true;
-  const btn = card?.querySelector("[data-clips-trim-play]");
-  if (btn) {
-    btn.setAttribute("aria-label", "Play the clip");
-    btn.querySelector("i").className = "ap-icon-play";
-  }
-}
-
-function closeTrim(save) {
-  if (!trimming) return;
-  stopTrimPlay();
-  const t = trimming;
-  trimming = null;
-  const changed = t.startMs !== t.from.startMs || t.endMs !== t.from.endMs;
-  if (save && changed) trimClip(videoId, t.id, { startMs: t.startMs, endMs: t.endMs });
-  else paint();
-  target?.querySelector(`[data-clips-trim="${CSS.escape(t.id)}"]`)?.focus();
-}
-
-function onInput(e) {
-  const h = e.target.closest("[data-clips-trim-h]");
-  if (!h || !trimming) return;
-  const ms = Number(h.value);
-  if (h.dataset.clipsTrimH === "start") trimming.startMs = Math.min(ms, trimming.endMs - 1000);
-  else trimming.endMs = Math.max(ms, trimming.startMs + 1000);
-  syncTrim(h.dataset.clipsTrimH);
-}
-
-function onKey(e) {
-  if (e.key === "Escape" && trimming) {
-    e.preventDefault();
-    closeTrim(false);
-  }
 }

@@ -42,6 +42,7 @@ body.has-modal {
 .confirm-modal,
 .rename-modal,
 .clip-range-modal,
+.clip-trim-modal,
 .save-folder-modal,
 .share-playbook-modal,
 .assign-modal,
@@ -507,6 +508,7 @@ body.has-modal {
 .confirm-modal.open,
 .rename-modal.open,
 .clip-range-modal.open,
+.clip-trim-modal.open,
 .save-folder-modal.open,
 .share-playbook-modal.open,
 .assign-modal.open,
@@ -2236,4 +2238,37 @@ body.has-modal {
   .voice-intro__lede {
     padding: var(--ref-spacing-md);
   }
+}
+
+/* ── Trim, its own dialog (2026-11-20; clip-trim-modal.js) ────────────
+   The source large, a bar (Play · Start/End/length · Reset), then the
+   filmstrip of prod's ±2 min window with its two handles. */
+.clip-trim-modal {
+  width: min(760px, calc(100vw - 48px));
+  max-width: none;
+}
+
+.clip-trim-modal .ap-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.clip-trim-modal__sub {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.clip-trim-modal__player {
+  align-self: stretch;
+}
+
+.clip-trim-modal__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+}
+
+.clip-trim-modal__bar .clips-trim__read {
+  margin-right: auto;
 }

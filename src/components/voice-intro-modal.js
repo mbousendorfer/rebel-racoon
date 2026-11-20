@@ -26,11 +26,11 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2806";
-import { getContextById } from "../contexts-store.js?v=2806";
-import { playbookForNewWork } from "../active-playbook.js?v=2806";
-import { isNewUser } from "../user-mode.js?v=2806";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2806";
+} from "../modal-coordinator.js?v=2808";
+import { getContextById } from "../contexts-store.js?v=2808";
+import { playbookForNewWork } from "../active-playbook.js?v=2808";
+import { isNewUser } from "../user-mode.js?v=2808";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2808";
 import {
   networkVoice,
   voiceNetworks,
@@ -39,7 +39,7 @@ import {
   baseValue,
   voiceItemsHtml,
   voiceNetTagHtml,
-} from "../voice-parts.js?v=2806";
+} from "../voice-parts.js?v=2808";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -48,11 +48,11 @@ import {
   voiceChoices,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2806";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2806";
-import "../archie-pixels.js?v=2806";
-import { navigate } from "../router.js?v=2806";
-import { escapeHtml } from "../utils.js?v=2806";
+} from "../network-voice-flow.js?v=2808";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2808";
+import "../archie-pixels.js?v=2808";
+import { navigate } from "../router.js?v=2808";
+import { escapeHtml } from "../utils.js?v=2808";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
