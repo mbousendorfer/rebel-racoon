@@ -470,10 +470,6 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
-.clips-video__veil .clips-progress__label {
-  color: var(--ref-color-white);
-}
-
 .clips-video__body {
   display: flex;
   flex-direction: column;
@@ -558,101 +554,6 @@
   height: 100%;
   background: var(--ref-color-orange-100);
   transition: width 0.3s linear;
-}
-
-.clips-progress__label {
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-/* ── Analysis ────────────────────────────────────────────────────── */
-
-.clips-analyzing {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 1fr);
-  gap: var(--ref-spacing-xl);
-  align-items: center;
-  padding: var(--ref-spacing-xl) 0;
-}
-
-.clips-analyzing__player {
-  aspect-ratio: 16 / 9;
-  border-radius: var(--app-radius-card);
-  background: #000;
-  overflow: hidden;
-}
-
-.clips-analyzing__player video {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-
-.clips-analyzing__title {
-  margin: 0 0 var(--ref-spacing-xxs);
-  font-size: var(--sys-text-style-h2-size);
-  line-height: var(--sys-text-style-h2-line-height);
-  font-weight: var(--sys-text-style-h2-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.clips-analyzing__sub {
-  margin: 0 0 var(--ref-spacing-sm);
-  color: var(--ref-color-grey-80);
-}
-
-.clips-analyzing__steps {
-  list-style: none;
-  margin: var(--ref-spacing-md) 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-}
-
-.clips-analyzing__step {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  color: var(--ref-color-grey-80);
-}
-
-.clips-analyzing__step.is-current {
-  color: var(--ref-color-grey-100);
-  font-weight: var(--sys-text-style-body-bold-weight);
-}
-
-.clips-analyzing__dot {
-  display: grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: var(--app-radius-circle);
-  border: 1px solid var(--ref-color-grey-20);
-  font-size: 12px;
-}
-
-.clips-analyzing__dot i {
-  visibility: hidden;
-}
-
-.clips-analyzing__step.is-done .clips-analyzing__dot {
-  border-color: var(--ref-color-green-100);
-  background: var(--ref-color-green-100);
-  color: var(--ref-color-white);
-}
-
-.clips-analyzing__step.is-done .clips-analyzing__dot i {
-  visibility: visible;
-}
-
-.clips-analyzing__step.is-current .clips-analyzing__dot {
-  border: 2px solid var(--ref-color-orange-100);
-  border-right-color: transparent;
-  animation: app-spin 0.9s linear infinite;
 }
 
 /* ── Project: the page fits the viewport ─────────────────────────── */
@@ -2391,87 +2292,9 @@ body.clips-editing .app-content {
   margin-bottom: var(--ref-spacing-md);
 }
 
-/* While I analyze: where the clips will land, one slot each at their format,
-   breathing in turn. Says what comes out before it does. */
-.clips-coming {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-md);
-  padding-top: var(--ref-spacing-lg);
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
-.clips-coming__head {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-}
-
-.clips-coming__title {
-  margin: 0;
-  font-size: var(--sys-text-style-h3-size);
-  line-height: var(--sys-text-style-h3-line-height);
-  font-weight: var(--sys-text-style-h3-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.clips-coming__sub {
-  margin: 0;
-  max-width: 64ch;
-  color: var(--ref-color-grey-80);
-}
-
-.clips-coming__slots {
-  display: grid;
-  /* One row, whatever the count: the slots shrink rather than orphan two. */
-  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
-  max-width: calc(var(--n) * 112px + (var(--n) - 1) * var(--ref-spacing-sm));
-  gap: var(--ref-spacing-sm);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.clips-coming__slot {
-  position: relative;
-  aspect-ratio: 9 / 16;
-  border-radius: var(--app-radius-md);
-  background: var(--ref-color-grey-10);
-  overflow: hidden;
-  animation: clips-rise var(--ref-animation-long) var(--app-ease-out) both;
-  animation-delay: calc(var(--i) * 60ms);
-}
-
-.clips-coming__slot::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(100deg, transparent 30%, var(--ref-color-grey-05) 50%, transparent 70%);
-  transform: translateX(-100%);
-  animation: clips-shimmer 1.8s ease-in-out infinite;
-  animation-delay: calc(var(--i) * 120ms);
-}
-
-.clips-coming__slot span {
-  position: absolute;
-  left: var(--ref-spacing-xs);
-  top: var(--ref-spacing-xxs);
-  font-size: var(--sys-text-style-caption-bold-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-80);
-  font-variant-numeric: tabular-nums;
-}
-
 @keyframes clips-shimmer {
   to {
     transform: translateX(100%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .clips-coming__slot,
-  .clips-coming__slot::after {
-    animation: none;
   }
 }
 
@@ -2486,7 +2309,6 @@ body.clips-editing .app-content {
    rectangle, and holds back what sits on the footage (subtitle lines). */
 .clips-video__thumb:not(.is-ready),
 .clips-showcase__source:not(.is-ready),
-.clips-analyzing__player:not(.is-ready),
 .clips-preview:not(.is-ready),
 .clips-ed__stage:not(.is-ready) .clips-ed__source,
 .clips-ed__stage:not(.is-ready) .clips-ed__output {
@@ -2509,7 +2331,6 @@ body.clips-editing .app-content {
 @media (prefers-reduced-motion: reduce) {
   .clips-video__thumb,
   .clips-showcase__source,
-  .clips-analyzing__player,
   .clips-preview,
   .clips-ed__source,
   .clips-ed__output {
@@ -2547,36 +2368,6 @@ body.clips-editing .app-content {
   flex-wrap: wrap;
   gap: var(--ref-spacing-xxs);
   margin-top: var(--ref-spacing-xs);
-}
-
-.clips-analyzing__error {
-  margin: 0;
-}
-
-.clips-analyzing__step.is-failed {
-  color: var(--ref-color-grey-100);
-  font-weight: var(--sys-text-style-body-bold-weight);
-}
-
-.clips-analyzing__step.is-failed .clips-analyzing__dot {
-  border-color: var(--ref-color-red-100);
-  background: var(--ref-color-red-100);
-  color: var(--ref-color-white);
-}
-
-.clips-analyzing__step.is-failed .clips-analyzing__dot i {
-  visibility: visible;
-}
-
-.clips-analyzing__stopped {
-  font-weight: var(--sys-text-style-body-weight, 400);
-  color: var(--ref-color-grey-80);
-}
-
-.clips-analyzing__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xxs);
 }
 
 /* ── Project · step 1: the clips page (2026-11-20) ──────────────────
@@ -3103,4 +2894,129 @@ body.clips-editing .app-content {
   display: flex;
   flex-wrap: wrap;
   gap: var(--ref-spacing-xxs);
+}
+
+/* ── The analysis, as the clips page's first state (2026-11-20) ─────
+   Prod's steps in the recap (no percentage but the upload's), then the clips
+   to come as fiches that wait. */
+.clips-run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  margin-top: auto;
+  padding-top: var(--ref-spacing-xs);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.clips-run__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs) var(--ref-spacing-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clips-run__step {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-run__step.is-current {
+  font-weight: 700;
+  color: var(--ref-color-grey-100);
+}
+
+.clips-run__dot {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--ref-color-grey-40);
+  border-radius: var(--app-radius-circle);
+  font-size: 10px;
+}
+
+.clips-run__step.is-done .clips-run__dot {
+  border-color: var(--ref-color-green-100);
+  background: var(--ref-color-green-100);
+  color: var(--ref-color-white);
+}
+
+.clips-run__step.is-current .clips-run__dot {
+  border: 2px solid var(--ref-color-grey-20);
+  border-top-color: var(--ref-color-electric-blue-100);
+  animation: clips-spin 0.9s linear infinite;
+}
+
+@keyframes clips-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.clips-run__note {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.clips-run__acts {
+  display: flex;
+  gap: var(--ref-spacing-xxs);
+}
+
+.clips-card.is-waiting:hover {
+  border-color: var(--ref-color-grey-20);
+}
+
+.clips-card__wait-media,
+.clips-card__wait-body > span {
+  background: linear-gradient(
+      100deg,
+      var(--ref-color-grey-10) 30%,
+      var(--ref-color-grey-05) 50%,
+      var(--ref-color-grey-10) 70%
+    )
+    var(--ref-color-grey-10);
+  background-size: 200% 100%;
+  animation: app-shimmer 1.4s linear infinite;
+}
+
+.clips-card__wait-media {
+  aspect-ratio: 9 / 16;
+  border-radius: var(--app-radius-md);
+}
+
+.clips-card__wait-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding-top: var(--ref-spacing-xxxs);
+}
+
+.clips-card__wait-body > span {
+  height: 10px;
+  border-radius: var(--app-radius-pill);
+}
+
+.clips-card__wait-body > span:nth-child(1) {
+  width: 75%;
+}
+
+.clips-card__wait-body > span:nth-child(2) {
+  width: 45%;
+}
+
+.clips-card__wait-body > span:nth-child(3) {
+  width: 90%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clips-run__step.is-current .clips-run__dot,
+  .clips-card__wait-media,
+  .clips-card__wait-body > span {
+    animation: none;
+  }
 }

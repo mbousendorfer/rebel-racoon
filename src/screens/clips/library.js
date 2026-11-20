@@ -2,13 +2,13 @@
 // videos, and the one way in, adding a video. The flow starts with the video;
 // the posts come last (screens/clips/project.js).
 
-import { navigate } from "../../router.js?v=2792";
-import { isFlagOn } from "../../feature-flags.js?v=2792";
-import { renderTopbar } from "../../components/topbar.js?v=2792";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2792";
-import { isDemo } from "../../demo-mode.js?v=2792";
-import { getPosts } from "../../posts-store.js?v=2792";
-import { escapeHtml } from "../../utils.js?v=2792";
+import { navigate } from "../../router.js?v=2793";
+import { isFlagOn } from "../../feature-flags.js?v=2793";
+import { renderTopbar } from "../../components/topbar.js?v=2793";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2793";
+import { isDemo } from "../../demo-mode.js?v=2793";
+import { getPosts } from "../../posts-store.js?v=2793";
+import { escapeHtml } from "../../utils.js?v=2793";
 import {
   getVideos,
   exampleVideo,
@@ -18,7 +18,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2792";
+} from "../../videos-store.js?v=2793";
 import {
   fmtMs,
   previewMarkup,
@@ -26,8 +26,8 @@ import {
   confirmRemoveVideo,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2792";
-import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2792";
+} from "./shared.js?v=2793";
+import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2793";
 
 let target = null;
 let disposeShowcase = null;
@@ -84,10 +84,8 @@ function onStore() {
   for (const v of videos) {
     const bar = target.querySelector(`[data-clips-progress="${v.id}"]`);
     if (!bar) continue;
-    bar.querySelector(".clips-progress__fill").style.width = `${Math.round(v.progress * 100)}%`;
-    // The stage on its own line, the percentage on the bar: one name each.
-    bar.querySelector(".clips-video__veil-stage").textContent = `${v.stage || "Analyzing"}…`;
-    bar.querySelector(".clips-progress__label").textContent = `${Math.round(v.progress * 100)}%`;
+    // Prod's step; a percentage only while uploading.
+    bar.querySelector(".clips-video__veil-stage").textContent = stageLabel(v);
   }
 }
 
@@ -284,26 +282,34 @@ function applySearch() {
 
 // A failed analysis is not a link: the card says why, in place, and holds its
 // two ways out (Try again, Remove) — buttons can't sit inside a link.
+// No clips (prod's NO_SPEECH) is the video's doing: Remove only. A crash is
+// the job's: Try again.
 function renderFailedCard(v) {
   const added = new Date(v.addedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const crash = v.failure?.kind === "crash";
   return `
     <div class="clips-video is-failed" data-clips-card>
       <span class="clips-video__thumb">
         <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline tabindex="-1" aria-hidden="true" data-poster-s="${(v.posterMs || 0) / 1000}"></video>
         <span class="clips-video__duration">${fmtMs(v.durationMs)}</span>
-        <span class="clips-video__veil is-failed"><i class="ap-icon-warning" aria-hidden="true"></i><span>Stopped at ${escapeHtml(v.failure?.stage || "the analysis")}</span></span>
+        <span class="clips-video__veil is-failed"><i class="ap-icon-warning" aria-hidden="true"></i><span>${crash ? `Stopped at ${escapeHtml((v.failure?.stage || "the analysis").toLowerCase())}` : "No clips found"}</span></span>
       </span>
       <span class="clips-video__body">
         <span class="clips-video__name" title="${escapeHtml(v.name)}">${escapeHtml(v.name)}</span>
         <span class="clips-video__meta">Added ${added}</span>
         <p class="ap-form-message error clips-video__error" role="alert">${escapeHtml(v.failure?.reason || "I couldn't analyze this video.")}</p>
         <span class="clips-video__actions">
-          <button type="button" class="ap-button stroked grey" data-clips-retry="${escapeHtml(v.id)}"><i class="ap-icon-refresh" aria-hidden="true"></i><span>Try again</span></button>
+          ${crash ? `<button type="button" class="ap-button stroked grey" data-clips-retry="${escapeHtml(v.id)}"><i class="ap-icon-refresh" aria-hidden="true"></i><span>Try again</span></button>` : ""}
           <button type="button" class="ap-button ghost grey" data-clips-remove-video="${escapeHtml(v.id)}"><span>Remove</span></button>
         </span>
       </span>
     </div>`;
 }
+
+const stageLabel = (v) =>
+  v.stage === "Uploading"
+    ? `Uploading · ${Math.min(100, Math.round(v.progress * 400))}%`
+    : `${v.stage || "Analyzing"}…`;
 
 function renderCard(v) {
   if (v.status === "failed") return renderFailedCard(v);
@@ -330,7 +336,6 @@ function renderCard(v) {
           )
           .join("")}</span>`
       : "";
-  const pct = Math.round(v.progress * 100);
   // What the video waits for, said on the card: the click goes there.
   const toSchedule = posts.length - scheduled;
   const next =
@@ -352,9 +357,8 @@ function renderCard(v) {
         ${
           v.status === "analyzing"
             ? `<span class="clips-video__veil" data-clips-progress="${v.id}">
-                 <span class="clips-video__veil-stage">${escapeHtml(v.stage || "Analyzing")}…</span>
-                 <span class="clips-progress"><span class="clips-progress__track"><span class="clips-progress__fill" style="width:${pct}%"></span></span>
-                 <span class="clips-progress__label">${pct}%</span></span>
+                 <span class="clips-video__veil-stage">${escapeHtml(stageLabel(v))}</span>
+                 <span class="clips-progress"><span class="clips-progress__track is-indeterminate"><span class="clips-progress__fill"></span></span></span>
                </span>`
             : ""
         }

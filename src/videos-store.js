@@ -7,13 +7,14 @@
 // and the draft edits all work unchanged.
 //
 // The flow is prod's (content/studio … handlers/video-clips.ts): adding a video
-// starts the analysis AT ONCE — no settings first; 3 clips up to 10 minutes,
-// 10 beyond; 30 s minimum, 2 h maximum. Format / subtitles / CTA are asked
+// starts the analysis AT ONCE — no settings first; one clip per 2 minutes,
+// between 3 and 10 (prod's ClipCount); 30 s minimum, 2 h maximum. Format / subtitles / CTA are asked
 // after the clips are picked, as settings of the whole video.
 //
 //   video = { id, contextId, name, url, origin, width, height, durationMs,
 //             posterMs, addedAt, status: analyzing|ready|failed, progress, stage,
-//             failure: { stage, reason } (status failed),
+//             failure: { kind: empty|crash, stage, reason } (status failed;
+//             « empty » is prod's NO_SPEECH: no clips, not a breakdown),
 //             settings: { ratio, subtitlePreset, cta }, analysis, fallback,
 //             clips[], requests[] (asked of Archie: { id, text, at, status:
 //             running|done|none }), summary (the recap's line, seed only),
@@ -27,15 +28,17 @@
 //             preset), transcript, segments (null = auto framing), texts[],
 //             brand (null = the Playbook's clip look) }
 
-import { newId } from "./utils.js?v=2792";
-import { seedVideos } from "./mocks.js?v=2792";
-import { isNewUser } from "./user-mode.js?v=2792";
-import { createNotifier } from "./store-utils.js?v=2792";
-import { getDefaultContext, getContextById } from "./contexts-store.js?v=2792";
+import { newId } from "./utils.js?v=2793";
+import { seedVideos } from "./mocks.js?v=2793";
+import { isNewUser } from "./user-mode.js?v=2793";
+import { createNotifier } from "./store-utils.js?v=2793";
+import { getDefaultContext, getContextById } from "./contexts-store.js?v=2793";
 
 const MIN_VIDEO_MS = 30 * 1000;
 const MAX_VIDEO_MS = 2 * 60 * 60 * 1000;
-export const ANALYSIS_STAGES = ["Uploading", "Transcribing", "Finding highlights", "Framing speakers"];
+// Prod's steps (clip-processing-card: STEP_LABEL_KEYS); only the upload has a
+// percentage.
+export const ANALYSIS_STAGES = ["Uploading", "Extracting audio", "Transcribing audio", "Finding the best moments"];
 const ANALYZE_MS = 9000;
 
 const notifier = createNotifier("videos-store");
@@ -168,31 +171,40 @@ export function addVideo({
   return video;
 }
 
-// An analysis that fails stops where it broke and says why; Try again starts
-// it over (prod: a failed extract_video_clips job). The prototype never fails
-// on its own: Admin › Clips › « Fail the next analysis » arms one failure.
-export const ANALYSIS_FAILURE = {
-  stage: "Transcribing",
-  reason:
-    "I couldn't hear anyone speaking in this video, so I found no moments to cut. Check that it has its sound, then try again.",
+// Two ways an analysis ends without clips, as in prod (clip-job.service):
+// « empty » (NO_SPEECH — the video, not the job: trying again changes nothing)
+// and « crash » (the job failed: Try again). The prototype never ends either
+// way on its own: Admin › Clips arms one.
+const ANALYSIS_ENDS = {
+  empty: {
+    kind: "empty",
+    stage: "Finding the best moments",
+    reason:
+      "I couldn't find enough speech in this video to pick highlights from. Clips are chosen from what is said, so try a video with narration or dialogue.",
+  },
+  crash: {
+    kind: "crash",
+    stage: "Transcribing audio",
+    reason: "I couldn't finish working on this video. You can try again, or upload a different video.",
+  },
 };
-let failNext = false;
-export function failNextAnalysis() {
-  failNext = true;
+let failNext = null;
+export function failNextAnalysis(kind = "empty") {
+  failNext = kind;
 }
 
 function runAnalysis(video) {
   const started = Date.now();
-  const fails = failNext;
-  failNext = false;
+  const end = failNext && ANALYSIS_ENDS[failNext];
+  failNext = null;
   const timer = setInterval(() => {
     const p = Math.min(1, (Date.now() - started) / ANALYZE_MS);
     video.progress = p;
     video.stage = ANALYSIS_STAGES[Math.min(ANALYSIS_STAGES.length - 1, Math.floor(p * ANALYSIS_STAGES.length))];
-    if (fails && video.stage === ANALYSIS_FAILURE.stage && p >= 0.4) {
+    if (end && video.stage === end.stage) {
       clearInterval(timer);
       video.status = "failed";
-      video.failure = { ...ANALYSIS_FAILURE };
+      video.failure = { ...end };
       notify();
       return;
     }
@@ -206,8 +218,11 @@ function runAnalysis(video) {
   }, 300);
 }
 
+// How many clips prod cuts: one per 2 minutes, between 3 and 10.
+export const clipCountFor = (durationMs) => Math.max(3, Math.min(10, Math.round(durationMs / 120000)));
+
 // The moments of a video nobody analysed: evenly spread windows, as many as
-// prod cuts (3 up to 10 minutes, 10 beyond).
+// prod cuts, 30 to 60 s each when the video leaves room.
 // ponytail: evenly spaced, not content-aware — the mock has no transcript to read.
 const GENERIC_MOMENTS = [
   ["The hook that opens it all", "A one-line framing of the whole video.", "Lands the point before the scroll does."],
@@ -223,9 +238,9 @@ const GENERIC_MOMENTS = [
 ];
 
 function momentsFor(video) {
-  const n = video.durationMs > 10 * 60 * 1000 ? 10 : 3;
+  const n = clipCountFor(video.durationMs);
   const slot = video.durationMs / n;
-  const len = Math.max(15000, Math.min(45000, slot * 0.7));
+  const len = Math.min(slot * 0.9, Math.max(30000, Math.min(60000, slot * 0.7)));
   return GENERIC_MOMENTS.slice(0, n).map(([title, summary, why], i) => {
     const startMs = Math.round(i * slot + (slot - len) / 2);
     return freshClip({

@@ -6,16 +6,16 @@
 // the side-effecting actions wired by the sidebar's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2792";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2792";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2792";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2792";
-import { getRole, setRole, ORG } from "./org.js?v=2792";
-import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2792";
-import { resetIntro } from "./components/voice-intro-modal.js?v=2792";
-import { getContexts, updateContext } from "./contexts-store.js?v=2792";
-import { showToast } from "./components/toast.js?v=2792";
-import { failNextAnalysis } from "./videos-store.js?v=2792";
+import { html, raw, escapeHtml } from "./utils.js?v=2793";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2793";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2793";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2793";
+import { getRole, setRole, ORG } from "./org.js?v=2793";
+import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2793";
+import { resetIntro } from "./components/voice-intro-modal.js?v=2793";
+import { getContexts, updateContext } from "./contexts-store.js?v=2793";
+import { showToast } from "./components/toast.js?v=2793";
+import { failNextAnalysis } from "./videos-store.js?v=2793";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
@@ -84,10 +84,14 @@ export function resetNetworkVoices() {
   showToast("Network voices reset. Each network asks for its voice at its next draft.", { duration: 3200 });
 }
 
-// One failure armed for the Clips space: the next video added stops mid-analysis.
-export function armClipsFailure() {
-  failNextAnalysis();
-  showToast("The next video you add will fail its analysis.", { duration: 3200 });
+// One end armed for the Clips space: the next video added finds no clips
+// (prod's NO_SPEECH) or its job crashes.
+export function armClipsFailure(kind) {
+  failNextAnalysis(kind);
+  showToast(
+    kind === "crash" ? "The next video you add will crash its analysis." : "The next video you add will find no clips.",
+    { duration: 3200 },
+  );
 }
 
 export function renderAdminMenu() {
@@ -201,10 +205,17 @@ export function renderAdminMenu() {
         isFlagOn("clipsSpace")
           ? `<div class="admin-menu__section">
               <span class="admin-menu__section-title">Clips</span>
-              <button type="button" class="admin-menu__doc" data-admin-clips-fail>
+              <button type="button" class="admin-menu__doc" data-admin-clips-fail="empty">
                 <span class="admin-menu__opt-text">
-                  <span class="admin-menu__opt-label">Fail the next analysis</span>
-                  <span class="admin-menu__opt-hint">The next video added stops at Transcribing, with its reason, Try again and Remove</span>
+                  <span class="admin-menu__opt-label">No clips in the next video</span>
+                  <span class="admin-menu__opt-hint">Prod's NO_SPEECH: the reason, Upload another video and Remove</span>
+                </span>
+                <i class="ap-icon-warning" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="admin-menu__doc" data-admin-clips-fail="crash">
+                <span class="admin-menu__opt-text">
+                  <span class="admin-menu__opt-label">Crash the next analysis</span>
+                  <span class="admin-menu__opt-hint">The job fails at Transcribing audio: Try again and Remove</span>
                 </span>
                 <i class="ap-icon-warning" aria-hidden="true"></i>
               </button>

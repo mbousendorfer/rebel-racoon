@@ -7,31 +7,31 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2792";
-import { isFlagOn } from "../../feature-flags.js?v=2792";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2792";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2792";
-import { showToast } from "../../components/toast.js?v=2792";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2792";
-import { open as openClipRange } from "../../components/clip-range-modal.js?v=2792";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2792";
-import { startRewrite } from "../../draft-rewrite.js?v=2792";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2792";
-import { renderPostCard } from "../../components/post-card.js?v=2792";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2792";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2792";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2792";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2792";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2792";
-import { open as openRename } from "../../components/rename-modal.js?v=2792";
+import { navigate } from "../../router.js?v=2793";
+import { isFlagOn } from "../../feature-flags.js?v=2793";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2793";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2793";
+import { showToast } from "../../components/toast.js?v=2793";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2793";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2793";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2793";
+import { startRewrite } from "../../draft-rewrite.js?v=2793";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2793";
+import { renderPostCard } from "../../components/post-card.js?v=2793";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2793";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2793";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2793";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2793";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2793";
+import { open as openRename } from "../../components/rename-modal.js?v=2793";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2792";
-import { escapeHtml, plural } from "../../utils.js?v=2792";
+} from "../../posts-store.js?v=2793";
+import { escapeHtml, plural } from "../../utils.js?v=2793";
 import {
   getVideo,
   draftKey,
@@ -42,11 +42,12 @@ import {
   subscribe as subscribeVideos,
   retryAnalysis,
   reviewClip,
+  clipCountFor,
   setSelection,
   askForClips,
   trimClip,
   updateClip,
-} from "../../videos-store.js?v=2792";
+} from "../../videos-store.js?v=2793";
 import {
   fmtMs,
   lookSelect,
@@ -59,7 +60,7 @@ import {
   presetLabel,
   CTA_OPTIONS,
   confirmRemoveVideo,
-} from "./shared.js?v=2792";
+} from "./shared.js?v=2793";
 
 let target = null;
 let videoId = null;
@@ -148,16 +149,10 @@ function onStore() {
     if (tab() !== "clips") return paint();
     return patchSelection(v);
   }
-  const pct = Math.round(v.progress * 100);
-  const fill = target.querySelector(".clips-analyzing .clips-progress__fill");
-  if (fill) fill.style.width = `${pct}%`;
-  const label = target.querySelector(".clips-analyzing .clips-progress__label");
-  if (label) label.textContent = `${pct}%`;
-  const at = ANALYSIS_STAGES.indexOf(v.stage);
-  target.querySelectorAll("[data-clips-stage]").forEach((li, i) => {
-    li.classList.toggle("is-done", i < at);
-    li.classList.toggle("is-current", i === at);
-  });
+  // The analysis ticks: patch its steps in place (the recap's player keeps
+  // playing).
+  const steps = target.querySelector("[data-clips-steps]");
+  if (steps) steps.innerHTML = runSteps(v);
 }
 
 // Keeping a clip patches the page in place — a repaint would reload every
@@ -204,8 +199,12 @@ function paint() {
   disposePreviews?.();
   disposePreviews = null;
   paintTopbarActions(v);
+  // The analysis is the clips page's first state (2026-11-20): the recap
+  // already there, the clips to come as waiting fiches.
   if (v.status !== "ready") {
-    target.innerHTML = renderAnalyzing(v);
+    target.innerHTML = `<div class="clips-view clips-project"><div class="clips-view__page clips-page">
+      ${renderRecap(v)}${v.status === "analyzing" ? renderComing(v) : ""}
+    </div></div>`;
     return;
   }
   const posts = getPosts(draftKey(v.id));
@@ -250,72 +249,62 @@ function stepButton(id, n, label, meta, current) {
 }
 
 // ── Analysis ─────────────────────────────────────────────────────────
+// Prod's steps (no percentage but the upload's), in the recap; under it, the
+// clips to come as fiches that wait. It ends in clips, in no clips (prod's
+// NO_SPEECH: the video, not the job — Upload another video, Remove) or in a
+// crash (Try again, Remove).
 
-// The analysis screen also says a failure: where it stopped (the step marked,
-// the earlier ones done), why, and the two ways out — Try again (the page's one
-// step, primary blue) and Remove this video (confirm modal).
-function renderAnalyzing(v) {
-  const failed = v.status === "failed";
-  const at = Math.max(0, ANALYSIS_STAGES.indexOf(failed ? v.failure?.stage : v.stage));
-  const pct = Math.round(v.progress * 100);
-  const n = v.durationMs > 600000 ? 10 : 3;
-  const steps = ANALYSIS_STAGES.map(
-    (
-      s,
-      i,
-    ) => `<li class="clips-analyzing__step${i < at ? " is-done" : ""}${i === at ? (failed ? " is-failed" : " is-current") : ""}" data-clips-stage>
-      <span class="clips-analyzing__dot" aria-hidden="true"><i class="${i === at && failed ? "ap-icon-close" : "ap-icon-check"}"></i></span>${s}${i === at && failed ? ` <span class="clips-analyzing__stopped">· stopped here</span>` : ""}
-    </li>`,
-  ).join("");
-  return `
-    <div class="clips-view">
-      <div class="clips-view__page">
-        <section class="clips-analyzing" aria-live="polite">
-          <div class="clips-analyzing__player">
-            <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline></video>
-          </div>
-          <div class="clips-analyzing__text">
-            ${
-              failed
-                ? `<h2 class="clips-analyzing__title">I couldn't analyze this video</h2>
-                   <p class="ap-form-message error clips-analyzing__error" role="alert">${escapeHtml(v.failure?.reason || "")}</p>`
-                : `<h2 class="clips-analyzing__title">Finding the best moments</h2>
-            <p class="clips-analyzing__sub">
-              ${fmtMs(v.durationMs)} of video, so I'll cut ${n} clips. You can leave this page: the analysis keeps going
-              and the video waits for you in Clips.
-            </p>
-            <span class="clips-progress">
-              <span class="clips-progress__track"><span class="clips-progress__fill" style="width:${pct}%"></span></span>
-              <span class="clips-progress__label">${pct}%</span>
-            </span>`
-            }
-            <ol class="clips-analyzing__steps">${steps}</ol>
-            ${
-              failed
-                ? `<div class="clips-analyzing__actions">
-                     <button type="button" class="ap-button primary blue" data-clips-retry><i class="ap-icon-refresh" aria-hidden="true"></i><span>Try again</span></button>
-                     <button type="button" class="ap-button ghost grey" data-clips-remove-video><span>Remove this video</span></button>
-                   </div>`
-                : ""
-            }
-          </div>
-        </section>
+function runSteps(v) {
+  const at = Math.max(0, ANALYSIS_STAGES.indexOf(v.stage));
+  // The upload is the first quarter of the simulated run: its own percentage.
+  const upload = Math.min(100, Math.round(v.progress * ANALYSIS_STAGES.length * 100));
+  return ANALYSIS_STAGES.map((s, i) => {
+    const state = i < at ? "is-done" : i === at ? "is-current" : "";
+    const label = i === at ? (i === 0 ? `Uploading · ${upload}%` : `${s}…`) : s;
+    return `<li class="clips-run__step ${state}"><span class="clips-run__dot" aria-hidden="true">${i < at ? '<i class="ap-icon-check"></i>' : ""}</span>${label}</li>`;
+  }).join("");
+}
+
+function renderRunStatus(v) {
+  if (v.status === "analyzing")
+    return `<div class="clips-run" aria-live="polite">
+        <ol class="clips-run__steps" data-clips-steps>${runSteps(v)}</ol>
+        <p class="clips-run__note">It can take a few minutes. You can leave this page: I'll tell you when the clips are ready. Set the look now, the clips come out in it.</p>
+      </div>`;
+  const empty = v.failure?.kind !== "crash";
+  return `<div class="clips-run">
+      <div class="ap-infobox ${empty ? "warning" : "error"} has-title" role="alert">
+        <i class="ap-icon-warning" aria-hidden="true"></i>
+        <div class="ap-infobox-content"><div class="ap-infobox-texts">
+          <span class="ap-infobox-title">${empty ? "No clips in this video" : `I stopped at ${escapeHtml((v.failure?.stage || "the analysis").toLowerCase())}`}</span>
+          <span class="ap-infobox-message">${escapeHtml(v.failure?.reason || "")}</span>
+        </div></div>
+      </div>
+      <div class="clips-run__acts">
         ${
-          failed
-            ? ""
-            : `<section class="clips-coming" aria-label="What you'll get">
-          <div class="clips-coming__head">
-            <h3 class="clips-coming__title">Your ${n} clips land here</h3>
-            <p class="clips-coming__sub">Each one vertical, framed on the speakers and subtitled. Then you pick the ones to post, polish them, and I write the posts.</p>
-          </div>
-          <ol class="clips-coming__slots" style="--n:${n}" aria-hidden="true">${Array.from(
-            { length: n },
-            (_, i) => `<li class="clips-coming__slot" style="--i:${i}"><span>${i + 1}</span></li>`,
-          ).join("")}</ol>
-        </section>`
+          empty
+            ? `<a class="ap-button primary blue" href="#/clips"><i class="ap-icon-upload" aria-hidden="true"></i><span>Upload another video</span></a>`
+            : `<button type="button" class="ap-button primary blue" data-clips-retry><i class="ap-icon-refresh" aria-hidden="true"></i><span>Try again</span></button>`
         }
+        <button type="button" class="ap-button ghost grey" data-clips-remove-video><span>Remove this video</span></button>
       </div>
     </div>`;
+}
+
+// The clips to come: as many waiting fiches as prod will cut.
+function renderComing(v) {
+  const n = clipCountFor(v.durationMs);
+  return `<section class="clips-group-sec" aria-label="The clips to come">
+      <header class="clips-group-sec__head">
+        <h2 class="clips-group-sec__title">The best moments</h2>
+        <span class="clips-group-sec__meta">${plural(n, "clip")}, as soon as I've found them</span>
+      </header>
+      <div class="clips-cards" aria-hidden="true">${Array.from(
+        { length: n },
+        () => `<div class="clips-card is-waiting"><span class="clips-card__wait-media"></span>
+          <span class="clips-card__wait-body"><span></span><span></span><span></span></span></div>`,
+      ).join("")}</div>
+    </section>`;
 }
 
 // ── The clips page ───────────────────────────────────────────────────
@@ -391,16 +380,26 @@ function renderRecap(v) {
         ${v.summary ? `<p class="clips-recap__summary"><span class="ap-tag grey mini">Summary</span> ${escapeHtml(v.summary)}</p>` : ""}
         <p class="clips-recap__facts">
           <span><strong>${fmtMs(v.durationMs)}</strong> long</span>
-          <span><strong>${v.clips.length}</strong> ${v.clips.length === 1 ? "clip" : "clips"}</span>
+          ${
+            v.status === "ready"
+              ? `<span><strong>${v.clips.length}</strong> ${v.clips.length === 1 ? "clip" : "clips"}</span>
           <span><strong>${fmtMs(totalMs(v.clips))}</strong> of clips</span>
-          <span><strong data-clips-kept-n>${k.length}</strong> kept</span>
+          <span><strong data-clips-kept-n>${k.length}</strong> kept</span>`
+              : v.status === "analyzing"
+                ? `<span><strong>${clipCountFor(v.durationMs)}</strong> clips coming</span>`
+                : `<span><strong>0</strong> clips</span>`
+          }
           <span class="clips-recap__added">Added ${added(v.addedAt)}</span>
         </p>
-        <div class="clips-recap__map">
+        ${
+          v.status === "ready"
+            ? `<div class="clips-recap__map">
           <span class="clips-recap__map-label">Where the clips are</span>
           <div class="clips-recap__band" aria-hidden="true">${band}</div>
           <div class="clips-recap__ends"><span>0:00</span><span>${fmtMs(v.durationMs)}</span></div>
-        </div>
+        </div>`
+            : renderRunStatus(v)
+        }
       </div>
     </section>`;
 }

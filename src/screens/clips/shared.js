@@ -2,21 +2,46 @@
 // editor share: time formatting, the video-wide options (format, subtitles),
 // and the live reframed previews.
 
-import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2792";
-import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2792";
-import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2792";
-import { escapeHtml } from "../../utils.js?v=2792";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2792";
-import { getVideo, removeVideo } from "../../videos-store.js?v=2792";
+import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2793";
+import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2793";
+import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2793";
+import { escapeHtml } from "../../utils.js?v=2793";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2793";
+import { showToast } from "../../components/toast.js?v=2793";
+import { navigate } from "../../router.js?v=2793";
+import { getVideo, getVideos, removeVideo, subscribe as subscribeVideos } from "../../videos-store.js?v=2793";
 
 // A footage well shows a loading sheen until its first frame is in (clips.css,
 // `:not(.is-ready)`): every well is marked here, once, from the media events
 // of whatever <video> it holds, so no screen has to wire it.
 const WELLS =
-  ".clips-video__thumb, .clips-showcase__source, .clips-analyzing__player, .clips-preview, .clips-clip, .clips-ed__stage";
+  ".clips-video__thumb, .clips-showcase__source, .clips-recap__player, .clips-preview, .clips-clip, .clips-ed__stage";
 for (const type of ["loadeddata", "seeked"]) {
   document.addEventListener(type, (e) => e.target.closest?.(WELLS)?.classList.add("is-ready"), true);
 }
+
+// An analysis that ends says so wherever you are (Runway, Higgsfield): a toast
+// with Open — except on that video's own page, which shows it in place.
+const lastStatus = new Map();
+subscribeVideos(() => {
+  for (const v of getVideos()) {
+    const was = lastStatus.get(v.id);
+    lastStatus.set(v.id, v.status);
+    if (was !== "analyzing" || v.status === "analyzing") continue;
+    if (location.hash.startsWith(`#/clips/${v.id}`)) continue;
+    const msg =
+      v.status === "ready"
+        ? `${v.clips.length} clip${v.clips.length === 1 ? "" : "s"} ready · ${v.name}`
+        : v.failure?.kind === "crash"
+          ? `I couldn't finish ${v.name}`
+          : `No clips in ${v.name}`;
+    showToast(msg, {
+      variant: v.status === "ready" ? "success" : "error",
+      duration: 8000,
+      action: { label: "Open", onClick: () => navigate(`/clips/${v.id}`) },
+    });
+  }
+});
 
 // m:ss for a duration or a playhead, from ms.
 export function fmtMs(ms) {
