@@ -18,25 +18,28 @@
 // the subtitles, the transcript and the cleanup on that clock (mount opts.clock),
 // and clip-framing.js is the crop editor's engine.
 //
-// The editor never retrims (the clips page's Trim does). Nothing is written to
-// the clip until Save;
+// The editor never retrims (the clips page's Trim does). « Rien ne bloque »
+// (2026-11-20, after Descript and Kapwing): no Save button — every change is
+// written to the clip as it's made (« Saving… » then « Saved » in the topbar),
+// so leaving never asks; a clip that changed renders again when the editor
+// closes (prod's render job: « Rendering your edited clip… » on its card).
 // Undo / Redo cover the framing, the text overlays, the format and the brand settings.
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2796";
-import { isFlagOn } from "../../feature-flags.js?v=2796";
-import { parseHashParams } from "../../url-state.js?v=2796";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2796";
-import { showToast } from "../../components/toast.js?v=2796";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2796";
-import { open as openRename } from "../../components/rename-modal.js?v=2796";
-import { getContextById } from "../../contexts-store.js?v=2796";
-import { escapeHtml } from "../../utils.js?v=2796";
-import * as ce from "../../caption-editor.js?v=2796";
-import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2796";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2796";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2796";
+import { navigate } from "../../router.js?v=2797";
+import { isFlagOn } from "../../feature-flags.js?v=2797";
+import { parseHashParams } from "../../url-state.js?v=2797";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2797";
+import { showToast } from "../../components/toast.js?v=2797";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2797";
+import { open as openRename } from "../../components/rename-modal.js?v=2797";
+import { getContextById } from "../../contexts-store.js?v=2797";
+import { escapeHtml } from "../../utils.js?v=2797";
+import * as ce from "../../caption-editor.js?v=2797";
+import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2797";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2797";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf, renderClip } from "../../videos-store.js?v=2797";
 import {
   framingContext,
   initialSegments,
@@ -55,7 +58,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2796";
+} from "../../clip-framing.js?v=2797";
 import {
   fmtMs,
   fmtPrecise,
@@ -70,8 +73,8 @@ import {
   dsSelect,
   bindSelectDismiss,
   EDITOR_TOOLS as TOOLS,
-} from "./shared.js?v=2796";
-import { primeDraftSetup } from "./project.js?v=2796";
+} from "./shared.js?v=2797";
+import { primeDraftSetup } from "./project.js?v=2797";
 
 const FRAME_MS = 40;
 const CARD_MS = 2000; // intro / outro card length
@@ -118,7 +121,7 @@ export function renderClipEditor(params, el) {
     pb,
     look,
     tool: toolFromUrl(),
-    // The working copy — committed on Save.
+    // The working copy — written to the clip a moment after each change.
     w: {
       title: clip.title,
       startMs: clip.startMs,
@@ -137,6 +140,8 @@ export function renderClipEditor(params, el) {
     undo: [],
     redo: [],
     dirty: false,
+    changed: false, // written at least once: the clip renders again on leaving
+    saveTimer: 0,
     t: clip.startMs, // playhead, source ms
     phase: "clip", // clip | intro | outro (brand cards)
     phaseEnd: 0,
@@ -161,6 +166,11 @@ export function renderClipEditor(params, el) {
 
 function teardown() {
   if (!ed) return;
+  // Whatever way out (Back, the next clip, the browser's Back): what's pending
+  // is written, and a changed clip renders again.
+  clearTimeout(ed.saveTimer);
+  if (ed.dirty) save();
+  if (ed.changed) renderClip(ed.video.id, ed.clip.id);
   cancelAnimationFrame(ed.raf);
   ce.unmount();
   ed.video_el?.pause();
@@ -180,7 +190,7 @@ const ratio = () => ratioOf(ed.w.ratioId);
 const clipLen = () => ed.w.endMs - ed.w.startMs;
 const relSec = () => Math.max(0, ed.t - ed.w.startMs) / 1000;
 
-// ── Topbar: back · title · ‹ clip › │ undo redo · Save · Write a post ──
+// ── Topbar: back · title · ‹ clip › │ Saved · undo redo · Write a post ──
 
 function paintTopbar() {
   const left = `<button type="button" class="ap-icon-button" data-clips-ed="back" aria-label="Back to the video" data-tooltip="Back to the video">
@@ -194,7 +204,7 @@ function paintTopbar() {
   const right = `
     <button type="button" class="ap-button ghost grey" data-clips-ed="undo" data-tooltip="⌘Z" ${ed.undo.length ? "" : "disabled"}><span>Undo</span></button>
     <button type="button" class="ap-button ghost grey" data-clips-ed="redo" data-tooltip="⇧⌘Z" ${ed.redo.length ? "" : "disabled"}><span>Redo</span></button>
-    <button type="button" class="ap-button stroked grey" data-clips-ed="save" ${ed.dirty ? "" : "disabled"}><span>Save</span></button>
+    <span class="clips-ed__sync" data-clips-ed-sync aria-live="polite">${syncHTML()}</span>
     <button type="button" class="ap-button primary orange" data-clips-ed="draft"><i class="ap-icon-archie-official" aria-hidden="true"></i><span>Write a post</span></button>`;
   setTopbarActions(`/clips/${ed.video.id}/edit/${ed.clip.id}`, `<div class="clips-ed__topbar-actions">${right}</div>`, {
     left,
@@ -880,7 +890,7 @@ function paintPanel() {
 }
 
 // The first time, the editor says how it works in three moves: the tools
-// here, nothing kept before Save. Once closed, never again.
+// here, every change kept as it's made. Once closed, never again.
 const INTRO_KEY = "archie-clips-editor-intro-seen";
 function introSeen() {
   try {
@@ -898,7 +908,7 @@ function introHtml() {
       <div class="ap-infobox-content">
         <div class="ap-infobox-texts">
           <span class="ap-infobox-title">How this editor works</span>
-          <span class="ap-infobox-message">Pick a tool on the left. Nothing changes until you Save.</span>
+          <span class="ap-infobox-message">Pick a tool on the left. Every change is saved as you make it.</span>
         </div>
       </div>
       <button type="button" class="ap-infobox-close" aria-label="Got it" data-clips-intro-close><i class="ap-icon-close" aria-hidden="true"></i></button>
@@ -1155,9 +1165,18 @@ function restore(json) {
   refreshAll();
 }
 
-// Changed = differs from what's saved, so undoing back to it reads "Saved".
+// Changed = differs from what's saved; written a moment later (typing a title
+// or dragging a crop saves once, at rest).
+const SAVE_DELAY = 700;
+const syncHTML = () =>
+  ed.dirty
+    ? `<span>Saving…</span>`
+    : `<i class="ap-icon-check" aria-hidden="true"></i><span>${ed.changed ? "Saved" : "No changes"}</span>`;
+
 function setDirty() {
   ed.dirty = ed.capDirty || snapshot() !== ed.saved;
+  clearTimeout(ed.saveTimer);
+  if (ed.dirty) ed.saveTimer = setTimeout(() => ed?.dirty && save(), SAVE_DELAY);
   syncTopbar();
 }
 
@@ -1165,9 +1184,9 @@ function setDirty() {
 // from the title field while it's being typed in.
 function syncTopbar() {
   const bar = document.getElementById("topbar");
-  const save = bar?.querySelector('[data-clips-ed="save"]');
-  if (!save) return paintTopbar();
-  save.disabled = !ed.dirty;
+  const sync = bar?.querySelector("[data-clips-ed-sync]");
+  if (!sync) return paintTopbar();
+  sync.innerHTML = syncHTML();
   const title = bar.querySelector("[data-clips-ed-title]");
   if (title) title.textContent = ed.w.title;
   bar.querySelector('[data-clips-ed="undo"]').disabled = !ed.undo.length;
@@ -1220,24 +1239,13 @@ function save() {
   ed.saved = snapshot();
   ed.capDirty = false;
   ed.dirty = false;
+  ed.changed = true;
   syncTopbar();
-  showToast("Clip saved");
 }
 
+// Nothing to lose: teardown writes what's pending.
 function leave(to) {
-  if (!ed.dirty) return navigate(to);
-  openConfirm({
-    title: "Save your changes?",
-    body: "This clip has edits you haven't saved.",
-    confirmLabel: "Save and leave",
-    cancelLabel: "Discard changes",
-    onConfirm: () => {
-      save();
-      navigate(to);
-    },
-    onCancel: () => navigate(to),
-  });
-  return undefined;
+  return navigate(to);
 }
 
 // ── Events ───────────────────────────────────────────────────────────
@@ -1307,10 +1315,7 @@ function handleClick(e) {
       return undo();
     case "redo":
       return redo();
-    case "save":
-      return save();
     case "draft":
-      if (ed.dirty) save();
       setSelection(ed.video.id, [ed.clip.id]);
       primeDraftSetup(ed.video.id);
       return navigate(`/clips/${ed.video.id}?tab=drafts`);

@@ -3047,3 +3047,294 @@ body.clips-editing .app-content {
     animation: none;
   }
 }
+
+/* ── « Rien ne bloque » (2026-11-20): trim in place, render, removed, which voice ── */
+
+/* An edited clip renders again: a veil on its preview until it's done. */
+.clips-card__render {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxs);
+  background: rgba(0, 0, 0, 0.64);
+  color: #fff;
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.clips-card__render .clips-progress__track {
+  flex: none;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Trim in place: the fiche takes its row — the source on the left, the
+   filmstrip with its two handles on the right. */
+.clips-card.is-trimming {
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(200px, 320px) minmax(0, 1fr);
+  gap: var(--ref-spacing-md);
+  padding: var(--ref-spacing-sm);
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.clips-trim__player {
+  position: relative;
+  align-self: start;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--app-radius-md);
+  background: #000;
+  overflow: hidden;
+}
+
+.clips-trim__player video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.clips-trim__play {
+  position: absolute;
+  left: var(--ref-spacing-xs);
+  bottom: var(--ref-spacing-xs);
+  background: var(--ref-color-white);
+}
+
+.clips-trim__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+}
+
+.clips-trim__strip {
+  position: relative;
+  height: 64px;
+  margin-top: var(--ref-spacing-xxs);
+}
+
+.clips-trim__thumbs {
+  display: flex;
+  gap: 1px;
+  height: 100%;
+  border-radius: var(--app-radius-md);
+  background: var(--ref-color-grey-150);
+  overflow: hidden;
+}
+
+.clips-trim__thumbs canvas {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Outside the clip: the strip dims; the clip's span is framed in blue. */
+.clips-trim__out {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.72);
+  pointer-events: none;
+}
+
+.clips-trim__out.is-before {
+  left: 0;
+  border-radius: var(--app-radius-md) 0 0 var(--app-radius-md);
+}
+
+.clips-trim__out.is-after {
+  right: 0;
+  border-radius: 0 var(--app-radius-md) var(--app-radius-md) 0;
+}
+
+.clips-trim__sel {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  border: 2px solid var(--ref-color-electric-blue-100);
+  border-radius: var(--app-radius-sm);
+  pointer-events: none;
+}
+
+.clips-trim__head {
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  width: 2px;
+  background: var(--ref-color-grey-100);
+  pointer-events: none;
+}
+
+/* Two native ranges over the strip: only their thumbs take the pointer, so
+   either handle can be grabbed; the keyboard moves them too. */
+.clips-trim__h {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: none;
+  pointer-events: none;
+  appearance: none;
+}
+
+.clips-trim__h::-webkit-slider-runnable-track {
+  height: 100%;
+  background: none;
+}
+
+.clips-trim__h::-moz-range-track {
+  height: 100%;
+  background: none;
+}
+
+.clips-trim__h::-webkit-slider-thumb {
+  width: 12px;
+  height: 72px;
+  margin-top: -4px;
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-electric-blue-100);
+  cursor: ew-resize;
+  pointer-events: auto;
+  appearance: none;
+}
+
+.clips-trim__h::-moz-range-thumb {
+  width: 12px;
+  height: 72px;
+  border: 0;
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-electric-blue-100);
+  cursor: ew-resize;
+  pointer-events: auto;
+}
+
+.clips-trim__h:focus-visible {
+  outline: none;
+}
+
+.clips-trim__h:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--ref-color-electric-blue-40);
+}
+
+.clips-trim__h:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 3px var(--ref-color-electric-blue-40);
+}
+
+.clips-trim__scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  font-variant-numeric: tabular-nums;
+}
+
+.clips-trim__acts {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  margin-top: auto;
+}
+
+.clips-trim__read {
+  margin-right: auto;
+  color: var(--ref-color-grey-100);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Removed clips, at the foot of the page. */
+.clips-removed summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  cursor: pointer;
+  list-style: none;
+}
+
+.clips-removed summary::-webkit-details-marker {
+  display: none;
+}
+
+.clips-removed__list {
+  display: flex;
+  flex-direction: column;
+  margin: var(--ref-spacing-xs) 0 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+}
+
+.clips-removed__list li {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+}
+
+.clips-removed__list li + li {
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.clips-removed__title {
+  font-weight: 700;
+  color: var(--ref-color-grey-100);
+}
+
+.clips-removed__at {
+  margin-right: auto;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Which voice: prod's question, with DS radios, in the request's place. */
+.clips-who {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-md);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface);
+}
+
+.clips-who__q {
+  margin: 0;
+  color: var(--ref-color-grey-100);
+}
+
+.clips-who__opts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-who__opt {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  cursor: pointer;
+}
+
+.clips-who__acts {
+  display: flex;
+  gap: var(--ref-spacing-xs);
+}
+
+/* The editor's save state, where the Save button was. */
+.clips-ed__sync {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  padding: 0 var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  white-space: nowrap;
+}

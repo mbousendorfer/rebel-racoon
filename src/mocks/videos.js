@@ -742,6 +742,8 @@ export const seedVideos = [
     durationMs: 3119833,
     posterMs: 500000,
     addedAt: "2026-10-21T09:12:00Z",
+    // Who speaks, as prod's diarization names them for SPEAKER_UNKNOWN.
+    speakers: ["Karl Ortmanns", "Emeric Ernoult"],
     // The recap's one-line summary. Prod doesn't write one yet (an extra AI call).
     summary:
       "Two social media leads talk about posting less, reporting to clients, answering criticism in public and hiring a first social manager.",

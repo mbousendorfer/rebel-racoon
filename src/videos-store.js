@@ -28,11 +28,11 @@
 //             preset), transcript, segments (null = auto framing), texts[],
 //             brand (null = the Playbook's clip look) }
 
-import { newId } from "./utils.js?v=2796";
-import { seedVideos } from "./mocks.js?v=2796";
-import { isNewUser } from "./user-mode.js?v=2796";
-import { createNotifier } from "./store-utils.js?v=2796";
-import { getDefaultContext, getContextById } from "./contexts-store.js?v=2796";
+import { newId } from "./utils.js?v=2797";
+import { seedVideos } from "./mocks.js?v=2797";
+import { isNewUser } from "./user-mode.js?v=2797";
+import { createNotifier } from "./store-utils.js?v=2797";
+import { getDefaultContext, getContextById } from "./contexts-store.js?v=2797";
 
 const MIN_VIDEO_MS = 30 * 1000;
 const MAX_VIDEO_MS = 2 * 60 * 60 * 1000;
@@ -323,14 +323,71 @@ const ASK_MS = 2500;
 const ASK_TITLES = {
   pric: ["Pricing a social retainer", "When to raise your prices"],
 };
-export function askForClips(videoId, text) {
+// A request names a person without saying who (« the guest », « he »…) in a
+// video with more than one voice: prod's SPEAKER_UNKNOWN asks which one.
+const VAGUE_PERSON = /\b(he|she|him|her|guest|host|speaker|interviewer|interviewee)\b/i;
+// The parts of a video and the lengths prod's focus understands, whatever the video says.
+const FOCUS_KINDS = /\b(first|last|start|beginning|end|minutes?|seconds?|story|stories|question|answer)\b/i;
+const STOP = new Set([
+  "about",
+  "where",
+  "when",
+  "with",
+  "that",
+  "this",
+  "from",
+  "they",
+  "them",
+  "what",
+  "which",
+  "talks",
+  "talk",
+  "says",
+  "clips",
+  "clip",
+  "moment",
+  "moments",
+  "video",
+  "part",
+]);
+
+// ponytail: the proto has no transcript to search. A request matches when one
+// of its words (4 letters and more) is in the video's summary, its clips'
+// titles and reasons, or names a part / a length — else it is prod's NO_MATCH.
+function requestMatches(v, text) {
+  if (FOCUS_KINDS.test(text) || Object.keys(ASK_TITLES).some((k) => text.toLowerCase().includes(k))) return true;
+  const hay = [v.summary, ...(v.speakers || []), ...v.clips.flatMap((c) => [c.title, c.why])].join(" ").toLowerCase();
+  return text
+    .toLowerCase()
+    .split(/[^a-z0-9']+/)
+    .filter((w) => w.length >= 4 && !STOP.has(w))
+    .some((w) => hay.includes(w.replace(/s$/, "")));
+}
+
+const voicesOf = (v) => (v.speakers?.length ? v.speakers : ["Voice 1", "Voice 2"]);
+
+export function askForClips(videoId, text, { speaker = null, requestId = null } = {}) {
   const v = getVideo(videoId);
   const words = String(text || "").trim();
   if (!v || !words) return;
-  const req = { id: newId("ask"), text: words, at: new Date().toISOString(), status: "running" };
-  v.requests = [req, ...(v.requests || [])];
+  // Answering « which one? » runs the same request again, now with its person.
+  let req = requestId && (v.requests || []).find((r) => r.id === requestId);
+  if (req) Object.assign(req, { status: "running", speaker, voices: null });
+  else {
+    req = { id: newId("ask"), text: words, at: new Date().toISOString(), status: "running", speaker };
+    v.requests = [req, ...(v.requests || [])];
+  }
   notify();
   setTimeout(() => {
+    if (!speaker && VAGUE_PERSON.test(words)) {
+      req.status = "speaker";
+      req.voices = voicesOf(v);
+      return notify();
+    }
+    if (!speaker && !requestMatches(v, words)) {
+      req.status = "none";
+      return notify();
+    }
     // ponytail: the proto doesn't read the transcript; it cuts two 40 s moments
     // in the longest stretches no clip covers. A real search is prod's job.
     const edges = [0, ...v.clips.flatMap((c) => [c.startMs, c.endMs]).sort((a, b) => a - b), v.durationMs];
@@ -347,15 +404,23 @@ export function askForClips(videoId, text) {
           endMs: startMs + 40000,
           title: titles?.[i] || `${words[0].toUpperCase()}${words.slice(1)}, moment ${i + 1}`,
           summary: "",
-          why: `You asked for « ${words} ».`,
+          why: `You asked for « ${words} »${speaker ? `, ${speaker} speaking` : ""}.`,
           requestId: req.id,
         }),
       );
     });
     v.clips.sort((x, y) => x.startMs - y.startMs);
     req.status = open.length ? "done" : "none";
-    notify();
+    return notify();
   }, ASK_MS);
+}
+
+// « Cancel the request » on a question: the request goes, nothing was cut.
+export function dropRequest(videoId, requestId) {
+  const v = getVideo(videoId);
+  if (!v) return;
+  v.requests = (v.requests || []).filter((r) => r.id !== requestId);
+  notify();
 }
 
 // A request written before the analysis (the library's « Looking for something
@@ -410,8 +475,35 @@ export function removeClip(videoId, clipId) {
   const i = v.clips.findIndex((c) => c.id === clipId);
   if (i < 0) return null;
   const [gone] = v.clips.splice(i, 1);
+  // Removed clips are kept with the video, to be put back (Undo, « Removed clips »).
+  v.removed = [gone, ...(v.removed || [])];
   notify();
   return { clip: gone, index: i };
+}
+
+export function restoreClip(videoId, clipId) {
+  const v = getVideo(videoId);
+  const c = v?.removed?.find((x) => x.id === clipId);
+  if (!c) return;
+  v.removed = v.removed.filter((x) => x.id !== clipId);
+  v.clips.push(c);
+  v.clips.sort((a, b) => a.startMs - b.startMs);
+  notify();
+}
+
+// An edited clip renders again when the editor closes (prod: the render job,
+// polled; « Rendering your edited clip… » on its card meanwhile).
+const RENDER_MS = 6000;
+export function renderClip(videoId, clipId) {
+  const c = getClip(videoId, clipId);
+  if (!c) return;
+  c.rendering = true;
+  notify();
+  clearTimeout(c.renderTimer);
+  c.renderTimer = setTimeout(() => {
+    c.rendering = false;
+    notify();
+  }, RENDER_MS);
 }
 
 // "Open in Clips" from a chat: the chat's video source comes into the library

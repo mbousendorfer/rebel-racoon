@@ -7,37 +7,39 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2796";
-import { isFlagOn } from "../../feature-flags.js?v=2796";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2796";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2796";
-import { showToast } from "../../components/toast.js?v=2796";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2796";
-import { open as openClipRange } from "../../components/clip-range-modal.js?v=2796";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2796";
-import { startRewrite } from "../../draft-rewrite.js?v=2796";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2796";
-import { renderPostCard } from "../../components/post-card.js?v=2796";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2796";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2796";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2796";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2796";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2796";
-import { open as openRename } from "../../components/rename-modal.js?v=2796";
+import { navigate } from "../../router.js?v=2797";
+import { isFlagOn } from "../../feature-flags.js?v=2797";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2797";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2797";
+import { showToast } from "../../components/toast.js?v=2797";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2797";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2797";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2797";
+import { startRewrite } from "../../draft-rewrite.js?v=2797";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2797";
+import { renderPostCard } from "../../components/post-card.js?v=2797";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2797";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2797";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2797";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2797";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2797";
+import { open as openRename } from "../../components/rename-modal.js?v=2797";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2796";
-import { escapeHtml, plural } from "../../utils.js?v=2796";
+} from "../../posts-store.js?v=2797";
+import { escapeHtml, plural } from "../../utils.js?v=2797";
 import {
   getVideo,
   draftKey,
   updateSettings,
   addClip,
   removeClip,
+  restoreClip,
+  dropRequest,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
   retryAnalysis,
@@ -47,7 +49,7 @@ import {
   askForClips,
   trimClip,
   updateClip,
-} from "../../videos-store.js?v=2796";
+} from "../../videos-store.js?v=2797";
 import {
   fmtMs,
   lookSelect,
@@ -60,7 +62,7 @@ import {
   presetLabel,
   CTA_OPTIONS,
   confirmRemoveVideo,
-} from "./shared.js?v=2796";
+} from "./shared.js?v=2797";
 
 let target = null;
 let videoId = null;
@@ -113,6 +115,8 @@ export function renderClipsProject(params, el) {
   el.addEventListener("click", onClick);
   el.addEventListener("change", onChange);
   el.addEventListener("submit", onSubmit);
+  el.addEventListener("input", onInput);
+  el.addEventListener("keydown", onKey);
   topbar?.addEventListener("click", onClick);
   disposers.push(
     subscribeVideos(onStore),
@@ -126,6 +130,10 @@ export function renderClipsProject(params, el) {
     el.removeEventListener("click", onClick);
     el.removeEventListener("change", onChange);
     el.removeEventListener("submit", onSubmit);
+    el.removeEventListener("input", onInput);
+    el.removeEventListener("keydown", onKey);
+    stopTrimPlay();
+    trimming = null;
     topbar?.removeEventListener("click", onClick);
     disposers.splice(0).forEach((d) => d());
     disposePreviews?.();
@@ -137,7 +145,7 @@ export function renderClipsProject(params, el) {
 const tab = () => (parseHashParams().get("tab") === "drafts" ? "drafts" : "clips");
 const path = () => `/clips/${videoId}`;
 const sig = (v) =>
-  `${v.status}:${v.clips.map((c) => `${c.id}${c.startMs}${c.endMs}${c.title}`).join()}:${JSON.stringify(v.settings)}:${(v.requests || []).map((r) => r.status).join()}`;
+  `${v.status}:${v.clips.map((c) => `${c.id}${c.startMs}${c.endMs}${c.title}${c.rendering ? "r" : ""}`).join()}:${JSON.stringify(v.settings)}:${(v.requests || []).map((r) => r.status).join()}:${(v.removed || []).length}`;
 
 function onStore() {
   const v = getVideo(videoId);
@@ -222,6 +230,7 @@ function paint() {
     </div>`;
   if (t === "drafts") swapPlayers(v, posts);
   disposePreviews = mountPreviews(target, v);
+  if (trimming) mountTrim(v);
 }
 
 // The post card draws a faux player (a chat draft has no footage). Here the
@@ -365,6 +374,7 @@ function renderPage(v) {
         ${best.length ? `<div class="clips-cards">${best.map((c) => renderCard(v, c)).join("")}</div>` : `<p class="clips-group-sec__none">No clips left. Add one, or ask for other clips.</p>`}
       </section>`
       }
+      ${renderRemoved(v)}
     </div>`;
 }
 
@@ -426,11 +436,13 @@ function renderRequest(v, r, tools = "") {
       ${tools}
     </header>`;
   const body =
-    r.status === "running"
-      ? `<div class="clips-group-sec__run" role="status"><span>Finding the best moments…</span><span class="clips-progress"><span class="clips-progress__track is-indeterminate"><span class="clips-progress__fill"></span></span></span></div>`
-      : r.status === "none"
-        ? `<p class="clips-group-sec__none">I didn't find a part of the video that matches what you asked for, so I made no new clips. The clips you already had are still there.</p>`
-        : `<div class="clips-cards">${clips.map((c) => renderCard(v, c)).join("")}</div>`;
+    r.status === "speaker"
+      ? renderSpeakerQuestion(r)
+      : r.status === "running"
+        ? `<div class="clips-group-sec__run" role="status"><span>Finding the best moments…</span><span class="clips-progress"><span class="clips-progress__track is-indeterminate"><span class="clips-progress__fill"></span></span></span></div>`
+        : r.status === "none"
+          ? `<p class="clips-group-sec__none">I didn't find a part of the video that matches what you asked for, so I made no new clips. The clips you already had are still there.</p>`
+          : `<div class="clips-cards">${clips.map((c) => renderCard(v, c)).join("")}</div>`;
   return `<section class="clips-group-sec">${head}${body}</section>`;
 }
 
@@ -448,12 +460,18 @@ function menuItem(label, icon, attr, danger = false) {
 // length, why I picked it on two lines; then Trim, Edit clip and ⋯ (Rename,
 // Remove). Three to a row.
 function renderCard(v, c) {
+  if (trimming?.id === c.id) return renderTrim(v, c);
   const id = escapeHtml(c.id);
   const title = escapeHtml(c.title);
   return `<article class="clips-card${c.selected ? " is-kept" : ""}" data-clips-card="${id}">
     <div class="clips-card__media">
       ${previewMarkup(v, c, { captions: false })}
       <span class="clips-card__dur">${fmtMs(c.endMs - c.startMs)}</span>
+      ${
+        c.rendering
+          ? `<span class="clips-card__render" role="status"><span>Rendering your edited clip…</span><span class="clips-progress__track is-indeterminate"><span class="clips-progress__fill"></span></span></span>`
+          : ""
+      }
     </div>
     <div class="clips-card__body">
       <label class="clips-card__head">
@@ -886,16 +904,20 @@ function onClick(e) {
   if (trim) {
     const c = v.clips.find((x) => x.id === trim.dataset.clipsTrim);
     if (!c) return undefined;
-    return openClipRange({
-      durationMs: v.durationMs,
-      startMs: c.startMs,
-      endMs: c.endMs,
-      title: `Trim: ${c.title}`,
-      sub: "Move where it starts and ends in the video.",
-      submitLabel: "Save trim",
-      onSubmit: (range) => trimClip(v.id, c.id, range),
-    });
+    trimming = { id: c.id, startMs: c.startMs, endMs: c.endMs, from: { startMs: c.startMs, endMs: c.endMs } };
+    paint();
+    return target.querySelector(`[data-clips-trim-h="start"]`)?.focus();
   }
+  if (t.closest("[data-clips-trim-play]")) return playTrim();
+  if (t.closest("[data-clips-trim-reset]")) {
+    Object.assign(trimming, trimming.from);
+    return syncTrim("start");
+  }
+  if (t.closest("[data-clips-trim-done]")) return closeTrim(true);
+  const restore = t.closest("[data-clips-restore]");
+  if (restore) return restoreClip(v.id, restore.dataset.clipsRestore);
+  const ans = t.closest("[data-clips-speaker-cancel]");
+  if (ans) return dropRequest(v.id, ans.dataset.clipsSpeakerCancel);
   const rename = t.closest("[data-clips-rename]");
   if (rename) {
     const c = v.clips.find((x) => x.id === rename.dataset.clipsRename);
@@ -909,17 +931,13 @@ function onClick(e) {
   }
   const remove = t.closest("[data-clips-remove]");
   if (remove) {
-    // Destructive, and the product has no undo: the DS confirm modal is the
-    // safeguard, labelled with the verb.
-    const id = remove.dataset.clipsRemove;
-    openConfirm({
-      title: "Remove this clip?",
-      body: "It leaves this video's clips. Drafts already written from it stay.",
-      confirmLabel: "Remove",
-      cancelLabel: "Cancel",
-      danger: true,
-      onConfirm: () => removeClip(v.id, id),
-    });
+    // « Rien ne bloque » (2026-11-20): no question, it goes at once and comes
+    // back — Undo on the snackbar, then « Removed clips » at the foot of the page.
+    const gone = removeClip(v.id, remove.dataset.clipsRemove);
+    if (gone)
+      showToast(`« ${gone.clip.title} » removed.`, {
+        action: { label: "Undo", onClick: () => restoreClip(v.id, gone.clip.id) },
+      });
     return undefined;
   }
 
@@ -1025,6 +1043,15 @@ function scheduleDrafts(v, posts) {
 
 // « Find clips »: the request goes to Archie; it answers in its own group.
 function onSubmit(e) {
+  const who = e.target.closest("[data-clips-speaker]");
+  if (who) {
+    e.preventDefault();
+    const v = getVideo(videoId);
+    const r = v?.requests?.find((x) => x.id === who.dataset.clipsSpeaker);
+    const speaker = who.querySelector("input:checked")?.value;
+    if (r && speaker) askForClips(v.id, r.text, { speaker, requestId: r.id });
+    return;
+  }
   if (!e.target.closest("[data-clips-ask]")) return;
   e.preventDefault();
   const input = target.querySelector("[data-clips-ask-input]");
@@ -1048,4 +1075,208 @@ function onChange(e) {
     return paint();
   }
   return undefined;
+}
+
+// ── Which voice (prod's SPEAKER_UNKNOWN) ─────────────────────────────
+
+function renderSpeakerQuestion(r) {
+  const voices = r.voices || [];
+  return `<form class="clips-who" data-clips-speaker="${escapeHtml(r.id)}">
+      <p class="clips-who__q">I can hear ${voices.length} voices in this video, but I can't tell which one you mean. Which one is it?</p>
+      <div class="clips-who__opts" role="radiogroup" aria-label="Which voice">${voices
+        .map(
+          (name, i) => `<label class="clips-who__opt">
+            <span class="ap-radio-container"><input type="radio" name="who-${escapeHtml(r.id)}" value="${escapeHtml(name)}" ${i === 0 ? "checked" : ""} /></span>
+            <span>${escapeHtml(name)}</span></label>`,
+        )
+        .join("")}</div>
+      <span class="clips-who__acts">
+        <button type="submit" class="ap-button primary blue">Find these moments</button>
+        <button type="button" class="ap-button ghost grey" data-clips-speaker-cancel="${escapeHtml(r.id)}">Cancel the request</button>
+      </span>
+    </form>`;
+}
+
+// ── Removed clips ────────────────────────────────────────────────────
+// What Remove took, kept with the video for as long as the page lives.
+
+function renderRemoved(v) {
+  const gone = v.removed || [];
+  if (!gone.length) return "";
+  return `<details class="clips-removed">
+      <summary class="ap-link"><i class="ap-icon-history" aria-hidden="true"></i><span>Removed clips (${gone.length})</span></summary>
+      <ul class="clips-removed__list">${gone
+        .map(
+          (c) => `<li><span class="clips-removed__title">${escapeHtml(c.title)}</span>
+            <span class="clips-removed__at">${fmtMs(c.startMs)} – ${fmtMs(c.endMs)} in the video</span>
+            <button type="button" class="ap-button ghost grey" data-clips-restore="${escapeHtml(c.id)}">Restore</button></li>`,
+        )
+        .join("")}</ul>
+    </details>`;
+}
+
+// ── Trim in place ────────────────────────────────────────────────────
+// « Rien ne bloque » (2026-11-20), after Opus Clip and Riverside: the fiche
+// opens across its row on the source itself — a filmstrip of the stretch
+// around the clip with two handles, the frame under the handle you move, Play
+// for the cut. Prod's window: 2 minutes either side of the clip
+// (TRIM_PADDING_SECONDS), no length rule. Done saves (prod's Save trim), Esc
+// leaves it as it was.
+
+const TRIM_PAD = 120000;
+const TRIM_THUMBS = 12;
+let trimming = null; // { id, startMs, endMs, from }
+let trimPlay = null;
+
+const trimWindow = (v) => ({
+  lo: Math.max(0, trimming.from.startMs - TRIM_PAD),
+  hi: Math.min(v.durationMs, trimming.from.endMs + TRIM_PAD),
+});
+
+function renderTrim(v, c) {
+  const { lo, hi } = trimWindow(v);
+  const handle = (which, label) =>
+    `<input type="range" class="clips-trim__h" data-clips-trim-h="${which}" min="${lo}" max="${hi}" step="500" value="${trimming[which === "start" ? "startMs" : "endMs"]}" aria-label="${label}" />`;
+  return `<article class="clips-card is-trimming" data-clips-card="${escapeHtml(c.id)}" aria-label="Trim « ${escapeHtml(c.title)} »">
+    <div class="clips-trim__player">
+      <video data-clips-trim-video src="${escapeHtml(v.url)}" muted playsinline preload="metadata"></video>
+      <button type="button" class="ap-icon-button stroked grey clips-trim__play" data-clips-trim-play aria-label="Play the clip"><i class="ap-icon-play" aria-hidden="true"></i></button>
+    </div>
+    <div class="clips-trim__body">
+      <span class="clips-card__title">Trim: ${escapeHtml(c.title)}</span>
+      <div class="clips-trim__strip">
+        <div class="clips-trim__thumbs" aria-hidden="true">${"<canvas></canvas>".repeat(TRIM_THUMBS)}</div>
+        <span class="clips-trim__out is-before" data-clips-trim-out="before"></span>
+        <span class="clips-trim__out is-after" data-clips-trim-out="after"></span>
+        <span class="clips-trim__sel" data-clips-trim-sel></span>
+        <span class="clips-trim__head" data-clips-trim-head hidden></span>
+        ${handle("start", "Start")}${handle("end", "End")}
+      </div>
+      <span class="clips-trim__scale"><span>${fmtMs(lo)}</span><span>${fmtMs(hi)}</span></span>
+      <span class="clips-trim__acts">
+        <span class="clips-trim__read" data-clips-trim-read aria-live="polite"></span>
+        <button type="button" class="ap-button ghost grey" data-clips-trim-reset>Reset</button>
+        <button type="button" class="ap-button primary blue" data-clips-trim-done>Done</button>
+      </span>
+    </div>
+  </article>`;
+}
+
+function mountTrim(v) {
+  const card = target.querySelector(".clips-card.is-trimming");
+  if (!card) return;
+  syncTrim("start");
+  // The filmstrip: one more stream, seeked across the window, each frame
+  // painted into its canvas.
+  const { lo, hi } = trimWindow(v);
+  const canvases = [...card.querySelectorAll(".clips-trim__thumbs canvas")];
+  const src = document.createElement("video");
+  src.muted = true;
+  src.preload = "auto";
+  src.src = v.url;
+  let i = 0;
+  const next = () => {
+    if (i >= canvases.length || !card.isConnected) return src.removeAttribute("src");
+    src.currentTime = (lo + ((hi - lo) * (i + 0.5)) / canvases.length) / 1000;
+    return undefined;
+  };
+  src.addEventListener("seeked", () => {
+    const cv = canvases[i];
+    cv.width = 160;
+    cv.height = 90;
+    try {
+      cv.getContext("2d").drawImage(src, 0, 0, 160, 90);
+    } catch {}
+    i++;
+    next();
+  });
+  src.addEventListener("loadedmetadata", next, { once: true });
+}
+
+// The handles can't cross (a clip lasts a second at least); the frame under
+// the handle being moved shows in the player.
+function syncTrim(moved) {
+  const card = target?.querySelector(".clips-card.is-trimming");
+  const v = getVideo(videoId);
+  if (!card || !v) return;
+  const { lo, hi } = trimWindow(v);
+  const pct = (ms) => `${((ms - lo) / (hi - lo)) * 100}%`;
+  card.querySelector('[data-clips-trim-h="start"]').value = trimming.startMs;
+  card.querySelector('[data-clips-trim-h="end"]').value = trimming.endMs;
+  card.querySelector('[data-clips-trim-out="before"]').style.width = pct(trimming.startMs);
+  card.querySelector('[data-clips-trim-out="after"]').style.left = pct(trimming.endMs);
+  const sel = card.querySelector("[data-clips-trim-sel]");
+  sel.style.left = pct(trimming.startMs);
+  sel.style.right = `calc(100% - ${pct(trimming.endMs)})`;
+  const changed = trimming.startMs !== trimming.from.startMs || trimming.endMs !== trimming.from.endMs;
+  card.querySelector("[data-clips-trim-read]").textContent =
+    `Start ${fmtMs(trimming.startMs)} · End ${fmtMs(trimming.endMs)} · ${fmtMs(trimming.endMs - trimming.startMs)} long`;
+  card.querySelector("[data-clips-trim-reset]").disabled = !changed;
+  const video = card.querySelector("[data-clips-trim-video]");
+  stopTrimPlay();
+  video.currentTime = (moved === "end" ? trimming.endMs - 300 : trimming.startMs) / 1000;
+}
+
+function playTrim() {
+  const card = target?.querySelector(".clips-card.is-trimming");
+  const video = card?.querySelector("[data-clips-trim-video]");
+  if (!video) return;
+  if (trimPlay) return stopTrimPlay();
+  const head = card.querySelector("[data-clips-trim-head]");
+  const { lo, hi } = trimWindow(getVideo(videoId));
+  video.currentTime = trimming.startMs / 1000;
+  video.play().catch(() => {});
+  head.hidden = false;
+  const tick = () => {
+    const ms = video.currentTime * 1000;
+    head.style.left = `${((ms - lo) / (hi - lo)) * 100}%`;
+    if (ms >= trimming.endMs) return stopTrimPlay();
+    trimPlay = requestAnimationFrame(tick);
+    return undefined;
+  };
+  trimPlay = requestAnimationFrame(tick);
+  card.querySelector("[data-clips-trim-play]").setAttribute("aria-label", "Pause");
+  card.querySelector("[data-clips-trim-play] i").className = "ap-icon-pause";
+}
+
+function stopTrimPlay() {
+  if (!trimPlay) return;
+  cancelAnimationFrame(trimPlay);
+  trimPlay = null;
+  const card = target?.querySelector(".clips-card.is-trimming");
+  card?.querySelector("[data-clips-trim-video]")?.pause();
+  const head = card?.querySelector("[data-clips-trim-head]");
+  if (head) head.hidden = true;
+  const btn = card?.querySelector("[data-clips-trim-play]");
+  if (btn) {
+    btn.setAttribute("aria-label", "Play the clip");
+    btn.querySelector("i").className = "ap-icon-play";
+  }
+}
+
+function closeTrim(save) {
+  if (!trimming) return;
+  stopTrimPlay();
+  const t = trimming;
+  trimming = null;
+  const changed = t.startMs !== t.from.startMs || t.endMs !== t.from.endMs;
+  if (save && changed) trimClip(videoId, t.id, { startMs: t.startMs, endMs: t.endMs });
+  else paint();
+  target?.querySelector(`[data-clips-trim="${CSS.escape(t.id)}"]`)?.focus();
+}
+
+function onInput(e) {
+  const h = e.target.closest("[data-clips-trim-h]");
+  if (!h || !trimming) return;
+  const ms = Number(h.value);
+  if (h.dataset.clipsTrimH === "start") trimming.startMs = Math.min(ms, trimming.endMs - 1000);
+  else trimming.endMs = Math.max(ms, trimming.startMs + 1000);
+  syncTrim(h.dataset.clipsTrimH);
+}
+
+function onKey(e) {
+  if (e.key === "Escape" && trimming) {
+    e.preventDefault();
+    closeTrim(false);
+  }
 }
