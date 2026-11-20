@@ -7,32 +7,32 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2805";
-import { isFlagOn } from "../../feature-flags.js?v=2805";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2805";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2805";
-import { showToast } from "../../components/toast.js?v=2805";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2805";
-import { open as openClipRange } from "../../components/clip-range-modal.js?v=2805";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2805";
-import { startRewrite } from "../../draft-rewrite.js?v=2805";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2805";
-import { renderPostCard } from "../../components/post-card.js?v=2805";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2805";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2805";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2805";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2805";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2805";
-import { open as openRename } from "../../components/rename-modal.js?v=2805";
-import { writePostsInChat } from "../../clips-chat.js?v=2805";
+import { navigate } from "../../router.js?v=2806";
+import { isFlagOn } from "../../feature-flags.js?v=2806";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2806";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2806";
+import { showToast } from "../../components/toast.js?v=2806";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2806";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2806";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2806";
+import { startRewrite } from "../../draft-rewrite.js?v=2806";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2806";
+import { renderPostCard } from "../../components/post-card.js?v=2806";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2806";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2806";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2806";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2806";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2806";
+import { open as openRename } from "../../components/rename-modal.js?v=2806";
+import { writePostsInChat } from "../../clips-chat.js?v=2806";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2805";
-import { escapeHtml, plural } from "../../utils.js?v=2805";
+} from "../../posts-store.js?v=2806";
+import { escapeHtml, plural } from "../../utils.js?v=2806";
 import {
   getVideo,
   draftKey,
@@ -50,7 +50,7 @@ import {
   askForClips,
   trimClip,
   updateClip,
-} from "../../videos-store.js?v=2805";
+} from "../../videos-store.js?v=2806";
 import {
   fmtMs,
   lookSelect,
@@ -63,7 +63,7 @@ import {
   presetLabel,
   CTA_OPTIONS,
   confirmRemoveVideo,
-} from "./shared.js?v=2805";
+} from "./shared.js?v=2806";
 
 let target = null;
 let videoId = null;
@@ -106,7 +106,6 @@ export function renderClipsProject(params, el) {
   el.addEventListener("submit", onSubmit);
   el.addEventListener("input", onInput);
   el.addEventListener("keydown", onKey);
-  el.addEventListener("toggle", placeMenu, true);
   topbar?.addEventListener("click", onClick);
   disposers.push(
     subscribeVideos(onStore),
@@ -122,7 +121,6 @@ export function renderClipsProject(params, el) {
     el.removeEventListener("submit", onSubmit);
     el.removeEventListener("input", onInput);
     el.removeEventListener("keydown", onKey);
-    el.removeEventListener("toggle", placeMenu, true);
     stopTrimPlay();
     trimming = null;
     topbar?.removeEventListener("click", onClick);
@@ -309,7 +307,7 @@ function renderComing(v) {
       </header>
       <div class="clips-cards" aria-hidden="true">${Array.from(
         { length: n },
-        () => `<div class="clips-card clips-poster is-waiting"><span class="clips-card__wait-media"></span>
+        () => `<div class="clips-card clips-frame is-waiting"><span class="clips-card__wait-media"></span>
           <span class="clips-card__wait-body"><span></span><span></span></span></div>`,
       ).join("")}</div>
     </section>`;
@@ -444,7 +442,7 @@ function renderRequest(v, r, tools = "") {
     r.status === "speaker"
       ? renderSpeakerQuestion(r)
       : r.status === "running"
-        ? `<p class="clips-group-sec__meta" role="status">Finding these moments…</p><div class="clips-cards" aria-hidden="true">${'<div class="clips-card clips-poster is-waiting"><span class="clips-card__wait-media"></span><span class="clips-card__wait-body"><span></span><span></span></span></div>'.repeat(2)}</div>`
+        ? `<p class="clips-group-sec__meta" role="status">Finding these moments…</p><div class="clips-cards" aria-hidden="true">${'<div class="clips-card clips-frame is-waiting"><span class="clips-card__wait-media"></span><span class="clips-card__wait-body"><span></span><span></span></span></div>'.repeat(2)}</div>`
         : r.status === "none"
           ? `<p class="clips-group-sec__none">I didn't find a part of the video that matches what you asked for, so I made no new clips. The clips you already had are still there.</p>`
           : `<div class="clips-cards">${clips.map((c) => renderCard(v, c)).join("")}</div>`;
@@ -468,35 +466,38 @@ function renderCard(v, c) {
   if (trimming?.id === c.id) return renderTrim(v, c);
   const id = escapeHtml(c.id);
   const title = escapeHtml(c.title);
-  // The poster (A, 2026-11-20): the clip as it will render, large; its box ON
-  // the image (keeping is the page's main move); Trim and Edit over it on hover
-  // or focus, ⋯ in its corner; under it the title and where it runs. Why I
-  // picked it is the image's tooltip.
-  return `<article class="clips-card clips-poster${c.selected ? " is-kept" : ""}" data-clips-card="${id}">
-    <div class="clips-card__media"${c.why ? ` title="${escapeHtml(c.why)}"` : ""}>
+  // « Le cadre fixe » (A, 2026-11-20, after Opus Clip and Riverside): every
+  // card the same size, whatever the clip's format — the clip sits at its real
+  // shape in a dark 4:3 stage, its format written on it. Under it, the title,
+  // where it runs and its subtitles, why I picked it; the actions always shown.
+  return `<article class="clips-card clips-frame${c.selected ? " is-kept" : ""}" data-clips-card="${id}">
+    <div class="clips-frame__stage">
       ${previewMarkup(v, c, { captions: false })}
-      <label class="clips-poster__keep"><span class="ap-checkbox-container"><input type="checkbox" data-clips-keep="${id}" ${c.selected ? "checked" : ""} aria-label="Keep « ${title} »" /><i></i></span></label>
+      <label class="clips-frame__keep"><span class="ap-checkbox-container"><input type="checkbox" data-clips-keep="${id}" ${c.selected ? "checked" : ""} aria-label="Keep « ${title} »" /><i></i></span></label>
+      <span class="clips-frame__fmt">${escapeHtml(formatLabel(clipRatioId(v, c)))}</span>
       <span class="clips-card__dur">${fmtMs(c.endMs - c.startMs)}</span>
-      <span class="clips-poster__acts">
-        <button type="button" class="ap-button stroked grey" data-clips-trim="${id}"><i class="ap-icon-shorten" aria-hidden="true"></i><span>Trim</span></button>
-        <a class="ap-button stroked grey" href="#/clips/${encodeURIComponent(v.id)}/edit/${encodeURIComponent(c.id)}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></a>
-      </span>
       ${
         c.rendering
           ? `<span class="clips-card__render" role="status"><span>Rendering your edited clip…</span><span class="clips-progress__track is-indeterminate"><span class="clips-progress__fill"></span></span></span>`
           : ""
       }
     </div>
-    <span class="clips-card__title">${title}</span>
-    <span class="clips-card__at">${fmtMs(c.startMs)} – ${fmtMs(c.endMs)}${c.trimmed ? " · Trimmed" : ""}</span>
-    <!-- Outside the image: its overflow would clip the menu. -->
-    <details class="clips-more clips-poster__more">
-        <summary class="ap-icon-button stroked grey" aria-label="More actions for « ${title} »" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
+    <div class="clips-frame__body">
+      <span class="clips-card__title">${title}</span>
+      <span class="clips-card__at">${fmtMs(c.startMs)} – ${fmtMs(c.endMs)} in the video${c.trimmed ? " · Trimmed" : ""} · Subtitles: ${escapeHtml(presetLabel(clipCaptionState(v, c).presetId))}</span>
+      ${c.why ? `<p class="clips-card__why">${escapeHtml(c.why)}</p>` : ""}
+    </div>
+    <div class="clips-frame__foot">
+      <button type="button" class="ap-button ghost grey" data-clips-trim="${id}"><i class="ap-icon-shorten" aria-hidden="true"></i><span>Trim</span></button>
+      <a class="ap-button ghost grey" href="#/clips/${encodeURIComponent(v.id)}/edit/${encodeURIComponent(c.id)}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit clip</span></a>
+      <details class="clips-more clips-frame__more">
+        <summary class="ap-icon-button transparent grey" aria-label="More actions for « ${title} »" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
         <div class="ap-action-dropdown clips-more__menu" role="menu">
           ${menuItem("Rename", "pen", `data-clips-rename="${id}"`)}
           ${menuItem("Remove this clip", "trash", `data-clips-remove="${id}"`, true)}
         </div>
       </details>
+    </div>
   </article>`;
 }
 // ── Drafts ───────────────────────────────────────────────────────────
@@ -1286,14 +1287,4 @@ function onKey(e) {
     e.preventDefault();
     closeTrim(false);
   }
-}
-
-// A poster's ⋯ menu opens to the left of its button; on the first column that
-// runs under the sidebar, so it flips to open rightward.
-function placeMenu(e) {
-  const d = e.target;
-  if (!d.matches?.(".clips-poster__more") || !d.open) return;
-  const menu = d.querySelector(".clips-more__menu");
-  menu.classList.remove("is-flipped");
-  if (menu.getBoundingClientRect().left < target.getBoundingClientRect().left) menu.classList.add("is-flipped");
 }

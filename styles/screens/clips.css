@@ -3518,45 +3518,54 @@ body.clips-editing .app-content {
   white-space: nowrap;
 }
 
-/* ── The poster (A, 2026-11-20, after Opus Clip) ───────────────────────
-   The clip large, at its format; the box on the image; Trim / Edit over it on
-   hover or focus; title and range under it. As many to a row as fit. */
-.clips-cards:has(.clips-poster) {
-  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
-  gap: var(--ref-spacing-md) var(--ref-spacing-sm);
+/* ── The fixed frame (A, 2026-11-20, after Opus Clip and Riverside) ──────
+   Every card the same size whatever the clip's format: the clip at its real
+   shape in a dark 4:3 stage, its format written on it; the body under it;
+   the actions in a footer, always shown. Three to a row at 1440. */
+.clips-cards:has(.clips-frame) {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--ref-spacing-sm);
 }
 
-.clips-card.clips-poster {
-  position: relative;
+.clips-card.clips-frame {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
+  gap: 0;
   padding: 0;
-  border: 0;
-  background: none;
 }
 
-.clips-card.clips-poster:hover {
-  border-color: transparent;
+/* Kept = the interactive blue on the card's border, held. */
+.clips-card.clips-frame.is-kept {
+  border-color: var(--ref-color-electric-blue-100);
 }
 
-.clips-poster .clips-card__media {
-  align-self: stretch;
-  margin-bottom: var(--ref-spacing-xxs);
-  border-radius: var(--app-radius-lg);
-  outline: 2px solid transparent;
-  outline-offset: -2px;
-  transition: outline-color 0.15s ease;
+.clips-frame__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  padding: var(--ref-spacing-sm);
+  border-radius: var(--app-radius-lg) var(--app-radius-lg) 0 0;
+  background: var(--ref-color-grey-150);
+  overflow: hidden;
 }
 
-/* Card hover = blue border, here on the image; kept = the same blue, held. */
-.clips-poster:hover .clips-card__media,
-.clips-poster:focus-within .clips-card__media,
-.clips-poster.is-kept .clips-card__media {
-  outline-color: var(--ref-color-electric-blue-100);
+/* Taller than the stage: as tall as it; wider: as wide. */
+.clips-frame__stage .clips-preview {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  border-radius: var(--app-radius-md);
+  overflow: hidden;
 }
 
-.clips-poster__keep {
+.clips-frame__stage .clips-preview[data-ratio="16:9"],
+.clips-frame__stage .clips-preview[data-ratio="4:3"] {
+  width: 100%;
+  height: auto;
+}
+
+.clips-frame__keep {
   position: absolute;
   top: var(--ref-spacing-xs);
   left: var(--ref-spacing-xs);
@@ -3568,73 +3577,59 @@ body.clips-editing .app-content {
   cursor: pointer;
 }
 
-.clips-poster__acts {
+.clips-frame__fmt {
   position: absolute;
   left: var(--ref-spacing-xs);
+  bottom: var(--ref-spacing-xs);
+  padding: 0 var(--ref-spacing-xxs);
+  border-radius: var(--app-radius-sm);
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.clips-frame .clips-card__dur {
   right: var(--ref-spacing-xs);
-  bottom: 36px;
+  bottom: var(--ref-spacing-xs);
+  line-height: 20px;
+}
+
+.clips-frame__body {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--ref-spacing-xxs);
-  opacity: 0;
-  transition: opacity 0.15s ease;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-sm) var(--ref-spacing-xs);
 }
 
-.clips-poster__acts .ap-button,
-.clips-poster__more summary {
-  background: var(--ref-color-white);
+.clips-frame__foot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border-top: 1px solid var(--ref-color-grey-20);
 }
 
-.clips-poster__more {
-  position: absolute;
-  top: var(--ref-spacing-xs);
-  right: var(--ref-spacing-xs);
-  opacity: 0;
-  transition: opacity 0.15s ease;
+.clips-frame__more {
+  position: relative;
+  margin-left: auto;
 }
 
-.clips-poster__more[open] {
-  opacity: 1;
-}
-
-.clips-poster__more .clips-more__menu {
+.clips-frame__more .clips-more__menu {
   left: auto;
   right: 0;
 }
 
-.clips-poster__more .clips-more__menu.is-flipped {
-  left: 0;
-  right: auto;
-}
-
-.clips-poster:hover .clips-poster__acts,
-.clips-poster:focus-within .clips-poster__acts,
-.clips-poster:hover .clips-poster__more,
-.clips-poster:focus-within .clips-poster__more {
-  opacity: 1;
-}
-
-@media (hover: none) {
-  .clips-poster__acts,
-  .clips-poster__more {
-    opacity: 1;
-  }
-}
-
-.clips-poster .clips-card__title {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-/* Waiting posters: the image and two lines, shimmering like the waiting fiches. */
-.clips-poster.is-waiting .clips-card__wait-media {
+/* Waiting cards: the stage and two lines, shimmering. */
+.clips-frame.is-waiting .clips-card__wait-media {
   width: 100%;
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--app-radius-lg) var(--app-radius-lg) 0 0;
 }
 
-.clips-poster.is-waiting .clips-card__wait-body {
-  padding: var(--ref-spacing-xs) 0 0;
+.clips-frame.is-waiting .clips-card__wait-body {
+  padding: var(--ref-spacing-sm);
 }
