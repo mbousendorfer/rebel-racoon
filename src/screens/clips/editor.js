@@ -27,19 +27,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2797";
-import { isFlagOn } from "../../feature-flags.js?v=2797";
-import { parseHashParams } from "../../url-state.js?v=2797";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2797";
-import { showToast } from "../../components/toast.js?v=2797";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2797";
-import { open as openRename } from "../../components/rename-modal.js?v=2797";
-import { getContextById } from "../../contexts-store.js?v=2797";
-import { escapeHtml } from "../../utils.js?v=2797";
-import * as ce from "../../caption-editor.js?v=2797";
-import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2797";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2797";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf, renderClip } from "../../videos-store.js?v=2797";
+import { navigate } from "../../router.js?v=2799";
+import { isFlagOn } from "../../feature-flags.js?v=2799";
+import { parseHashParams } from "../../url-state.js?v=2799";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2799";
+import { showToast } from "../../components/toast.js?v=2799";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2799";
+import { open as openRename } from "../../components/rename-modal.js?v=2799";
+import { getContextById } from "../../contexts-store.js?v=2799";
+import { escapeHtml } from "../../utils.js?v=2799";
+import * as ce from "../../caption-editor.js?v=2799";
+import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2799";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2799";
+import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2799";
 import {
   framingContext,
   initialSegments,
@@ -58,7 +58,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2797";
+} from "../../clip-framing.js?v=2799";
 import {
   fmtMs,
   fmtPrecise,
@@ -73,8 +73,8 @@ import {
   dsSelect,
   bindSelectDismiss,
   EDITOR_TOOLS as TOOLS,
-} from "./shared.js?v=2797";
-import { primeDraftSetup } from "./project.js?v=2797";
+} from "./shared.js?v=2799";
+import { writePostsInChat } from "../../clips-chat.js?v=2799";
 
 const FRAME_MS = 40;
 const CARD_MS = 2000; // intro / outro card length
@@ -1316,9 +1316,8 @@ function handleClick(e) {
     case "redo":
       return redo();
     case "draft":
-      setSelection(ed.video.id, [ed.clip.id]);
-      primeDraftSetup(ed.video.id);
-      return navigate(`/clips/${ed.video.id}?tab=drafts`);
+      // A new chat with this clip (clips-chat.js); teardown writes what's pending first.
+      return writePostsInChat(ed.video, [ed.clip.id]);
     case "play":
       return togglePlay();
     case "back5":

@@ -75,6 +75,8 @@ export const DESIGN_WIDTH = 1080;
 const CLIP_VIDEOS = ["video/leeroy.mp4", "video/medium.mp4", "video/cats.mp4"];
 
 export function videoForClip(clip) {
+  // A clip sent from the Clips space plays its own video (clips-chat.js).
+  if (clip?.videoUrl) return clip.videoUrl;
   const key = String((clip && clip.id) || "clip");
   let h = 0;
   for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;

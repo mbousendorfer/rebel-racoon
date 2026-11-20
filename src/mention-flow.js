@@ -12,13 +12,13 @@
 // draft changes at once. Your pick echoes as a chip; I answer in one sentence,
 // no « what changed » card.
 
-import { postAssistantMessage, postUserTurn, postActivity, postUserProfilesTurn } from "./assistant.js?v=2797";
-import * as inlineQuestion from "./inline-question.js?v=2797";
-import { getPosts, updatePostContent } from "./posts-store.js?v=2797";
-import { isFlagOn } from "./feature-flags.js?v=2797";
-import { networkLabel, networkIcon, normalizeNetwork } from "./social-profiles.js?v=2797";
-import { focusInPanel } from "./components/right-panel.js?v=2797";
-import { escapeHtml } from "./utils.js?v=2797";
+import { postAssistantMessage, postUserTurn, postActivity, postUserProfilesTurn } from "./assistant.js?v=2799";
+import * as inlineQuestion from "./inline-question.js?v=2799";
+import { getPosts, updatePostContent } from "./posts-store.js?v=2799";
+import { isFlagOn } from "./feature-flags.js?v=2799";
+import { networkLabel, networkIcon, normalizeNetwork } from "./social-profiles.js?v=2799";
+import { focusInPanel } from "./components/right-panel.js?v=2799";
+import { escapeHtml } from "./utils.js?v=2799";
 import {
   HANDLE_RE,
   joinList,
@@ -33,9 +33,9 @@ import {
   removeMentions,
   mentionsNamedIn,
   nameForHandle,
-} from "./mentions.js?v=2797";
+} from "./mentions.js?v=2799";
 
-export { MENTION_ASK, UNMENTION_ASK, mentionNamesIn } from "./mentions.js?v=2797";
+export { MENTION_ASK, UNMENTION_ASK, mentionNamesIn } from "./mentions.js?v=2799";
 
 const initials = (name) =>
   name

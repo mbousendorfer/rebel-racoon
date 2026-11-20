@@ -8,14 +8,14 @@
 // The state machine timers live here (not inside the modal) so uploads
 // continue in background after the user closes the modal.
 
-import { newId, prettyUrl } from "./utils.js?v=2797";
-import { sourcesBySession as seedByCsesssion, DEMO_CLIPS } from "./mocks.js?v=2797";
-import { isDemo } from "./demo-mode.js?v=2797";
-import { isFlagOn } from "./feature-flags.js?v=2797";
-import { isNewUser } from "./user-mode.js?v=2797";
-import { createNotifier } from "./store-utils.js?v=2797";
-import { detectUrlService } from "./url-services.js?v=2797";
-import { showToast } from "./components/toast.js?v=2797";
+import { newId, prettyUrl } from "./utils.js?v=2799";
+import { sourcesBySession as seedByCsesssion, DEMO_CLIPS } from "./mocks.js?v=2799";
+import { isDemo } from "./demo-mode.js?v=2799";
+import { isFlagOn } from "./feature-flags.js?v=2799";
+import { isNewUser } from "./user-mode.js?v=2799";
+import { createNotifier } from "./store-utils.js?v=2799";
+import { detectUrlService } from "./url-services.js?v=2799";
+import { showToast } from "./components/toast.js?v=2799";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.
@@ -650,7 +650,7 @@ export function startConnectorImport(connector, doc, sessionId) {
 // `iconClass` lets the row render a network logo (see renderSourceRow).
 export function addReadySource(
   sessionId,
-  { id, filename, kind = "Post", preview = "", iconClass = null, topPost = null },
+  { id, filename, kind = "Post", preview = "", iconClass = null, topPost = null, extra = null },
 ) {
   const list = getOrInitSessionSources(sessionId);
   if (list.some((s) => s.id === id)) return id;
@@ -669,6 +669,8 @@ export function addReadySource(
     // panel can render the real post card (renderTopPostEcho) instead of a
     // generic file row.
     topPost,
+    // A video from the Clips space carries its clips (clips, durationSec, fromVideo).
+    ...extra,
   });
   notifySources(sessionId);
   return id;

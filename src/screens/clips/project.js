@@ -7,31 +7,32 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2797";
-import { isFlagOn } from "../../feature-flags.js?v=2797";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2797";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2797";
-import { showToast } from "../../components/toast.js?v=2797";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2797";
-import { open as openClipRange } from "../../components/clip-range-modal.js?v=2797";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2797";
-import { startRewrite } from "../../draft-rewrite.js?v=2797";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2797";
-import { renderPostCard } from "../../components/post-card.js?v=2797";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2797";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2797";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2797";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2797";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2797";
-import { open as openRename } from "../../components/rename-modal.js?v=2797";
+import { navigate } from "../../router.js?v=2799";
+import { isFlagOn } from "../../feature-flags.js?v=2799";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2799";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2799";
+import { showToast } from "../../components/toast.js?v=2799";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2799";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2799";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2799";
+import { startRewrite } from "../../draft-rewrite.js?v=2799";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2799";
+import { renderPostCard } from "../../components/post-card.js?v=2799";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2799";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2799";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2799";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2799";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2799";
+import { open as openRename } from "../../components/rename-modal.js?v=2799";
+import { writePostsInChat } from "../../clips-chat.js?v=2799";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2797";
-import { escapeHtml, plural } from "../../utils.js?v=2797";
+} from "../../posts-store.js?v=2799";
+import { escapeHtml, plural } from "../../utils.js?v=2799";
 import {
   getVideo,
   draftKey,
@@ -49,7 +50,7 @@ import {
   askForClips,
   trimClip,
   updateClip,
-} from "../../videos-store.js?v=2797";
+} from "../../videos-store.js?v=2799";
 import {
   fmtMs,
   lookSelect,
@@ -62,7 +63,7 @@ import {
   presetLabel,
   CTA_OPTIONS,
   confirmRemoveVideo,
-} from "./shared.js?v=2797";
+} from "./shared.js?v=2799";
 
 let target = null;
 let videoId = null;
@@ -81,18 +82,6 @@ const draftSetup = {
   open: false,
   writing: false,
 };
-
-// The editor's "Write a post": land on the Drafts tab with the setup open for
-// the clip just edited (the editor has already selected it alone).
-export function primeDraftSetup(id) {
-  videoId = id;
-  Object.assign(draftSetup, {
-    accounts: null,
-    cta: "none",
-    open: true,
-    writing: false,
-  });
-}
 
 export function renderClipsProject(params, el) {
   if (!isFlagOn("clipsSpace")) {
@@ -216,10 +205,12 @@ function paint() {
     return;
   }
   const posts = getPosts(draftKey(v.id));
-  const t = tab();
+  // Posts are written in a chat now: the « Write the posts » step only shows
+  // for a video whose drafts were written here before (2026-11-20).
+  const t = posts.length ? tab() : "clips";
   target.innerHTML = `
     <div class="clips-view clips-project">
-      <div class="clips-bar">
+      <div class="clips-bar"${posts.length ? "" : " hidden"}>
         <nav class="ap-stepper clips-bar__steps" aria-label="Steps">
           ${stepButton("clips", 1, "Review the clips", `<span data-clips-step-count>${v.clips.filter((c) => c.selected).length} kept</span>`, t)}
           <span class="ap-stepper-separator" aria-hidden="true"><i class="ap-icon-chevron-right"></i></span>
@@ -956,10 +947,12 @@ function onClick(e) {
     });
   }
 
-  if (t.closest("[data-clips-to-drafts]")) {
-    draftSetup.open = true;
-    return setHashQuery(path(), { tab: "drafts" });
-  }
+  // Write posts opens a new chat with the kept clips (clips-chat.js).
+  if (t.closest("[data-clips-to-drafts]"))
+    return writePostsInChat(
+      v,
+      kept(v).map((c) => c.id),
+    );
   if (t.closest("[data-clips-more-drafts]")) {
     // A new run: its accounts are picked again (prod), nothing carried over.
     Object.assign(draftSetup, { open: true, accounts: null });

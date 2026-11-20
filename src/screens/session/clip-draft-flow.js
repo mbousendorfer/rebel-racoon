@@ -15,15 +15,15 @@
 // whole screen. clipContext is exported alongside because the clip-studio
 // finalize path in session.js builds the same generationContext object.
 
-import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2797";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2797";
+import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2799";
+import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2799";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "../../social-profiles.js?v=2797";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2797";
-import { requireNetworkVoices } from "../../network-voice-flow.js?v=2797";
+} from "../../social-profiles.js?v=2799";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2799";
+import { requireNetworkVoices } from "../../network-voice-flow.js?v=2799";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -33,9 +33,9 @@ import {
   startPending,
   finishPending,
   GENERATION_TOOLS,
-} from "../../assistant.js?v=2797";
-import * as inlineQuestion from "../../inline-question.js?v=2797";
-import { addPostDraft } from "../../posts-store.js?v=2797";
+} from "../../assistant.js?v=2799";
+import * as inlineQuestion from "../../inline-question.js?v=2799";
+import { addPostDraft } from "../../posts-store.js?v=2799";
 
 // The generationContext a clip-derived draft carries — the "why this draft
 // exists" header shown on the post card. Shared with session.js's clip-studio
@@ -63,6 +63,18 @@ export function startClipDraftFlow(sessionId, entries) {
     meta: first.sourceName ? `Clip · ${first.sourceName}` : "Video clip",
   });
   askClipFormat(sessionId, list);
+}
+
+// From the Clips space's Write posts: the clips come with their format and
+// subtitles, chosen in the space, so the flow asks only for the accounts.
+export function startClipDraftFromSpace(sessionId, { entries, format, style }) {
+  if (!entries?.length) return;
+  postSelectionEcho(sessionId, {
+    icon: "ap-icon-file--video",
+    title: entries.length === 1 ? entries[0].clip.title : `${entries.length} clips`,
+    meta: `${entries.length === 1 ? "Clip" : "Clips"} · ${entries[0].sourceName}`,
+  });
+  askClipAccounts(sessionId, entries, format, style);
 }
 
 // Step 1 — which aspect ratio? All export formats are offered as visual

@@ -28,11 +28,11 @@
 //             preset), transcript, segments (null = auto framing), texts[],
 //             brand (null = the Playbook's clip look) }
 
-import { newId } from "./utils.js?v=2797";
-import { seedVideos } from "./mocks.js?v=2797";
-import { isNewUser } from "./user-mode.js?v=2797";
-import { createNotifier } from "./store-utils.js?v=2797";
-import { getDefaultContext, getContextById } from "./contexts-store.js?v=2797";
+import { newId } from "./utils.js?v=2799";
+import { seedVideos } from "./mocks.js?v=2799";
+import { isNewUser } from "./user-mode.js?v=2799";
+import { createNotifier } from "./store-utils.js?v=2799";
+import { getDefaultContext, getContextById } from "./contexts-store.js?v=2799";
 
 const MIN_VIDEO_MS = 30 * 1000;
 const MAX_VIDEO_MS = 2 * 60 * 60 * 1000;
@@ -510,6 +510,8 @@ export function renderClip(videoId, clipId) {
 // once, with the clips the chat already cut. Chat sources carry no real file in
 // the prototype, so a beta video stands in for the footage.
 export function importFromSource({ sessionId, source, contextId }) {
+  // A source the space sent (Write posts) goes back to its own video.
+  if (source.fromVideo && getVideo(source.fromVideo)) return getVideo(source.fromVideo);
   const existing = seeded().find((v) => v.fromSource?.sourceId === source.id);
   if (existing) return existing;
   const standIn = seedVideos[0];
