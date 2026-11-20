@@ -7,37 +7,32 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2782";
-import { isFlagOn } from "../../feature-flags.js?v=2782";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2782";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2782";
-import { showToast } from "../../components/toast.js?v=2782";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2782";
-import { open as openClipRange } from "../../components/clip-range-modal.js?v=2782";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2782";
-import { startRewrite } from "../../draft-rewrite.js?v=2782";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2782";
-import { renderPostCard } from "../../components/post-card.js?v=2782";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2782";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2782";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2782";
-import {
-  getConnectedProfiles,
-  renderProfileTag,
-  NETWORK_ICON_BY_PLATFORM,
-  NETWORK_LABEL,
-} from "../../social-profiles.js?v=2782";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2782";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2782";
-import { buildTranscript } from "../../clip-captions.js?v=2782";
+import { navigate } from "../../router.js?v=2783";
+import { isFlagOn } from "../../feature-flags.js?v=2783";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2783";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2783";
+import { showToast } from "../../components/toast.js?v=2783";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2783";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2783";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2783";
+import { startRewrite } from "../../draft-rewrite.js?v=2783";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2783";
+import { renderPostCard } from "../../components/post-card.js?v=2783";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2783";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2783";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2783";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2783";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2783";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2783";
+import { buildTranscript } from "../../clip-captions.js?v=2783";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2782";
-import { escapeHtml, plural } from "../../utils.js?v=2782";
+} from "../../posts-store.js?v=2783";
+import { escapeHtml, plural } from "../../utils.js?v=2783";
 import {
   getVideo,
   draftKey,
@@ -48,7 +43,7 @@ import {
   subscribe as subscribeVideos,
   retryAnalysis,
   reviewClip,
-} from "../../videos-store.js?v=2782";
+} from "../../videos-store.js?v=2783";
 import {
   fmtMs,
   formatSelect,
@@ -64,7 +59,7 @@ import {
   clipSegments,
   CTA_OPTIONS,
   confirmRemoveVideo,
-} from "./shared.js?v=2782";
+} from "./shared.js?v=2783";
 
 let target = null;
 let videoId = null;
@@ -80,8 +75,6 @@ const disposers = [];
 const draftSetup = {
   accounts: null,
   cta: "none",
-  previewClip: 0,
-  previewAccount: null,
   open: false,
   writing: false,
 };
@@ -95,8 +88,6 @@ export function primeDraftSetup(id) {
   Object.assign(draftSetup, {
     accounts: null,
     cta: "none",
-    previewClip: 0,
-    previewAccount: null,
     open: true,
     writing: false,
   });
@@ -162,7 +153,7 @@ function onStore() {
     // A clip's own format or subtitles changed in the inspector, or a tick.
     if (tab() === "clips") paintFocus(v);
     // The draft setup counts and previews the ticked clips: it repaints.
-    else if (draftSetup.preview) return paint();
+    else return paint();
     return patchSelection(v);
   }
   const pct = Math.round(v.progress * 100);
@@ -252,7 +243,7 @@ function paint() {
       </div>
       ${t === "drafts" ? `<div class="clips-view__page">${renderDrafts(v, posts)}</div>` : renderWorkspace(v)}
     </div>`;
-  if (t === "drafts") swapPlayers(v, draftSetup.preview ? [draftSetup.preview] : posts);
+  if (t === "drafts") swapPlayers(v, posts);
   else {
     patchSelection(v);
     mountWorkspace(v);
@@ -269,9 +260,6 @@ function swapPlayers(v, posts) {
     if (!clip || !player) continue;
     player.outerHTML = `<div class="clips-drafts__player">
       ${previewMarkup(v, { ...clip, ratio: post.format || clipRatioId(v, clip) })}
-      <a class="ap-button stroked grey clips-drafts__edit" href="#/clips/${v.id}/edit/${clip.id}">
-        <i class="ap-icon-pen" aria-hidden="true"></i><span>Edit clip</span>
-      </a>
     </div>`;
   }
 }
@@ -659,7 +647,6 @@ function renderDrafts(v, posts) {
       </ol>
     </div>`;
   }
-  draftSetup.preview = null; // set again by the setup, when it shows
   if (!posts.length || draftSetup.open) return renderDraftSetup(v, posts.length > 0);
   const toSchedule = posts.filter((p) => p.status !== "scheduled");
   return `
@@ -683,9 +670,40 @@ function renderDrafts(v, posts) {
         </button>
       </div>
     </div>
-    <div class="clips-drafts posts">
-      ${posts.map((p) => renderDraft(p, getContextById(v.contextId))).join("")}
-    </div>`;
+    ${draftGroups(v, posts)}`;
+}
+
+// The drafts, grouped by the clip they come from (in the video's order): the
+// clip names its group and leads to the editor; each draft is the real post
+// card, its account, its status. A draft whose clip is gone groups last.
+function draftGroups(v, posts) {
+  const pb = getContextById(v.contextId);
+  const byClip = new Map();
+  for (const p of posts) {
+    const id = p.clipRef?.clipId;
+    const key = v.clips.some((c) => c.id === id) ? id : "";
+    if (!byClip.has(key)) byClip.set(key, []);
+    byClip.get(key).push(p);
+  }
+  const order = [...v.clips.map((c) => c.id).filter((id) => byClip.has(id)), ...(byClip.has("") ? [""] : [])];
+  return order
+    .map((id) => {
+      const group = byClip.get(id);
+      const i = v.clips.findIndex((c) => c.id === id);
+      const c = v.clips[i];
+      const scheduled = group.filter((p) => p.status === "scheduled").length;
+      const head = c
+        ? `<h3 class="clips-group__title"><span class="clips-group__num">Clip ${i + 1}</span>${escapeHtml(c.title)}</h3>
+           <span class="clips-group__meta">${fmtMs(c.endMs - c.startMs)} · ${plural(group.length, "draft")}${scheduled ? ` · ${scheduled} scheduled` : ""}</span>
+           <a class="ap-button ghost grey clips-group__edit" href="#/clips/${v.id}/edit/${c.id}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit clip</span></a>`
+        : `<h3 class="clips-group__title">From a removed clip</h3>
+           <span class="clips-group__meta">${plural(group.length, "draft")}</span>`;
+      return `<section class="clips-group" aria-label="${escapeHtml(c ? `Clip ${i + 1}: ${c.title}` : "From a removed clip")}">
+        <header class="clips-group__head">${head}</header>
+        <div class="clips-drafts posts">${group.map((p) => renderDraft(p, pb)).join("")}</div>
+      </section>`;
+    })
+    .join("");
 }
 
 // A scheduled draft stays in the list, said so above its card — this space is
@@ -720,10 +738,10 @@ function postFormat(v, clip) {
   return clip.ratio || v.settings.ratio;
 }
 
-// « Write the posts »: the transformation, shown as it happens. Left, what to
-// turn into what — the clips, the accounts, how they look, how the post ends.
-// Right, a live preview of one draft exactly as it will land (the real post
-// card, the clip reframed at its network's format), the count, and the action.
+// « Write the posts »: one column, read top to bottom in prod's order — the
+// clips kept at the review, how they render, how the post ends, the accounts —
+// then the bar with the count and the action. No preview before writing (it
+// showed a draft that didn't exist): the drafts themselves land on this page.
 function renderDraftSetup(v, hasDrafts) {
   const clips = v.clips.filter((c) => c.selected);
   const profiles = getConnectedProfiles();
@@ -790,47 +808,8 @@ function renderDraftSetup(v, hasDrafts) {
     return choice("clips-cta", "data-clips-cta", o.id, draftSetup.cta === o.id, o.label, hint, off);
   }).join("");
 
-  // The preview: one of the drafts, as it will land.
-  const ci = Math.min(draftSetup.previewClip, Math.max(0, clips.length - 1));
-  const clip = clips[ci];
-  // Previewed as a ticked account — or, with none ticked yet, the first connected one.
-  const account = accounts.find((a) => a.id === draftSetup.previewAccount) || accounts[0] || profiles[0] || null;
-  const network = account?.platform || "linkedin";
-  draftSetup.preview = clip
-    ? {
-        id: "clips-preview",
-        author: accountAuthor(account, pb),
-        network: network === "x" ? "twitter" : network,
-        status: "ready",
-        timeLabel: "just now",
-        text: [clip.title, clip.summary].filter(Boolean).map(escapeHtml),
-        hashtags: (clip.tags || []).slice(0, 3),
-        cta: draftSetup.cta === "in_post" ? escapeHtml(ctaText) : "",
-        firstComment: draftSetup.cta === "first_comment" ? ctaText : "",
-        clipRef: {
-          start: clip.startMs / 1000,
-          end: clip.endMs / 1000,
-          sourceName: v.name,
-          sourceId: v.id,
-          clipId: clip.id,
-        },
-        format: postFormat(v, clip),
-        subtitleStyle: clipCaptionState(v, clip).presetId,
-      }
-    : null;
-  const accountTabs =
-    accounts.length > 1
-      ? `<div class="ap-tabs clips-write__tabs"><div class="ap-tabs-nav" role="tablist" aria-label="Preview on">${accounts
-          .map(
-            (
-              a,
-            ) => `<button type="button" class="ap-tabs-tab${a.id === account.id ? " active" : ""}" role="tab" aria-selected="${a.id === account.id}" data-clips-preview-account="${escapeHtml(a.id)}">
-              <i class="${NETWORK_ICON_BY_PLATFORM[a.platform] || ""}" aria-hidden="true"></i>${escapeHtml(NETWORK_LABEL[a.platform] || a.platform)}</button>`,
-          )
-          .join("")}</div></div>`
-      : "";
   const why = !clips.length
-    ? "Pick at least one clip at step 1."
+    ? "Keep at least one clip at step 1."
     : !profiles.length
       ? "Connect an account to write the posts."
       : !accounts.length
@@ -841,10 +820,9 @@ function renderDraftSetup(v, hasDrafts) {
     <section class="clips-write" aria-labelledby="clips-write-title">
       <header class="clips-write__head">
         <h2 class="clips-write__title" id="clips-write-title">Write posts from ${plural(clips.length, "clip")}</h2>
-        <p class="clips-write__sub">I render the clips as they look at step 1, then write one post per clip and account${pb ? `, in ${escapeHtml(pb.name)}'s voice` : ""}. Nothing is published: the drafts land on this page, ready to schedule.</p>
+        <p class="clips-write__sub">I render the clips you kept, then write one post per clip and account${pb ? `, in ${escapeHtml(pb.name)}'s voice` : ""}. Nothing is published: the drafts land on this page, ready to schedule.</p>
       </header>
-      <div class="clips-write__grid">
-        <div class="clips-write__form">
+      <div class="clips-write__form">
           <section class="clips-write__group">
             <div class="clips-write__group-head">
               <h3 class="clips-write__label">Clips</h3>
@@ -854,7 +832,7 @@ function renderDraftSetup(v, hasDrafts) {
               clips.length
                 ? `<ul class="clips-write__strip" aria-label="The clips">${strip}${more}</ul>
                    <p class="clips-write__meta">${plural(clips.length, "clip")} · ${fmtMs(totalMs)} of video</p>`
-                : `<p class="clips-write__empty">No clip picked.</p>`
+                : `<p class="clips-write__empty">No clip kept.</p>`
             }
           </section>
           ${
@@ -884,32 +862,6 @@ function renderDraftSetup(v, hasDrafts) {
             ${profiles.length ? `<p class="clips-write__meta">Pick one or more, across networks. I write one post per clip for each.</p>` : ""}
             ${accountBlock}
           </section>
-        </div>
-        <aside class="clips-write__side" aria-label="Preview">
-          <div class="clips-write__preview-head">
-            <h3 class="clips-write__label">Preview</h3>
-            ${
-              clips.length > 1
-                ? `<span class="clips-write__nav">
-                    <button type="button" class="ap-icon-button transparent" data-clips-preview-clip="-1" aria-label="Previous clip" ${ci === 0 ? "disabled" : ""}><i class="ap-icon-chevron-left" aria-hidden="true"></i></button>
-                    <span>Clip ${ci + 1} of ${clips.length}</span>
-                    <button type="button" class="ap-icon-button transparent" data-clips-preview-clip="1" aria-label="Next clip" ${ci === clips.length - 1 ? "disabled" : ""}><i class="ap-icon-chevron-right" aria-hidden="true"></i></button>
-                  </span>`
-                : ""
-            }
-          </div>
-          ${accountTabs}
-          <div class="clips-write__post" inert>
-            ${draftSetup.preview ? renderPostCard(draftSetup.preview, { railActions: [] }) : `<p class="clips-write__empty">Pick a clip to see its post.</p>`}
-          </div>
-          <p class="clips-write__note">${
-            !account
-              ? "Shown as LinkedIn until you connect an account. "
-              : !accounts.length
-                ? `Shown as ${escapeHtml(account.name || "your account")} until you pick the accounts. `
-                : ""
-          }I write the caption when you click — every draft stays editable.</p>
-        </aside>
       </div>
       <footer class="clips-write__bar">
         <p class="clips-write__count">
@@ -1104,7 +1056,7 @@ function onClick(e) {
   }
   if (t.closest("[data-clips-more-drafts]")) {
     // A new run: its accounts are picked again (prod), nothing carried over.
-    Object.assign(draftSetup, { open: true, accounts: null, previewAccount: null, previewClip: 0 });
+    Object.assign(draftSetup, { open: true, accounts: null });
     return paint();
   }
   if (t.closest("[data-clips-setup-cancel]")) {
@@ -1114,17 +1066,6 @@ function onClick(e) {
     return paint();
   }
   if (t.closest("[data-clips-write]")) return writeDrafts();
-  const pClip = t.closest("[data-clips-preview-clip]");
-  if (pClip) {
-    draftSetup.previewClip = Math.max(0, draftSetup.previewClip + Number(pClip.dataset.clipsPreviewClip));
-    return paint();
-  }
-  const pAcc = t.closest("[data-clips-preview-account]");
-  if (pAcc) {
-    draftSetup.previewAccount = pAcc.dataset.clipsPreviewAccount;
-    return paint();
-  }
-
   const connect = t.closest("[data-clips-connect]");
   if (connect) {
     const platform = connect.dataset.clipsConnect;

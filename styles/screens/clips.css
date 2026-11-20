@@ -857,16 +857,14 @@
 
 /* ── Drafts ──────────────────────────────────────────────────────── */
 
-/* « Write the posts »: the transformation. The settings on the left, read
-   top to bottom (Clips · Post on · Format · Subtitles · Call to action); on
-   the right, sticky, one draft as it will land; at the bottom, sticky too,
-   the count and the action — always in view, whatever the scroll. */
+/* « Write the posts »: one column, read top to bottom (Clips · How they
+   render · Call to action · Accounts); at the bottom, sticky, the count and
+   the action — always in view, whatever the scroll. */
 .clips-write {
-  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-md);
-  max-width: 1160px;
+  max-width: 720px;
   width: 100%;
   margin: 0 auto;
 }
@@ -881,45 +879,22 @@
 
 .clips-write__sub,
 .clips-write__meta,
-.clips-write__note,
 .clips-write__empty {
   margin: 0;
   color: var(--ref-color-grey-80);
 }
 
-.clips-write__meta,
-.clips-write__note {
+.clips-write__meta {
   font-size: var(--sys-text-style-caption-size);
 }
 
-.clips-write__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 548px; /* the draft card (500) + the side's inset */
-  gap: var(--ref-spacing-md);
-  align-items: start;
-}
-
-/* Too narrow for two columns: the preview goes under the settings. */
-@container (max-width: 980px) {
-  .clips-write__grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.clips-write__form,
-.clips-write__side {
+.clips-write__form {
   display: flex;
   flex-direction: column;
   padding: var(--ref-spacing-md);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
   background: var(--ref-color-white);
-}
-
-.clips-write__side {
-  position: sticky;
-  top: 0;
-  gap: var(--ref-spacing-sm);
 }
 
 .clips-write__group {
@@ -1084,39 +1059,6 @@
   opacity: 0.6;
 }
 
-.clips-write__preview-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.clips-write__nav {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-}
-
-.clips-write__tabs .ap-tabs-tab i {
-  margin-right: var(--ref-spacing-xxs);
-}
-
-/* A preview has no selection gutter nor row actions; the real draft card,
-   read-only, at its own height — no scroll inside the column. */
-.clips-write__post .posts__row-check,
-.clips-write__post .posts__row-actions,
-.clips-write__post .clips-drafts__edit,
-.clips-write__post .fb {
-  display: none;
-}
-
-/* A shorter player than a written draft's, so the whole card fits beside
-   the settings. */
-.clips-write__post .clips-drafts__player {
-  height: 260px;
-}
-
 /* The count and the action, held at the bottom of the page. */
 .clips-write__bar {
   position: sticky;
@@ -1221,10 +1163,48 @@
   background: #000;
 }
 
-.clips-drafts__edit {
-  position: absolute;
-  top: var(--ref-spacing-xs);
-  right: var(--ref-spacing-xs);
+/* The drafts, one group per clip: the clip names it and leads to the editor;
+   its drafts (one per account) sit under it. */
+.clips-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  padding-top: var(--ref-spacing-md);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.clips-group__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+}
+
+.clips-group__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+  font-size: var(--sys-text-style-h3-size);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-group__num {
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-80);
+  font-variant-numeric: tabular-nums;
+}
+
+.clips-group__meta {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-group__edit {
+  margin-left: auto;
+  align-self: center;
 }
 
 /* ── The clip editor ─────────────────────────────────────────────────
