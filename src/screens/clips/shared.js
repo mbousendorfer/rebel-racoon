@@ -2,10 +2,10 @@
 // editor share: time formatting, the video-wide options (format, subtitles),
 // and the live reframed previews.
 
-import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2775";
-import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2775";
-import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2775";
-import { escapeHtml } from "../../utils.js?v=2775";
+import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2776";
+import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2776";
+import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2776";
+import { escapeHtml } from "../../utils.js?v=2776";
 
 // A footage well shows a loading sheen until its first frame is in (clips.css,
 // `:not(.is-ready)`): every well is marked here, once, from the media events
@@ -87,7 +87,9 @@ export const CTA_OPTIONS = [
 ];
 
 // A DS select (.ap-select on <details>) — the house dropdown, never a bare
-// <select>. `attr` names the data attribute each option carries.
+// <select>. `attr` names the data attribute each option carries. The trigger's
+// name says the value too (« Format of this clip: Vertical 9:16 »); valueHtml
+// is already escaped, so only its tags are stripped.
 export function dsSelect({ label, valueHtml, options, attr, current, ariaLabel, extraClass = "" }) {
   const items = options
     .map((o) => {
@@ -99,7 +101,10 @@ export function dsSelect({ label, valueHtml, options, attr, current, ariaLabel, 
     })
     .join("");
   return `<details class="ap-select ${extraClass}">
-    <summary class="ap-select-trigger" aria-label="${escapeHtml(ariaLabel || label)}">
+    <summary class="ap-select-trigger" aria-label="${escapeHtml(ariaLabel || label)}: ${valueHtml
+      .replace(/<[^>]*>/g, "")
+      .replace(/\s+/g, " ")
+      .trim()}">
       <span class="ap-select-inline-label">${escapeHtml(label)}</span>
       <span class="ap-select-value">${valueHtml}</span>
       <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
