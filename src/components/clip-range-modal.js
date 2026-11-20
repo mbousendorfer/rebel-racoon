@@ -1,10 +1,10 @@
-// « Add a clip » — the one moment a clip's range is chosen. Once the clip
-// exists its start and end are fixed (prod can't retrim), so the Clips space
-// asks for them here and nowhere else. Same init/open/close pattern as the
-// rename-modal.
+// A clip's range, typed: « Add a clip » (a new one) and « Trim » (a suggested
+// one's new start and end, like prod's modal.videoTrim). Same init/open/close
+// pattern as the rename-modal.
 //
 // Public API:
-//   open({ durationMs, startMs, endMs, onSubmit })  — onSubmit({ startMs, endMs })
+//   open({ durationMs, startMs, endMs, onSubmit, title, sub, submitLabel })
+//     — onSubmit({ startMs, endMs })
 
 import {
   requestOpen,
@@ -12,12 +12,12 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2789";
-import { fmtPrecise, parseTime, MIN_CLIP_MS, MAX_CLIP_MS } from "../screens/clips/shared.js?v=2789";
+} from "../modal-coordinator.js?v=2791";
+import { fmtPrecise, parseTime, MIN_CLIP_MS, MAX_CLIP_MS } from "../screens/clips/shared.js?v=2791";
 
 const MODAL_ID = "clip-range";
 
-let backdrop, modal, startEl, endEl, msgEl, lenEl, addBtn;
+let backdrop, modal, startEl, endEl, msgEl, lenEl, addBtn, titleEl, subEl;
 let initialized = false;
 let pending = null;
 let duration = 0;
@@ -32,7 +32,7 @@ const HTML = `
     <i class="ap-icon-close"></i>
   </button>
   <div class="ap-dialog-content">
-    <p class="clip-range-modal__sub">Pick where it starts and ends in the video. You can't change it once the clip is made.</p>
+    <p class="clip-range-modal__sub" id="clipRangeSub"></p>
     <div class="clip-range-modal__fields">
       <div class="ap-form-field">
         <label for="clipRangeStart">Start</label>
@@ -89,6 +89,8 @@ function injectOnce() {
   msgEl = document.getElementById("clipRangeMsg");
   lenEl = document.getElementById("clipRangeLen");
   addBtn = document.getElementById("clipRangeAdd");
+  titleEl = document.getElementById("clipRangeTitle");
+  subEl = document.getElementById("clipRangeSub");
 
   modal.addEventListener("click", (e) => {
     if (e.target.closest("[data-clip-range-close]")) close();
@@ -113,8 +115,19 @@ function submit() {
   fn?.(r);
 }
 
-export function open({ durationMs, startMs, endMs, onSubmit }) {
+export function open({
+  durationMs,
+  startMs,
+  endMs,
+  onSubmit,
+  title = "Add a clip",
+  sub = "Pick where it starts and ends in the video.",
+  submitLabel = "Add clip",
+}) {
   injectOnce();
+  titleEl.textContent = title;
+  subEl.textContent = sub;
+  addBtn.textContent = submitLabel;
   requestOpen(MODAL_ID, close);
   duration = durationMs;
   pending = onSubmit;

@@ -15,19 +15,23 @@
 //             posterMs, addedAt, status: analyzing|ready|failed, progress, stage,
 //             failure: { stage, reason } (status failed),
 //             settings: { ratio, subtitlePreset, cta }, analysis, fallback,
-//             clips[], fromSource? }
+//             clips[], requests[] (asked of Archie: { id, text, at, status:
+//             running|done|none }), summary (the recap's line, seed only),
+//             fromSource? }
 //   clip  = { id, startMs, endMs, title, summary, why, tags, network,
+//             requestId (the request it answers; none = Archie's first pick),
+//             trimmed (its range was changed with Trim),
 //             reviewed, selected (the review: kept = reviewed + selected,
 //             skipped = reviewed + not selected, to review = not reviewed),
 //             ratio (null = the video's), captionState (null = the video's
 //             preset), transcript, segments (null = auto framing), texts[],
 //             brand (null = the Playbook's clip look) }
 
-import { newId } from "./utils.js?v=2789";
-import { seedVideos } from "./mocks.js?v=2789";
-import { isNewUser } from "./user-mode.js?v=2789";
-import { createNotifier } from "./store-utils.js?v=2789";
-import { getDefaultContext, getContextById } from "./contexts-store.js?v=2789";
+import { newId } from "./utils.js?v=2791";
+import { seedVideos } from "./mocks.js?v=2791";
+import { isNewUser } from "./user-mode.js?v=2791";
+import { createNotifier } from "./store-utils.js?v=2791";
+import { getDefaultContext, getContextById } from "./contexts-store.js?v=2791";
 
 const MIN_VIDEO_MS = 30 * 1000;
 const MAX_VIDEO_MS = 2 * 60 * 60 * 1000;
@@ -291,6 +295,58 @@ export function addClip(videoId, { startMs, endMs, title = "New clip" }) {
   v.clips.sort((a, b) => a.startMs - b.startMs);
   notify();
   return clip;
+}
+
+// « Find clips »: other moments, on what the user asked — prod's focus
+// (ClipFocus: words, a speaker, a part of the video, a length; flag
+// content-studio-clip-focus). The clips already there stay. Nothing matched is
+// prod's NO_MATCH: the request says so and adds nothing.
+const ASK_MS = 2500;
+const ASK_TITLES = {
+  pric: ["Pricing a social retainer", "When to raise your prices"],
+};
+export function askForClips(videoId, text) {
+  const v = getVideo(videoId);
+  const words = String(text || "").trim();
+  if (!v || !words) return;
+  const req = { id: newId("ask"), text: words, at: new Date().toISOString(), status: "running" };
+  v.requests = [req, ...(v.requests || [])];
+  notify();
+  setTimeout(() => {
+    // ponytail: the proto doesn't read the transcript; it cuts two 40 s moments
+    // in the longest stretches no clip covers. A real search is prod's job.
+    const edges = [0, ...v.clips.flatMap((c) => [c.startMs, c.endMs]).sort((a, b) => a - b), v.durationMs];
+    const gaps = [];
+    for (let i = 0; i < edges.length - 1; i += 2) gaps.push([edges[i], edges[i + 1]]);
+    const open = gaps.filter(([a, b]) => b - a >= 50000).sort((x, y) => y[1] - y[0] - (x[1] - x[0]));
+    const titles = Object.entries(ASK_TITLES).find(([k]) => words.toLowerCase().includes(k))?.[1];
+    open.slice(0, 2).forEach(([a, b], i) => {
+      const startMs = Math.round((a + b) / 2 - 20000);
+      v.clips.push(
+        freshClip({
+          id: newId("clip"),
+          startMs,
+          endMs: startMs + 40000,
+          title: titles?.[i] || `${words[0].toUpperCase()}${words.slice(1)}, moment ${i + 1}`,
+          summary: "",
+          why: `You asked for « ${words} ».`,
+          requestId: req.id,
+        }),
+      );
+    });
+    v.clips.sort((x, y) => x.startMs - y.startMs);
+    req.status = open.length ? "done" : "none";
+    notify();
+  }, ASK_MS);
+}
+
+// Trim: a suggested clip's new start and end, like prod's (modal.videoTrim).
+export function trimClip(videoId, clipId, { startMs, endMs }) {
+  const c = getClip(videoId, clipId);
+  if (!c) return;
+  Object.assign(c, { startMs, endMs, trimmed: true, transcript: null, segments: null });
+  getVideo(videoId).clips.sort((x, y) => x.startMs - y.startMs);
+  notify();
 }
 
 export function retryAnalysis(id) {

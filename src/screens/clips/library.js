@@ -2,13 +2,13 @@
 // videos, and the one way in, adding a video. The flow starts with the video;
 // the posts come last (screens/clips/project.js).
 
-import { navigate } from "../../router.js?v=2789";
-import { isFlagOn } from "../../feature-flags.js?v=2789";
-import { renderTopbar } from "../../components/topbar.js?v=2789";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2789";
-import { isDemo } from "../../demo-mode.js?v=2789";
-import { getPosts } from "../../posts-store.js?v=2789";
-import { escapeHtml } from "../../utils.js?v=2789";
+import { navigate } from "../../router.js?v=2791";
+import { isFlagOn } from "../../feature-flags.js?v=2791";
+import { renderTopbar } from "../../components/topbar.js?v=2791";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2791";
+import { isDemo } from "../../demo-mode.js?v=2791";
+import { getPosts } from "../../posts-store.js?v=2791";
+import { escapeHtml } from "../../utils.js?v=2791";
 import {
   getVideos,
   exampleVideo,
@@ -18,7 +18,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2789";
+} from "../../videos-store.js?v=2791";
 import {
   fmtMs,
   previewMarkup,
@@ -26,8 +26,8 @@ import {
   confirmRemoveVideo,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2789";
-import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2789";
+} from "./shared.js?v=2791";
+import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2791";
 
 let target = null;
 let disposeShowcase = null;

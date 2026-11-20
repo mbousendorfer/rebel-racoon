@@ -742,6 +742,9 @@ export const seedVideos = [
     durationMs: 3119833,
     posterMs: 500000,
     addedAt: "2026-10-21T09:12:00Z",
+    // The recap's one-line summary. Prod doesn't write one yet (an extra AI call).
+    summary:
+      "Two social media leads talk about posting less, reporting to clients, answering criticism in public and hiring a first social manager.",
     settings: { ratio: "9:16", subtitlePreset: "karaoke" },
     analysis: ANALYSIS["podcast-dual-stack"],
     fallback: {
@@ -855,6 +858,7 @@ export const seedVideos = [
     durationMs: 68120,
     posterMs: 10000,
     addedAt: "2026-10-23T15:40:00Z",
+    summary: "A panel on how a church opened its doors to people in need, and what it cost when it did.",
     settings: { ratio: "9:16", subtitlePreset: "deep-diver" },
     analysis: ANALYSIS["podcast-complex"],
     fallback: { mode: "CROP", layout: "ONE", one: { x: 0.49, y: 0, w: 0.3164, h: 1 } },

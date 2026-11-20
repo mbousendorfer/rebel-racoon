@@ -11,13 +11,13 @@
 // weights and a test on three subjects. The system presets are NOT shown here:
 // they belong to no Playbook, and the fiche lists only what is this brand's.
 
-import { html, toString } from "../lib/html.js?v=2789";
-import { navigate } from "../../../router.js?v=2789";
-import { styleThumb } from "../ui/style-thumb.js?v=2789";
-import { confirmDialog } from "../ui/dialog.js?v=2789";
-import { toast } from "../ui/toast.js?v=2789";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=2789";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=2789";
+import { html, toString } from "../lib/html.js?v=2791";
+import { navigate } from "../../../router.js?v=2791";
+import { styleThumb } from "../ui/style-thumb.js?v=2791";
+import { confirmDialog } from "../ui/dialog.js?v=2791";
+import { toast } from "../ui/toast.js?v=2791";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=2791";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=2791";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 
