@@ -1609,6 +1609,45 @@ body.clips-editing .app-content {
   color: var(--ref-color-grey-80);
 }
 
+/* The Transcript tool's legend: each mark drawn with the transcript's own
+   classes, so it always matches, then what it means. Samples, not controls. */
+.clips-ed__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-ed__legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.clips-ed__legend .cap-ed-tword,
+.clips-ed__legend .cap-ed-pause {
+  pointer-events: none;
+  color: inherit;
+}
+
+.clips-ed__legend .cap-ed-tword.is-mark-font {
+  color: var(--ce-font, var(--ref-color-electric-blue-100));
+}
+
+.clips-ed__legend .cap-ed-tword.is-active {
+  color: #14161a;
+}
+
+.clips-ed__legend .cap-ed-tword.is-filler,
+.clips-ed__legend .cap-ed-pause.is-proposed {
+  color: var(--ref-color-orange-100);
+}
+
 /* The Transcript tool's words: they scroll with the panel. */
 .clips-ed__words {
   font-size: var(--sys-text-style-body-size);

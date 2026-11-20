@@ -28,7 +28,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock, plural } from "./utils.js?v=2770";
+import { escapeHtml, formatClock, plural } from "./utils.js?v=2772";
 import {
   PRESETS,
   presetById,
@@ -43,7 +43,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=2770";
+} from "./clip-captions.js?v=2772";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -329,9 +329,12 @@ function renderTranscript() {
   });
   hostEl.innerHTML = html;
   // Emphasis reads in the colours the video shows it in.
-  hostEl.style.setProperty("--ce-h1", state.highlight1Color);
-  hostEl.style.setProperty("--ce-h2", state.highlight2Color);
-  hostEl.style.setProperty("--ce-font", state.manualFontColor);
+  // …and so does the legend that names them (Clips editor).
+  for (const el of [hostEl, $("[data-ce-legend]")].filter(Boolean)) {
+    el.style.setProperty("--ce-h1", state.highlight1Color);
+    el.style.setProperty("--ce-h2", state.highlight2Color);
+    el.style.setProperty("--ce-font", state.manualFontColor);
+  }
   updateActiveWord();
 }
 

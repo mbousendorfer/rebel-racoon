@@ -23,19 +23,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2770";
-import { isFlagOn } from "../../feature-flags.js?v=2770";
-import { parseHashParams } from "../../url-state.js?v=2770";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2770";
-import { showToast } from "../../components/toast.js?v=2770";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2770";
-import { open as openRename } from "../../components/rename-modal.js?v=2770";
-import { getContextById } from "../../contexts-store.js?v=2770";
-import { escapeHtml } from "../../utils.js?v=2770";
-import * as ce from "../../caption-editor.js?v=2770";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2770";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2770";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2770";
+import { navigate } from "../../router.js?v=2772";
+import { isFlagOn } from "../../feature-flags.js?v=2772";
+import { parseHashParams } from "../../url-state.js?v=2772";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2772";
+import { showToast } from "../../components/toast.js?v=2772";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2772";
+import { open as openRename } from "../../components/rename-modal.js?v=2772";
+import { getContextById } from "../../contexts-store.js?v=2772";
+import { escapeHtml } from "../../utils.js?v=2772";
+import * as ce from "../../caption-editor.js?v=2772";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2772";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2772";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2772";
 import {
   framingContext,
   initialSegments,
@@ -54,7 +54,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2770";
+} from "../../clip-framing.js?v=2772";
 import {
   fmtMs,
   fmtPrecise,
@@ -69,8 +69,8 @@ import {
   dsSelect,
   bindSelectDismiss,
   EDITOR_TOOLS as TOOLS,
-} from "./shared.js?v=2770";
-import { primeDraftSetup } from "./project.js?v=2770";
+} from "./shared.js?v=2772";
+import { primeDraftSetup } from "./project.js?v=2772";
 
 const FRAME_MS = 40;
 const CARD_MS = 2000; // intro / outro card length
@@ -840,6 +840,14 @@ function transcriptPanel() {
     <p class="clips-ed__panel-lead">Click a word to jump to it, double-click to fix it. Click a marked filler or pause to hide it from the subtitles.</p>
     <span class="clips-ed__fact" data-ce-reconcile></span>
     <div class="clips-ed__clean" data-ce-cleanup-list></div>
+    <ul class="clips-ed__legend" aria-label="What the marks in the transcript mean" data-ce-legend>
+      <li><span class="cap-ed-tword is-active">word</span>Playing now</li>
+      <li><span class="cap-ed-tword is-marked is-mark-font">word</span>Colored</li>
+      <li><span class="cap-ed-tword is-marked is-mark-h1">word</span>Highlight</li>
+      <li><span class="cap-ed-tword is-filler">um</span>Filler</li>
+      <li><span class="cap-ed-pause is-proposed">0.5s</span>Pause</li>
+      <li><span class="cap-ed-tword is-removed">word</span>Hidden</li>
+    </ul>
     <div class="cap-ed__transcript clips-ed__words" data-ce-transcript></div>`;
 }
 
