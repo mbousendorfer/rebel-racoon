@@ -6,15 +6,16 @@
 // the side-effecting actions wired by the sidebar's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2776";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2776";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2776";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2776";
-import { getRole, setRole, ORG } from "./org.js?v=2776";
-import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2776";
-import { resetIntro } from "./components/voice-intro-modal.js?v=2776";
-import { getContexts, updateContext } from "./contexts-store.js?v=2776";
-import { showToast } from "./components/toast.js?v=2776";
+import { html, raw, escapeHtml } from "./utils.js?v=2779";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2779";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2779";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2779";
+import { getRole, setRole, ORG } from "./org.js?v=2779";
+import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2779";
+import { resetIntro } from "./components/voice-intro-modal.js?v=2779";
+import { getContexts, updateContext } from "./contexts-store.js?v=2779";
+import { showToast } from "./components/toast.js?v=2779";
+import { failNextAnalysis } from "./videos-store.js?v=2779";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
@@ -81,6 +82,12 @@ export function replayVoiceIntro() {
 export function resetNetworkVoices() {
   getContexts().forEach((c) => updateContext(c.id, { voiceByNetwork: {} }));
   showToast("Network voices reset. Each network asks for its voice at its next draft.", { duration: 3200 });
+}
+
+// One failure armed for the Clips space: the next video added stops mid-analysis.
+export function armClipsFailure() {
+  failNextAnalysis();
+  showToast("The next video you add will fail its analysis.", { duration: 3200 });
 }
 
 export function renderAdminMenu() {
@@ -190,6 +197,20 @@ export function renderAdminMenu() {
           >In a chat, « Admin: preview in chat › Voice » plays the voice step, a voice change and feedback.</span
         >
       </div>
+      ${raw(
+        isFlagOn("clipsSpace")
+          ? `<div class="admin-menu__section">
+              <span class="admin-menu__section-title">Clips</span>
+              <button type="button" class="admin-menu__doc" data-admin-clips-fail>
+                <span class="admin-menu__opt-text">
+                  <span class="admin-menu__opt-label">Fail the next analysis</span>
+                  <span class="admin-menu__opt-hint">The next video added stops at Transcribing, with its reason, Try again and Remove</span>
+                </span>
+                <i class="ap-icon-warning" aria-hidden="true"></i>
+              </button>
+            </div>`
+          : "",
+      )}
       <div class="admin-menu__section">
         <span class="admin-menu__section-title">Docs</span>
         <a class="admin-menu__doc" href="handoff/overlays.html" target="_blank" rel="noopener">

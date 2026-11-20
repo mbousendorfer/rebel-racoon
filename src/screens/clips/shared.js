@@ -2,10 +2,12 @@
 // editor share: time formatting, the video-wide options (format, subtitles),
 // and the live reframed previews.
 
-import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2776";
-import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2776";
-import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2776";
-import { escapeHtml } from "../../utils.js?v=2776";
+import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2779";
+import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2779";
+import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2779";
+import { escapeHtml } from "../../utils.js?v=2779";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2779";
+import { getVideo, removeVideo } from "../../videos-store.js?v=2779";
 
 // A footage well shows a loading sheen until its first frame is in (clips.css,
 // `:not(.is-ready)`): every well is marked here, once, from the media events
@@ -278,4 +280,24 @@ function mountPreview(el, video, clip) {
     v.removeAttribute("src");
     v.load();
   };
+}
+
+// Removing a video is destructive and has no undo: the DS confirm modal asks.
+// Its clips go with it; drafts already written from it stay in posts-store.
+export function confirmRemoveVideo(id, { onRemoved } = {}) {
+  const v = getVideo(id);
+  if (!v) return;
+  openConfirm({
+    title: "Remove this video?",
+    body: v.clips.length
+      ? `« ${v.name} » leaves Clips, with its ${v.clips.length} clip${v.clips.length === 1 ? "" : "s"}. Drafts already written stay.`
+      : `« ${v.name} » leaves Clips.`,
+    confirmLabel: "Remove",
+    cancelLabel: "Cancel",
+    danger: true,
+    onConfirm: () => {
+      removeVideo(id);
+      onRemoved?.();
+    },
+  });
 }

@@ -7,37 +7,37 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2776";
-import { isFlagOn } from "../../feature-flags.js?v=2776";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2776";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2776";
-import { showToast } from "../../components/toast.js?v=2776";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2776";
-import { open as openClipRange } from "../../components/clip-range-modal.js?v=2776";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2776";
-import { startRewrite } from "../../draft-rewrite.js?v=2776";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2776";
-import { renderPostCard } from "../../components/post-card.js?v=2776";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2776";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2776";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2776";
+import { navigate } from "../../router.js?v=2779";
+import { isFlagOn } from "../../feature-flags.js?v=2779";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2779";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2779";
+import { showToast } from "../../components/toast.js?v=2779";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2779";
+import { open as openClipRange } from "../../components/clip-range-modal.js?v=2779";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2779";
+import { startRewrite } from "../../draft-rewrite.js?v=2779";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2779";
+import { renderPostCard } from "../../components/post-card.js?v=2779";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2779";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2779";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2779";
 import {
   getConnectedProfiles,
   renderProfileTag,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-} from "../../social-profiles.js?v=2776";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2776";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2776";
-import { captionStateFor } from "../../clip-captions.js?v=2776";
+} from "../../social-profiles.js?v=2779";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2779";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2779";
+import { captionStateFor } from "../../clip-captions.js?v=2779";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2776";
-import { escapeHtml, plural } from "../../utils.js?v=2776";
+} from "../../posts-store.js?v=2779";
+import { escapeHtml, plural } from "../../utils.js?v=2779";
 import {
   getVideo,
   draftKey,
@@ -48,7 +48,8 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2776";
+  retryAnalysis,
+} from "../../videos-store.js?v=2779";
 import {
   fmtMs,
   formatSelect,
@@ -68,7 +69,8 @@ import {
   bestFor,
   CTA_OPTIONS,
   EDITOR_TOOLS,
-} from "./shared.js?v=2776";
+  confirmRemoveVideo,
+} from "./shared.js?v=2779";
 
 let target = null;
 let videoId = null;
@@ -161,6 +163,7 @@ function onStore() {
   const v = getVideo(videoId);
   if (!target || !v) return;
   if (sig(v) !== signature) return paint();
+  if (v.status === "failed") return;
   if (v.status !== "analyzing") {
     // A clip's own format or subtitles changed in the inspector, or a tick.
     if (tab() === "clips") paintFocus(v);
@@ -212,7 +215,7 @@ const ctaLabel = (n) => (n ? `Write posts for ${n} clip${n === 1 ? "" : "s"}` : 
 function paintTopbarActions(v) {
   const n = v.clips.filter((c) => c.selected).length;
   const look =
-    v.status !== "analyzing"
+    v.status === "ready"
       ? `<div class="clips-topbar-look" role="group" aria-label="Every clip's look, unless it has its own">
           <span class="clips-topbar-look__label">All clips</span>
           ${formatSelect(v.settings.ratio)}
@@ -220,7 +223,7 @@ function paintTopbarActions(v) {
         </div>`
       : "";
   const cta =
-    v.status !== "analyzing" && tab() !== "drafts"
+    v.status === "ready" && tab() !== "drafts"
       ? `<button type="button" class="ap-button primary blue" data-clips-to-drafts ${n ? "" : "disabled"}>
           <span data-clips-cta-label>${ctaLabel(n)}</span><i class="ap-icon-arrow-right" aria-hidden="true"></i>
         </button>`
@@ -239,7 +242,7 @@ function paint() {
   disposePreviews?.();
   disposePreviews = null;
   paintTopbarActions(v);
-  if (v.status === "analyzing") {
+  if (v.status !== "ready") {
     target.innerHTML = renderAnalyzing(v);
     return;
   }
@@ -294,16 +297,20 @@ function stepButton(id, n, label, meta, current) {
 
 // ── Analysis ─────────────────────────────────────────────────────────
 
+// The analysis screen also says a failure: where it stopped (the step marked,
+// the earlier ones done), why, and the two ways out — Try again (the page's one
+// step, primary blue) and Remove this video (confirm modal).
 function renderAnalyzing(v) {
-  const at = Math.max(0, ANALYSIS_STAGES.indexOf(v.stage));
+  const failed = v.status === "failed";
+  const at = Math.max(0, ANALYSIS_STAGES.indexOf(failed ? v.failure?.stage : v.stage));
   const pct = Math.round(v.progress * 100);
   const n = v.durationMs > 600000 ? 10 : 3;
   const steps = ANALYSIS_STAGES.map(
     (
       s,
       i,
-    ) => `<li class="clips-analyzing__step${i < at ? " is-done" : ""}${i === at ? " is-current" : ""}" data-clips-stage>
-      <span class="clips-analyzing__dot" aria-hidden="true"><i class="ap-icon-check"></i></span>${s}
+    ) => `<li class="clips-analyzing__step${i < at ? " is-done" : ""}${i === at ? (failed ? " is-failed" : " is-current") : ""}" data-clips-stage>
+      <span class="clips-analyzing__dot" aria-hidden="true"><i class="${i === at && failed ? "ap-icon-close" : "ap-icon-check"}"></i></span>${s}${i === at && failed ? ` <span class="clips-analyzing__stopped">· stopped here</span>` : ""}
     </li>`,
   ).join("");
   return `
@@ -314,7 +321,11 @@ function renderAnalyzing(v) {
             <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline></video>
           </div>
           <div class="clips-analyzing__text">
-            <h2 class="clips-analyzing__title">Finding the best moments</h2>
+            ${
+              failed
+                ? `<h2 class="clips-analyzing__title">I couldn't analyze this video</h2>
+                   <p class="ap-form-message error clips-analyzing__error" role="alert">${escapeHtml(v.failure?.reason || "")}</p>`
+                : `<h2 class="clips-analyzing__title">Finding the best moments</h2>
             <p class="clips-analyzing__sub">
               ${fmtMs(v.durationMs)} of video, so I'll cut ${n} clips. You can leave this page: the analysis keeps going
               and the video waits for you in Clips.
@@ -322,11 +333,23 @@ function renderAnalyzing(v) {
             <span class="clips-progress">
               <span class="clips-progress__track"><span class="clips-progress__fill" style="width:${pct}%"></span></span>
               <span class="clips-progress__label">${pct}%</span>
-            </span>
+            </span>`
+            }
             <ol class="clips-analyzing__steps">${steps}</ol>
+            ${
+              failed
+                ? `<div class="clips-analyzing__actions">
+                     <button type="button" class="ap-button primary blue" data-clips-retry><i class="ap-icon-refresh" aria-hidden="true"></i><span>Try again</span></button>
+                     <button type="button" class="ap-button ghost grey" data-clips-remove-video><span>Remove this video</span></button>
+                   </div>`
+                : ""
+            }
           </div>
         </section>
-        <section class="clips-coming" aria-label="What you'll get">
+        ${
+          failed
+            ? ""
+            : `<section class="clips-coming" aria-label="What you'll get">
           <div class="clips-coming__head">
             <h3 class="clips-coming__title">Your ${n} clips land here</h3>
             <p class="clips-coming__sub">Each one vertical, framed on the speakers and subtitled. Then you pick the ones to post, polish them, and I write the posts.</p>
@@ -335,7 +358,8 @@ function renderAnalyzing(v) {
             { length: n },
             (_, i) => `<li class="clips-coming__slot" style="--i:${i}"><span>${i + 1}</span></li>`,
           ).join("")}</ol>
-        </section>
+        </section>`
+        }
       </div>
     </div>`;
 }
@@ -1031,6 +1055,8 @@ function onClick(e) {
   const v = getVideo(videoId);
   if (!v) return;
   const t = e.target;
+  if (t.closest("[data-clips-retry]")) return retryAnalysis(v.id);
+  if (t.closest("[data-clips-remove-video]")) return confirmRemoveVideo(v.id, { onRemoved: () => navigate("/clips") });
   // The clip's ⋯ menu closes on any click outside it, and after its item.
   (target || document).querySelectorAll("details.clips-more[open]").forEach((d) => {
     if (!d.contains(t) || t.closest("[role=menuitem]")) d.removeAttribute("open");

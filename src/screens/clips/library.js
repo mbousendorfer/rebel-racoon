@@ -2,13 +2,13 @@
 // videos, and the one way in, adding a video. The flow starts with the video;
 // the posts come last (screens/clips/project.js).
 
-import { navigate } from "../../router.js?v=2776";
-import { isFlagOn } from "../../feature-flags.js?v=2776";
-import { renderTopbar } from "../../components/topbar.js?v=2776";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2776";
-import { isDemo } from "../../demo-mode.js?v=2776";
-import { getPosts } from "../../posts-store.js?v=2776";
-import { escapeHtml } from "../../utils.js?v=2776";
+import { navigate } from "../../router.js?v=2779";
+import { isFlagOn } from "../../feature-flags.js?v=2779";
+import { renderTopbar } from "../../components/topbar.js?v=2779";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2779";
+import { isDemo } from "../../demo-mode.js?v=2779";
+import { getPosts } from "../../posts-store.js?v=2779";
+import { escapeHtml } from "../../utils.js?v=2779";
 import {
   getVideos,
   exampleVideo,
@@ -16,10 +16,11 @@ import {
   draftKey,
   lengthProblem,
   standInForUrl,
+  retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2776";
-import { fmtMs, previewMarkup, mountPreviews } from "./shared.js?v=2776";
-import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2776";
+} from "../../videos-store.js?v=2779";
+import { fmtMs, previewMarkup, mountPreviews, confirmRemoveVideo } from "./shared.js?v=2779";
+import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2779";
 
 let target = null;
 let disposeShowcase = null;
@@ -214,7 +215,31 @@ function renderGrid(videos) {
     </section>`;
 }
 
+// A failed analysis is not a link: the card says why, in place, and holds its
+// two ways out (Try again, Remove) — buttons can't sit inside a link.
+function renderFailedCard(v) {
+  const added = new Date(v.addedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return `
+    <div class="clips-video is-failed" data-clips-card>
+      <span class="clips-video__thumb">
+        <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline tabindex="-1" aria-hidden="true" data-poster-s="${(v.posterMs || 0) / 1000}"></video>
+        <span class="clips-video__duration">${fmtMs(v.durationMs)}</span>
+        <span class="clips-video__veil is-failed"><i class="ap-icon-warning" aria-hidden="true"></i><span>Stopped at ${escapeHtml(v.failure?.stage || "the analysis")}</span></span>
+      </span>
+      <span class="clips-video__body">
+        <span class="clips-video__name" title="${escapeHtml(v.name)}">${escapeHtml(v.name)}</span>
+        <span class="clips-video__meta">Added ${added}</span>
+        <p class="ap-form-message error clips-video__error" role="alert">${escapeHtml(v.failure?.reason || "I couldn't analyze this video.")}</p>
+        <span class="clips-video__actions">
+          <button type="button" class="ap-button stroked grey" data-clips-retry="${escapeHtml(v.id)}"><i class="ap-icon-refresh" aria-hidden="true"></i><span>Try again</span></button>
+          <button type="button" class="ap-button ghost grey" data-clips-remove-video="${escapeHtml(v.id)}"><span>Remove</span></button>
+        </span>
+      </span>
+    </div>`;
+}
+
 function renderCard(v) {
+  if (v.status === "failed") return renderFailedCard(v);
   const posts = getPosts(draftKey(v.id));
   const scheduled = posts.filter((p) => p.status === "scheduled").length;
   const added = new Date(v.addedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -318,6 +343,10 @@ function clearAddError() {
 
 function onClick(e) {
   if (e.target.closest("[data-clips-browse]")) target.querySelector("[data-clips-file]")?.click();
+  const retry = e.target.closest("[data-clips-retry]");
+  if (retry) retryAnalysis(retry.dataset.clipsRetry);
+  const remove = e.target.closest("[data-clips-remove-video]");
+  if (remove) confirmRemoveVideo(remove.dataset.clipsRemoveVideo);
 }
 
 function onChange(e) {

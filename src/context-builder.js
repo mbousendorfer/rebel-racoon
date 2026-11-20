@@ -12,21 +12,21 @@
 // objective, contentAction, ctaLinks, language, color, suggestions, editingId,
 // onComplete }.
 
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2776";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2776";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2779";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2779";
 import {
   analyzeWebsite,
   analyzeSocialProfiles,
   analyzeDocument,
   analyzeBrandFiles,
   analyzeInterview,
-} from "./context-mock-analysis.js?v=2776";
-import { cloneItems, ownNetworkVoices, voiceHasRules } from "./voice-parts.js?v=2776";
-import { markIntroSeen } from "./components/voice-intro-modal.js?v=2776";
-import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2776";
-import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2776";
-import { isFlagOn } from "./feature-flags.js?v=2776";
-import { createSessionNotifier } from "./store-utils.js?v=2776";
+} from "./context-mock-analysis.js?v=2779";
+import { cloneItems, ownNetworkVoices, voiceHasRules } from "./voice-parts.js?v=2779";
+import { markIntroSeen } from "./components/voice-intro-modal.js?v=2779";
+import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2779";
+import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2779";
+import { isFlagOn } from "./feature-flags.js?v=2779";
+import { createSessionNotifier } from "./store-utils.js?v=2779";
 
 const drafts = new Map(); // sessionId → draft
 const notifier = createSessionNotifier("context-builder");

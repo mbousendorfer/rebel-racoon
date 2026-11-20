@@ -12,7 +12,8 @@
 // after the clips are picked, as settings of the whole video.
 //
 //   video = { id, contextId, name, url, origin, width, height, durationMs,
-//             posterMs, addedAt, status: analyzing|ready, progress, stage,
+//             posterMs, addedAt, status: analyzing|ready|failed, progress, stage,
+//             failure: { stage, reason } (status failed),
 //             settings: { ratio, subtitlePreset, cta }, analysis, fallback,
 //             clips[], fromSource? }
 //   clip  = { id, startMs, endMs, title, summary, why, tags, network, selected,
@@ -20,11 +21,11 @@
 //             preset), transcript, segments (null = auto framing), texts[],
 //             brand (null = the Playbook's clip look) }
 
-import { newId } from "./utils.js?v=2776";
-import { seedVideos } from "./mocks.js?v=2776";
-import { isNewUser } from "./user-mode.js?v=2776";
-import { createNotifier } from "./store-utils.js?v=2776";
-import { getDefaultContext, getContextById } from "./contexts-store.js?v=2776";
+import { newId } from "./utils.js?v=2779";
+import { seedVideos } from "./mocks.js?v=2779";
+import { isNewUser } from "./user-mode.js?v=2779";
+import { createNotifier } from "./store-utils.js?v=2779";
+import { getDefaultContext, getContextById } from "./contexts-store.js?v=2779";
 
 const MIN_VIDEO_MS = 30 * 1000;
 const MAX_VIDEO_MS = 2 * 60 * 60 * 1000;
@@ -159,12 +160,34 @@ export function addVideo({
   return video;
 }
 
+// An analysis that fails stops where it broke and says why; Try again starts
+// it over (prod: a failed extract_video_clips job). The prototype never fails
+// on its own: Admin › Clips › « Fail the next analysis » arms one failure.
+export const ANALYSIS_FAILURE = {
+  stage: "Transcribing",
+  reason:
+    "I couldn't hear anyone speaking in this video, so I found no moments to cut. Check that it has its sound, then try again.",
+};
+let failNext = false;
+export function failNextAnalysis() {
+  failNext = true;
+}
+
 function runAnalysis(video) {
   const started = Date.now();
+  const fails = failNext;
+  failNext = false;
   const timer = setInterval(() => {
     const p = Math.min(1, (Date.now() - started) / ANALYZE_MS);
     video.progress = p;
     video.stage = ANALYSIS_STAGES[Math.min(ANALYSIS_STAGES.length - 1, Math.floor(p * ANALYSIS_STAGES.length))];
+    if (fails && video.stage === ANALYSIS_FAILURE.stage && p >= 0.4) {
+      clearInterval(timer);
+      video.status = "failed";
+      video.failure = { ...ANALYSIS_FAILURE };
+      notify();
+      return;
+    }
     if (p >= 1) {
       clearInterval(timer);
       if (!video.clips.length) video.clips = momentsFor(video);
@@ -242,6 +265,22 @@ export function addClip(videoId, { startMs, endMs, title = "New clip" }) {
   v.clips.sort((a, b) => a.startMs - b.startMs);
   notify();
   return clip;
+}
+
+export function retryAnalysis(id) {
+  const v = getVideo(id);
+  if (!v || v.status !== "failed") return;
+  Object.assign(v, { status: "analyzing", progress: 0, stage: ANALYSIS_STAGES[0], failure: null });
+  runAnalysis(v);
+  notify();
+}
+
+export function removeVideo(id) {
+  const list = seeded();
+  const i = list.findIndex((v) => v.id === id);
+  if (i < 0) return;
+  list.splice(i, 1);
+  notify();
 }
 
 export function removeClip(videoId, clipId) {

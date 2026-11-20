@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml, fold } from "../../utils.js?v=2776";
-import { isFlagOn } from "../../feature-flags.js?v=2776";
+import { escapeHtml, fold } from "../../utils.js?v=2779";
+import { isFlagOn } from "../../feature-flags.js?v=2779";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -35,25 +35,25 @@ import {
   getThread,
   refreshThread,
   postVoiceTurn,
-} from "../../assistant.js?v=2776";
-import { getSources, getIdeas } from "../../library.js?v=2776";
-import { getPosts } from "../../posts-store.js?v=2776";
-import { getTopPosts } from "../../top-posts-store.js?v=2776";
-import { getConnectedProfiles } from "../../social-profiles.js?v=2776";
-import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2776";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2776";
-import { detectUrlService } from "../../url-services.js?v=2776";
-import * as inlineQuestion from "../../inline-question.js?v=2776";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=2776";
-import { startTopicPickerInline } from "../../topic-flow.js?v=2776";
-import { askConnector } from "../../connector-ask.js?v=2776";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2776";
-import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2776";
-import { sessionPlaybookId } from "../../active-playbook.js?v=2776";
-import { getContextById } from "../../contexts-store.js?v=2776";
-import { voiceNetworks, networkVoice, adaptNetworkVoice } from "../../voice-parts.js?v=2776";
-import { requireNetworkVoices, giveNetworkVoice } from "../../network-voice-flow.js?v=2776";
-import { offerVoiceUpdate } from "../../components/feedback-control.js?v=2776";
+} from "../../assistant.js?v=2779";
+import { getSources, getIdeas } from "../../library.js?v=2779";
+import { getPosts } from "../../posts-store.js?v=2779";
+import { getTopPosts } from "../../top-posts-store.js?v=2779";
+import { getConnectedProfiles } from "../../social-profiles.js?v=2779";
+import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2779";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2779";
+import { detectUrlService } from "../../url-services.js?v=2779";
+import * as inlineQuestion from "../../inline-question.js?v=2779";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=2779";
+import { startTopicPickerInline } from "../../topic-flow.js?v=2779";
+import { askConnector } from "../../connector-ask.js?v=2779";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2779";
+import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2779";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2779";
+import { getContextById } from "../../contexts-store.js?v=2779";
+import { voiceNetworks, networkVoice, adaptNetworkVoice } from "../../voice-parts.js?v=2779";
+import { requireNetworkVoices, giveNetworkVoice } from "../../network-voice-flow.js?v=2779";
+import { offerVoiceUpdate } from "../../components/feedback-control.js?v=2779";
 
 // The intake sample plays the real lifecycle — loading, then ready — under a
 // sample id no source owns, so intake-lifecycle leaves it alone.

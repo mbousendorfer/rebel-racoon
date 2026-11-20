@@ -2983,3 +2983,65 @@ body.clips-editing .app-content {
     animation: none;
   }
 }
+
+/* ── A failed analysis ─────────────────────────────────────────────
+   The card is not a link (it holds its own buttons): no hover border, no
+   press. The veil names where it stopped; the reason sits under the name as
+   the DS error message; Try again / Remove close the card, on the left like
+   every card's next action. */
+.clips-video.is-failed:hover {
+  border-color: var(--ref-color-grey-20);
+}
+
+.clips-video.is-failed:active {
+  transform: none;
+}
+
+.clips-video__veil.is-failed {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 10, 14, 0.7);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.clips-video__error {
+  margin: var(--ref-spacing-xxs) 0 0;
+}
+
+.clips-video__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+  margin-top: var(--ref-spacing-xs);
+}
+
+.clips-analyzing__error {
+  margin: 0;
+}
+
+.clips-analyzing__step.is-failed {
+  color: var(--ref-color-grey-100);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.clips-analyzing__step.is-failed .clips-analyzing__dot {
+  border-color: var(--ref-color-red-100);
+  background: var(--ref-color-red-100);
+  color: var(--ref-color-white);
+}
+
+.clips-analyzing__step.is-failed .clips-analyzing__dot i {
+  visibility: visible;
+}
+
+.clips-analyzing__stopped {
+  font-weight: var(--sys-text-style-body-weight, 400);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-analyzing__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+}
