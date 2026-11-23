@@ -3,15 +3,18 @@
 //
 //   Brand     logo bar · intro / outro cards
 //   Text      one layer per text, packed into as many lanes as overlap
-//   Captions  the subtitle lines, as the caption engine cuts them
+//   Captions  the subtitle lines, as the caption engine cuts them, and,
+//             hatched, what the cleanup hid from them
 //   Video     a filmstrip of the source, the framing parts, the camera cuts,
-//             and the clip's two edges — drag them to trim
-//   Audio     a waveform shaped on the words, the cleanup's hidden spans
+//             the clip's two edges — drag them to trim — and, along its foot,
+//             a quiet waveform: a texture to read position by, as in prod's
+//             clip editor (which never decodes the audio). No Audio track: prod
+//             has none, and nothing in the clip edits sound.
 //
 // What follows the scroll (the ruler, the filmstrip, the waveform) is drawn on
 // canvases the width of the view; the rest is DOM at absolute px. Two tools:
 // Select (V) and Blade (B). Snapping (N) lines edges up with the clip's ends,
-// the playhead, other texts, camera cuts, parts and markers; Alt drags freely.
+// the playhead, other texts, camera cuts and parts; Alt drags freely.
 
 import {
   ed,
@@ -40,7 +43,7 @@ import {
   MIN_TEXT_MS,
   MIN_CLIP_MS,
   CARD_MS,
-} from "./editor.js?v=2841";
+} from "./editor.js?v=2844";
 import {
   segmentAt,
   moveBoundary,
@@ -50,12 +53,12 @@ import {
   LAYOUTS,
   resolve,
   merge,
-} from "../../clip-framing.js?v=2841";
-import { ratioOf } from "./shared.js?v=2841";
-import * as ce from "../../caption-editor.js?v=2841";
-import { deriveCues } from "../../clip-captions.js?v=2841";
-import { escapeHtml } from "../../utils.js?v=2841";
-import { GLYPH } from "./editor-panels.js?v=2841";
+} from "../../clip-framing.js?v=2844";
+import { ratioOf } from "./shared.js?v=2844";
+import * as ce from "../../caption-editor.js?v=2844";
+import { deriveCues } from "../../clip-captions.js?v=2844";
+import { escapeHtml } from "../../utils.js?v=2844";
+import { GLYPH } from "./editor-panels.js?v=2844";
 
 const RULER_H = 28;
 const FIT_PAD = 40; // px of air each side of the clip when fitted
@@ -122,10 +125,9 @@ function rows() {
       id: "video",
       label: "Video",
       icon: `<i class="ap-icon-video" aria-hidden="true"></i>`,
-      h: 68,
+      h: 76,
       toggles: ["locked"],
     },
-    { id: "audio", label: "Audio", icon: GLYPH.volume, h: 52, toggles: ["muted", "locked"] },
   ];
   let top = RULER_H;
   for (const r of list) {
@@ -167,7 +169,6 @@ function barHTML() {
     : {
         text: "Delete the text",
         seg: "Delete the part (joins it)",
-        marker: "Delete the marker",
         brand: "Remove from the clip",
       }[sel.kind] || "Delete";
   return `
@@ -178,8 +179,7 @@ function barHTML() {
     <span class="nle-tl__sep" aria-hidden="true"></span>
     <div class="nle-tl__group" role="group" aria-label="Edit">
       ${tbtn("split", "Split at the playhead", GLYPH.cut, { kbd: "S" })}
-      ${tbtn("delete", delLabel, `<i class="ap-icon-trash" aria-hidden="true"></i>`, { kbd: "⌫", disabled: !sel || sel.kind === "captions" || sel.kind === "audio" })}
-      ${tbtn("marker", "Add a marker", `<i class="ap-icon-flag" aria-hidden="true"></i>`, { kbd: "M" })}
+      ${tbtn("delete", delLabel, `<i class="ap-icon-trash" aria-hidden="true"></i>`, { kbd: "⌫", disabled: !sel || sel.kind === "captions" })}
       ${tbtn("set-in", "Start the clip at the playhead", GLYPH.markIn, { kbd: "I" })}
       ${tbtn("set-out", "End the clip at the playhead", GLYPH.markOut, { kbd: "O" })}
     </div>
@@ -205,11 +205,7 @@ function statusText() {
     const i = ed.w.segments.findIndex((g) => g.id === s.id);
     return `Part ${i + 1} of ${ed.w.segments.length} selected`;
   }
-  return (
-    { captions: "Captions selected", audio: "Audio selected", marker: "Marker selected", brand: "Brand selected" }[
-      s.kind
-    ] || ""
-  );
+  return { captions: "Captions selected", brand: "Brand selected" }[s.kind] || "";
 }
 
 const TOGGLE = {
@@ -221,7 +217,6 @@ const TOGGLE = {
     on ? `Unlock ${label}` : `Lock ${label}`,
     on ? `<i class="ap-icon-lock-on" aria-hidden="true"></i>` : `<i class="ap-icon-lock-off" aria-hidden="true"></i>`,
   ],
-  muted: (on) => [on ? "Unmute the audio" : "Mute the audio", on ? GLYPH.muted : GLYPH.volume],
 };
 
 function headHTML(r) {
@@ -233,8 +228,8 @@ function headHTML(r) {
         aria-pressed="${!!st[k]}" aria-label="${label}" data-tooltip="${label}">${icon}</button>`;
     })
     .join("");
-  const selectable = { captions: "captions", audio: "audio" }[r.id];
-  return `<div class="nle-head${st.locked ? " is-locked" : ""}${st.hidden || st.muted ? " is-dim" : ""}" style="height:${r.h}px">
+  const selectable = r.id === "captions" ? "captions" : null;
+  return `<div class="nle-head${st.locked ? " is-locked" : ""}${st.hidden ? " is-dim" : ""}" style="height:${r.h}px">
     ${selectable ? `<button type="button" class="nle-head__name" data-nle-select="${selectable}">` : `<span class="nle-head__name">`}
       <span class="nle-head__icon">${r.icon}</span><span>${r.label}</span>
     ${selectable ? "</button>" : "</span>"}
@@ -253,13 +248,12 @@ function laneHTML(r) {
   const { s, e } = clipEdges();
   const L = `left:${x(s)}px;width:${x(e) - x(s)}px`;
   const st = ed.tracks[r.id];
-  const cls = `nle-lane nle-lane--${r.id}${st.locked ? " is-locked" : ""}${st.hidden || st.muted ? " is-dim" : ""}`;
+  const cls = `nle-lane nle-lane--${r.id}${st.locked ? " is-locked" : ""}${st.hidden ? " is-dim" : ""}`;
   const body = {
     brand: brandLane,
     text: () => textLane(r.tp),
     captions: captionLane,
     video: videoLane,
-    audio: audioLane,
   }[r.id]();
   return `<div class="${cls}" data-nle-lane="${r.id}" style="top:${r.top}px;height:${r.h}px">
     <div class="nle-lane__clip" style="${L}"></div>${body}</div>`;
@@ -319,13 +313,24 @@ function captionLane() {
   if (!st || st.presetId === "none")
     return `<button type="button" class="nle-lane__hint nle-lane__hint--action" data-nle-select="captions" style="${span(s, ed.w.endMs)}">No captions. Select to pick a style.</button>`;
   const on = ed.sel?.kind === "captions";
-  return deriveCues(ce.getWords(), st)
-    .map((c) => {
-      const text = c.words.map((w) => w.text).join(" ");
-      return `<button type="button" class="nle-block nle-block--cue${on ? " is-selected" : ""}" data-nle-cue="${c.start}"
-        style="${span(s + c.start * 1000, s + c.end * 1000)}" aria-label="${escapeHtml(text)}"><span class="nle-block__label">${escapeHtml(text)}</span></button>`;
-    })
+  // What the cleanup hid (fillers, pauses), hatched under the lines it left.
+  const hidden = ce
+    .getHiddenSpans()
+    .map(
+      (m) =>
+        `<span class="nle-hidspan" style="${span(s + m.start * 1000, s + m.end * 1000)}" title="${escapeHtml(m.label)}"></span>`,
+    )
     .join("");
+  return (
+    hidden +
+    deriveCues(ce.getWords(), st)
+      .map((c) => {
+        const text = c.words.map((w) => w.text).join(" ");
+        return `<button type="button" class="nle-block nle-block--cue${on ? " is-selected" : ""}" data-nle-cue="${c.start}"
+        style="${span(s + c.start * 1000, s + c.end * 1000)}" aria-label="${escapeHtml(text)}"><span class="nle-block__label">${escapeHtml(text)}</span></button>`;
+      })
+      .join("")
+  );
 }
 
 // What Auto does with a part, named the way the Layout cards name it.
@@ -371,39 +376,15 @@ function videoLane() {
     <span class="nle-trim nle-trim--end" data-nle-trim="end" style="left:${x(e)}px" data-tooltip="Drag to trim the end · O"></span>`;
 }
 
-function audioLane() {
-  const s = ed.w.startMs;
-  const on = ed.sel?.kind === "audio";
-  const hidden = ce
-    .getHiddenSpans()
-    .map(
-      (m) =>
-        `<span class="nle-hidspan" style="${span(s + m.start * 1000, s + m.end * 1000)}" title="${escapeHtml(m.label)}"></span>`,
-    )
-    .join("");
-  return `<button type="button" class="nle-aclip${on ? " is-selected" : ""}" data-nle-select="audio" style="${span(s, ed.w.endMs)}" aria-label="Audio of the clip"></button>
-    ${hidden}${ed.tracks.audio.muted ? `<span class="nle-lane__badge" style="left:${x(s) + 8}px">Muted</span>` : ""}`;
-}
-
 function overHTML() {
   const { s, e } = clipEdges();
   const total = x(ed.range.to);
-  const markers = ed.w.markers
-    .map(
-      (
-        m,
-        i,
-      ) => `<button type="button" class="nle-marker${ed.sel?.kind === "marker" && ed.sel.id === m.id ? " is-selected" : ""}" data-nle-marker="${m.id}"
-        style="left:${x(m.ms)}px" aria-label="Marker ${i + 1} at ${fmtTC(m.ms - ed.w.startMs)}" data-tooltip="Marker ${i + 1} · ${fmtTC(m.ms - ed.w.startMs)}"></button>`,
-    )
-    .join("");
   const d = ed.drag;
   return `
     <span class="nle-shade" style="left:0;width:${x(s)}px"></span>
     <span class="nle-shade" style="left:${x(e)}px;width:${Math.max(0, total - x(e))}px"></span>
     <span class="nle-inout nle-inout--in" style="left:${x(s)}px"></span>
     <span class="nle-inout nle-inout--out" style="left:${x(e)}px"></span>
-    ${markers}
     ${d?.guide != null ? `<span class="nle-snapline" style="left:${x(d.guide)}px"></span>` : ""}
     ${d?.label ? `<span class="nle-readout" style="left:${x(d.at)}px">${escapeHtml(d.label)}</span>` : ""}`;
 }
@@ -427,9 +408,10 @@ export function paintTimeline() {
   q("[data-nle-lanes]").innerHTML = rs.map(laneHTML).join("");
   q("[data-nle-over]").innerHTML = overHTML();
   const v = rs.find((r) => r.id === "video");
-  const a = rs.find((r) => r.id === "audio");
-  Object.assign(q("[data-nle-film]").style, { top: `${v.top + 4}px`, height: `${v.h - 8}px` });
-  Object.assign(q("[data-nle-wave]").style, { top: `${a.top + 4}px`, height: `${a.h - 8}px` });
+  const fh = v.h - 8;
+  const wh = Math.round(fh * 0.46); // prod's strip: the lower ~46 % of the track
+  Object.assign(q("[data-nle-film]").style, { top: `${v.top + 4}px`, height: `${fh}px` });
+  Object.assign(q("[data-nle-wave]").style, { top: `${v.top + 4 + fh - wh}px`, height: `${wh}px` });
   paintPlayhead();
   paintVisible();
 }
@@ -523,7 +505,7 @@ function cssVars() {
     label: v("--ref-color-grey-80"),
     band: v("--ref-color-white"),
     off: v("--ref-color-grey-05"),
-    wave: v("--ref-color-grey-40"),
+    wave: v("--ref-color-white"),
     film: v("--ref-color-grey-10"),
     font: v("--sys-text-style-caption-font-family") || "Averta, sans-serif",
   };
@@ -604,11 +586,14 @@ export function paintVisible() {
   }
   th.want(want);
 
-  // Waveform, shaped on the words: speech is loud, the gaps between words quiet.
+  // The waveform strip along the Video track's foot, shaped on the words
+  // (speech loud, the gaps quiet): a darkened band, the bars faint over it.
   const wave = q("[data-nle-wave]");
-  const wh = parseFloat(wave.style.height) || 44;
+  const wh = parseFloat(wave.style.height) || 30;
   wave.style.left = `${sl}px`;
   const w = prepCanvas(wave, vw, wh);
+  w.fillStyle = "rgba(0, 0, 0, 0.22)";
+  w.fillRect(0, 0, vw, wh);
   w.fillStyle = col.wave;
   const words = ed.srcWords || [];
   let wi = 0;
@@ -619,8 +604,8 @@ export function paintVisible() {
     const n = noise(Math.floor(t / 40));
     const n2 = noise(Math.floor(t / 160) + 7);
     const amp = inWord ? 0.3 + 0.45 * n + 0.25 * n2 : 0.03 + 0.05 * n;
-    const hgt = Math.max(1, amp * (wh - 2));
-    w.fillRect(X, (wh - hgt) / 2, 2, hgt);
+    const hgt = Math.max(1, amp * (wh - 4));
+    w.fillRect(X, wh - 2 - hgt, 2, hgt);
   }
 }
 
@@ -692,7 +677,6 @@ function snapTargets({ exceptText, edges = true } = {}) {
     [ed.t, "the playhead"],
     ...ed.ctx.cuts.map((c) => [c, "a camera cut"]),
     ...ed.w.segments.slice(1).map((g) => [g.startMs, "a part"]),
-    ...ed.w.markers.map((m) => [m.ms, "a marker"]),
   ];
   if (edges)
     for (const o of ed.w.texts)
@@ -735,8 +719,6 @@ function inRuler(e) {
 export function timelinePointerDown(e) {
   const t = e.target;
   const ms = msAt(e.clientX);
-  const marker = t.closest("[data-nle-marker]");
-  if (marker) return markerDrag(e, marker.dataset.nleMarker);
   if (t.closest("[data-nle-knob]") || inRuler(e)) return scrub(e);
   if (ed.tool === "blade") return blade(e, ms);
   const join = t.closest("[data-nle-join]");
@@ -818,45 +800,6 @@ export function timelinePointerMove(e) {
   const ms = msAt(e.clientX);
   const hit = snapFind([ms], snapTargets(), e.altKey);
   line.style.transform = `translateX(${x(snapFrame(hit ? ms + hit[0] : ms))}px)`;
-}
-
-function markerDrag(e, id) {
-  const m = ed.w.markers.find((k) => k.id === id);
-  if (!m) return;
-  if (ed.sel?.kind !== "marker" || ed.sel.id !== id) select({ kind: "marker", id });
-  pushUndo();
-  const x0 = e.clientX;
-  let moved = false;
-  const targets = snapTargets().filter(([t]) => t !== m.ms);
-  drag(
-    e,
-    (ev) => {
-      if (!moved && Math.abs(ev.clientX - x0) < 3) return;
-      moved = true;
-      let t = msAt(ev.clientX);
-      const hit = snapFind([t], targets, ev.altKey);
-      if (hit) t += hit[0];
-      m.ms = Math.round(Math.max(ed.range.from, Math.min(ed.range.to, snapFrame(t))));
-      ed.drag = {
-        kind: "marker",
-        at: m.ms,
-        guide: hit ? hit[1] : null,
-        label: `${fmtTC(m.ms - ed.w.startMs)}${hit ? ` · on ${hit[2]}` : ""}`,
-      };
-      paintTimeline();
-    },
-    () => {
-      ed.drag = null;
-      if (!moved) {
-        ed.undo.pop();
-        seek(m.ms);
-        return paintTimeline();
-      }
-      ed.w.markers.sort((a, b) => a.ms - b.ms);
-      setDirty();
-      return paintTimeline();
-    },
-  );
 }
 
 function boundDrag(e, k) {

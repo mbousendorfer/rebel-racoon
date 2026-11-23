@@ -7,14 +7,14 @@
 //   │Text      ││ transport, timecode     ││ selected  │
 //   │Brand     │└────────────────────────┘└───────────┘
 //   ┌──────────────── timeline, full width ─────────────────┐
-//   │ tools · zoom      Brand · Text · Captions · Video · Audio│
+//   │ tools · zoom      Brand · Text · Captions · Video         │
 //   └────────────────────────────────────────────────────────┘
 //
 // Every pane is resizable (gutters, remembered). Editing is by SELECTION, not
-// by tool: click a text layer, a framing part, the captions, the audio, a
+// by tool: click a text layer, a framing part, the captions, a
 // brand item — the inspector shows its properties; nothing selected, the clip's.
 // The timeline holds every track at once, zooms, scrolls and trims (the clip's
-// edges, or I / O, within prod's ±2 min window). Markers, a blade, copy /
+// edges, or I / O, within prod's ±2 min window). A blade, copy /
 // paste, a context menu, J / K / L and the full keyboard of a desktop editor.
 //
 // Engines kept as they were: clip-framing.js (the crop editor's parts),
@@ -24,19 +24,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2841";
-import { isFlagOn } from "../../feature-flags.js?v=2841";
-import { parseHashParams } from "../../url-state.js?v=2841";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2841";
-import { showToast } from "../../components/toast.js?v=2841";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2841";
-import { open as openRename } from "../../components/rename-modal.js?v=2841";
-import { getContextById } from "../../contexts-store.js?v=2841";
-import { escapeHtml } from "../../utils.js?v=2841";
-import * as ce from "../../caption-editor.js?v=2841";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2841";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2841";
-import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2841";
+import { navigate } from "../../router.js?v=2844";
+import { isFlagOn } from "../../feature-flags.js?v=2844";
+import { parseHashParams } from "../../url-state.js?v=2844";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2844";
+import { showToast } from "../../components/toast.js?v=2844";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2844";
+import { open as openRename } from "../../components/rename-modal.js?v=2844";
+import { getContextById } from "../../contexts-store.js?v=2844";
+import { escapeHtml } from "../../utils.js?v=2844";
+import * as ce from "../../caption-editor.js?v=2844";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2844";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2844";
+import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2844";
 import {
   framingContext,
   initialSegments,
@@ -50,7 +50,7 @@ import {
   merge,
   snapMs,
   resetSegment,
-} from "../../clip-framing.js?v=2841";
+} from "../../clip-framing.js?v=2844";
 import {
   RATIO_IDS,
   ratioOf,
@@ -62,8 +62,8 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2841";
-import { writePostsInChat } from "../../clips-chat.js?v=2841";
+} from "./shared.js?v=2844";
+import { writePostsInChat } from "../../clips-chat.js?v=2844";
 import {
   timelineShellHTML,
   paintTimeline,
@@ -77,8 +77,8 @@ import {
   timelineWheel,
   timelineDrop,
   revealPlayhead,
-} from "./editor-timeline.js?v=2841";
-import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2841";
+} from "./editor-timeline.js?v=2844";
+import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2844";
 
 const FPS = 25;
 export const FRAME_MS = 1000 / FPS;
@@ -172,7 +172,6 @@ export function renderClipEditor(params, el) {
       ratioId: clipRatioId(video, clip),
       segments: JSON.parse(JSON.stringify(clip.segments || initialSegments(ctx, clip.startMs, clip.endMs))),
       texts: JSON.parse(JSON.stringify(clip.texts || [])),
-      markers: JSON.parse(JSON.stringify(clip.markers || [])),
       brand: { ...look.brand, ...(clip.brand || {}) },
       teaser: clip.teaser ? { ...clip.teaser } : suggestTeaser(clip),
     },
@@ -188,8 +187,8 @@ export function renderClipEditor(params, el) {
       text: { hidden: false, locked: false },
       captions: { hidden: false, locked: false },
       video: { locked: false },
-      audio: { muted: false, locked: false },
     },
+    muted: false, // the player's mute: listening here, not the clip's sound
     layout: readLayout(),
     tl: { pxPerMs: 0 },
     loop: false,
@@ -873,7 +872,7 @@ function paintViewerBar() {
 function paintTransportRight() {
   const host = ed.el.querySelector("[data-nle-transport-right]");
   if (!host) return;
-  const muted = ed.tracks.audio.muted;
+  const muted = ed.muted;
   host.innerHTML = `
     ${dsSelect({
       label: "Speed",
@@ -978,7 +977,6 @@ function restore(json) {
   if (ed.sel?.kind === "text") ed.sel.ids = ed.sel.ids.filter(txById);
   if (ed.sel?.kind === "text" && !ed.sel.ids.length) ed.sel = null;
   if (ed.sel?.kind === "seg" && !selSeg()) ed.sel = null;
-  if (ed.sel?.kind === "marker" && !ed.w.markers.some((m) => m.id === ed.sel.id)) ed.sel = null;
   setDirty();
   refreshAll();
 }
@@ -1030,7 +1028,6 @@ function save() {
     endMs: ed.w.endMs,
     segments: ed.w.segments,
     texts: ed.w.texts,
-    markers: ed.w.markers,
     teaser: ed.w.teaser,
     ratio: ed.w.ratioId === ed.video.settings.ratio && !c.ratio ? null : ed.w.ratioId,
     brand: JSON.stringify(ed.w.brand) === JSON.stringify(ed.look.brand) ? null : ed.w.brand,
@@ -1223,11 +1220,6 @@ function deleteSelection() {
       ed.w.texts = ed.w.texts.filter((x) => !ids.has(x.id));
       ed.sel = null;
     });
-  else if (s.kind === "marker")
-    edit(() => {
-      ed.w.markers = ed.w.markers.filter((m) => m.id !== s.id);
-      ed.sel = null;
-    });
   else if (s.kind === "seg" && !ed.tracks.video.locked) {
     // Deleting a part joins it with its neighbour: the clip stays whole.
     const i = ed.w.segments.findIndex((x) => x.id === s.id);
@@ -1274,16 +1266,7 @@ function duplicateSelection() {
   paste(ts, end);
 }
 
-function addMarker(atMs = snapFrame(ed.t)) {
-  if (ed.w.markers.some((m) => Math.abs(m.ms - atMs) < FRAME_MS)) return;
-  const id = uid("mk");
-  edit(() => {
-    ed.w.markers.push({ id, ms: Math.round(atMs) });
-    ed.w.markers.sort((a, b) => a.ms - b.ms);
-  });
-}
-
-// Every point worth stopping at: the clip's ends, parts, texts, markers.
+// Every point worth stopping at: the clip's ends, parts, texts.
 export function editPoints() {
   const s = ed.w.startMs;
   return [
@@ -1291,7 +1274,6 @@ export function editPoints() {
     ed.w.endMs - 1,
     ...ed.w.segments.slice(1).map((g) => g.startMs),
     ...ed.w.texts.flatMap((t) => [s + t.startMs, s + t.endMs]),
-    ...ed.w.markers.map((m) => m.ms),
   ]
     .filter((t) => t >= s && t < ed.w.endMs)
     .sort((a, b) => a - b);
@@ -1338,13 +1320,10 @@ export function openMenu(x, y, target) {
       menuItem("reset-seg", "Reset this part", { icon: `<i class="ap-icon-reset"></i>` }) +
       menuItem("set-in", "Start the clip here", { kbd: "I" }) +
       menuItem("set-out", "End the clip here", { kbd: "O" });
-  } else if (target.kind === "marker") {
-    html = menuItem("delete", "Delete the marker", { kbd: "⌫", icon: `<i class="ap-icon-trash"></i>` });
   } else {
     html =
       menuItem("add-text", "Add text here", { kbd: "T", icon: `<i class="ap-icon-plus"></i>` }) +
       menuItem("paste", "Paste here", { kbd: "⌘V", disabled: !hasClip }) +
-      menuItem("marker", "Add a marker here", { kbd: "M", icon: `<i class="ap-icon-flag"></i>` }) +
       SEP +
       menuItem("set-in", "Start the clip here", { kbd: "I" }) +
       menuItem("set-out", "End the clip here", { kbd: "O" });
@@ -1398,8 +1377,6 @@ function runMenu(act) {
       return setInOut("out");
     case "add-text":
       return addText("body");
-    case "marker":
-      return addMarker();
     default:
       return undefined;
   }
@@ -1425,7 +1402,6 @@ const SHORTCUTS = [
       ["S · ⌘K", "Split at the playhead"],
       ["I · O", "Start / end the clip at the playhead"],
       ["T", "Add text at the playhead"],
-      ["M", "Add a marker"],
       ["⌫", "Delete the selection"],
       ["⌘C · ⌘V · ⌘D", "Copy · paste · duplicate texts"],
       ["⌘A", "Select every text"],
@@ -1580,10 +1556,9 @@ function handleClick(e) {
       t.closest("[data-nle]").setAttribute("aria-pressed", String(ed.loop));
       return undefined;
     case "mute":
-      ed.tracks.audio.muted = !ed.tracks.audio.muted;
-      ed.video_el.muted = ed.tracks.audio.muted;
-      paintTransportRight();
-      return paintTimeline();
+      ed.muted = !ed.muted;
+      ed.video_el.muted = ed.muted;
+      return paintTransportRight();
     case "fullscreen":
       return toggleFullscreen();
     case "keys":
@@ -1601,8 +1576,6 @@ function handleClick(e) {
       return splitAtPlayhead();
     case "delete":
       return deleteSelection();
-    case "marker":
-      return addMarker();
     case "zoom-in":
       return zoomBy(1.6);
     case "zoom-out":
@@ -1668,10 +1641,6 @@ function handleClick(e) {
   if (track) {
     const [id, key] = track.dataset.nleTrackToggle.split(":");
     ed.tracks[id][key] = !ed.tracks[id][key];
-    if (id === "audio" && key === "muted") {
-      ed.video_el.muted = ed.tracks.audio.muted;
-      paintTransportRight();
-    }
     if (id === "captions" && key === "hidden")
       ed.el.querySelector("[data-nle-root]").classList.toggle("is-captions-hidden", ed.tracks.captions.hidden);
     paintTimeline();
@@ -1762,8 +1731,8 @@ function handleInput(e) {
   if (t.matches("[data-nle-volume]")) {
     ed.volume = Number(t.value);
     ed.video_el.volume = ed.volume;
-    if (ed.tracks.audio.muted && ed.volume > 0) {
-      ed.tracks.audio.muted = false;
+    if (ed.muted && ed.volume > 0) {
+      ed.muted = false;
       ed.video_el.muted = false;
     }
     t.style.setProperty("--fill", `${ed.volume * 100}%`);
@@ -1871,15 +1840,10 @@ function handleContextMenu(e) {
   e.preventDefault();
   const layer = e.target.closest("[data-nle-layer]");
   const seg = e.target.closest("[data-nle-seg]");
-  const marker = e.target.closest("[data-nle-marker]");
   const id = layer?.dataset.nleLayer || onText?.dataset.nleText;
   if (id) {
     if (ed.sel?.kind !== "text" || !ed.sel.ids.includes(id)) select({ kind: "text", ids: [id] });
     return openMenu(e.clientX, e.clientY, { kind: "text" });
-  }
-  if (marker) {
-    select({ kind: "marker", id: marker.dataset.nleMarker });
-    return openMenu(e.clientX, e.clientY, { kind: "marker" });
   }
   if (seg) {
     select({ kind: "seg", id: seg.dataset.nleSeg });
@@ -2012,8 +1976,6 @@ function handleKey(e) {
       return setInOut("out");
     case "t":
       return addText("body");
-    case "m":
-      return addMarker();
     case "n":
       ed.snap = !ed.snap;
       showToast(ed.snap ? "Snapping on." : "Snapping off.");

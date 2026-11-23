@@ -21,7 +21,7 @@
 // observation rather than act on it. The verb is gone, and with it the set, the
 // notifier it existed to fire, and the entry's removed counts.
 
-import { getActivePlaybook } from "../../active-playbook.js?v=2841";
+import { getActivePlaybook } from "../../active-playbook.js?v=2844";
 import {
   resolveObjectives,
   objectiveVerdict,
@@ -32,11 +32,11 @@ import {
   parseMetricValue,
   formatLike,
   metricLabel,
-} from "../../objective-measures.js?v=2841";
-import { TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../../objective-scoring.js?v=2841";
-import { nextMoveFor } from "../../objective-flow.js?v=2841";
-import { objectivePosts, objectivePostPool, TOP_POST_TODAY, TOP_POST_IMAGES } from "../../mocks.js?v=2841";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2841";
+} from "../../objective-measures.js?v=2844";
+import { TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../../objective-scoring.js?v=2844";
+import { nextMoveFor } from "../../objective-flow.js?v=2844";
+import { objectivePosts, objectivePostPool, TOP_POST_TODAY, TOP_POST_IMAGES } from "../../mocks.js?v=2844";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2844";
 
 /** The mock "today" — one anchor for the series' x-axis and the posts' dates. */
 const INSIGHTS_TODAY = TOP_POST_TODAY;

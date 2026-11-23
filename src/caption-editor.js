@@ -28,7 +28,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock, plural } from "./utils.js?v=2841";
+import { escapeHtml, formatClock, plural } from "./utils.js?v=2844";
 import {
   PRESETS,
   presetById,
@@ -43,7 +43,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=2841";
+} from "./clip-captions.js?v=2844";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -1190,7 +1190,7 @@ function onKeydown(e) {
     closeMenu();
     return;
   }
-  const inField = e.target.closest("[contenteditable=true], input, select, textarea");
+  const inField = e.target.closest?.("[contenteditable=true], input, select, textarea");
   if (inField || clock) return;
   if (e.key === " ") {
     e.preventDefault();

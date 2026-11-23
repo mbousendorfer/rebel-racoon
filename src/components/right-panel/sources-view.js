@@ -3,16 +3,16 @@
 // the panel shell (open / close / resize / URL state / delegated listeners)
 // stays there.
 
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2841";
-import { isFlagOn } from "../../feature-flags.js?v=2841";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2841";
-import { escapeAttr, escapeText } from "../../utils.js?v=2841";
-import { iconFor } from "../../file-kinds.js?v=2841";
-import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2841";
-import { conceptText } from "../../concepts.js?v=2841";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2841";
-import { renderTopPostEcho } from "../top-post-card.js?v=2841";
-import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2841";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2844";
+import { isFlagOn } from "../../feature-flags.js?v=2844";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2844";
+import { escapeAttr, escapeText } from "../../utils.js?v=2844";
+import { iconFor } from "../../file-kinds.js?v=2844";
+import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2844";
+import { conceptText } from "../../concepts.js?v=2844";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2844";
+import { renderTopPostEcho } from "../top-post-card.js?v=2844";
+import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2844";
 
 // Sources mode view — list of source rows for the active session + a
 // trailing "+ Attach" button. Each row carries kind icon, filename,

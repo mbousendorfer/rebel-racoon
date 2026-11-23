@@ -21,15 +21,15 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2841";
-import { escapeHtml as esc } from "../utils.js?v=2841";
+} from "../modal-coordinator.js?v=2844";
+import { escapeHtml as esc } from "../utils.js?v=2844";
 import {
   getConnectedProfiles,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   BRAND_INITIALS,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=2841";
+} from "../social-profiles.js?v=2844";
 
 const MODAL_ID = "analyze-profiles";
 

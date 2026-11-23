@@ -551,12 +551,32 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--ref-spacing-xs);
 }
+/* The radio leaves the flow (top left corner) so the glyph and the words are
+   centred on the whole card, not on what the radio leaves of it. */
+.nle-layout.ap-radio-card {
+  position: relative;
+  padding: var(--ref-spacing-sm) var(--ref-spacing-xs);
+}
+.nle-layout.ap-radio-card::before {
+  position: absolute;
+  top: var(--ref-spacing-xs);
+  left: var(--ref-spacing-xs);
+}
 .nle-layout > div {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
+  width: 100%;
   text-align: center;
+}
+.nle-layout:has(input:checked) .nle-layout__glyph {
+  border-color: var(--ref-color-electric-blue-100);
+  color: var(--ref-color-electric-blue-100);
+}
+.nle-layout:has(input:checked) .nle-layout__person,
+.nle-layout:has(input:checked) .nle-layout__inset {
+  background: var(--ref-color-electric-blue-100);
 }
 .nle-layout.is-off {
   opacity: 0.55;
@@ -1126,8 +1146,7 @@ button.nle-head__name:hover {
   bottom: 0;
   background: var(--ref-color-white);
 }
-.nle-lane--video .nle-lane__clip,
-.nle-lane--audio .nle-lane__clip {
+.nle-lane--video .nle-lane__clip {
   background: none;
 }
 .nle-lane.is-locked {
@@ -1161,15 +1180,6 @@ button.nle-head__name:hover {
 }
 .nle-lane__hint--action:hover {
   color: var(--ref-color-electric-blue-100);
-}
-.nle-lane__badge {
-  position: absolute;
-  top: 4px;
-  padding: 0 var(--ref-spacing-xxs);
-  border-radius: var(--app-radius-sm);
-  background: var(--ref-color-grey-100);
-  color: var(--ref-color-white);
-  font-size: var(--sys-text-style-caption-size);
 }
 
 /* A block on a track: white, a hairline, its label; hover = blue border,
@@ -1383,26 +1393,11 @@ button.nle-head__name:hover {
   box-shadow: none;
 }
 
-.nle-aclip {
-  position: absolute;
-  top: 4px;
-  bottom: 4px;
-  padding: 0;
-  border: 1px solid var(--ref-color-grey-60);
-  border-radius: var(--app-radius-sm);
-  background: none;
-  cursor: pointer;
-}
-.nle-aclip:hover {
-  border-color: var(--ref-color-electric-blue-100);
-}
-.nle-aclip.is-selected {
-  border: 2px solid var(--ref-color-electric-blue-100);
-}
 .nle-hidspan {
   position: absolute;
-  top: 6px;
-  bottom: 6px;
+  top: 2px;
+  bottom: 2px;
+  border-radius: 3px;
   background: repeating-linear-gradient(
     -45deg,
     color-mix(in srgb, var(--ref-color-grey-100) 30%, transparent) 0 2px,
@@ -1431,24 +1426,6 @@ button.nle-head__name:hover {
 .nle-inout--out {
   margin-left: -6px;
   border-left: 0;
-}
-
-.nle-marker {
-  position: absolute;
-  top: 2px;
-  width: 12px;
-  height: 14px;
-  margin-left: -6px;
-  padding: 0;
-  border: 0;
-  background: var(--ref-color-grey-100);
-  clip-path: polygon(0 0, 100% 0, 100% 65%, 50% 100%, 0 65%);
-  pointer-events: auto;
-  cursor: pointer;
-}
-.nle-marker:hover,
-.nle-marker.is-selected {
-  background: var(--ref-color-electric-blue-100);
 }
 
 .nle-snapline {

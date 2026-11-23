@@ -2,16 +2,16 @@
 //   · the library, left — what you add or work from: the Transcript (words +
 //     cleanup), Text (presets to click or drag onto the timeline), Brand;
 //   · the inspector, right — the properties of what's selected: a text, a
-//     framing part, the captions, the audio, a brand item, a marker; nothing
+//     framing part, the captions, a brand item; nothing
 //     selected, the clip itself (its range, format, teaser).
 // Both are HTML builders; editor.js owns the events (data-nle-* delegation).
 
-import { ed, fmtTC, clipLen, selTexts, selSeg, capSourceHTML, ratio } from "./editor.js?v=2841";
-import { autoKind, cameraShort } from "./editor-timeline.js?v=2841";
-import { LAYOUTS, twoBlockedReason, cameraName } from "../../clip-framing.js?v=2841";
-import { dsSelect, formatLabel, RATIO_IDS, bestFor, presetLabel } from "./shared.js?v=2841";
-import * as ce from "../../caption-editor.js?v=2841";
-import { escapeHtml } from "../../utils.js?v=2841";
+import { ed, fmtTC, clipLen, selTexts, selSeg, capSourceHTML, ratio } from "./editor.js?v=2844";
+import { autoKind, cameraShort } from "./editor-timeline.js?v=2844";
+import { LAYOUTS, twoBlockedReason, cameraName } from "../../clip-framing.js?v=2844";
+import { dsSelect, formatLabel, RATIO_IDS, bestFor, presetLabel } from "./shared.js?v=2844";
+import * as ce from "../../caption-editor.js?v=2844";
+import { escapeHtml } from "../../utils.js?v=2844";
 
 // The few glyphs the DS doesn't ship (scissors, blade, magnet, speaker, frame
 // steps, loop, in / out): drawn here on the DS's 16 px grid, in currentColor.
@@ -184,9 +184,7 @@ const HEAD = {
   text: ["", "Text"],
   seg: ["ap-icon-cropper", "Framing"],
   captions: ["ap-icon-closed-captions", "Captions"],
-  audio: ["", "Audio"],
   brand: ["ap-icon-target", "Brand"],
-  marker: ["ap-icon-flag", "Marker"],
 };
 
 export function inspectorHTML() {
@@ -196,12 +194,10 @@ export function inspectorHTML() {
     text: textInsp,
     seg: segInsp,
     captions: captionsInsp,
-    audio: audioInsp,
     brand: brandInsp,
-    marker: markerInsp,
   }[kind]();
   const [icon, label] = HEAD[kind];
-  const glyph = icon ? `<i class="${icon}" aria-hidden="true"></i>` : kind === "text" ? GLYPH.text : GLYPH.volume;
+  const glyph = icon ? `<i class="${icon}" aria-hidden="true"></i>` : GLYPH.text;
   const title = kind === "text" && ed.sel.ids.length > 1 ? `${ed.sel.ids.length} texts` : label;
   return `<header class="nle-insp__head">
       <span class="nle-insp__icon">${glyph}</span>
@@ -400,24 +396,6 @@ function captionsInsp() {
     <div class="cap-ed__tabpanel nle-captabs" data-ce-tabpanel></div>`;
 }
 
-function audioInsp() {
-  const muted = ed.tracks.audio.muted;
-  return `
-    ${sec(
-      "Preview",
-      `<label class="nle-field nle-field--slider"><span class="nle-field__label">Volume</span>
-        <input type="range" class="ap-slider" min="0" max="1" step="0.05" value="${muted ? 0 : ed.volume}" data-nle-volume
-          style="--fill:${(muted ? 0 : ed.volume) * 100}%" aria-label="Preview volume" /></label>
-      <div class="nle-row">${btn("mute", muted ? "Unmute" : "Mute", { icon: muted ? GLYPH.muted : GLYPH.volume })}</div>
-      <p class="nle-hint">For listening here only: the clip keeps its sound.</p>`,
-    )}
-    ${sec(
-      "Cleanup",
-      `<p class="nle-hint">Fillers and pauses hidden from the captions show hatched on the Audio track. The audio itself isn't cut.</p>
-      <div class="nle-row">${btn("lib-transcript", "Open the Transcript", { cls: "stroked grey" })}</div>`,
-    )}`;
-}
-
 function brandInsp() {
   const b = ed.w.brand;
   const item = ed.sel.item;
@@ -452,16 +430,4 @@ function brandInsp() {
     ${toggle(`data-nle-brand="${item}"`, b[item], intro ? "Show the intro card" : "Show the outro card")}`,
   )}
   <div class="nle-insp__foot">${btn("delete", `Remove the ${item}`, { cls: "ghost grey", icon: `<i class="ap-icon-trash" aria-hidden="true"></i>` })}</div>`;
-}
-
-function markerInsp() {
-  const i = ed.w.markers.findIndex((m) => m.id === ed.sel.id);
-  const m = ed.w.markers[i];
-  if (!m) return "";
-  return `${sec(
-    `Marker ${i + 1}`,
-    `<dl class="nle-facts"><div><dt>At</dt><dd>${fmtTC(m.ms - ed.w.startMs)}</dd></div></dl>
-    <p class="nle-hint">A note to yourself on the timeline. Drag it to move it; ↑ and ↓ stop on it.</p>`,
-  )}
-  <div class="nle-insp__foot">${btn("delete", "Delete the marker", { cls: "ghost grey", icon: `<i class="ap-icon-trash" aria-hidden="true"></i>`, kbd: "⌫" })}</div>`;
 }

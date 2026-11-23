@@ -32,10 +32,10 @@ import {
   postUserTurn,
   postUserProfilesTurn,
   reportDraftFailure,
-} from "./assistant.js?v=2841";
-import { getTopPosts, getTopPost } from "./top-posts-store.js?v=2841";
-import { addPostDraft } from "./posts-store.js?v=2841";
-import { addReadySource } from "./sources-stream.js?v=2841";
+} from "./assistant.js?v=2844";
+import { getTopPosts, getTopPost } from "./top-posts-store.js?v=2844";
+import { addPostDraft } from "./posts-store.js?v=2844";
+import { addReadySource } from "./sources-stream.js?v=2844";
 import {
   getConnectedProfiles,
   BRAND_INITIALS,
@@ -45,13 +45,13 @@ import {
   networkMeta,
   normalizeNetwork,
   getConnectedProfileById,
-} from "./social-profiles.js?v=2841";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2841";
-import { requireNetworkVoices } from "./network-voice-flow.js?v=2841";
-import { withPendingChip } from "./draft-flow.js?v=2841";
-import { SORTS, PERIODS } from "./components/top-post-card.js?v=2841";
-import * as inlineQuestion from "./inline-question.js?v=2841";
-import { playbookForNewWork } from "./active-playbook.js?v=2841";
+} from "./social-profiles.js?v=2844";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2844";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2844";
+import { withPendingChip } from "./draft-flow.js?v=2844";
+import { SORTS, PERIODS } from "./components/top-post-card.js?v=2844";
+import * as inlineQuestion from "./inline-question.js?v=2844";
+import { playbookForNewWork } from "./active-playbook.js?v=2844";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;
