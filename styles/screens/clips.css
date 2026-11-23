@@ -1557,9 +1557,6 @@ body.clips-editing .app-content {
 }
 
 /* Framing's actions belong to Reframe, where the parts can be picked. */
-.clips-ed:not([data-tool="reframe"]) .clips-tl__reframe-only {
-  display: none;
-}
 
 .clips-tl__tracks {
   position: relative;
@@ -2223,41 +2220,24 @@ body.clips-editing .app-content {
   min-width: 200px;
 }
 
-/* What acts at the playhead, named — object in each verb (« Split part
-   here » can't read as cutting the clip). Snap, a setting, sits at the end. */
-/* Four stroked buttons — secondary actions with an edge, so they read as
-   buttons and not as floating labels; the DS button's own gap spaces icon and
-   label. The hint before them is set apart by its own margin. */
-.clips-ed__at {
+/* What acts at the playhead, over the tracks it acts on (2026-11-23): its
+   label, the actions as stroked buttons, then Snap — a setting — at the end. */
+.clips-tl__bar {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md) 0;
 }
 
-.clips-ed__at-label {
-  margin-right: var(--ref-spacing-xs);
+.clips-tl__bar-label {
+  margin-right: var(--ref-spacing-xxs);
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
-}
-
-.clips-ed__at-sep {
-  width: 1px;
-  height: 24px;
-  margin: 0 var(--ref-spacing-xs);
-  background: var(--ref-color-grey-20);
-}
-
-.clips-ed__at-label {
   white-space: nowrap;
 }
 
-.clips-ed__at .clips-glyph {
+.clips-tl__bar .clips-glyph {
   flex: none;
-}
-
-/* Snap belongs to the framing track: at the end of its legend. */
-.clips-tl__legend {
-  align-items: center;
 }
 
 .clips-tl__snap {
@@ -2680,9 +2660,7 @@ on black {
    safe area), then prod's transport. The timeline shows in Reframe only, cut
    down to the framing parts. */
 .clips-ed:not([data-tool="reframe"]) .clips-ed__monitor-bar,
-.clips-ed:not([data-tool="reframe"]) .clips-ed__timeline,
-.clips-ed:not([data-tool="reframe"]) .clips-ed__at-sep,
-.clips-ed:not([data-tool="reframe"]) .clips-ed__at {
+.clips-ed:not([data-tool="reframe"]) .clips-ed__timeline {
   display: none;
 }
 
@@ -2705,17 +2683,16 @@ on black {
   display: none;
 }
 
+/* The clip's settings, above the video: three selects alike, a hairline
+   under them — playback is under the video, actions in the timeline. */
 .clips-ed__quick {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-md) 0;
-}
-
-.clips-ed__quick .ap-select-dropdown {
-  top: auto;
-  bottom: calc(100% + var(--ref-spacing-xxxs));
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+  background: var(--ref-color-white);
 }
 
 .clips-ed__transport {

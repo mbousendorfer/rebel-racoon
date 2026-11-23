@@ -29,19 +29,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2824";
-import { isFlagOn } from "../../feature-flags.js?v=2824";
-import { parseHashParams } from "../../url-state.js?v=2824";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2824";
-import { showToast } from "../../components/toast.js?v=2824";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2824";
-import { open as openRename } from "../../components/rename-modal.js?v=2824";
-import { getContextById } from "../../contexts-store.js?v=2824";
-import { escapeHtml } from "../../utils.js?v=2824";
-import * as ce from "../../caption-editor.js?v=2824";
-import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2824";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2824";
-import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2824";
+import { navigate } from "../../router.js?v=2825";
+import { isFlagOn } from "../../feature-flags.js?v=2825";
+import { parseHashParams } from "../../url-state.js?v=2825";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2825";
+import { showToast } from "../../components/toast.js?v=2825";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2825";
+import { open as openRename } from "../../components/rename-modal.js?v=2825";
+import { getContextById } from "../../contexts-store.js?v=2825";
+import { escapeHtml } from "../../utils.js?v=2825";
+import * as ce from "../../caption-editor.js?v=2825";
+import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2825";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2825";
+import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2825";
 import {
   framingContext,
   initialSegments,
@@ -60,7 +60,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2824";
+} from "../../clip-framing.js?v=2825";
 import {
   fmtMs,
   fmtPrecise,
@@ -75,8 +75,8 @@ import {
   dsSelect,
   bindSelectDismiss,
   EDITOR_TOOLS as TOOLS,
-} from "./shared.js?v=2824";
-import { writePostsInChat } from "../../clips-chat.js?v=2824";
+} from "./shared.js?v=2825";
+import { writePostsInChat } from "../../clips-chat.js?v=2825";
 
 const FRAME_MS = 40;
 const CARD_MS = 2000; // intro / outro card length
@@ -245,6 +245,11 @@ function shellHTML() {
     <aside class="clips-ed__panel" data-clips-panel role="tabpanel" aria-label="Tool settings"></aside>
 
     <main class="clips-ed__main">
+      <!-- Settings above the video, playback under it, actions in the timeline
+           (2026-11-23: « pas fou d'avoir des paramètres et des actions au même
+           endroit, et on ne voit pas bien ce qui est cliquable »). -->
+      <div class="clips-ed__quick" data-clips-quick role="group" aria-label="This clip's settings"></div>
+
       <div class="clips-ed__stage" data-clips-stage>
         <section class="clips-ed__monitor clips-ed__monitor--source" aria-label="Source">
           <header class="clips-ed__monitor-bar">
@@ -278,8 +283,6 @@ function shellHTML() {
         </section>
       </div>
 
-      <div class="clips-ed__quick" data-clips-quick role="group" aria-label="This clip's look"></div>
-
       <div class="clips-ed__transport" role="toolbar" aria-label="Playback">
         <button type="button" class="ap-button ghost grey" data-clips-ed="back5" aria-label="Back 5 seconds"><span>−5 s</span></button>
         <button type="button" class="ap-icon-button stroked" data-clips-ed="play" aria-label="Play" data-tooltip="Play / pause (Space)">
@@ -288,12 +291,6 @@ function shellHTML() {
         <button type="button" class="ap-button ghost grey" data-clips-ed="fwd5" aria-label="Forward 5 seconds"><span>+5 s</span></button>
         <input type="range" class="ap-slider clips-ed__scrub" min="0" max="1000" step="1" value="0" data-clips-scrubber aria-label="Position in the clip" />
         <span class="clips-ed__time"><span data-clips-cur>0:00.0</span> / <span data-clips-len>0:00.0</span></span>
-        <span class="clips-ed__at-sep" aria-hidden="true"></span>
-        <div class="clips-ed__at" role="group" aria-label="At the playhead">
-          <span class="clips-ed__at-label">At the playhead</span>
-          <button type="button" class="ap-button stroked grey clips-tl__reframe-only" data-clips-ed="split" data-tooltip="A new framing part — the clip stays whole (S)">${ICON.cut}<span>Split part here</span></button>
-          <button type="button" class="ap-button stroked grey" data-clips-ed="add-text"><i class="ap-icon-plus" aria-hidden="true"></i><span>Add text here</span></button>
-        </div>
       </div>
 
       <div class="clips-ed__timeline" data-clips-timeline></div>
@@ -553,7 +550,15 @@ function paintFormatPicker() {
         ...RATIO_IDS.map((id) => ({ id, label: formatLabel(id), meta: bestFor(id) })),
       ],
     }) +
-    `<button type="button" class="ap-button stroked grey clips-ed__quick-subs" data-clips-tool="subtitles"><i class="ap-icon-closed-captions" aria-hidden="true"></i><span>${escapeHtml(presetLabel(preset))}</span></button>`;
+    dsSelect({
+      label: "Subtitles",
+      valueHtml: escapeHtml(presetLabel(preset)),
+      current: preset,
+      attr: "data-clips-subs-preset",
+      ariaLabel: "Subtitle style of this clip",
+      extraClass: "clips-ed__format",
+      options: ["none", ...SUBTITLE_IDS.filter((id) => id !== "none")].map((id) => ({ id, label: presetLabel(id) })),
+    });
 }
 
 function currentRes() {
@@ -758,6 +763,12 @@ function paintTimeline() {
     .join("");
   const b = ed.w.brand;
   host.innerHTML = `
+    <div class="clips-tl__bar" role="toolbar" aria-label="At the playhead">
+      <span class="clips-tl__bar-label">At the playhead</span>
+      <button type="button" class="ap-button stroked grey" data-clips-ed="split" data-tooltip="A new framing part — the clip stays whole (S)">${ICON.cut}<span>Split part</span></button>
+      <button type="button" class="ap-button stroked grey" data-clips-ed="add-text"><i class="ap-icon-plus" aria-hidden="true"></i><span>Add text</span></button>
+      <label class="ap-toggle-container clips-tl__snap"><input type="checkbox" data-clips-snap ${ed.snap ? "checked" : ""} /><i></i><span>Snap to camera cuts</span></label>
+    </div>
     <div class="clips-tl" data-clips-tl>
       <div class="clips-tl__labels">
         <span></span>
@@ -785,8 +796,7 @@ function paintTimeline() {
         ${ed.drag?.label ? `<span class="clips-tl__readout" style="left:${pctIn(ed.drag.at)}">${escapeHtml(ed.drag.label)}</span>` : ""}
       </div>
     </div>
-    <div class="clips-tl__legend"><span class="clips-tl__legend-item">Grey: my framing · White: yours</span>
-      <label class="ap-toggle-container clips-tl__snap"><input type="checkbox" data-clips-snap ${ed.snap ? "checked" : ""} /><i></i><span>Snap to camera cuts</span></label></div>`;
+    <div class="clips-tl__legend"><span class="clips-tl__legend-item">Grey: my framing · White: yours</span></div>`;
 }
 
 // What the cleanup hid from the subtitles, on the Clip track — the audio isn't cut.
@@ -1441,6 +1451,13 @@ function handleClick(e) {
       cancelLabel: "Cancel",
       onConfirm: apply,
     });
+    return undefined;
+  }
+  const subs = t.closest("[data-clips-subs-preset]");
+  if (subs) {
+    subs.closest("details")?.removeAttribute("open");
+    ce.applyPreset(subs.dataset.clipsSubsPreset);
+    paintFormatPicker();
     return undefined;
   }
   const dz = t.closest("[data-clips-deadzones]");
