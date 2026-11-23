@@ -9,13 +9,13 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2823";
-import { isFlagOn } from "../../feature-flags.js?v=2823";
-import { renderTopbar } from "../../components/topbar.js?v=2823";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2823";
-import { isDemo } from "../../demo-mode.js?v=2823";
-import { getPosts } from "../../posts-store.js?v=2823";
-import { escapeHtml, plural } from "../../utils.js?v=2823";
+import { navigate } from "../../router.js?v=2824";
+import { isFlagOn } from "../../feature-flags.js?v=2824";
+import { renderTopbar } from "../../components/topbar.js?v=2824";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2824";
+import { isDemo } from "../../demo-mode.js?v=2824";
+import { getPosts } from "../../posts-store.js?v=2824";
+import { escapeHtml, plural } from "../../utils.js?v=2824";
 import {
   getVideos,
   exampleVideo,
@@ -25,7 +25,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2823";
+} from "../../videos-store.js?v=2824";
 import {
   fmtMs,
   previewMarkup,
@@ -38,7 +38,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2823";
+} from "./shared.js?v=2824";
 
 let target = null;
 let disposeShowcase = null;
@@ -344,13 +344,14 @@ function renderCollection(videos) {
         <h2 class="clips-library__title" id="clips-library-title">Your videos</h2>
         <span class="ap-counter normal grey">${videos.length}</span>
       </header>
+      ${tabs.length ? `<div class="ap-tabs clips-library__filters"><div class="ap-tabs-nav" role="tablist" aria-label="Filter videos">${tabs.join("")}</div></div>` : ""}
       <div class="clips-library__tools">
-        ${tabs.length ? `<div class="ap-tabs clips-library__filters"><div class="ap-tabs-nav" role="tablist" aria-label="Filter videos">${tabs.join("")}</div></div>` : ""}
-        <span class="clips-library__grow"></span>
+        <!-- Search on the left, how to see the videos on the right (2026-11-23). -->
         <div class="ap-input-group clips-library__search">
           <i class="ap-icon-search" aria-hidden="true"></i>
           <input type="search" data-clips-search placeholder="Search videos" aria-label="Search videos" value="${escapeHtml(list.query)}" />
         </div>
+        <span class="clips-library__grow"></span>
         ${dsSelect({
           label: "Sort",
           valueHtml: escapeHtml(SORTS.find((x) => x.id === list.sort).label),

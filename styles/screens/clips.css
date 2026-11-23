@@ -2655,7 +2655,8 @@ on black {
 }
 
 .clips-library__search {
-  width: 240px;
+  width: 320px;
+  max-width: 100%;
 }
 
 .clips-library__sort {
