@@ -12,7 +12,7 @@
   position: relative;
   display: grid;
   grid-template-columns: var(--nle-left, 300px) 5px minmax(0, 1fr) 5px var(--nle-right, 320px);
-  grid-template-rows: minmax(0, 1fr) 5px var(--nle-tl, 300px);
+  grid-template-rows: minmax(0, 1fr) 5px var(--nle-tl, 340px);
   grid-template-areas:
     "lib gl view gr insp"
     "gt gt gt gt gt"
@@ -1033,7 +1033,7 @@
 /* Track heads: fixed on the left, aligned row for row with the lanes. */
 .nle-tl__heads {
   flex: none;
-  width: 184px;
+  width: 208px;
   align-self: flex-start;
   border-right: 1px solid var(--ref-color-grey-20);
   background: var(--ref-color-white);
@@ -1041,9 +1041,9 @@
 .nle-head {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xs);
   box-sizing: border-box;
-  padding: 0 var(--ref-spacing-xxs) 0 var(--ref-spacing-xs);
+  padding: 0 var(--ref-spacing-xs) 0 var(--ref-spacing-sm);
   border-bottom: 1px solid var(--ref-color-grey-20);
 }
 .nle-head--ruler {
@@ -1060,7 +1060,7 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xs);
   padding: 0;
   border: 0;
   background: none;
@@ -1116,7 +1116,7 @@ button.nle-head__name:hover {
 }
 .nle-tl__cv--ruler {
   top: 0;
-  height: 28px;
+  height: 32px;
   border-bottom: 1px solid var(--ref-color-grey-20);
   pointer-events: auto;
   cursor: pointer;
@@ -1186,13 +1186,13 @@ button.nle-head__name:hover {
    selected = blue border on a blue-tinted fill. */
 .nle-block {
   position: absolute;
-  top: 4px;
-  bottom: 4px;
+  top: 8px;
+  bottom: 8px;
   display: flex;
   align-items: center;
   box-sizing: border-box;
   min-width: 4px;
-  padding: 0 var(--ref-spacing-xs);
+  padding: 0 var(--ref-spacing-sm);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-white);
@@ -1242,17 +1242,11 @@ button.nle-head__name:hover {
   background: color-mix(in srgb, var(--ref-color-electric-blue-100) 22%, transparent);
 }
 .nle-block--cue {
-  padding: 0 var(--ref-spacing-xxs);
+  padding: 0 var(--ref-spacing-xs);
   border-radius: 3px;
-}
-.nle-block--bar {
-  top: 14px;
-  bottom: 4px;
 }
 .nle-block--card {
   z-index: 1;
-  top: 4px;
-  bottom: 4px;
   border-style: dashed;
 }
 
@@ -1260,8 +1254,8 @@ button.nle-head__name:hover {
    trim edges. */
 .nle-vclip {
   position: absolute;
-  top: 4px;
-  bottom: 4px;
+  top: 6px;
+  bottom: 6px;
   box-sizing: border-box;
   border: 1px solid var(--ref-color-grey-60);
   border-radius: var(--app-radius-sm);
@@ -1289,10 +1283,10 @@ button.nle-head__name:hover {
 }
 .nle-part__chip {
   position: absolute;
-  top: 4px;
-  left: 4px;
-  max-width: calc(100% - 8px);
-  padding: 1px 6px;
+  top: 8px;
+  left: 8px;
+  max-width: calc(100% - 16px);
+  padding: 2px 8px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1300,7 +1294,7 @@ button.nle-head__name:hover {
   background: rgba(255, 255, 255, 0.92);
   color: var(--ref-color-grey-100);
   font-size: var(--sys-text-style-caption-size);
-  line-height: 16px;
+  line-height: 18px;
   pointer-events: none;
 }
 .nle-part.is-edited .nle-part__chip {
@@ -1323,8 +1317,8 @@ button.nle-head__name:hover {
 .nle-bound {
   position: absolute;
   z-index: 2;
-  top: 4px;
-  bottom: 4px;
+  top: 6px;
+  bottom: 6px;
   width: 10px;
   margin-left: -5px;
   cursor: ew-resize;
@@ -1359,8 +1353,8 @@ button.nle-head__name:hover {
 .nle-trim {
   position: absolute;
   z-index: 3;
-  top: 4px;
-  bottom: 4px;
+  top: 6px;
+  bottom: 6px;
   width: 12px;
   cursor: ew-resize;
 }
@@ -1395,8 +1389,8 @@ button.nle-head__name:hover {
 
 .nle-hidspan {
   position: absolute;
-  top: 2px;
-  bottom: 2px;
+  top: 6px;
+  bottom: 6px;
   border-radius: 3px;
   background: repeating-linear-gradient(
     -45deg,
@@ -1409,14 +1403,14 @@ button.nle-head__name:hover {
 /* Outside the clip: the source still there, dimmed — what a trim can reach. */
 .nle-shade {
   position: absolute;
-  top: 28px;
+  top: 32px;
   bottom: 0;
   background: color-mix(in srgb, var(--ref-color-grey-05) 70%, transparent);
 }
 .nle-inout {
   position: absolute;
   top: 0;
-  height: 28px;
+  height: 32px;
   width: 6px;
   border: 2px solid var(--ref-color-grey-100);
 }
@@ -1436,7 +1430,7 @@ button.nle-head__name:hover {
 }
 .nle-readout {
   position: absolute;
-  top: 30px;
+  top: 36px;
   transform: translateX(-50%);
   padding: 2px 6px;
   border-radius: var(--app-radius-sm);
@@ -1471,7 +1465,7 @@ button.nle-head__name:hover {
 .nle-tl__blade {
   position: absolute;
   z-index: 5;
-  top: 28px;
+  top: 32px;
   bottom: 0;
   left: 0;
   border-left: 1px solid var(--ref-color-electric-blue-100);
@@ -1507,9 +1501,9 @@ button.nle-head__name:hover {
   position: absolute;
   z-index: 30;
   right: var(--ref-spacing-sm);
-  bottom: calc(var(--nle-tl, 300px) + var(--ref-spacing-sm));
+  bottom: calc(var(--nle-tl, 340px) + var(--ref-spacing-sm));
   width: min(640px, calc(100% - 32px));
-  max-height: calc(100% - var(--nle-tl, 300px) - 32px);
+  max-height: calc(100% - var(--nle-tl, 340px) - 32px);
   overflow-y: auto;
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-md);

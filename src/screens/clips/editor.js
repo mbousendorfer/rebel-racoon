@@ -24,19 +24,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2844";
-import { isFlagOn } from "../../feature-flags.js?v=2844";
-import { parseHashParams } from "../../url-state.js?v=2844";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2844";
-import { showToast } from "../../components/toast.js?v=2844";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2844";
-import { open as openRename } from "../../components/rename-modal.js?v=2844";
-import { getContextById } from "../../contexts-store.js?v=2844";
-import { escapeHtml } from "../../utils.js?v=2844";
-import * as ce from "../../caption-editor.js?v=2844";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2844";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2844";
-import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2844";
+import { navigate } from "../../router.js?v=2847";
+import { isFlagOn } from "../../feature-flags.js?v=2847";
+import { parseHashParams } from "../../url-state.js?v=2847";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2847";
+import { showToast } from "../../components/toast.js?v=2847";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2847";
+import { open as openRename } from "../../components/rename-modal.js?v=2847";
+import { getContextById } from "../../contexts-store.js?v=2847";
+import { escapeHtml } from "../../utils.js?v=2847";
+import * as ce from "../../caption-editor.js?v=2847";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2847";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2847";
+import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2847";
 import {
   framingContext,
   initialSegments,
@@ -50,7 +50,7 @@ import {
   merge,
   snapMs,
   resetSegment,
-} from "../../clip-framing.js?v=2844";
+} from "../../clip-framing.js?v=2847";
 import {
   RATIO_IDS,
   ratioOf,
@@ -62,8 +62,8 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2844";
-import { writePostsInChat } from "../../clips-chat.js?v=2844";
+} from "./shared.js?v=2847";
+import { writePostsInChat } from "../../clips-chat.js?v=2847";
 import {
   timelineShellHTML,
   paintTimeline,
@@ -77,8 +77,8 @@ import {
   timelineWheel,
   timelineDrop,
   revealPlayhead,
-} from "./editor-timeline.js?v=2844";
-import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2844";
+} from "./editor-timeline.js?v=2847";
+import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2847";
 
 const FPS = 25;
 export const FRAME_MS = 1000 / FPS;
@@ -88,7 +88,7 @@ export const MIN_CLIP_MS = 3000;
 export const MIN_TEXT_MS = 400;
 const ANIM_MS = 300;
 const LAYOUT_KEY = "archie-clips-editor-layout";
-const DEFAULT_LAYOUT = { left: 300, right: 320, tl: 300 };
+const DEFAULT_LAYOUT = { left: 300, right: 320, tl: 340 };
 
 // The safe-area guide's choices: where each network's buttons cover the video.
 const DEAD_ZONE_LABELS = { none: "No guide", tiktok: "TikTok zones", reels: "Reels zones", shorts: "Shorts zones" };

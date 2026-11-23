@@ -43,7 +43,7 @@ import {
   MIN_TEXT_MS,
   MIN_CLIP_MS,
   CARD_MS,
-} from "./editor.js?v=2844";
+} from "./editor.js?v=2847";
 import {
   segmentAt,
   moveBoundary,
@@ -53,19 +53,19 @@ import {
   LAYOUTS,
   resolve,
   merge,
-} from "../../clip-framing.js?v=2844";
-import { ratioOf } from "./shared.js?v=2844";
-import * as ce from "../../caption-editor.js?v=2844";
-import { deriveCues } from "../../clip-captions.js?v=2844";
-import { escapeHtml } from "../../utils.js?v=2844";
-import { GLYPH } from "./editor-panels.js?v=2844";
+} from "../../clip-framing.js?v=2847";
+import { ratioOf } from "./shared.js?v=2847";
+import * as ce from "../../caption-editor.js?v=2847";
+import { deriveCues } from "../../clip-captions.js?v=2847";
+import { escapeHtml } from "../../utils.js?v=2847";
+import { GLYPH } from "./editor-panels.js?v=2847";
 
-const RULER_H = 28;
+const RULER_H = 32;
 const FIT_PAD = 40; // px of air each side of the clip when fitted
 const MAX_PX_PER_MS = 0.5; // one frame ≈ 20 px
 const SNAP_PX = 8;
-const LAYER_H = 24;
-const LAYER_GAP = 4;
+const LAYER_H = 28;
+const LAYER_GAP = 6;
 
 const x = (ms) => (ms - ed.range.from) * ed.tl.pxPerMs;
 const scroller = () => ed.el.querySelector("[data-nle-scroll]");
@@ -103,14 +103,14 @@ function rows() {
       id: "brand",
       label: "Brand",
       icon: `<i class="ap-icon-target" aria-hidden="true"></i>`,
-      h: 32,
+      h: 44,
       toggles: ["hidden", "locked"],
     },
     {
       id: "text",
       label: "Text",
       icon: GLYPH.text,
-      h: tp.n * (LAYER_H + LAYER_GAP) + LAYER_GAP + 4,
+      h: tp.n * (LAYER_H + LAYER_GAP) + LAYER_GAP + 8,
       toggles: ["hidden", "locked"],
       tp,
     },
@@ -118,14 +118,14 @@ function rows() {
       id: "captions",
       label: "Captions",
       icon: `<i class="ap-icon-closed-captions" aria-hidden="true"></i>`,
-      h: 32,
+      h: 44,
       toggles: ["hidden", "locked"],
     },
     {
       id: "video",
       label: "Video",
       icon: `<i class="ap-icon-video" aria-hidden="true"></i>`,
-      h: 76,
+      h: 96,
       toggles: ["locked"],
     },
   ];
@@ -295,7 +295,7 @@ function textLane(tp) {
   const sel = new Set(selTexts().map((t) => t.id));
   return ed.w.texts
     .map((tx) => {
-      const top = LAYER_GAP + 2 + tp.lane[tx.id] * (LAYER_H + LAYER_GAP);
+      const top = 8 + tp.lane[tx.id] * (LAYER_H + LAYER_GAP);
       return `<button type="button" class="nle-block nle-block--text${sel.has(tx.id) ? " is-selected" : ""}" data-nle-layer="${tx.id}"
         style="${span(s + tx.startMs, s + tx.endMs)};top:${top}px;height:${LAYER_H}px"
         aria-label="${escapeHtml(tx.text)}, ${fmtTC(tx.startMs)} to ${fmtTC(tx.endMs)}">
@@ -408,10 +408,10 @@ export function paintTimeline() {
   q("[data-nle-lanes]").innerHTML = rs.map(laneHTML).join("");
   q("[data-nle-over]").innerHTML = overHTML();
   const v = rs.find((r) => r.id === "video");
-  const fh = v.h - 8;
-  const wh = Math.round(fh * 0.46); // prod's strip: the lower ~46 % of the track
-  Object.assign(q("[data-nle-film]").style, { top: `${v.top + 4}px`, height: `${fh}px` });
-  Object.assign(q("[data-nle-wave]").style, { top: `${v.top + 4 + fh - wh}px`, height: `${wh}px` });
+  const fh = v.h - 12;
+  const wh = Math.round(fh * 0.4); // prod's strip along the track's foot
+  Object.assign(q("[data-nle-film]").style, { top: `${v.top + 6}px`, height: `${fh}px` });
+  Object.assign(q("[data-nle-wave]").style, { top: `${v.top + 6 + fh - wh}px`, height: `${wh}px` });
   paintPlayhead();
   paintVisible();
 }
@@ -597,15 +597,16 @@ export function paintVisible() {
   w.fillStyle = col.wave;
   const words = ed.srcWords || [];
   let wi = 0;
-  for (let X = 0; X < vw; X += 3) {
+  w.globalAlpha = 0.55;
+  for (let X = 0; X < vw; X += 4) {
     const t = from + X / px;
     while (wi < words.length && words[wi].end < t) wi++;
     const inWord = wi < words.length && words[wi].start <= t;
     const n = noise(Math.floor(t / 40));
     const n2 = noise(Math.floor(t / 160) + 7);
     const amp = inWord ? 0.3 + 0.45 * n + 0.25 * n2 : 0.03 + 0.05 * n;
-    const hgt = Math.max(1, amp * (wh - 4));
-    w.fillRect(X, wh - 2 - hgt, 2, hgt);
+    const hgt = Math.max(1, amp * (wh - 6));
+    w.fillRect(X, wh - 3 - hgt, 2, hgt);
   }
 }
 
