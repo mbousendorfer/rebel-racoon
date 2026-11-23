@@ -1,50 +1,46 @@
 // /clips/:id/edit/:clipId — the ONE clip editor of the Clips space (flag
-// clipsSpace). Four editors used to hold a share of the tools each: the Video
-// Clips modal (trim, format, subtitles), prod's per-post subtitle editor, the
-// platform video-editor playground (text overlays, speech cleanup, brand
-// template) and the crop-editor playground (per-segment reframing). They are
-// one surface here, Opus / Descript-style:
+// clipsSpace), rebuilt 2026-11-23 as a desktop editing workspace (« soit
+// ambitieux… on peut tout refaire »), after Premiere, Resolve, CapCut:
 //
-//   tool rail + the tool's panel (left) · the clip as it will come out, large
-//   (right) · a quick bar under it (format, subtitles, safe area) · prod's
-//   transport (−5 s, play, +5 s, the scrubber).
+//   ┌ library ┐┌──────── viewer ────────┐┌ inspector ┐
+//   │Transcript││ Program (+ Source)      ││ what's    │
+//   │Text      ││ transport, timecode     ││ selected  │
+//   │Brand     │└────────────────────────┘└───────────┘
+//   ┌──────────────── timeline, full width ─────────────────┐
+//   │ tools · zoom      Brand · Text · Captions · Video · Audio│
+//   └────────────────────────────────────────────────────────┘
 //
-// « L'aperçu d'abord » (picked 2026-11-20, after ElevenLabs Studio and VEED):
-// the result is the largest image on screen. The Source monitor and the
-// framing parts' strip show in Reframe only; prod has no multi-track timeline.
-// Tools, prod's sections: Format · Subtitles · Transcript (words + cleanup) ·
-// Reframe · Text · Teaser, plus Brand.
-// The editor owns the clock and the source <video>; caption-editor.js renders
-// the subtitles, the transcript and the cleanup on that clock (mount opts.clock),
-// and clip-framing.js is the crop editor's engine.
+// Every pane is resizable (gutters, remembered). Editing is by SELECTION, not
+// by tool: click a text layer, a framing part, the captions, the audio, a
+// brand item — the inspector shows its properties; nothing selected, the clip's.
+// The timeline holds every track at once, zooms, scrolls and trims (the clip's
+// edges, or I / O, within prod's ±2 min window). Markers, a blade, copy /
+// paste, a context menu, J / K / L and the full keyboard of a desktop editor.
 //
-// The editor never retrims (the clips page's Trim does). Saving is the
-// editor's main action (2026-11-20: « l'action principale de l'édit devrait
-// être de save les modifications du clip » — the save-as-you-go of the same
-// morning is gone): **Save changes**, the topbar's primary, as prod's « Save
-// changes », which renders the clip again (« Rendering your edited clip… » on
-// its card). Leaving with unsaved changes asks (Save changes / Discard
-// changes); the browser's Back, which can't ask, keeps them.
-// Undo / Redo cover the framing, the text overlays, the format and the brand settings.
+// Engines kept as they were: clip-framing.js (the crop editor's parts),
+// caption-editor.js (captions, transcript and cleanup on this editor's clock).
+// Saving is still the editor's main action (Save changes, ⌘S); nothing is
+// written before it. Leaving with unsaved changes asks.
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2833";
-import { isFlagOn } from "../../feature-flags.js?v=2833";
-import { parseHashParams } from "../../url-state.js?v=2833";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2833";
-import { showToast } from "../../components/toast.js?v=2833";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2833";
-import { open as openRename } from "../../components/rename-modal.js?v=2833";
-import { getContextById } from "../../contexts-store.js?v=2833";
-import { escapeHtml } from "../../utils.js?v=2833";
-import * as ce from "../../caption-editor.js?v=2833";
-import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2833";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2833";
-import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2833";
+import { navigate } from "../../router.js?v=2841";
+import { isFlagOn } from "../../feature-flags.js?v=2841";
+import { parseHashParams } from "../../url-state.js?v=2841";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2841";
+import { showToast } from "../../components/toast.js?v=2841";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2841";
+import { open as openRename } from "../../components/rename-modal.js?v=2841";
+import { getContextById } from "../../contexts-store.js?v=2841";
+import { escapeHtml } from "../../utils.js?v=2841";
+import * as ce from "../../caption-editor.js?v=2841";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2841";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2841";
+import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2841";
 import {
   framingContext,
   initialSegments,
+  retrim,
   resolve,
   segmentAt,
   drawOutput,
@@ -52,18 +48,10 @@ import {
   toManual,
   split,
   merge,
-  moveBoundary,
-  settleBoundary,
   snapMs,
   resetSegment,
-  twoBlockedReason,
-  cameraName,
-  LAYOUTS,
-  MIN_SEG_MS,
-} from "../../clip-framing.js?v=2833";
+} from "../../clip-framing.js?v=2841";
 import {
-  fmtMs,
-  fmtPrecise,
   RATIO_IDS,
   ratioOf,
   formatLabel,
@@ -74,33 +62,85 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-  EDITOR_TOOLS as TOOLS,
-} from "./shared.js?v=2833";
-import { writePostsInChat } from "../../clips-chat.js?v=2833";
+} from "./shared.js?v=2841";
+import { writePostsInChat } from "../../clips-chat.js?v=2841";
+import {
+  timelineShellHTML,
+  paintTimeline,
+  paintPlayhead,
+  paintVisible,
+  fitTimeline,
+  zoomBy,
+  zoomFromSlider,
+  timelinePointerDown,
+  timelinePointerMove,
+  timelineWheel,
+  timelineDrop,
+  revealPlayhead,
+} from "./editor-timeline.js?v=2841";
+import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2841";
 
-const FRAME_MS = 40;
-const CARD_MS = 2000; // intro / outro card length
+const FPS = 25;
+export const FRAME_MS = 1000 / FPS;
+export const CARD_MS = 2000; // intro / outro card length
+const WINDOW_MS = 120000; // prod's trim window: ±2 min around the clip
+export const MIN_CLIP_MS = 3000;
+export const MIN_TEXT_MS = 400;
+const ANIM_MS = 300;
+const LAYOUT_KEY = "archie-clips-editor-layout";
+const DEFAULT_LAYOUT = { left: 300, right: 320, tl: 300 };
 
 // The safe-area guide's choices: where each network's buttons cover the video.
 const DEAD_ZONE_LABELS = { none: "No guide", tiktok: "TikTok zones", reels: "Reels zones", shorts: "Shorts zones" };
-// …and the network each one is, by its logo.
 const DEAD_ZONE_NETWORK = { tiktok: "tiktok", reels: "instagram", shorts: "youtube" };
 const dzIcon = (id) =>
   DEAD_ZONE_NETWORK[id]
-    ? `<i class="${NETWORK_ICON_BY_PLATFORM[DEAD_ZONE_NETWORK[id]]} clips-ed__dz-icon" aria-hidden="true"></i>`
-    : `<i class="ap-icon-eye-off clips-ed__dz-icon" aria-hidden="true"></i>`;
+    ? `<i class="${NETWORK_ICON_BY_PLATFORM[DEAD_ZONE_NETWORK[id]]} nle-dz-icon" aria-hidden="true"></i>`
+    : `<i class="ap-icon-eye-off nle-dz-icon" aria-hidden="true"></i>`;
 
-let ed = null;
+export let ed = null;
+// Copied text layers survive moving to the next clip, like any editor's clipboard.
+let clipboard = [];
 
-// The tool in the URL. Two former tools left the rail: Clean up (now the
-// Transcript's head) and Trim (gone: a clip's range is fixed).
-function toolFromUrl() {
-  const t = parseHashParams().get("tool");
-  if (t === "cleanup") return "transcript";
-  if (t === "trim") return "reframe";
-  // Text left the rail (2026-11-23): it's an action on the video, edited in a popover.
-  return TOOLS.some((x) => x.id === t) ? t : "subtitles";
+// ── Time ────────────────────────────────────────────────────────────
+
+const pad2 = (n) => String(n).padStart(2, "0");
+// A timecode at 25 fps: MM:SS:FF (H:MM:SS:FF past an hour).
+export function fmtTC(ms) {
+  const neg = ms < 0;
+  const frames = Math.round(Math.abs(ms) / FRAME_MS);
+  const ff = frames % FPS;
+  const s = Math.floor(frames / FPS);
+  const h = Math.floor(s / 3600);
+  const body = `${h ? `${h}:` : ""}${pad2(Math.floor((s % 3600) / 60))}:${pad2(s % 60)}:${pad2(ff)}`;
+  return neg ? `−${body}` : body;
 }
+
+// What a typed time means: 12 · 12.5 · 1:02 · 1:02.5 · 01:02:12 (frames).
+function parseTC(str) {
+  const s = String(str || "")
+    .trim()
+    .replace(/[^\d:.]/g, "");
+  if (!s) return null;
+  const parts = s.split(":").map((p) => Number(p));
+  if (parts.some((p) => Number.isNaN(p))) return null;
+  if (parts.length === 1) return parts[0] * 1000;
+  if (parts.length === 2) return (parts[0] * 60 + parts[1]) * 1000;
+  const [m, sec, f] = parts.slice(-3);
+  const h = parts.length > 3 ? parts[0] : 0;
+  return ((h * 3600 + m * 60 + sec) * FPS + f) * FRAME_MS;
+}
+
+export const ratio = () => ratioOf(ed.w.ratioId);
+export const clipLen = () => ed.w.endMs - ed.w.startMs;
+export const rel = () => ed.t - ed.w.startMs;
+export const snapFrame = (ms) => Math.round(ms / FRAME_MS) * FRAME_MS;
+export const txById = (id) => ed.w.texts.find((x) => x.id === id);
+export const selTexts = () => (ed.sel?.kind === "text" ? ed.sel.ids.map(txById).filter(Boolean) : []);
+export const selSeg = () => (ed.sel?.kind === "seg" ? ed.w.segments.find((s) => s.id === ed.sel.id) : null);
+const uid = (p) => `${p}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+
+// ── Lifecycle ───────────────────────────────────────────────────────
 
 export function renderClipEditor(params, el) {
   if (!isFlagOn("clipsSpace")) {
@@ -116,6 +156,7 @@ export function renderClipEditor(params, el) {
   const ctx = framingContext(video);
   const pb = getContextById(video.contextId);
   const look = clipLookOf(pb);
+  const durMs = video.durationMs || clip.endMs + WINDOW_MS;
   ed = {
     el,
     video,
@@ -123,8 +164,7 @@ export function renderClipEditor(params, el) {
     ctx,
     pb,
     look,
-    tool: toolFromUrl(),
-    // The working copy — written to the clip a moment after each change.
+    // The working copy — written to the clip on Save changes.
     w: {
       title: clip.title,
       startMs: clip.startMs,
@@ -132,36 +172,63 @@ export function renderClipEditor(params, el) {
       ratioId: clipRatioId(video, clip),
       segments: JSON.parse(JSON.stringify(clip.segments || initialSegments(ctx, clip.startMs, clip.endMs))),
       texts: JSON.parse(JSON.stringify(clip.texts || [])),
+      markers: JSON.parse(JSON.stringify(clip.markers || [])),
       brand: { ...look.brand, ...(clip.brand || {}) },
-      // Prod's « Open with a teaser »: a moment of the clip, in clip time.
       teaser: clip.teaser ? { ...clip.teaser } : suggestTeaser(clip),
     },
-    caption: null, // latest caption-editor patch
-    capOwn: !!clip.captionCustom, // the clip has its own subtitle style (else the video's)
+    // What the timeline can reach: prod's trim window around the clip as it opened.
+    range: { from: Math.max(0, clip.startMs - WINDOW_MS), to: Math.min(durMs, clip.endMs + WINDOW_MS) },
+    sel: null,
+    lib: "transcript",
+    mode: "program", // program | dual (Source + Program)
+    tool: "select", // select | blade
+    snap: true,
+    tracks: {
+      brand: { hidden: false, locked: false },
+      text: { hidden: false, locked: false },
+      captions: { hidden: false, locked: false },
+      video: { locked: false },
+      audio: { muted: false, locked: false },
+    },
+    layout: readLayout(),
+    tl: { pxPerMs: 0 },
+    loop: false,
+    rate: 1,
+    volume: 1,
+    shuttle: 0,
+    caption: null,
+    capOwn: !!clip.captionCustom,
     capDirty: false,
-    deadZones: clipCaptionState(video, clip).deadZones || "tiktok", // the Output's safe-area guide
+    deadZones: clipCaptionState(video, clip).deadZones || "tiktok",
     undo: [],
     redo: [],
     dirty: false,
-    changed: false, // written at least once: the clip renders again on leaving
-    discard: false, // « Discard changes » chosen: leave without writing
-    t: clip.startMs, // playhead, source ms
-    phase: "clip", // clip | intro | outro (brand cards)
+    changed: false,
+    discard: false,
+    t: clip.startMs,
+    phase: "clip",
     phaseEnd: 0,
     playing: false,
     raf: 0,
-    snap: true,
-    selectedText: null,
+    last: 0,
     drag: null,
     disposers: [],
   };
+  applyUrlIntent();
   ed.saved = snapshot();
   renderTopbar();
   paintTopbar();
   el.innerHTML = shellHTML();
   mountCaptions();
-  paintPanel();
-  paintTimeline();
+  // The words of the whole reachable window, in source ms: a trim cuts the
+  // captions from these, so trimming back out (or Undo) brings them back.
+  ed.wordsBase = { s: ed.w.startMs, e: ed.w.endMs };
+  ed.srcWords = ce
+    .getWords()
+    .map((w) => ({ ...w, start: w.start * 1000 + ed.w.startMs, end: w.end * 1000 + ed.w.startMs }));
+  paintViewerBar();
+  paintLibrary();
+  paintInspector();
   bindAll();
   setupVideo();
   return teardown;
@@ -174,8 +241,23 @@ function teardown() {
   cancelAnimationFrame(ed.raf);
   ce.unmount();
   ed.video_el?.pause();
+  ed.thumbs?.dispose();
   ed.disposers.splice(0).forEach((d) => d());
+  if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
   ed = null;
+}
+
+// The former tools' URLs still land somewhere sensible.
+function applyUrlIntent() {
+  const t = parseHashParams().get("tool");
+  if (t === "transcript" || t === "cleanup") ed.lib = "transcript";
+  else if (t === "text") ed.lib = "text";
+  else if (t === "brand") ed.lib = "brand";
+  else if (t === "subtitles") ed.sel = { kind: "captions" };
+  else if (t === "reframe" || t === "trim") {
+    ed.sel = { kind: "seg", id: ed.w.segments[0]?.id };
+    ed.mode = "dual";
+  }
 }
 
 // ponytail: prod's model picks the teaser (teaserStartTime); the proto offers
@@ -186,103 +268,130 @@ function suggestTeaser(c) {
   return { on: false, startMs, endMs: Math.min(len, startMs + 3000) };
 }
 
-const ratio = () => ratioOf(ed.w.ratioId);
-const clipLen = () => ed.w.endMs - ed.w.startMs;
-const relSec = () => Math.max(0, ed.t - ed.w.startMs) / 1000;
+function readLayout() {
+  try {
+    return { ...DEFAULT_LAYOUT, ...JSON.parse(localStorage.getItem(LAYOUT_KEY) || "{}") };
+  } catch {
+    return { ...DEFAULT_LAYOUT };
+  }
+}
+
+function writeLayout() {
+  try {
+    localStorage.setItem(LAYOUT_KEY, JSON.stringify(ed.layout));
+  } catch {}
+}
+
+// One repaint per frame for whatever asked for it.
+const queued = new Set();
+export function later(fn) {
+  if (queued.has(fn)) return;
+  queued.add(fn);
+  requestAnimationFrame(() => {
+    queued.delete(fn);
+    if (ed) fn();
+  });
+}
 
 // ── Topbar: back · title · ‹ clip › │ undo redo · Write a post · Save changes ──
 
 function paintTopbar() {
-  const left = `<button type="button" class="ap-icon-button" data-clips-ed="back" aria-label="Back to the video" data-tooltip="Back to the video">
+  const left = `<button type="button" class="ap-icon-button" data-nle="back" aria-label="Back to the video" data-tooltip="Back to the video">
       <i class="ap-icon-arrow-left" aria-hidden="true"></i>
     </button>
-    <h1 class="ap-h2 clips-ed__title" data-clips-ed-title>${escapeHtml(ed.w.title)}</h1>
-    <button type="button" class="ap-icon-button" data-clips-ed="rename" aria-label="Rename the clip" data-tooltip="Rename the clip">
+    <h1 class="ap-h2 nle-title" data-nle-title>${escapeHtml(ed.w.title)}</h1>
+    <button type="button" class="ap-icon-button" data-nle="rename" aria-label="Rename the clip" data-tooltip="Rename the clip">
       <i class="ap-icon-pen" aria-hidden="true"></i>
     </button>
     ${clipNavHTML()}`;
   const right = `
-    <button type="button" class="ap-button ghost grey" data-clips-ed="undo" data-tooltip="⌘Z" ${ed.undo.length ? "" : "disabled"}><span>Undo</span></button>
-    <button type="button" class="ap-button ghost grey" data-clips-ed="redo" data-tooltip="⇧⌘Z" ${ed.redo.length ? "" : "disabled"}><span>Redo</span></button>
-    <button type="button" class="ap-button stroked grey" data-clips-ed="draft"><i class="ap-icon-archie-official" aria-hidden="true"></i><span>Write a post</span></button>
-    <button type="button" class="ap-button primary blue" data-clips-ed="save" data-tooltip="⌘S" ${ed.dirty ? "" : "disabled"}>${saveHTML()}</button>`;
-  setTopbarActions(`/clips/${ed.video.id}/edit/${ed.clip.id}`, `<div class="clips-ed__topbar-actions">${right}</div>`, {
+    <button type="button" class="ap-button ghost grey" data-nle="undo" data-tooltip="⌘Z" ${ed.undo.length ? "" : "disabled"}><span>Undo</span></button>
+    <button type="button" class="ap-button ghost grey" data-nle="redo" data-tooltip="⇧⌘Z" ${ed.redo.length ? "" : "disabled"}><span>Redo</span></button>
+    <button type="button" class="ap-button stroked grey" data-nle="draft"><i class="ap-icon-archie-official" aria-hidden="true"></i><span>Write a post</span></button>
+    <button type="button" class="ap-button primary blue" data-nle="save" data-tooltip="⌘S" ${ed.dirty ? "" : "disabled"}>${saveHTML()}</button>`;
+  setTopbarActions(`/clips/${ed.video.id}/edit/${ed.clip.id}`, `<div class="nle-topbar-actions">${right}</div>`, {
     left,
   });
 }
 
-// The video's other clips, one step away: the editor goes through the series
-// without going back to the review (a clip with edits asks first, as leaving).
 function clipNavHTML() {
   const clips = ed.video.clips;
   const i = clips.findIndex((c) => c.id === ed.clip.id);
   if (clips.length < 2 || i < 0) return "";
   const btn = (dir, k, label) =>
-    `<button type="button" class="ap-icon-button stroked" data-clips-ed-goto="${clips[k]?.id || ""}" aria-label="${label}" data-tooltip="${label}" ${clips[k] ? "" : "disabled"}>
+    `<button type="button" class="ap-icon-button stroked" data-nle-goto="${clips[k]?.id || ""}" aria-label="${label}" data-tooltip="${label}" ${clips[k] ? "" : "disabled"}>
       <i class="ap-icon-chevron-${dir}" aria-hidden="true"></i></button>`;
-  return `<span class="clips-ed__clipnav" role="group" aria-label="Clips of this video">
+  return `<span class="nle-clipnav" role="group" aria-label="Clips of this video">
       ${btn("left", i - 1, "Previous clip")}
-      <span class="clips-ed__clipnav-label">Clip ${i + 1} of ${clips.length}</span>
+      <span class="nle-clipnav__label">Clip ${i + 1} of ${clips.length}</span>
       ${btn("right", i + 1, "Next clip")}
     </span>`;
 }
 
-// ── Shell ────────────────────────────────────────────────────────────
+const saveHTML = () =>
+  !ed.dirty && ed.changed
+    ? `<i class="ap-icon-check" aria-hidden="true"></i><span>Saved</span>`
+    : `<span>Save changes</span>`;
+
+function syncTopbar() {
+  const bar = document.getElementById("topbar");
+  const saveBtn = bar?.querySelector('[data-nle="save"]');
+  if (!saveBtn) return paintTopbar();
+  saveBtn.disabled = !ed.dirty;
+  saveBtn.innerHTML = saveHTML();
+  const title = bar.querySelector("[data-nle-title]");
+  if (title) title.textContent = ed.w.title;
+  bar.querySelector('[data-nle="undo"]').disabled = !ed.undo.length;
+  bar.querySelector('[data-nle="redo"]').disabled = !ed.redo.length;
+  return undefined;
+}
+
+// ── Shell ───────────────────────────────────────────────────────────
+
+const iconBtn = (act, label, inner, { kbd, pressed, extra = "", cls = "" } = {}) =>
+  `<button type="button" class="ap-icon-button transparent nle-ib ${cls}" data-nle="${act}" aria-label="${label}"
+    data-tooltip="${label}${kbd ? ` · ${kbd}` : ""}" ${pressed != null ? `aria-pressed="${pressed}"` : ""} ${extra}>${inner}</button>`;
 
 function shellHTML() {
   const handles = ["nw", "n", "ne", "e", "se", "s", "sw", "w"]
     .map((d) => `<span class="cap-ed-handle cap-ed-handle--${d}" data-ce-resize="${d}"></span>`)
     .join("");
-  const rail = TOOLS.map(
-    (
-      t,
-    ) => `<button type="button" class="clips-ed__tool" data-clips-tool="${t.id}" role="tab" aria-selected="false" data-tooltip="${t.hint}" data-tooltip-placement="right">
-      <i class="${t.icon}" aria-hidden="true"></i><span>${t.label}</span>
-    </button>`,
-  ).join("");
+  const L = ed.layout;
   return `
-  <div class="clips-ed" data-clips-ed-root>
-    <nav class="clips-ed__rail" role="tablist" aria-label="Editing tools">${rail}</nav>
-    <aside class="clips-ed__panel" data-clips-panel role="tabpanel" aria-label="Tool settings"></aside>
+  <div class="nle" data-nle-root data-mode="${ed.mode}" style="--nle-left:${L.left}px;--nle-right:${L.right}px;--nle-tl:${L.tl}px">
+    <aside class="nle-lib" data-nle-lib aria-label="Library"></aside>
+    <div class="nle-gutter nle-gutter--v" data-nle-resize="left" role="separator" aria-orientation="vertical" aria-label="Resize the library" tabindex="0"></div>
 
-    <main class="clips-ed__main">
-      <!-- Settings above the video, playback under it, actions in the timeline
-           (2026-11-23: « pas fou d'avoir des paramètres et des actions au même
-           endroit, et on ne voit pas bien ce qui est cliquable »). -->
-      <div class="clips-ed__quick" data-clips-quick role="group" aria-label="This clip's settings"></div>
-
-      <div class="clips-ed__stage" data-clips-stage>
-        <!-- A text is edited in a popover beside the Output; its time is its
-             layer on the timeline's Text track (2026-11-23: « gérer ça comme un
-             calque sur une piste comme tous les éditeurs vidéo »). -->
-        <div class="clips-ed__text-pop" data-clips-text-pop role="dialog" aria-label="Text" hidden></div>
-        <section class="clips-ed__monitor clips-ed__monitor--source" aria-label="Source">
-          <header class="clips-ed__monitor-bar">
-            <span class="clips-ed__monitor-name">Source</span>
-            <span class="clips-ed__monitor-meta">${ed.ctx.W}×${ed.ctx.H} · <span data-clips-src-tc>0:00.0</span></span>
+    <section class="nle-viewer" data-nle-viewer aria-label="Viewer">
+      <header class="nle-viewer__bar" data-nle-viewer-bar></header>
+      <div class="nle-viewer__stage nle-well" data-nle-stage>
+        <section class="nle-monitor nle-monitor--source" aria-label="Source">
+          <header class="nle-monitor__bar">
+            <span class="nle-monitor__name">Source</span>
+            <span class="nle-monitor__meta">${ed.ctx.W}×${ed.ctx.H} · <span data-nle-src-tc></span></span>
           </header>
-          <div class="clips-ed__monitor-body" data-clips-source-body>
-            <div class="clips-ed__source" data-clips-source>
-              <video class="clips-ed__video" data-clips-video playsinline preload="auto"></video>
-              <canvas class="clips-ed__overlay" data-clips-overlay></canvas>
+          <div class="nle-monitor__body" data-nle-source-body>
+            <div class="nle-source" data-nle-source>
+              <video class="nle-video" data-nle-video playsinline preload="auto"></video>
+              <canvas class="nle-overlay" data-nle-overlay></canvas>
             </div>
           </div>
         </section>
-        <div class="clips-ed__splitter" data-clips-splitter role="separator" aria-orientation="vertical"
-          aria-label="Resize Source and Output" aria-valuemin="30" aria-valuemax="80" aria-valuenow="64" tabindex="0"></div>
-        <section class="clips-ed__monitor clips-ed__monitor--output" aria-label="Output">
-          <header class="clips-ed__monitor-bar">
-            <span class="clips-ed__monitor-name">Output</span>
-            <span class="clips-ed__monitor-meta" data-clips-output-label></span>
+        <div class="nle-splitter" data-nle-splitter role="separator" aria-orientation="vertical"
+          aria-label="Resize Source and Program" aria-valuemin="30" aria-valuemax="80" aria-valuenow="55" tabindex="0"></div>
+        <section class="nle-monitor nle-monitor--program" aria-label="Program">
+          <header class="nle-monitor__bar">
+            <span class="nle-monitor__name">Program</span>
+            <span class="nle-monitor__meta" data-nle-program-meta></span>
           </header>
-          <div class="clips-ed__monitor-body" data-clips-output-wrap>
-            <div class="clips-ed__output" data-ce-stage data-clips-output>
-              <canvas class="clips-ed__out-canvas" data-clips-out></canvas>
+          <div class="nle-monitor__body nle-well" data-nle-output-wrap>
+            <div class="nle-output" data-ce-stage data-nle-output>
+              <canvas class="nle-out-canvas" data-nle-out></canvas>
               <div class="cap-ed__deadzones" data-ce-deadzones></div>
-              <div class="clips-ed__texts" data-clips-texts data-ce-no-toggle></div>
-              <span class="clips-ed__guide clips-ed__guide--v" data-clips-guide="x" hidden></span>
-              <span class="clips-ed__guide clips-ed__guide--h" data-clips-guide="y" hidden></span>
-              <img class="clips-ed__logo" data-clips-logo alt="" hidden />
+              <div class="nle-texts" data-nle-texts data-ce-no-toggle></div>
+              <span class="nle-guide nle-guide--v" data-nle-guide="x" hidden></span>
+              <span class="nle-guide nle-guide--h" data-nle-guide="y" hidden></span>
+              <img class="nle-logo" data-nle-logo alt="" hidden />
               <div class="cap-ed-box" data-ce-box></div>
               <div class="cap-ed-frame" data-ce-frame>${handles}</div>
             </div>
@@ -290,25 +399,40 @@ function shellHTML() {
         </section>
       </div>
 
-      <!-- Play, the scrubber, the time — the ±5 s buttons were removed (2026-11-23). -->
-      <div class="clips-ed__transport" role="toolbar" aria-label="Playback">
-        <button type="button" class="ap-icon-button stroked" data-clips-ed="play" aria-label="Play" data-tooltip="Play / pause (Space)">
-          <i class="ap-icon-play" aria-hidden="true" data-clips-play-icon></i>
-        </button>
-        <input type="range" class="ap-slider clips-ed__scrub" min="0" max="1000" step="1" value="0" data-clips-scrubber aria-label="Position in the clip" />
-        <span class="clips-ed__time"><span data-clips-cur>0:00.0</span> / <span data-clips-len>0:00.0</span></span>
+      <div class="nle-transport" role="toolbar" aria-label="Playback">
+        <div class="nle-transport__tc">
+          <input type="text" class="nle-tc" data-nle-tc spellcheck="false" autocomplete="off"
+            aria-label="Playhead time. Type a time and press Enter to jump" data-tooltip="Type a time to jump" />
+          <span class="nle-tc-len">/ <span data-nle-len></span></span>
+        </div>
+        <div class="nle-transport__ctrls">
+          ${iconBtn("to-start", "Go to start", GLYPH.toStart, { kbd: "Home" })}
+          ${iconBtn("step-back", "Previous frame", GLYPH.stepBack, { kbd: "←" })}
+          <button type="button" class="ap-icon-button stroked nle-play" data-nle="play" aria-label="Play" data-tooltip="Play / pause · Space">
+            <i class="ap-icon-play" aria-hidden="true" data-nle-play-icon></i>
+          </button>
+          ${iconBtn("step-fwd", "Next frame", GLYPH.stepFwd, { kbd: "→" })}
+          ${iconBtn("to-end", "Go to end", GLYPH.toEnd, { kbd: "End" })}
+          ${iconBtn("loop", "Loop playback", GLYPH.loop, { pressed: false, cls: "nle-ib--toggle" })}
+        </div>
+        <div class="nle-transport__right" data-nle-transport-right></div>
       </div>
+    </section>
 
-      <div class="clips-ed__timeline" data-clips-timeline></div>
-    </main>
+    <div class="nle-gutter nle-gutter--v" data-nle-resize="right" role="separator" aria-orientation="vertical" aria-label="Resize the inspector" tabindex="0"></div>
+    <aside class="nle-insp" data-nle-insp aria-label="Inspector"></aside>
 
+    <div class="nle-gutter nle-gutter--h" data-nle-resize="tl" role="separator" aria-orientation="horizontal" aria-label="Resize the timeline" tabindex="0"></div>
+    <section class="nle-tl" data-nle-tl aria-label="Timeline">${timelineShellHTML()}</section>
+
+    <div class="ap-action-dropdown nle-menu" data-nle-menu role="menu" hidden></div>
+    <div class="nle-keys" data-nle-keys role="dialog" aria-label="Keyboard shortcuts" hidden></div>
   </div>`;
 }
 
 // The subtitle look, without the safe-area guide (a view setting, not a look).
 const styleKey = (cs) => JSON.stringify({ ...cs, deadZones: null });
 
-// The subtitles + transcript + cleanup engine, on this editor's clock.
 function mountCaptions() {
   const c = ed.clip;
   const capClip = {
@@ -321,53 +445,72 @@ function mountCaptions() {
     captionState: clipCaptionState(ed.video, c),
     transcript: c.transcript,
   };
-  ce.mount(ed.el.querySelector("[data-clips-ed-root]"), capClip, null, {
+  ce.mount(ed.el.querySelector("[data-nle-root]"), capClip, null, {
     clock: {
       seek: (sec) => seek(ed.w.startMs + sec * 1000),
       toggle: () => togglePlay(),
     },
     presetIds: SUBTITLE_IDS,
-    cleanup: true, // fillers and pauses are always marked in the transcript
+    cleanup: true,
     onChange: (patch) => {
       ed.caption = patch;
       ed.capDirty = true;
-      // A style change detaches the clip from the video's style; hiding a word
-      // doesn't (it's the clip's words, not its look) — so compare the look.
       const look = styleKey(patch.captionState);
       if (look !== ed.capLook) {
         ed.capOwn = true;
         ed.capLook = look;
       }
-      const src = ed.el.querySelector("[data-clips-cap-source]");
+      const src = ed.el.querySelector("[data-nle-cap-source]");
       if (src) src.innerHTML = capSourceHTML();
-      paintCleanMarks();
-      paintFormatPicker();
+      later(paintTimeline);
+      later(paintViewerBar);
       setDirty();
     },
   });
   ed.capLook = styleKey(ce.getState());
 }
 
-// ── The footage and the clock ────────────────────────────────────────
-
-function setupVideo() {
-  const v = ed.el.querySelector("[data-clips-video]");
-  ed.video_el = v;
-  v.src = ed.video.url;
-  const onMeta = () => seek(ed.w.startMs);
-  v.addEventListener("loadedmetadata", onMeta);
-  v.addEventListener("seeked", () => !ed?.playing && paintFrame());
-  v.addEventListener("loadeddata", () => ed && paintFrame());
-  new ResizeObserver(() => ed && (sizeCanvases(), paintFrame(), ce.repaintStage())).observe(
-    ed.el.querySelector("[data-clips-stage]"),
-  );
-  applyTool();
+export function capSourceHTML() {
+  const label = presetLabel(ce.getState()?.presetId);
+  return ed.capOwn
+    ? `<span>This clip's own style · <strong>${escapeHtml(label)}</strong></span>
+       <button type="button" class="ap-button ghost grey" data-nle="cap-video"><i class="ap-icon-reset" aria-hidden="true"></i><span>Reset to the video's style</span></button>`
+    : `<span>The video's style · <strong>${escapeHtml(label)}</strong></span>`;
 }
 
-function seek(ms) {
+// ── Footage and clock ───────────────────────────────────────────────
+
+function setupVideo() {
+  const v = ed.el.querySelector("[data-nle-video]");
+  ed.video_el = v;
+  v.src = ed.video.url;
+  v.volume = ed.volume;
+  v.addEventListener("loadedmetadata", () => ed && seek(ed.w.startMs));
+  v.addEventListener("seeked", () => ed && !ed.playing && paintFrame());
+  v.addEventListener("loadeddata", () => ed && paintFrame());
+  const ro = new ResizeObserver(() => {
+    if (!ed) return;
+    sizeCanvases();
+    paintFrame();
+    paintTexts();
+    ce.repaintStage();
+    if (!ed.tl.pxPerMs) fitTimeline();
+    else later(paintVisible);
+  });
+  ro.observe(ed.el.querySelector("[data-nle-stage]"));
+  ro.observe(ed.el.querySelector("[data-nle-tl]"));
+  ed.disposers.push(() => ro.disconnect());
+  paintTransportRight();
+  syncTime();
+}
+
+// `free`: the playhead may leave the clip — while trimming, to show the edge.
+export function seek(ms, { free = false } = {}) {
   if (!ed) return;
   ed.phase = "clip";
-  ed.t = Math.max(ed.w.startMs, Math.min(ed.w.endMs - 1, ms));
+  const lo = free ? ed.range.from : ed.w.startMs;
+  const hi = free ? ed.range.to : ed.w.endMs - 1;
+  ed.t = Math.max(lo, Math.min(hi, ms));
   if (ed.video_el && ed.video_el.readyState >= 1) ed.video_el.currentTime = ed.t / 1000;
   syncTime();
   paintFrame();
@@ -376,29 +519,46 @@ function seek(ms) {
 function togglePlay() {
   if (!ed) return;
   if (ed.playing) return stop();
+  play(1);
+  return undefined;
+}
+
+// dir: 1 forward, negative = J's reverse shuttle (the footage is stepped, paused).
+function play(speed) {
   ed.playing = true;
+  ed.shuttle = speed;
+  const v = ed.video_el;
   const tz = ed.w.teaser;
-  // The teaser first (from the very start, or « Play the teaser »), then the clip.
-  if (tz.on && (ed.teaserOnly || ed.t <= ed.w.startMs + 60)) {
+  if (speed < 0) {
+    v.pause();
+    ed.phase = "clip";
+  } else if (tz.on && (ed.teaserOnly || ed.t <= ed.w.startMs + 60)) {
     ed.phase = "teaser";
     ed.t = ed.w.startMs + tz.startMs;
-    ed.video_el.currentTime = ed.t / 1000;
-    ed.video_el.play().catch(() => {});
-  } else if (ed.w.brand.intro && ed.t <= ed.w.startMs + 60) {
+    v.currentTime = ed.t / 1000;
+    v.playbackRate = ed.rate * speed;
+    v.play().catch(() => {});
+  } else if (ed.w.brand.intro && !ed.tracks.brand.hidden && ed.t <= ed.w.startMs + 60) {
     ed.phase = "intro";
     ed.phaseEnd = performance.now() + CARD_MS;
   } else {
     ed.phase = "clip";
     if (ed.t >= ed.w.endMs - 80) seek(ed.w.startMs);
-    ed.video_el.play().catch(() => {});
+    v.playbackRate = ed.rate * speed;
+    v.play().catch(() => {});
   }
+  ed.last = performance.now();
   setPlayIcon();
+  cancelAnimationFrame(ed.raf);
   ed.raf = requestAnimationFrame(tick);
 }
 
-function stop() {
+export function stop() {
+  if (!ed) return;
   ed.playing = false;
+  ed.shuttle = 0;
   ed.video_el.pause();
+  ed.video_el.playbackRate = ed.rate;
   cancelAnimationFrame(ed.raf);
   ed.teaserOnly = false;
   if (ed.phase !== "clip") seek(ed.w.startMs);
@@ -409,87 +569,87 @@ function stop() {
 
 function tick(now) {
   if (!ed || !ed.playing) return;
-  if (ed.phase === "teaser") {
-    ed.t = ed.video_el.currentTime * 1000;
+  const dt = now - ed.last;
+  ed.last = now;
+  const v = ed.video_el;
+  if (ed.shuttle < 0) {
+    ed.t += dt * ed.shuttle * ed.rate;
+    if (ed.t <= ed.w.startMs) {
+      ed.t = ed.w.startMs;
+      v.currentTime = ed.t / 1000;
+      return stop();
+    }
+    v.currentTime = ed.t / 1000;
+  } else if (ed.phase === "teaser") {
+    ed.t = v.currentTime * 1000;
     if (ed.t >= ed.w.startMs + ed.w.teaser.endMs) {
       if (ed.teaserOnly) return stop();
       ed.t = ed.w.startMs;
-      ed.video_el.currentTime = ed.t / 1000;
-      if (ed.w.brand.intro) {
-        ed.video_el.pause();
+      v.currentTime = ed.t / 1000;
+      if (ed.w.brand.intro && !ed.tracks.brand.hidden) {
+        v.pause();
         ed.phase = "intro";
         ed.phaseEnd = now + CARD_MS;
       } else ed.phase = "clip";
     }
   } else if (ed.phase === "intro" && now >= ed.phaseEnd) {
     ed.phase = "clip";
-    ed.video_el.play().catch(() => {});
+    v.play().catch(() => {});
   } else if (ed.phase === "clip") {
-    ed.t = ed.video_el.currentTime * 1000;
+    ed.t = v.currentTime * 1000;
     if (ed.t >= ed.w.endMs) {
-      ed.video_el.pause();
-      if (ed.w.brand.outro) {
+      if (ed.loop) {
+        ed.t = ed.w.startMs;
+        v.currentTime = ed.t / 1000;
+      } else if (ed.w.brand.outro && !ed.tracks.brand.hidden) {
+        v.pause();
         ed.phase = "outro";
         ed.phaseEnd = now + CARD_MS;
-      } else return stop();
+      } else {
+        ed.t = ed.w.endMs - 1;
+        return stop();
+      }
     }
   } else if (ed.phase === "outro" && now >= ed.phaseEnd) {
     return stop();
   }
   syncTime();
   paintFrame();
+  if (ed.phase === "clip") revealPlayhead();
   ed.raf = requestAnimationFrame(tick);
+  return undefined;
 }
 
 function setPlayIcon() {
-  const i = ed.el.querySelector("[data-clips-play-icon]");
+  const i = ed.el.querySelector("[data-nle-play-icon]");
   if (i) i.className = ed.playing ? "ap-icon-pause" : "ap-icon-play";
+  const b = ed.el.querySelector('[data-nle="play"]');
+  if (b) b.setAttribute("aria-label", ed.playing ? "Pause" : "Play");
 }
 
-// The Snap toggle in the Framing header shows its state.
-function syncTlTools() {
-  const b = ed.el.querySelector("[data-clips-snap]");
-  if (b) b.checked = ed.snap;
-}
-
-function syncTime() {
-  // The brand cards are drawn alone: no subtitle over them.
-  ed.el.querySelector("[data-clips-ed-root]").dataset.phase = ed.phase;
-  const cur = ed.el.querySelector("[data-clips-cur]");
-  if (cur)
-    cur.textContent =
-      ed.phase === "clip"
-        ? fmtPrecise(ed.t - ed.w.startMs)
-        : { intro: "Intro", outro: "Outro", teaser: "Teaser" }[ed.phase];
-  const len = ed.el.querySelector("[data-clips-len]");
-  if (len) len.textContent = fmtPrecise(clipLen());
-  const stc = ed.el.querySelector("[data-clips-src-tc]");
-  if (stc) stc.textContent = fmtPrecise(ed.t);
-  ce.setTime(relSec(), ed.playing);
-  const ph = ed.el.querySelector("[data-clips-playhead]");
-  if (ph) ph.style.left = pctIn(ed.t);
-  const sc = ed.el.querySelector("[data-clips-scrubber]");
-  if (sc) {
-    sc.max = String(clipLen());
-    sc.value = String(Math.max(0, ed.t - ed.w.startMs));
-    sc.style.setProperty("--fill", `${(sc.value / clipLen()) * 100}%`);
-    sc.setAttribute("aria-valuetext", `${fmtPrecise(ed.t - ed.w.startMs)} of ${fmtPrecise(clipLen())}`);
-  }
+export function syncTime() {
+  if (!ed) return;
+  const root = ed.el.querySelector("[data-nle-root]");
+  root.dataset.phase = ed.phase;
+  const tc = ed.el.querySelector("[data-nle-tc]");
+  if (tc && document.activeElement !== tc)
+    tc.value = ed.phase === "clip" ? fmtTC(rel()) : { intro: "Intro", outro: "Outro", teaser: "Teaser" }[ed.phase];
+  const len = ed.el.querySelector("[data-nle-len]");
+  if (len) len.textContent = fmtTC(clipLen());
+  const stc = ed.el.querySelector("[data-nle-src-tc]");
+  if (stc) stc.textContent = fmtTC(ed.t);
+  ce.setTime(Math.max(0, rel()) / 1000, ed.playing);
+  paintPlayhead();
   const seg = segmentAt(ed.w.segments, ed.t);
-  if (seg.id !== ed.panelSeg) {
-    if (ed.tool === "reframe") paintPanel();
-    else ed.panelSeg = seg.id;
-    syncTlTools();
+  if (seg.id !== ed.curSeg) {
+    ed.curSeg = seg.id;
+    later(paintTimeline);
   }
-  ed.el
-    .querySelectorAll("[data-clips-seg]")
-    .forEach((n) => n.classList.toggle("is-current", n.dataset.clipsSeg === seg.id));
   paintTextsVisibility();
 }
 
-// ── Painting the stage ───────────────────────────────────────────────
+// ── Viewer ──────────────────────────────────────────────────────────
 
-// Fit a frame of `aspect` (w/h) inside a monitor's body.
 function fitIn(body, aspect) {
   const bw = body.clientWidth;
   const bh = body.clientHeight;
@@ -504,86 +664,44 @@ function fitIn(body, aspect) {
 
 function sizeCanvases() {
   const dpr = window.devicePixelRatio || 1;
-  const out = ed.el.querySelector("[data-clips-output]");
-  const o = fitIn(ed.el.querySelector("[data-clips-output-wrap]"), ratio());
+  const out = ed.el.querySelector("[data-nle-output]");
+  const o = fitIn(ed.el.querySelector("[data-nle-output-wrap]"), ratio());
   out.style.width = `${o.w}px`;
   out.style.height = `${o.h}px`;
-  const oc = ed.el.querySelector("[data-clips-out]");
+  const oc = ed.el.querySelector("[data-nle-out]");
   oc.width = Math.round(o.w * dpr);
   oc.height = Math.round(o.h * dpr);
-  const src = ed.el.querySelector("[data-clips-source]");
-  const body = ed.el.querySelector("[data-clips-source-body]");
+  const src = ed.el.querySelector("[data-nle-source]");
+  const body = ed.el.querySelector("[data-nle-source-body]");
   if (body.clientWidth) {
     const f = fitIn(body, ed.ctx.W / ed.ctx.H);
     src.style.width = `${f.w}px`;
     src.style.height = `${f.h}px`;
   }
-  const ov = ed.el.querySelector("[data-clips-overlay]");
+  const ov = ed.el.querySelector("[data-nle-overlay]");
   ov.width = Math.round(ov.clientWidth * dpr);
   ov.height = Math.round(ov.clientHeight * dpr);
-  paintFormatPicker();
-}
-
-// The quick bar under the preview (VEED's): the clip's format, its subtitles
-// (a chip that opens the Subtitles section) and the safe-area guide.
-function paintFormatPicker() {
-  const host = ed.el.querySelector("[data-clips-quick]");
-  if (!host) return;
-  const preset = ce.getState()?.presetId || "none";
-  const label = ed.el.querySelector("[data-clips-output-label]");
-  if (label) label.textContent = formatLabel(ed.w.ratioId);
-  const videoRatio = ed.video.settings.ratio;
-  const own = ed.w.ratioId !== videoRatio;
-  host.innerHTML =
-    dsSelect({
-      label: "Safe area",
-      valueHtml: `${dzIcon(ed.deadZones)}<span class="clips-ed__dz-text">${escapeHtml(DEAD_ZONE_LABELS[ed.deadZones] || "No guide")}</span>`,
-      current: ed.deadZones,
-      attr: "data-clips-deadzones",
-      ariaLabel: "Show where the app's buttons cover the video",
-      extraClass: "clips-ed__format",
-      options: Object.entries(DEAD_ZONE_LABELS).map(([id, label]) => ({ id, label, lead: dzIcon(id) })),
-    }) +
-    dsSelect({
-      label: own ? "This clip" : "Video",
-      valueHtml: escapeHtml(formatLabel(ed.w.ratioId)),
-      current: own ? ed.w.ratioId : "video",
-      attr: "data-clips-format",
-      ariaLabel: "Format of this clip",
-      extraClass: "clips-ed__format",
-      options: [
-        { id: "video", label: `Same as the video · ${formatLabel(videoRatio)}` },
-        ...RATIO_IDS.map((id) => ({ id, label: formatLabel(id), meta: bestFor(id) })),
-      ],
-    }) +
-    dsSelect({
-      label: "Subtitles",
-      valueHtml: escapeHtml(presetLabel(preset)),
-      current: preset,
-      attr: "data-clips-subs-preset",
-      ariaLabel: "Subtitle style of this clip",
-      extraClass: "clips-ed__format",
-      options: ["none", ...SUBTITLE_IDS.filter((id) => id !== "none")].map((id) => ({ id, label: presetLabel(id) })),
-    });
+  const meta = ed.el.querySelector("[data-nle-program-meta]");
+  if (meta) meta.textContent = `${formatLabel(ed.w.ratioId)} · ${o.w}×${o.h}`;
 }
 
 function currentRes() {
   return resolve(ed.ctx, segmentAt(ed.w.segments, ed.t), ed.t, ratio());
 }
 
-function paintFrame() {
+export function paintFrame() {
   if (!ed) return;
-  const oc = ed.el.querySelector("[data-clips-out]");
+  const oc = ed.el.querySelector("[data-nle-out]");
   if (!oc.width) sizeCanvases();
   const c2d = oc.getContext("2d");
+  const outside = ed.t < ed.w.startMs || ed.t >= ed.w.endMs;
   if (ed.phase === "intro" || ed.phase === "outro") paintCard(c2d, oc.width, oc.height);
   else drawOutput(c2d, ed.video_el, ed.ctx, currentRes(), oc.width, oc.height);
-  if (ed.tool === "reframe") paintOverlay();
+  ed.el.querySelector("[data-nle-output]").classList.toggle("is-outside", outside);
+  if (ed.mode === "dual") paintOverlay();
   paintLogo();
 }
 
-// The brand card the intro / outro show: the Playbook's primary colour, its
-// logo, its name. Drawn, not filmed — prod's brand template reads the same.
 function paintCard(c2d, w, h) {
   const pb = ed.pb;
   const bg = pb?.brandColors?.find((c) => /primary/i.test(c.name))?.hex || "#1A1F36";
@@ -601,8 +719,10 @@ function paintCard(c2d, w, h) {
   }
 }
 
+// The crop windows on the Source monitor: the current part's, editable when a
+// part is selected (or the playhead's part when nothing is).
 function paintOverlay() {
-  const ov = ed.el.querySelector("[data-clips-overlay]");
+  const ov = ed.el.querySelector("[data-nle-overlay]");
   const c = ov.getContext("2d");
   const cw = ov.width;
   const ch = ov.height;
@@ -643,633 +763,263 @@ const corners = (r) => [
 ];
 
 function paintLogo() {
-  const img = ed.el.querySelector("[data-clips-logo]");
+  const img = ed.el.querySelector("[data-nle-logo]");
   const b = ed.w.brand;
   const src = ed.pb?.brandLogo;
   if (!img) return;
-  img.hidden = !(b.logo && src && ed.phase === "clip");
+  img.hidden = !(b.logo && src && ed.phase === "clip" && !ed.tracks.brand.hidden);
   if (img.hidden) return;
   if (img.getAttribute("src") !== src) img.src = src;
   img.style.width = `${b.logoSize * 100}%`;
   img.dataset.corner = b.corner;
-  // Out of the zones the network's buttons cover, whichever corner it's in.
+  img.classList.toggle("is-selected", ed.sel?.kind === "brand" && ed.sel.item === "logo");
   const z = DEAD_ZONES[ed.deadZones] || { top: 0, bottom: 0, right: 0 };
   img.style.setProperty("--dz-top", `${z.top * 100}%`);
   img.style.setProperty("--dz-bottom", `${z.bottom * 100}%`);
   img.style.setProperty("--dz-right", `${z.right * 100}%`);
 }
 
-// ── Text overlays ────────────────────────────────────────────────────
-
-function paintTexts() {
-  const host = ed.el.querySelector("[data-clips-texts]");
+// The texts on the Program: each a layer; the selected one framed with handles
+// to resize it, and its animation played in and out.
+export function paintTexts() {
+  const host = ed.el.querySelector("[data-nle-texts]");
   if (!host) return;
-  const out = ed.el.querySelector("[data-clips-output]");
+  const out = ed.el.querySelector("[data-nle-output]");
   const k = (out.clientWidth || 300) / 1080;
+  const sel = new Set(selTexts().map((t) => t.id));
+  const handles = ["nw", "ne", "se", "sw"]
+    .map((d) => `<span class="nle-text__handle nle-text__handle--${d}" data-nle-text-handle="${d}"></span>`)
+    .join("");
   host.innerHTML = ed.w.texts
     .map(
       (
         tx,
-      ) => `<div class="clips-ed-text clips-ed-text--${tx.style}${tx.id === ed.selectedText ? " is-selected" : ""}" data-clips-text="${tx.id}"
-        style="left:${tx.x * 100}%;top:${tx.y * 100}%;font-size:${Math.round(tx.size * k)}px">${escapeHtml(tx.text)}</div>`,
+      ) => `<div class="nle-text nle-text--${tx.style}${sel.has(tx.id) ? " is-selected" : ""}" data-nle-text="${tx.id}"
+        style="left:${tx.x * 100}%;top:${tx.y * 100}%;font-size:${Math.round(tx.size * k)}px">${escapeHtml(tx.text)}${sel.size === 1 && sel.has(tx.id) ? handles : ""}</div>`,
     )
     .join("");
   paintTextsVisibility();
-  placeTextPop();
 }
 
-// ── The text popover ─────────────────────────────────────────────────
-// The selected text's settings, by the text itself: what it says, boxed or
-// plain, its size, when it shows. Rendered on selection (typing doesn't
-// re-render it, so the field keeps its focus); placed after every repaint.
-function paintTextPop() {
-  const pop = ed.el.querySelector("[data-clips-text-pop]");
-  if (!pop) return;
-  const tx = ed.selectedText && txById(ed.selectedText);
-  if (!tx) {
-    pop.hidden = true;
-    pop.innerHTML = "";
-    return;
-  }
-  pop.innerHTML = `
-    <div class="clips-ed__text-pop-head">
-      <span class="clips-ed__text-pop-title">Text</span>
-      <button type="button" class="ap-icon-button transparent grey" data-clips-text-remove="${tx.id}" aria-label="Remove this text" data-tooltip="Remove"><i class="ap-icon-trash" aria-hidden="true"></i></button>
-    </div>
-    <div class="ap-textarea-field"><textarea rows="2" data-clips-text-field="text" data-id="${tx.id}" aria-label="Text">${escapeHtml(tx.text)}</textarea></div>
-    <div class="cap-ed-radios" role="radiogroup" aria-label="Style">
-      ${["box", "plain"]
-        .map(
-          (st) => `<label class="cap-ed-radio">
-            <span class="ap-radio-container"><input type="radio" name="tx-style-${tx.id}" data-clips-text-style="${st}" data-id="${tx.id}" ${tx.style === st ? "checked" : ""} /></span>
-            <span>${st === "box" ? "Boxed" : "Plain"}</span>
-          </label>`,
-        )
-        .join("")}
-    </div>
-    <label class="clips-ed__field"><span>Size</span>
-      <input type="range" class="ap-slider" min="36" max="120" step="2" value="${tx.size}" data-clips-text-field="size" data-id="${tx.id}"
-        style="--fill:${((tx.size - 36) / 84) * 100}%" aria-label="Size" /></label>
-    <div class="clips-ed__text-pop-foot"><button type="button" class="ap-button primary blue" data-clips-text-done>Done</button></div>`;
-  pop.hidden = false;
-  placeTextPop();
-}
-
-// Beside the Output, level with the text, so it never covers the video;
-// over the stage's edge only when there's no room on either side.
-function placeTextPop() {
-  const pop = ed.el.querySelector("[data-clips-text-pop]");
-  if (!pop || pop.hidden) return;
-  const node = ed.el.querySelector(`[data-clips-text="${CSS.escape(ed.selectedText || "")}"]`);
-  const out = ed.el.querySelector("[data-clips-output]");
-  const stage = ed.el.querySelector("[data-clips-stage]");
-  if (!out || !stage) return;
-  const s = stage.getBoundingClientRect();
-  const o = out.getBoundingClientRect();
-  const n = (node || out).getBoundingClientRect();
-  const w = pop.offsetWidth;
-  const h = pop.offsetHeight;
-  const gap = 16;
-  let left = o.right - s.left + gap;
-  if (left + w > s.width - 8) left = o.left - s.left - gap - w;
-  if (left < 8) left = s.width - w - 8;
-  const top = Math.max(8, Math.min(s.height - h - 8, n.top - s.top + n.height / 2 - h / 2));
-  pop.style.left = `${left}px`;
-  pop.style.top = `${top}px`;
-}
-
-function closeTextPop() {
-  ed.selectedText = null;
-  paintTexts();
-  paintTextPop();
-  paintTimeline();
+// In / out animations: a text eases in over its first 300 ms, out over its last.
+function animStyle(kind, p) {
+  const q = Math.max(0, Math.min(1, p));
+  const e = 1 - (1 - q) ** 3;
+  if (kind === "fade") return { o: e, tf: "" };
+  if (kind === "pop") return { o: e, tf: ` scale(${0.6 + 0.4 * e})` };
+  if (kind === "slide") return { o: e, tf: ` translateY(${(1 - e) * 24}px)` };
+  return { o: 1, tf: "" };
 }
 
 function paintTextsVisibility() {
-  const rel = ed.t - ed.w.startMs;
-  ed.el.querySelectorAll("[data-clips-text]").forEach((n) => {
-    const tx = ed.w.texts.find((x) => x.id === n.dataset.clipsText);
-    const on = tx && ed.phase === "clip" && rel >= tx.startMs && rel <= tx.endMs;
+  const r = rel();
+  const hidden = ed.tracks.text.hidden;
+  ed.el.querySelectorAll("[data-nle-text]").forEach((n) => {
+    const tx = txById(n.dataset.nleText);
+    const on = tx && !hidden && ed.phase === "clip" && r >= tx.startMs && r <= tx.endMs;
+    const selected = n.classList.contains("is-selected");
     n.classList.toggle("is-off", !on);
+    if (!tx || !on) {
+      n.style.opacity = "";
+      n.style.transform = "";
+      return;
+    }
+    const a = r - tx.startMs < ANIM_MS ? animStyle(tx.animIn, (r - tx.startMs) / ANIM_MS) : null;
+    const b = tx.endMs - r < ANIM_MS ? animStyle(tx.animOut, (tx.endMs - r) / ANIM_MS) : null;
+    const s = a && (!b || a.o < b.o) ? a : b;
+    // While selected the text stays fully visible, so it can be placed.
+    n.style.opacity = s && !selected ? String(s.o) : "";
+    n.style.transform = s && !selected ? `translate(-50%, -50%)${s.tf}` : "";
   });
 }
 
-// ── The timeline (every tool's) ──────────────────────────────────────
-
-// The timeline is the clip, edge to edge, on the clip's own clock (0:00 → its
-// length): its range is fixed, so there's nothing to see around it. The
-// video's time stays on the Source monitor.
-function view() {
-  return { from: ed.w.startMs, to: ed.w.endMs, span: clipLen() };
-}
-
-function pctIn(ms) {
-  const v = ed.viewport || view();
-  return `${((ms - v.from) / v.span) * 100}%`;
-}
-
-// A track's header: its name. What acts at the playhead is named above the
-// timeline (« Split part here », « Add text here »), so no bare icons here.
-function trackHead(name) {
-  return `<div class="clips-tl__head"><span class="clips-tl__head-name">${name}</span></div>`;
-}
-
-const ICON = {
-  join: `<svg class="clips-glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h4M10 8h4"/><path d="M4 5l3 3-3 3M12 5 9 8l3 3"/></svg>`,
-  cut: `<svg class="clips-glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="4" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><path d="M5.5 10.5 12 2M10.5 10.5 4 2"/></svg>`,
-};
-
-function paintTimeline() {
-  const host = ed.el.querySelector("[data-clips-timeline]");
+function paintViewerBar() {
+  const host = ed.el.querySelector("[data-nle-viewer-bar]");
   if (!host) return;
-  if (!ed.drag) ed.viewport = view();
-  const v = ed.viewport;
-  const step = niceStep(v.span);
-  let ticks = "";
-  // The ruler reads the clip's time; the last tick leaves room for the end.
-  for (let t = 0; t < v.span - step * 0.4; t += step)
-    ticks += `<span class="clips-tl__tick" style="left:${pctIn(v.from + t)}"><span>${fmtMs(t)}</span></span>`;
-  // A faux waveform — no audio analysis in the prototype — keyed on source
-  // time so the shape doesn't slide when the window moves.
-  let wave = "";
-  const bars = 120;
-  for (let i = 0; i < bars; i++) {
-    const t = v.from + (i / bars) * v.span;
-    const x = t / 1000;
-    const a = Math.abs(Math.sin(x * 1.3) * 0.5 + Math.sin(x * 0.37 + 1.1) * 0.35 + Math.sin(x * 4.1) * 0.15);
-    wave += `<span style="height:${Math.round(12 + a * 80)}%"></span>`;
-  }
-  const segs = ed.w.segments;
-  const cur = segmentAt(segs, ed.t);
-  const layoutLabel = (s) =>
-    s.layout === "AUTO" ? `Auto · ${autoKind(s)}` : LAYOUTS.find((l) => l.id === s.layout)?.label || s.layout;
-  const segHTML = segs
-    .map(
-      (
-        s,
-      ) => `<button type="button" class="clips-tl__seg${s.id === cur.id ? " is-current" : ""}${s.origin === "USER" ? " is-edited" : ""}" data-clips-seg="${s.id}"
-        style="left:${pctIn(s.startMs)};width:calc(${((s.endMs - s.startMs) / v.span) * 100}% - 2px)"
-        aria-label="${escapeHtml(cameraName(s.camera))}, ${escapeHtml(layoutLabel(s))}, ${fmtPrecise(s.startMs - ed.w.startMs)}">
-        <span class="clips-tl__seg-cam">${escapeHtml(cameraShort(s.camera))}</span>
-        <span class="clips-tl__seg-lay">${escapeHtml(layoutLabel(s))}</span>
-      </button>`,
-    )
-    .join("");
-  const bounds = segs
-    .slice(1)
-    .map(
-      (s, k) => `<span class="clips-tl__bound" data-clips-bound="${k + 1}" style="left:${pctIn(s.startMs)}">
-        <button type="button" class="ap-icon-button stroked clips-tl__join" data-clips-join="${k + 1}" aria-label="Join the two parts" data-tooltip="Join the two parts">${ICON.join}</button>
-      </span>`,
-    )
-    .join("");
-  const cuts = ed.ctx.cuts
-    .filter((c) => c > ed.w.startMs && c < ed.w.endMs)
-    .map((c) => `<span class="clips-tl__cut" style="left:${pctIn(c)}"></span>`)
-    .join("");
-  // The Text track: one layer per text, like any video editor — drag it to
-  // move it in time, drag an edge to set where it starts or ends.
-  const texts = ed.w.texts.length
-    ? ed.w.texts
-        .map(
-          (tx) => `<div class="clips-tl__layer" data-clips-scrub>
-        <button type="button" class="clips-tl__text${tx.id === ed.selectedText ? " is-current" : ""}" data-clips-text-pick="${tx.id}"
-          style="left:${pctIn(ed.w.startMs + tx.startMs)};width:${((tx.endMs - tx.startMs) / v.span) * 100}%"
-          aria-label="${escapeHtml(tx.text)}, ${fmtPrecise(tx.startMs)} to ${fmtPrecise(tx.endMs)}">
-          <span class="clips-tl__text-edge clips-tl__text-edge--start" data-clips-text-edge="start" aria-hidden="true"></span>
-          <span class="clips-tl__text-label">${escapeHtml(tx.text)}</span>
-          <span class="clips-tl__text-edge clips-tl__text-edge--end" data-clips-text-edge="end" aria-hidden="true"></span>
-        </button>
-      </div>`,
-        )
-        .join("")
-    : `<div class="clips-tl__layer is-empty" data-clips-scrub><span>No text yet. Add text puts one at the playhead.</span></div>`;
-  const b = ed.w.brand;
+  const seg = (id, label) =>
+    `<button type="button" class="ap-segmented-control__segment${ed.mode === id ? " ap-segmented-control__segment--selected" : ""}"
+      data-nle-mode="${id}" aria-pressed="${ed.mode === id}"><span class="ap-segmented-control__label">${label}</span></button>`;
+  const videoRatio = ed.video.settings.ratio;
+  const own = ed.w.ratioId !== videoRatio;
   host.innerHTML = `
-    <div class="clips-tl__bar" role="toolbar" aria-label="At the playhead">
-      <span class="clips-tl__bar-label">At the playhead</span>
-      <button type="button" class="ap-button stroked grey" data-clips-ed="split" data-tooltip="A new framing part — the clip stays whole (S)">${ICON.cut}<span>Split part</span></button>
-      <details class="clips-more clips-ed__add-text">
-        <summary class="ap-button stroked grey"><i class="ap-icon-plus" aria-hidden="true"></i><span>Add text</span></summary>
-        <div class="ap-action-dropdown clips-more__menu" role="menu">
-          <button type="button" role="menuitem" class="ap-action-dropdown-item" data-clips-ed="add-hook">
-            <i class="ap-icon-archie-official" aria-hidden="true"></i>
-            <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">The clip's title</span></div></div>
-          </button>
-          <button type="button" role="menuitem" class="ap-action-dropdown-item" data-clips-ed="add-text">
-            <i class="ap-icon-pen" aria-hidden="true"></i>
-            <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">Your own text</span></div></div>
-          </button>
-        </div>
-      </details>
-      <label class="ap-toggle-container clips-tl__snap"><input type="checkbox" data-clips-snap ${ed.snap ? "checked" : ""} /><i></i><span>Snap to camera cuts</span></label>
-    </div>
-    <div class="clips-tl" data-clips-tl>
-      <div class="clips-tl__labels">
-        <span></span>
-        ${trackHead("Subtitles")}
-        ${trackHead("Clip")}
-        ${trackHead("Framing")}
-        ${trackHead("Text")}
-      </div>
-      <div class="clips-tl__tracks" data-clips-tracks>
-        <div class="clips-tl__ruler" data-clips-scrub>${ticks}</div>
-        <div class="clips-tl__subs" data-clips-scrub data-clips-cues>${cueBlocks()}</div>
-        <div class="clips-tl__trim" data-clips-scrub>
-          <div class="clips-tl__wave">${wave}</div>
-          <div class="clips-tl__cleans" data-clips-cleans>${cleanMarks()}</div>
-          <div class="clips-tl__window" style="left:${pctIn(ed.w.startMs)};width:${(clipLen() / v.span) * 100}%">
-            ${b.intro ? `<span class="clips-tl__card clips-tl__card--intro">Intro</span>` : ""}
-            ${b.outro ? `<span class="clips-tl__card clips-tl__card--outro">Outro</span>` : ""}
-          </div>
-        </div>
-        <div class="clips-tl__frames" data-clips-scrub>${cuts}${segHTML}${bounds}</div>
-        <div class="clips-tl__texts">${texts}</div>
-        <div class="clips-tl__playhead" data-clips-playhead style="left:${pctIn(ed.t)}">
-          <span class="clips-tl__knob" data-clips-knob aria-hidden="true"></span>
-        </div>
-        ${ed.drag?.guide != null ? `<span class="clips-tl__guide" style="left:${pctIn(ed.drag.guide)}"></span>` : ""}
-        ${ed.drag?.label ? `<span class="clips-tl__readout" style="left:${pctIn(ed.drag.at)}">${escapeHtml(ed.drag.label)}</span>` : ""}
-      </div>
-    </div>
-    <div class="clips-tl__legend"><span class="clips-tl__legend-item">Grey: my framing · White: yours</span></div>`;
+    <div class="ap-segmented-control" role="group" aria-label="Monitors">${seg("program", "Program")}${seg("dual", "Source + Program")}</div>
+    <div class="nle-viewer__opts">
+      ${dsSelect({
+        label: "Safe area",
+        valueHtml: `${dzIcon(ed.deadZones)}<span>${escapeHtml(DEAD_ZONE_LABELS[ed.deadZones] || "No guide")}</span>`,
+        current: ed.deadZones,
+        attr: "data-nle-deadzones",
+        ariaLabel: "Show where the app's buttons cover the video",
+        extraClass: "nle-select",
+        options: Object.entries(DEAD_ZONE_LABELS).map(([id, label]) => ({ id, label, lead: dzIcon(id) })),
+      })}
+      ${dsSelect({
+        label: own ? "This clip" : "Format",
+        valueHtml: escapeHtml(formatLabel(ed.w.ratioId)),
+        current: own ? ed.w.ratioId : "video",
+        attr: "data-nle-format",
+        ariaLabel: "Format of this clip",
+        extraClass: "nle-select",
+        options: [
+          { id: "video", label: `Same as the video · ${formatLabel(videoRatio)}` },
+          ...RATIO_IDS.map((id) => ({ id, label: formatLabel(id), meta: bestFor(id) })),
+        ],
+      })}
+      <button type="button" class="ap-icon-button transparent nle-ib" data-nle="fullscreen" aria-label="Full screen" data-tooltip="Full screen · F">
+        <i class="ap-icon-maximize" aria-hidden="true"></i></button>
+    </div>`;
 }
 
-// What the cleanup hid from the subtitles, on the Clip track — the audio isn't cut.
-function cleanMarks() {
-  return ce
-    .getHiddenSpans()
-    .map(
-      (m) =>
-        `<span class="clips-tl__clean" style="left:${pctIn(ed.w.startMs + m.start * 1000)};width:${(((m.end - m.start) * 1000) / ed.viewport.span) * 100}%" title="${escapeHtml(m.label)}"></span>`,
-    )
-    .join("");
+function paintTransportRight() {
+  const host = ed.el.querySelector("[data-nle-transport-right]");
+  if (!host) return;
+  const muted = ed.tracks.audio.muted;
+  host.innerHTML = `
+    ${dsSelect({
+      label: "Speed",
+      valueHtml: `${ed.rate}×`,
+      current: String(ed.rate),
+      attr: "data-nle-rate",
+      ariaLabel: "Playback speed",
+      extraClass: "nle-select nle-select--up",
+      options: ["0.5", "1", "1.5", "2"].map((r) => ({ id: r, label: `${r}×` })),
+    })}
+    ${iconBtn("mute", muted ? "Unmute" : "Mute", muted ? GLYPH.muted : GLYPH.volume, { pressed: muted, cls: "nle-ib--toggle" })}
+    <input type="range" class="ap-slider nle-volume" min="0" max="1" step="0.05" value="${muted ? 0 : ed.volume}"
+      data-nle-volume aria-label="Volume" style="--fill:${(muted ? 0 : ed.volume) * 100}%" />`;
 }
 
-function paintCleanMarks() {
-  const host = ed.el.querySelector("[data-clips-cleans]");
-  if (host) host.innerHTML = cleanMarks();
-  const cues = ed.el.querySelector("[data-clips-cues]");
-  if (cues) cues.innerHTML = cueBlocks();
+// ── Panels ──────────────────────────────────────────────────────────
+
+function paintLibrary() {
+  const host = ed.el.querySelector("[data-nle-lib]");
+  if (!host) return;
+  host.innerHTML = libraryHTML();
+  if (ed.lib === "transcript") ce.refreshControls();
 }
 
-// The subtitle lines on their own track (CapCut, Descript): each says its words
-// where it shows. A click seeks there, like any track; the words are fixed in
-// Transcript, their look in Subtitles.
-function cueBlocks() {
-  const st = ce.getState();
-  if (!st || st.presetId === "none") return "";
-  return deriveCues(ce.getWords(), st)
-    .map((c) => {
-      const text = c.words.map((w) => w.text).join(" ");
-      return `<span class="clips-tl__cue" style="left:${pctIn(ed.w.startMs + c.start * 1000)};width:calc(${(((c.end - c.start) * 1000) / ed.viewport.span) * 100}% - 2px)" title="${escapeHtml(text)}">${escapeHtml(text)}</span>`;
-    })
-    .join("");
+export function paintInspector() {
+  const host = ed.el.querySelector("[data-nle-insp]");
+  if (!host) return;
+  // Typing in the inspector mustn't lose its field: keep focus and caret.
+  const f = document.activeElement;
+  const keep =
+    host.contains(f) && f.dataset?.nleField
+      ? { key: f.dataset.nleField, s: f.selectionStart, e: f.selectionEnd }
+      : null;
+  host.innerHTML = inspectorHTML();
+  if (ed.sel?.kind === "captions") ce.refreshControls();
+  if (keep) {
+    const n = host.querySelector(`[data-nle-field="${keep.key}"]`);
+    if (n) {
+      n.focus();
+      try {
+        n.setSelectionRange(keep.s, keep.e);
+      } catch {}
+    }
+  }
+  ed.el.querySelector("[data-nle-root]").dataset.sel = ed.sel?.kind || "none";
 }
 
-// A camera's short name on the framing track: the wide shot of both speakers
-// is "Wide", a single camera its letter.
-function cameraShort(id) {
-  if (id === "TWO") return "Wide";
-  if (id === "FIT") return "Fit";
-  return id ? `Cam ${id}` : "—";
-}
+// ── Selection ───────────────────────────────────────────────────────
 
-// What Auto does with a part — named the way the Layout cards name it.
-function autoKind(seg) {
-  const kind = resolve(ed.ctx, seg, (seg.startMs + seg.endMs) / 2, ratio()).kind;
-  return { one: "One speaker", two: "Two speakers", fit: "Fit" }[kind];
-}
-
-function niceStep(span) {
-  const target = span / 8;
-  return [1000, 2000, 5000, 10000, 15000, 30000, 60000, 120000].find((s) => s >= target) || 300000;
-}
-
-function msAt(clientX) {
-  const tracks = ed.el.querySelector("[data-clips-tracks]");
-  const r = tracks.getBoundingClientRect();
-  const v = ed.viewport;
-  return v.from + Math.max(0, Math.min(1, (clientX - r.left) / r.width)) * v.span;
-}
-
-// ── Panels ───────────────────────────────────────────────────────────
-
-function applyTool() {
-  const root = ed.el.querySelector("[data-clips-ed-root]");
-  root.dataset.tool = ed.tool;
-  root.querySelector("[data-clips-stage]")?.style.setProperty("--clips-split", `${splitPct}%`);
-  ed.el.querySelectorAll("[data-clips-tool]").forEach((b) => {
-    const on = b.dataset.clipsTool === ed.tool;
-    b.classList.toggle("is-on", on);
-    b.setAttribute("aria-selected", String(on));
-  });
-  // The tool is in the URL, so a reload or Back lands on it again.
-  history.replaceState(null, "", `#/clips/${ed.video.id}/edit/${ed.clip.id}?tool=${ed.tool}`);
-  syncTlTools();
-  sizeCanvases();
-  paintPanel();
-  paintTimeline();
+export function select(sel, { additive = false } = {}) {
+  if (additive && sel?.kind === "text" && ed.sel?.kind === "text") {
+    const ids = new Set(ed.sel.ids);
+    for (const id of sel.ids) ids.has(id) ? ids.delete(id) : ids.add(id);
+    sel = ids.size ? { kind: "text", ids: [...ids] } : null;
+  }
+  const was = ed.sel?.kind;
+  ed.sel = sel;
+  // A framing part is edited on the Source: the two monitors come up.
+  if (sel?.kind === "seg" && ed.mode !== "dual") setMode("dual");
+  else if (was === "seg" && sel?.kind !== "seg" && ed.autoDual) setMode("program");
+  if (sel?.kind === "seg") ed.autoDual = ed.autoDual ?? true;
+  paintInspector();
   paintTexts();
+  paintTimeline();
   paintFrame();
+  if (ed.lib === "text") paintLibrary();
+}
+
+function setMode(mode, { user = false } = {}) {
+  ed.mode = mode;
+  if (user) ed.autoDual = false;
+  else if (mode === "dual") ed.autoDual = true;
+  if (mode === "program") ed.autoDual = null;
+  ed.el.querySelector("[data-nle-root]").dataset.mode = mode;
+  paintViewerBar();
+  sizeCanvases();
+  paintFrame();
+  paintTexts();
   ce.repaintStage();
 }
 
-function paintPanel() {
-  const host = ed.el.querySelector("[data-clips-panel]");
-  if (!host) return;
-  const tool = TOOLS.find((t) => t.id === ed.tool);
-  const body = {
-    reframe: reframePanel,
-    transcript: transcriptPanel,
-    subtitles: subtitlesPanel,
-    brand: brandPanel,
-    format: formatPanel,
-    teaser: teaserPanel,
-  }[ed.tool]();
-  host.innerHTML = `${introHtml()}<h2 class="clips-ed__panel-title">${tool.label}</h2>${body}`;
-  // The caption engine renders into the panel's hooks (presets, transcript,
-  // cleanup) — they're new each time the panel is painted.
-  if (ed.tool === "subtitles" || ed.tool === "transcript") ce.refreshControls();
-}
-
-// The first time, the editor says how it works in three moves: the tools
-// here, Save changes when done. Once closed, never again.
-const INTRO_KEY = "archie-clips-editor-intro-seen";
-function introSeen() {
-  try {
-    return localStorage.getItem(INTRO_KEY) === "1";
-  } catch {
-    return true;
-  }
-}
-
-function introHtml() {
-  if (introSeen()) return "";
-  return `
-    <div class="ap-infobox info has-title clips-ed__intro" role="note">
-      <i class="ap-icon-info_fill" aria-hidden="true"></i>
-      <div class="ap-infobox-content">
-        <div class="ap-infobox-texts">
-          <span class="ap-infobox-title">How this editor works</span>
-          <span class="ap-infobox-message">Pick a tool on the left, then Save changes when you're done.</span>
-        </div>
-      </div>
-      <button type="button" class="ap-infobox-close" aria-label="Got it" data-clips-intro-close><i class="ap-icon-close" aria-hidden="true"></i></button>
-    </div>`;
-}
-
-// Prod's Ratio section: the five formats as cards, each with what it's best
-// for; « Same as the video » first. A new format re-frames from the auto (a
-// confirm first when the framing holds edits, as in the select).
-function formatPanel() {
-  const videoRatio = ed.video.settings.ratio;
-  const own = ed.w.ratioId !== videoRatio || !!ed.clip.ratio;
-  const card = (id, label, meta, on) => `
-    <button type="button" class="clips-ed__fmt${on ? " is-on" : ""}" data-clips-format="${id}" aria-pressed="${on}">
-      <span class="clips-ed__fmt-shape" style="aspect-ratio:${(id === "video" ? videoRatio : id).replace(":", "/")}" aria-hidden="true"></span>
-      <span class="clips-ed__fmt-text"><span class="clips-ed__fmt-name">${escapeHtml(label)}</span>${meta}</span>
-    </button>`;
-  return `<p class="clips-ed__panel-lead">A new format starts over from my framing. Every clip without its own uses the video's.</p>
-    <div class="clips-ed__fmts">
-      ${card("video", `Same as the video · ${formatLabel(videoRatio)}`, "", !own)}
-      ${RATIO_IDS.map((id) => card(id, formatLabel(id), bestFor(id), own && ed.w.ratioId === id)).join("")}
-    </div>`;
-}
-
-// Prod's Teaser section: a short moment of the clip plays first, then the
-// clip from the start. Its range is in clip time; set at the playhead.
-function teaserPanel() {
-  const tz = ed.w.teaser;
-  const off = tz.on ? "" : "disabled";
-  return `<p class="clips-ed__panel-lead">A short moment of the clip plays first, then the clip from the start.</p>
-    <label class="ap-toggle-container"><input type="checkbox" data-clips-teaser ${tz.on ? "checked" : ""} /><i></i><span>Open with a teaser</span></label>
-    <div class="clips-ed__teaser${tz.on ? "" : " is-off"}">
-      <p class="clips-ed__teaser-range">From <strong>${fmtPrecise(tz.startMs)}</strong> → <strong>${fmtPrecise(tz.endMs)}</strong> of the clip · ${((tz.endMs - tz.startMs) / 1000).toFixed(1)} s</p>
-      <div class="clips-ed__teaser-acts">
-        <button type="button" class="ap-button stroked grey" data-clips-ed="teaser-start" ${off}><span>Start at the playhead</span></button>
-        <button type="button" class="ap-button stroked grey" data-clips-ed="teaser-end" ${off}><span>End at the playhead</span></button>
-      </div>
-      <button type="button" class="ap-button ghost grey" data-clips-ed="teaser-play" ${off}><i class="ap-icon-play" aria-hidden="true"></i><span>Play the teaser</span></button>
-      <p class="clips-ed__panel-lead">Video length: ${fmtPrecise(clipLen() + (tz.on ? tz.endMs - tz.startMs : 0))}</p>
-    </div>`;
-}
-
-// The words of the clip: click to jump, double-click to fix, the menu to stress
-// one; at its head the cleanup (fillers and pauses, hidden from the subtitles).
-function transcriptPanel() {
-  return `
-    <p class="clips-ed__panel-lead">Click a word to jump to it, double-click to fix it. Click a marked filler or pause to hide it from the subtitles.</p>
-    <span class="clips-ed__fact" data-ce-reconcile></span>
-    <div class="clips-ed__clean" data-ce-cleanup-list></div>
-    <ul class="clips-ed__legend" aria-label="What the marks in the transcript mean" data-ce-legend>
-      <li><span class="cap-ed-tword is-active">word</span>Playing now</li>
-      <li><span class="cap-ed-tword is-marked is-mark-font">word</span>Colored</li>
-      <li><span class="cap-ed-tword is-marked is-mark-h1">word</span>Highlight</li>
-      <li><span class="cap-ed-tword is-filler">um</span>Filler</li>
-      <li><span class="cap-ed-pause is-proposed">0.5s</span>Pause</li>
-      <li><span class="cap-ed-tword is-removed">word</span>Hidden</li>
-    </ul>
-    <div class="cap-ed__transcript clips-ed__words" data-ce-transcript></div>`;
-}
-
-function reframePanel() {
-  const segs = ed.w.segments;
-  const seg = segmentAt(segs, ed.t);
-  ed.panelSeg = seg.id;
-  const i = segs.indexOf(seg);
-  const r = ratio();
-  const blocked = twoBlockedReason(ed.ctx, seg, r);
-  const hints = {
-    AUTO: `I chose ${autoKind(seg)}`,
-    ONE: "One window",
-    TWO: "Two, stacked",
-    FIT: "Whole frame, blurred fill",
-  };
-  // Each layout drawn as what it does to a vertical frame — read at a glance.
-  const glyph = {
-    AUTO: `<i class="ap-icon-sparkles"></i>`,
-    ONE: `<b class="clips-layout__person"></b>`,
-    TWO: `<b class="clips-layout__person"></b><b class="clips-layout__person"></b>`,
-    FIT: `<b class="clips-layout__inset"></b>`,
-  };
-  const layoutBtns = LAYOUTS.map((l) => {
-    const off = l.id === "TWO" && blocked && seg.layout !== "TWO";
-    return `<label class="ap-radio-card card clips-layout${off ? " is-off" : ""}">
-      <input type="radio" name="clips-layout" value="${l.id}" data-clips-layout-pick ${seg.layout === l.id ? "checked" : ""} ${off ? "disabled" : ""} />
-      <div>
-        <span class="clips-layout__glyph clips-layout__glyph--${l.id.toLowerCase()}" aria-hidden="true">${glyph[l.id]}</span>
-        <span class="clips-layout__name">${l.label}</span>
-        <span class="clips-layout__hint">${escapeHtml(off ? blocked : hints[l.id])}</span>
-      </div>
-    </label>`;
-  }).join("");
-  // No zoom slider (prod): a window zooms from its corners on the source.
-  const gesture =
-    seg.layout === "TWO"
-      ? "Drag a window on the source to move it, a corner to zoom that window."
-      : "Drag the window on the source to move it, a corner to zoom.";
-  return `
-    <p class="clips-ed__panel-lead">The clip is cut in parts, one per camera shot. I framed each one. ${gesture}</p>
-    <div class="clips-ed__seg-head">
-      <span class="clips-ed__seg-name">Part ${i + 1} of ${segs.length}</span>
-      <span class="clips-ed__seg-tags">
-        <span class="ap-tag grey">${escapeHtml(cameraName(seg.camera))}</span>
-        <span class="ap-tag grey">${seg.origin === "USER" ? "Yours" : "Auto"}</span>
-        ${seg.origin === "USER" ? `<button type="button" class="ap-button ghost grey clips-ed__seg-reset" data-clips-ed="reset-seg"><i class="ap-icon-reset" aria-hidden="true"></i><span>Reset part</span></button>` : ""}
-      </span>
-    </div>
-    <p class="clips-ed__fact">${fmtPrecise(seg.startMs - ed.w.startMs)} → ${fmtPrecise(seg.endMs - ed.w.startMs)} · ${((seg.endMs - seg.startMs) / 1000).toFixed(1)}s</p>
-    ${
-      i > 0
-        ? `<button type="button" class="ap-button ghost grey" data-clips-join="${i}"><i class="ap-icon-arrow-left" aria-hidden="true"></i><span>Join with the previous part</span></button>`
-        : ""
-    }
-    <div class="clips-ed__group">
-      <span class="clips-ed__label">Layout</span>
-      <div class="clips-ed__layouts" role="radiogroup" aria-label="Layout">${layoutBtns}</div>
-    </div>
-    ${
-      seg.layout === "TWO"
-        ? `<button type="button" class="ap-button stroked grey" data-clips-ed="swap" ${r < 1 ? "" : "disabled"}><i class="ap-icon-refresh" aria-hidden="true"></i><span>Swap top and bottom</span></button>`
-        : ""
-    }
-    <div class="clips-ed__panel-foot">
-      <button type="button" class="ap-button ghost grey" data-clips-ed="reset-all"><i class="ap-icon-reset" aria-hidden="true"></i><span>Reset all parts</span></button>
-    </div>`;
-}
-
-function subtitlesPanel() {
-  return `
-    <p class="clips-ed__panel-lead">Pick a style, then drag the subtitles on the video to place them.</p>
-    <div class="clips-ed__cap-source" data-clips-cap-source>${capSourceHTML()}</div>
-    ${ce.tabsHTML()}
-    <div class="cap-ed__tabpanel" data-ce-tabpanel></div>`;
-}
-
-// Where the clip's subtitle style comes from: the video's, or its own — with
-// the way back.
-function capSourceHTML() {
-  const preset = ce.getState()?.presetId;
-  return ed.capOwn
-    ? `<span>This clip's own style · <strong>${escapeHtml(presetLabel(preset))}</strong></span>
-       <button type="button" class="ap-button ghost grey" data-clips-ed="cap-video"><i class="ap-icon-reset" aria-hidden="true"></i><span>Reset to the video's style</span></button>`
-    : `<span>The video's style · <strong>${escapeHtml(presetLabel(preset))}</strong></span>`;
-}
-
-function brandPanel() {
-  const b = ed.w.brand;
-  const pb = ed.pb;
-  const corners = [
-    ["tl", "Top left"],
-    ["tr", "Top right"],
-    ["bl", "Bottom left"],
-    ["br", "Bottom right"],
-  ];
-  const fromPb = JSON.stringify(b) === JSON.stringify(ed.look.brand);
-  return `
-    <p class="clips-ed__panel-lead">${
-      pb
-        ? `From the ${escapeHtml(pb.name)} Playbook. What you change here applies to this clip only.`
-        : "No Playbook: no logo or brand cards to add."
-    }</p>
-    ${
-      pb?.brandLogo
-        ? `<label class="ap-toggle-container clips-ed__toggle"><input type="checkbox" data-clips-brand="logo" ${b.logo ? "checked" : ""} /><i></i><span>Logo on the video</span></label>
-          ${
-            b.logo
-              ? `<div class="clips-ed__group">
-                  ${dsSelect({
-                    label: "Corner",
-                    valueHtml: escapeHtml(corners.find(([id]) => id === b.corner)?.[1] || "Top right"),
-                    current: b.corner,
-                    attr: "data-clips-corner",
-                    options: corners.map(([id, label]) => ({ id, label })),
-                  })}
-                  <span class="clips-ed__label">Size <span data-clips-logo-size-val>${Math.round(b.logoSize * 100)}%</span></span>
-                  <input type="range" class="ap-slider" min="0.08" max="0.3" step="0.01" value="${b.logoSize}" data-clips-logo-size
-                    style="--fill:${((b.logoSize - 0.08) / 0.22) * 100}%" aria-label="Logo size" />
-                </div>`
-              : ""
-          }`
-        : pb
-          ? `<p class="clips-ed__hint">This Playbook has no logo yet.</p>`
-          : ""
-    }
-    ${
-      pb
-        ? `<label class="ap-toggle-container clips-ed__toggle"><input type="checkbox" data-clips-brand="intro" ${b.intro ? "checked" : ""} /><i></i><span>Intro card (2 s, the clip's title)</span></label>
-           <label class="ap-toggle-container clips-ed__toggle"><input type="checkbox" data-clips-brand="outro" ${b.outro ? "checked" : ""} /><i></i><span>Outro card (2 s, the call to action)</span></label>
-           <div class="clips-ed__row">
-             ${fromPb ? "" : `<button type="button" class="ap-button ghost grey" data-clips-ed="brand-reset"><i class="ap-icon-reset" aria-hidden="true"></i><span>Reset to the Playbook's look</span></button>`}
-             <a class="ap-link" href="#/playbook/${encodeURIComponent(pb.id)}?tab=brand">Open the Playbook</a>
-           </div>`
-        : ""
-    }`;
-}
-
-// ── Edits ────────────────────────────────────────────────────────────
+// ── Edits, undo ─────────────────────────────────────────────────────
 
 const snapshot = () => JSON.stringify(ed.w);
 
-function pushUndo() {
+export function pushUndo() {
   ed.undo.push(snapshot());
   if (ed.undo.length > 200) ed.undo.shift();
   ed.redo = [];
 }
 
+// A grab that changed nothing leaves nothing to undo.
+export function dropNoopUndo() {
+  if (ed.undo.at(-1) === snapshot()) ed.undo.pop();
+  syncTopbar();
+}
+
 function restore(json) {
-  const prevLen = clipLen();
+  const prev = { s: ed.w.startMs, e: ed.w.endMs };
   ed.w = JSON.parse(json);
-  if (clipLen() !== prevLen) ce.setDuration(clipLen() / 1000);
+  if (prev.s !== ed.w.startMs || prev.e !== ed.w.endMs) applyRange();
+  if (ed.sel?.kind === "text") ed.sel.ids = ed.sel.ids.filter(txById);
+  if (ed.sel?.kind === "text" && !ed.sel.ids.length) ed.sel = null;
+  if (ed.sel?.kind === "seg" && !selSeg()) ed.sel = null;
+  if (ed.sel?.kind === "marker" && !ed.w.markers.some((m) => m.id === ed.sel.id)) ed.sel = null;
   setDirty();
   refreshAll();
 }
 
-// Changed = differs from what's saved, so undoing back to it disables Save.
-// Once saved, the button says so until the next change.
-const saveHTML = () =>
-  !ed.dirty && ed.changed
-    ? `<i class="ap-icon-check" aria-hidden="true"></i><span>Saved</span>`
-    : `<span>Save changes</span>`;
-
-function setDirty() {
+export function setDirty() {
   ed.dirty = ed.capDirty || snapshot() !== ed.saved;
   syncTopbar();
 }
 
-// Patch the topbar's buttons in place — a repaint would take the focus away
-// from the title field while it's being typed in.
-function syncTopbar() {
-  const bar = document.getElementById("topbar");
-  const saveBtn = bar?.querySelector('[data-clips-ed="save"]');
-  if (!saveBtn) return paintTopbar();
-  saveBtn.disabled = !ed.dirty;
-  saveBtn.innerHTML = saveHTML();
-  const title = bar.querySelector("[data-clips-ed-title]");
-  if (title) title.textContent = ed.w.title;
-  bar.querySelector('[data-clips-ed="undo"]').disabled = !ed.undo.length;
-  bar.querySelector('[data-clips-ed="redo"]').disabled = !ed.redo.length;
-  return undefined;
-}
-
-function refreshAll() {
+export function refreshAll() {
   syncTopbar();
   sizeCanvases();
-  paintPanel();
+  paintViewerBar();
+  paintInspector();
   paintTimeline();
   paintTexts();
   seek(Math.max(ed.w.startMs, Math.min(ed.w.endMs - 1, ed.t)));
 }
 
-function edit(fn, { timeline = true } = {}) {
+// Every change goes through here: undo point, the change, then the repaint.
+export function edit(fn, { inspector = true } = {}) {
   pushUndo();
   fn();
   setDirty();
-  paintPanel();
-  syncTlTools();
-  if (timeline) paintTimeline();
+  if (inspector) paintInspector();
+  paintTimeline();
+  paintTexts();
   paintFrame();
+  if (ed.lib !== "transcript") paintLibrary();
+}
+
+function undo() {
+  if (!ed.undo.length) return;
+  ed.redo.push(snapshot());
+  restore(ed.undo.pop());
+}
+
+function redo() {
+  if (!ed.redo.length) return;
+  ed.undo.push(snapshot());
+  restore(ed.redo.pop());
 }
 
 function save() {
@@ -1280,11 +1030,12 @@ function save() {
     endMs: ed.w.endMs,
     segments: ed.w.segments,
     texts: ed.w.texts,
+    markers: ed.w.markers,
     teaser: ed.w.teaser,
     ratio: ed.w.ratioId === ed.video.settings.ratio && !c.ratio ? null : ed.w.ratioId,
     brand: JSON.stringify(ed.w.brand) === JSON.stringify(ed.look.brand) ? null : ed.w.brand,
   };
-  // The words are the clip's either way; the look is its own, or the video's.
+  if (c.startMs !== ed.w.startMs || c.endMs !== ed.w.endMs) patch.trimmed = true;
   if (ed.caption) {
     patch.transcript = ed.caption.transcript;
     Object.assign(
@@ -1295,11 +1046,11 @@ function save() {
     );
   }
   updateClip(ed.video.id, c.id, patch);
+  ed.video.clips.sort((x, y) => x.startMs - y.startMs);
   ed.saved = snapshot();
   ed.capDirty = false;
   ed.dirty = false;
   ed.changed = true;
-  // Prod's « Save changes » renders the clip again.
   renderClip(ed.video.id, c.id);
   syncTopbar();
 }
@@ -1323,71 +1074,483 @@ function leave(to) {
   return undefined;
 }
 
-// ── Events ───────────────────────────────────────────────────────────
+// ── Trim: the clip's range, its parts, texts and words follow ───────
+
+// The words ce holds now, back into the whole window's list (so edits to the
+// words survive a trim), then cut to the clip's current range.
+function applyRange() {
+  const b = ed.wordsBase;
+  const now = ce.getWords().map((w) => ({ ...w, start: w.start * 1000 + b.s, end: w.end * 1000 + b.s }));
+  ed.srcWords = [...ed.srcWords.filter((w) => w.end <= b.s || w.start >= b.e), ...now].sort(
+    (x, y) => x.start - y.start,
+  );
+  const { startMs: s, endMs: e } = ed.w;
+  const len = (e - s) / 1000;
+  const words = ed.srcWords
+    .filter((w) => w.end > s && w.start < e)
+    .map((w) => ({ ...w, start: Math.max(0, (w.start - s) / 1000), end: Math.min(len, (w.end - s) / 1000) }));
+  ed.wordsBase = { s, e };
+  ce.setWords(words, len);
+}
+
+// The clip's new range. Texts and the teaser stay on the footage they were on
+// (a head trim shifts them, like any editor's ripple); parts stretch or drop.
+export function trimTo(s, e) {
+  s = Math.round(Math.max(ed.range.from, Math.min(s, e - MIN_CLIP_MS)));
+  e = Math.round(Math.min(ed.range.to, Math.max(e, s + MIN_CLIP_MS)));
+  if (s === ed.w.startMs && e === ed.w.endMs) return false;
+  const shift = ed.w.startMs - s;
+  const len = e - s;
+  ed.w.segments = retrim(ed.ctx, ed.w.segments, s, e);
+  ed.w.texts = ed.w.texts
+    .map((tx) => ({ ...tx, startMs: tx.startMs + shift, endMs: tx.endMs + shift }))
+    .filter((tx) => tx.endMs > MIN_TEXT_MS / 2 && tx.startMs < len - MIN_TEXT_MS / 2)
+    .map((tx) => ({ ...tx, startMs: Math.max(0, tx.startMs), endMs: Math.min(len, tx.endMs) }));
+  const tz = ed.w.teaser;
+  tz.startMs = Math.max(0, Math.min(len - 1000, tz.startMs + shift));
+  tz.endMs = Math.max(tz.startMs + 1000, Math.min(len, tz.endMs + shift));
+  ed.w.startMs = s;
+  ed.w.endMs = e;
+  applyRange();
+  return true;
+}
+
+function setInOut(which) {
+  const t = snapFrame(ed.t);
+  const ok = (() => {
+    pushUndo();
+    return which === "in" ? trimTo(t, ed.w.endMs) : trimTo(ed.w.startMs, t + FRAME_MS);
+  })();
+  if (!ok) {
+    ed.undo.pop();
+    return showToast(`The clip can't be shorter than ${MIN_CLIP_MS / 1000} seconds.`, { variant: "error" });
+  }
+  setDirty();
+  refreshAll();
+  showToast(which === "in" ? "The clip now starts here." : "The clip now ends here.");
+  return undefined;
+}
+
+// ── Texts ───────────────────────────────────────────────────────────
+
+export function addText(presetId, atRel = Math.max(0, rel())) {
+  const p = TEXT_PRESETS.find((x) => x.id === presetId) || TEXT_PRESETS[0];
+  const len = clipLen();
+  const dur = Math.min(p.dur || 3000, len);
+  const start = p.at === "end" ? Math.max(0, len - dur) : Math.max(0, Math.min(len - dur, atRel));
+  const id = uid("tx");
+  edit(() => {
+    ed.w.texts.push({
+      id,
+      text: p.text(ed),
+      startMs: Math.round(start),
+      endMs: Math.round(start + dur),
+      x: 0.5,
+      y: p.y,
+      size: p.size,
+      style: p.style,
+      animIn: p.animIn || "fade",
+      animOut: p.animOut || "fade",
+    });
+    ed.sel = { kind: "text", ids: [id] };
+  });
+  seek(ed.w.startMs + start + 1);
+  later(() => ed.el.querySelector('[data-nle-field="text"]')?.select());
+}
+
+function splitTexts(ts, at) {
+  let n = 0;
+  for (const tx of ts) {
+    if (at - tx.startMs < MIN_TEXT_MS || tx.endMs - at < MIN_TEXT_MS) continue;
+    const copy = { ...tx, id: uid("tx"), startMs: at };
+    tx.endMs = at;
+    ed.w.texts.push(copy);
+    n++;
+  }
+  return n;
+}
+
+// Split at the playhead (S / ⌘K): the selected texts under it, else the
+// framing part under it.
+function splitAtPlayhead() {
+  const at = Math.round(snapFrame(rel()));
+  const under = selTexts().filter((tx) => at > tx.startMs && at < tx.endMs);
+  if (under.length && !ed.tracks.text.locked) {
+    pushUndo();
+    if (!splitTexts(under, at)) {
+      ed.undo.pop();
+      return showToast("Too close to the edge of the text to split here.", { variant: "error" });
+    }
+    setDirty();
+    paintTimeline();
+    paintTexts();
+    return undefined;
+  }
+  return splitPartAt(ed.t);
+}
+
+export function splitPartAt(ms) {
+  if (ed.tracks.video.locked) return showToast("The Video track is locked.", { variant: "error" });
+  const { t } = snapMs(ed.ctx, Math.round(ms), { on: ed.snap });
+  pushUndo();
+  if (!split(ed.ctx, ed.w.segments, t)) {
+    ed.undo.pop();
+    return showToast("Too close to the edge of a part to split here.", { variant: "error" });
+  }
+  setDirty();
+  paintInspector();
+  paintTimeline();
+  paintFrame();
+  return undefined;
+}
+
+export function splitTextAt(id, atRel) {
+  const tx = txById(id);
+  if (!tx) return;
+  pushUndo();
+  if (!splitTexts([tx], Math.round(atRel))) return void ed.undo.pop();
+  setDirty();
+  paintTimeline();
+  paintTexts();
+}
+
+function deleteSelection() {
+  const s = ed.sel;
+  if (!s) return;
+  if (s.kind === "text" && !ed.tracks.text.locked)
+    edit(() => {
+      const ids = new Set(s.ids);
+      ed.w.texts = ed.w.texts.filter((x) => !ids.has(x.id));
+      ed.sel = null;
+    });
+  else if (s.kind === "marker")
+    edit(() => {
+      ed.w.markers = ed.w.markers.filter((m) => m.id !== s.id);
+      ed.sel = null;
+    });
+  else if (s.kind === "seg" && !ed.tracks.video.locked) {
+    // Deleting a part joins it with its neighbour: the clip stays whole.
+    const i = ed.w.segments.findIndex((x) => x.id === s.id);
+    if (ed.w.segments.length < 2 || i < 0) return void showToast("A clip keeps at least one part.");
+    edit(() => merge(ed.ctx, ed.w.segments, ed.w.segments[i], i > 0 ? -1 : 1));
+    select({ kind: "seg", id: segmentAt(ed.w.segments, ed.t).id });
+  } else if (s.kind === "brand")
+    edit(() => {
+      ed.w.brand[s.item] = false;
+      ed.sel = null;
+    });
+}
+
+function copySelection() {
+  const ts = selTexts();
+  if (!ts.length) return false;
+  clipboard = JSON.parse(JSON.stringify(ts));
+  showToast(ts.length === 1 ? "Text copied." : `${ts.length} texts copied.`);
+  return true;
+}
+
+// Pasted at the playhead, keeping the texts' spacing between them.
+function paste(items = clipboard, at = rel()) {
+  if (!items.length || ed.tracks.text.locked) return;
+  const first = Math.min(...items.map((t) => t.startMs));
+  const len = clipLen();
+  const ids = [];
+  edit(() => {
+    for (const t of items) {
+      const d = t.endMs - t.startMs;
+      const s = Math.max(0, Math.min(len - Math.min(d, len), Math.round(at + t.startMs - first)));
+      const id = uid("tx");
+      ed.w.texts.push({ ...t, id, startMs: s, endMs: Math.min(len, s + d) });
+      ids.push(id);
+    }
+    ed.sel = { kind: "text", ids };
+  });
+}
+
+function duplicateSelection() {
+  const ts = selTexts();
+  if (!ts.length) return;
+  const end = Math.max(...ts.map((t) => t.endMs));
+  paste(ts, end);
+}
+
+function addMarker(atMs = snapFrame(ed.t)) {
+  if (ed.w.markers.some((m) => Math.abs(m.ms - atMs) < FRAME_MS)) return;
+  const id = uid("mk");
+  edit(() => {
+    ed.w.markers.push({ id, ms: Math.round(atMs) });
+    ed.w.markers.sort((a, b) => a.ms - b.ms);
+  });
+}
+
+// Every point worth stopping at: the clip's ends, parts, texts, markers.
+export function editPoints() {
+  const s = ed.w.startMs;
+  return [
+    s,
+    ed.w.endMs - 1,
+    ...ed.w.segments.slice(1).map((g) => g.startMs),
+    ...ed.w.texts.flatMap((t) => [s + t.startMs, s + t.endMs]),
+    ...ed.w.markers.map((m) => m.ms),
+  ]
+    .filter((t) => t >= s && t < ed.w.endMs)
+    .sort((a, b) => a - b);
+}
+
+function jumpEdit(dir) {
+  const pts = editPoints();
+  const t = dir > 0 ? pts.find((p) => p > ed.t + 1) : [...pts].reverse().find((p) => p < ed.t - 1);
+  if (t != null) {
+    seek(t);
+    revealPlayhead();
+  }
+}
+
+// ── Context menu ────────────────────────────────────────────────────
+
+const menuItem = (act, label, { kbd = "", icon = "", disabled = false, data = "" } = {}) =>
+  `<button type="button" role="menuitem" class="ap-action-dropdown-item nle-menu__item" data-nle-menu-act="${act}" ${data} ${disabled ? "disabled" : ""}>
+    ${icon ? `<span class="nle-menu__icon">${icon}</span>` : ""}
+    <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">${label}</span></div></div>
+    ${kbd ? `<kbd class="nle-kbd">${kbd}</kbd>` : ""}
+  </button>`;
+const SEP = `<div class="ap-action-dropdown-divider nle-menu__sep" role="separator"></div>`;
+
+export function openMenu(x, y, target) {
+  const m = ed.el.querySelector("[data-nle-menu]");
+  const hasClip = clipboard.length > 0;
+  let html = "";
+  if (target.kind === "text") {
+    html =
+      menuItem("split", "Split at the playhead", { kbd: "S", icon: GLYPH.cut }) +
+      menuItem("duplicate", "Duplicate", { kbd: "⌘D", icon: `<i class="ap-icon-copy"></i>` }) +
+      menuItem("copy", "Copy", { kbd: "⌘C" }) +
+      menuItem("paste", "Paste at the playhead", { kbd: "⌘V", disabled: !hasClip }) +
+      SEP +
+      menuItem("delete", "Delete", { kbd: "⌫", icon: `<i class="ap-icon-trash"></i>` });
+  } else if (target.kind === "seg") {
+    const i = ed.w.segments.findIndex((s) => s.id === target.id);
+    html =
+      menuItem("split-part", "Split the part here", { kbd: "S", icon: GLYPH.cut }) +
+      menuItem("join-prev", "Join with the previous part", { disabled: i < 1 }) +
+      menuItem("join-next", "Join with the next part", { disabled: i >= ed.w.segments.length - 1 }) +
+      SEP +
+      menuItem("reset-seg", "Reset this part", { icon: `<i class="ap-icon-reset"></i>` }) +
+      menuItem("set-in", "Start the clip here", { kbd: "I" }) +
+      menuItem("set-out", "End the clip here", { kbd: "O" });
+  } else if (target.kind === "marker") {
+    html = menuItem("delete", "Delete the marker", { kbd: "⌫", icon: `<i class="ap-icon-trash"></i>` });
+  } else {
+    html =
+      menuItem("add-text", "Add text here", { kbd: "T", icon: `<i class="ap-icon-plus"></i>` }) +
+      menuItem("paste", "Paste here", { kbd: "⌘V", disabled: !hasClip }) +
+      menuItem("marker", "Add a marker here", { kbd: "M", icon: `<i class="ap-icon-flag"></i>` }) +
+      SEP +
+      menuItem("set-in", "Start the clip here", { kbd: "I" }) +
+      menuItem("set-out", "End the clip here", { kbd: "O" });
+  }
+  m.innerHTML = html;
+  m.hidden = false;
+  const r = ed.el.querySelector("[data-nle-root]").getBoundingClientRect();
+  const w = m.offsetWidth;
+  const h = m.offsetHeight;
+  m.style.left = `${Math.min(x - r.left, r.width - w - 8)}px`;
+  m.style.top = `${Math.min(y - r.top, r.height - h - 8)}px`;
+  m.querySelector("button:not([disabled])")?.focus();
+}
+
+function closeMenu() {
+  const m = ed?.el.querySelector("[data-nle-menu]");
+  if (m && !m.hidden) {
+    m.hidden = true;
+    m.innerHTML = "";
+  }
+}
+
+function runMenu(act) {
+  closeMenu();
+  const s = ed.sel;
+  switch (act) {
+    case "split":
+      return splitAtPlayhead();
+    case "split-part":
+      return splitPartAt(ed.t);
+    case "duplicate":
+      return duplicateSelection();
+    case "copy":
+      return copySelection();
+    case "paste":
+      return paste();
+    case "delete":
+      return deleteSelection();
+    case "join-prev":
+    case "join-next": {
+      const i = ed.w.segments.findIndex((x) => x.id === s?.id);
+      if (i < 0) return undefined;
+      edit(() => merge(ed.ctx, ed.w.segments, ed.w.segments[i], act === "join-prev" ? -1 : 1));
+      return select({ kind: "seg", id: segmentAt(ed.w.segments, ed.t).id });
+    }
+    case "reset-seg":
+      return selSeg() && edit(() => resetSegment(ed.ctx, selSeg()));
+    case "set-in":
+      return setInOut("in");
+    case "set-out":
+      return setInOut("out");
+    case "add-text":
+      return addText("body");
+    case "marker":
+      return addMarker();
+    default:
+      return undefined;
+  }
+}
+
+// ── Keyboard shortcuts sheet ────────────────────────────────────────
+
+const SHORTCUTS = [
+  [
+    "Playback",
+    [
+      ["Space", "Play / pause"],
+      ["J · K · L", "Reverse · stop · forward (press again to speed up)"],
+      ["← →", "Previous / next frame"],
+      ["⇧← ⇧→", "One second back / forward"],
+      ["↑ ↓", "Previous / next edit point"],
+      ["Home · End", "Start / end of the clip"],
+    ],
+  ],
+  [
+    "Editing",
+    [
+      ["S · ⌘K", "Split at the playhead"],
+      ["I · O", "Start / end the clip at the playhead"],
+      ["T", "Add text at the playhead"],
+      ["M", "Add a marker"],
+      ["⌫", "Delete the selection"],
+      ["⌘C · ⌘V · ⌘D", "Copy · paste · duplicate texts"],
+      ["⌘A", "Select every text"],
+      ["⌥ + arrows", "Nudge the selected text on the video"],
+    ],
+  ],
+  [
+    "Timeline",
+    [
+      ["V · B", "Select tool · blade tool"],
+      ["N", "Snapping on / off"],
+      ["⌘+ · ⌘−", "Zoom in / out"],
+      ["⇧Z", "Fit the clip in the timeline"],
+      ["Alt (while dragging)", "Move freely, no snapping"],
+    ],
+  ],
+  [
+    "Edit",
+    [
+      ["⌘Z · ⇧⌘Z", "Undo · redo"],
+      ["⌘S", "Save changes"],
+      ["F", "Full screen viewer"],
+      ["Esc", "Deselect · close"],
+      ["?", "This list"],
+    ],
+  ],
+];
+
+function toggleKeys(force) {
+  const k = ed.el.querySelector("[data-nle-keys]");
+  const open = force ?? k.hidden;
+  if (!open) {
+    k.hidden = true;
+    return;
+  }
+  k.innerHTML = `
+    <header class="nle-keys__head">
+      <h2 class="nle-keys__title">Keyboard shortcuts</h2>
+      <button type="button" class="ap-icon-button transparent" data-nle="keys-close" aria-label="Close"><i class="ap-icon-close" aria-hidden="true"></i></button>
+    </header>
+    <div class="nle-keys__grid">${SHORTCUTS.map(
+      ([g, rows]) =>
+        `<section><h3 class="nle-keys__group">${g}</h3><dl>${rows
+          .map(
+            ([key, what]) =>
+              `<div class="nle-keys__row"><dt><kbd class="nle-kbd">${key}</kbd></dt><dd>${what}</dd></div>`,
+          )
+          .join("")}</dl></section>`,
+    ).join("")}</div>`;
+  k.hidden = false;
+  k.querySelector("button")?.focus();
+}
+
+// ── Events ──────────────────────────────────────────────────────────
 
 function bindAll() {
   const root = ed.el;
   const topbar = document.getElementById("topbar");
-  const onClick = (e) => handleClick(e);
-  const onInput = (e) => handleInput(e);
-  const onChange = (e) => handleChange(e);
-  const onDown = (e) => handlePointerDown(e);
-  const onKey = (e) => handleKey(e);
-  root.addEventListener("click", onClick);
-  topbar?.addEventListener("click", onClick);
-  topbar?.addEventListener("input", onInput);
-  root.addEventListener("input", onInput);
-  root.addEventListener("change", onChange);
-  root.addEventListener("pointerdown", onDown);
-  document.addEventListener("keydown", onKey);
+  const on = (target, type, fn, opts) => {
+    target?.addEventListener(type, fn, opts);
+    ed.disposers.push(() => target?.removeEventListener(type, fn, opts));
+  };
+  on(root, "click", handleClick);
+  on(topbar, "click", handleClick);
+  on(root, "input", handleInput);
+  on(root, "change", handleChange);
+  on(root, "pointerdown", handlePointerDown);
+  on(root, "pointermove", (e) => timelinePointerMove(e));
+  on(root, "contextmenu", handleContextMenu);
+  on(root, "dblclick", handleDblClick);
+  on(root, "dragstart", handleDragStart);
+  on(root, "dragover", (e) => e.target.closest?.("[data-nle-scroll]") && e.preventDefault());
+  on(root, "drop", (e) => timelineDrop(e));
+  on(document, "keydown", handleKey);
+  on(document, "fullscreenchange", () => ed && (sizeCanvases(), paintFrame(), paintTexts(), ce.repaintStage()));
+  const scroller = root.querySelector("[data-nle-scroll]");
+  on(scroller, "scroll", () => later(paintVisible));
+  on(scroller, "wheel", (e) => timelineWheel(e), { passive: false });
   ed.disposers.push(bindSelectDismiss(root));
   ed.cardLogo = new Image();
   if (ed.pb?.brandLogo) ed.cardLogo.src = ed.pb.brandLogo;
-  ed.disposers.push(() => {
-    root.removeEventListener("click", onClick);
-    topbar?.removeEventListener("click", onClick);
-    topbar?.removeEventListener("input", onInput);
-    root.removeEventListener("input", onInput);
-    root.removeEventListener("change", onChange);
-    root.removeEventListener("pointerdown", onDown);
-    document.removeEventListener("keydown", onKey);
-  });
 }
 
 function handleClick(e) {
-  if (!ed) return;
+  if (!ed) return undefined;
   const t = e.target;
-  // A click elsewhere on the video closes the text popover.
-  if (ed.selectedText && t.closest("[data-clips-stage]") && !t.closest("[data-clips-text-pop], [data-clips-text]"))
-    closeTextPop();
-  if (t.closest("[data-clips-intro-close]")) {
-    try {
-      localStorage.setItem(INTRO_KEY, "1");
-    } catch {}
-    t.closest(".clips-ed__intro")?.remove();
-    return;
+  if (!t.closest("[data-nle-menu]")) closeMenu();
+  const menuAct = t.closest("[data-nle-menu-act]")?.dataset.nleMenuAct;
+  if (menuAct) return runMenu(menuAct);
+  const goto = t.closest("[data-nle-goto]")?.dataset.nleGoto;
+  if (goto) return leave(`/clips/${ed.video.id}/edit/${goto}`);
+  const libTab = t.closest("[data-nle-lib-tab]")?.dataset.nleLibTab;
+  if (libTab) {
+    ed.lib = libTab;
+    return paintLibrary();
   }
-  const tool = t.closest("[data-clips-tool]");
-  if (tool) {
-    ed.tool = tool.dataset.clipsTool;
-    applyTool();
-    return;
+  const mode = t.closest("[data-nle-mode]")?.dataset.nleMode;
+  if (mode) return setMode(mode, { user: true });
+  const preset = t.closest("[data-nle-text-preset]")?.dataset.nleTextPreset;
+  if (preset) return addText(preset);
+  const pickText = t.closest("[data-nle-pick-text]")?.dataset.nlePickText;
+  if (pickText) {
+    const tx = txById(pickText);
+    if (tx) seek(ed.w.startMs + tx.startMs + 1);
+    select({ kind: "text", ids: [pickText] }, { additive: e.shiftKey });
+    revealPlayhead();
+    return paintLibrary();
   }
-  const goto = t.closest("[data-clips-ed-goto]")?.dataset.clipsEdGoto;
-  if (goto) return leave(`/clips/${ed.video.id}/edit/${goto}?tool=${ed.tool}`);
-  const act = t.closest("[data-clips-ed]")?.dataset.clipsEd;
-  const seg = segmentAt(ed.w.segments, ed.t);
+  const sel = t.closest("[data-nle-select]")?.dataset.nleSelect;
+  if (sel && !t.closest("[data-nle-scroll]")) {
+    const [kind, item] = sel.split(":");
+    return select(kind === "none" ? null : kind === "brand" ? { kind, item } : { kind });
+  }
+  const act = t.closest("[data-nle]")?.dataset.nle;
+  const seg = selSeg() || segmentAt(ed.w.segments, ed.t);
   switch (act) {
     case "back":
       return leave(`/clips/${ed.video.id}`);
     case "rename":
-      // A rename is a deliberate step: the DS rename modal, never inline.
       return openRename({
         title: "Rename the clip",
         initialName: ed.w.title,
         placeholder: "Clip title",
         confirmLabel: "Rename",
-        onSubmit: (name) => edit(() => (ed.w.title = name), { timeline: false }),
+        onSubmit: (name) => edit(() => (ed.w.title = name)),
       });
     case "undo":
       return undo();
@@ -1396,29 +1559,77 @@ function handleClick(e) {
     case "save":
       return ed.dirty ? save() : undefined;
     case "draft":
-      // A new chat with this clip (clips-chat.js), as saved: pending changes first.
       if (ed.dirty) save();
       return writePostsInChat(ed.video, [ed.clip.id]);
     case "play":
       return togglePlay();
+    case "to-start":
+      if (ed.playing) stop();
+      seek(ed.w.startMs);
+      return revealPlayhead();
+    case "to-end":
+      if (ed.playing) stop();
+      seek(ed.w.endMs - 1);
+      return revealPlayhead();
+    case "step-back":
+    case "step-fwd":
+      if (ed.playing) stop();
+      return seek(ed.t + (act === "step-fwd" ? FRAME_MS : -FRAME_MS));
+    case "loop":
+      ed.loop = !ed.loop;
+      t.closest("[data-nle]").setAttribute("aria-pressed", String(ed.loop));
+      return undefined;
+    case "mute":
+      ed.tracks.audio.muted = !ed.tracks.audio.muted;
+      ed.video_el.muted = ed.tracks.audio.muted;
+      paintTransportRight();
+      return paintTimeline();
+    case "fullscreen":
+      return toggleFullscreen();
+    case "keys":
+      return toggleKeys();
+    case "keys-close":
+      return toggleKeys(false);
+    case "tool-select":
+    case "tool-blade":
+      ed.tool = act === "tool-blade" ? "blade" : "select";
+      return paintTimeline();
+    case "snap":
+      ed.snap = !ed.snap;
+      return paintTimeline();
+    case "split":
+      return splitAtPlayhead();
+    case "delete":
+      return deleteSelection();
+    case "marker":
+      return addMarker();
+    case "zoom-in":
+      return zoomBy(1.6);
+    case "zoom-out":
+      return zoomBy(1 / 1.6);
+    case "zoom-fit":
+      return fitTimeline();
+    case "set-in":
+      return setInOut("in");
+    case "set-out":
+      return setInOut("out");
+    case "duplicate":
+      return duplicateSelection();
+    case "deselect":
+      return select(null);
     case "teaser-start":
     case "teaser-end":
-      return edit(
-        () => {
-          const rel = Math.max(0, ed.t - ed.w.startMs);
-          const tz = ed.w.teaser;
-          if (act === "teaser-start") Object.assign(tz, { startMs: rel, endMs: Math.max(rel + 1000, tz.endMs) });
-          else tz.endMs = Math.max(tz.startMs + 1000, rel);
-          tz.endMs = Math.min(clipLen(), tz.endMs);
-        },
-        { timeline: false },
-      );
+      return edit(() => {
+        const r = Math.max(0, rel());
+        const tz = ed.w.teaser;
+        if (act === "teaser-start") Object.assign(tz, { startMs: r, endMs: Math.max(r + 1000, tz.endMs) });
+        else tz.endMs = Math.max(tz.startMs + 1000, r);
+        tz.endMs = Math.min(clipLen(), tz.endMs);
+      });
     case "teaser-play":
       if (ed.playing) stop();
       ed.teaserOnly = true;
       return togglePlay();
-    case "split":
-      return doSplit();
     case "reset-seg":
       return edit(() => resetSegment(ed.ctx, seg));
     case "reset-all":
@@ -1428,211 +1639,178 @@ function handleClick(e) {
         [seg.two.top, seg.two.bottom] = [seg.two.bottom, seg.two.top];
         seg.origin = "USER";
       });
-    case "add-hook":
-    case "add-text":
-      edit(() => {
-        const id = `tx${Date.now().toString(36)}`;
-        const rel = act === "add-hook" ? 0 : Math.max(0, ed.t - ed.w.startMs);
-        ed.w.texts.push({
-          id,
-          text: act === "add-hook" ? ed.w.title : "Your text",
-          startMs: rel,
-          endMs: Math.min(clipLen(), rel + 3000),
-          x: 0.5,
-          y: act === "add-hook" ? 0.3 : 0.5,
-          size: act === "add-hook" ? 64 : 56,
-          style: "box",
-        });
-        ed.selectedText = id;
-        paintTexts();
-      });
-      t.closest("details")?.removeAttribute("open");
-      // The playhead goes to the new text, so it shows at full strength.
-      seek(ed.w.startMs + txById(ed.selectedText).startMs + 1);
-      return paintTextPop();
+    case "join-prev":
+    case "join-next": {
+      const i = ed.w.segments.indexOf(seg);
+      edit(() => merge(ed.ctx, ed.w.segments, seg, act === "join-prev" ? -1 : 1));
+      return i >= 0 && select({ kind: "seg", id: segmentAt(ed.w.segments, ed.t).id });
+    }
+    case "center-x":
+    case "center-y":
+      return edit(() => selTexts().forEach((tx) => (tx[act === "center-x" ? "x" : "y"] = 0.5)));
     case "cap-video": {
       ce.resetStyle(clipCaptionState(ed.video, { captionState: null }));
-      // After the reset's own change event, which counts as a style change.
       ed.capOwn = false;
       ed.capLook = styleKey(ce.getState());
-      const src = ed.el.querySelector("[data-clips-cap-source]");
+      const src = ed.el.querySelector("[data-nle-cap-source]");
       if (src) src.innerHTML = capSourceHTML();
       return undefined;
     }
     case "brand-reset":
       return edit(() => (ed.w.brand = { ...ed.look.brand }));
+    case "lib-transcript":
+      ed.lib = "transcript";
+      return paintLibrary();
     default:
       break;
   }
-  const join = t.closest("[data-clips-join]");
-  if (join) {
-    const k = Number(join.dataset.clipsJoin);
-    return edit(() => merge(ed.ctx, ed.w.segments, ed.w.segments[k], -1));
-  }
-  const segBtn = t.closest("[data-clips-seg]");
-  if (segBtn) {
-    // The playhead goes where you clicked — inside that part, so it's the one
-    // the panel edits.
-    const s = ed.w.segments.find((x) => x.id === segBtn.dataset.clipsSeg);
-    if (s) seek(Math.max(s.startMs + 1, Math.min(s.endMs - 1, msAt(e.clientX))));
+  const track = t.closest("[data-nle-track-toggle]");
+  if (track) {
+    const [id, key] = track.dataset.nleTrackToggle.split(":");
+    ed.tracks[id][key] = !ed.tracks[id][key];
+    if (id === "audio" && key === "muted") {
+      ed.video_el.muted = ed.tracks.audio.muted;
+      paintTransportRight();
+    }
+    if (id === "captions" && key === "hidden")
+      ed.el.querySelector("[data-nle-root]").classList.toggle("is-captions-hidden", ed.tracks.captions.hidden);
+    paintTimeline();
+    paintTexts();
+    paintFrame();
     return undefined;
   }
-  const fmt = t.closest("[data-clips-format]");
-  if (fmt) {
-    fmt.closest("details")?.removeAttribute("open");
-    const id = fmt.dataset.clipsFormat === "video" ? ed.video.settings.ratio : fmt.dataset.clipsFormat;
-    if (id === ed.w.ratioId) return undefined;
-    // A framing is made for one format (prod): a new one starts again from
-    // the auto framing — asked first when the framing holds edits.
-    const apply = () =>
-      edit(() => {
-        ed.w.ratioId = id;
-        ed.w.segments = initialSegments(ed.ctx, ed.w.startMs, ed.w.endMs);
-        sizeCanvases();
-        ce.repaintStage();
-        paintTexts();
-      });
-    if (!ed.w.segments.some((x) => x.origin === "USER")) return apply();
-    openConfirm({
-      title: "Change the format?",
-      body: `Your framing was made for ${formatLabel(ed.w.ratioId)}. In ${formatLabel(id)}, I frame the clip again from scratch.`,
-      confirmLabel: "Change the format",
-      cancelLabel: "Cancel",
-      onConfirm: apply,
-    });
-    return undefined;
-  }
-  const subs = t.closest("[data-clips-subs-preset]");
-  if (subs) {
-    subs.closest("details")?.removeAttribute("open");
-    ce.applyPreset(subs.dataset.clipsSubsPreset);
-    paintFormatPicker();
-    return undefined;
-  }
-  const dz = t.closest("[data-clips-deadzones]");
+  const fmt = t.closest("[data-nle-format]");
+  if (fmt) return pickFormat(fmt);
+  const dz = t.closest("[data-nle-deadzones]");
   if (dz) {
     dz.closest("details")?.removeAttribute("open");
-    ed.deadZones = dz.dataset.clipsDeadzones;
+    ed.deadZones = dz.dataset.nleDeadzones;
     ce.setDeadZones(ed.deadZones);
-    paintFormatPicker();
-    paintLogo();
-    return undefined;
+    paintViewerBar();
+    return paintLogo();
   }
-  const corner = t.closest("[data-clips-corner]");
+  const rate = t.closest("[data-nle-rate]");
+  if (rate) {
+    rate.closest("details")?.removeAttribute("open");
+    ed.rate = Number(rate.dataset.nleRate);
+    ed.video_el.playbackRate = ed.rate * Math.max(1, ed.shuttle);
+    return paintTransportRight();
+  }
+  const corner = t.closest("[data-nle-corner]");
   if (corner) {
     corner.closest("details")?.removeAttribute("open");
-    return edit(() => (ed.w.brand.corner = corner.dataset.clipsCorner), { timeline: false });
+    return edit(() => (ed.w.brand.corner = corner.dataset.nleCorner));
   }
-  const style = t.closest("[data-clips-text-style]");
-  if (style)
-    return edit(() => {
-      txById(style.dataset.id).style = style.dataset.clipsTextStyle;
-      paintTexts();
-    });
-  const rm = t.closest("[data-clips-text-remove]");
-  if (rm)
-    return edit(() => {
-      ed.w.texts = ed.w.texts.filter((x) => x.id !== rm.dataset.clipsTextRemove);
-      ed.selectedText = null;
-      paintTexts();
-      paintTextPop();
-    });
-  if (t.closest("[data-clips-text-done]")) return closeTextPop();
-  const pick = t.closest("[data-clips-text-pick]");
-  if (pick) {
-    ed.selectedText = pick.dataset.clipsTextPick;
-    const tx = txById(ed.selectedText);
-    if (tx) seek(ed.w.startMs + tx.startMs + 1);
-    paintTexts();
-    paintTextPop();
-    paintTimeline();
+  const anim = t.closest("[data-nle-anim]");
+  if (anim) {
+    anim.closest("details")?.removeAttribute("open");
+    const [key, val] = anim.dataset.nleAnim.split(":");
+    return edit(() => selTexts().forEach((tx) => (tx[key] = val)));
+  }
+  const style = t.closest("[data-nle-text-style]");
+  if (style) return edit(() => selTexts().forEach((tx) => (tx.style = style.dataset.nleTextStyle)));
+  // A click on the Program, off any object, clears the selection.
+  if (
+    t.closest("[data-nle-output-wrap]") &&
+    !t.closest("[data-nle-text], [data-ce-box], [data-ce-frame], [data-nle-logo]")
+  ) {
+    if (ed.sel && ed.sel.kind !== "seg") select(null);
   }
   return undefined;
 }
 
-const txById = (id) => ed.w.texts.find((x) => x.id === id);
-
-function undo() {
-  if (!ed.undo.length) return;
-  ed.redo.push(snapshot());
-  restore(ed.undo.pop());
+function pickFormat(node) {
+  node.closest("details")?.removeAttribute("open");
+  const id = node.dataset.nleFormat === "video" ? ed.video.settings.ratio : node.dataset.nleFormat;
+  if (id === ed.w.ratioId) return undefined;
+  // A framing is made for one format (prod): a new one starts again from the
+  // auto framing — asked first when the framing holds edits.
+  const apply = () => {
+    edit(() => {
+      ed.w.ratioId = id;
+      ed.w.segments = initialSegments(ed.ctx, ed.w.startMs, ed.w.endMs);
+    });
+    if (ed.sel?.kind === "seg") ed.sel = { kind: "seg", id: segmentAt(ed.w.segments, ed.t).id };
+    sizeCanvases();
+    ce.repaintStage();
+    paintViewerBar();
+    paintInspector();
+    paintTexts();
+    paintFrame();
+  };
+  if (!ed.w.segments.some((x) => x.origin === "USER")) return apply();
+  openConfirm({
+    title: "Change the format?",
+    body: `Your framing was made for ${formatLabel(ed.w.ratioId)}. In ${formatLabel(id)}, I frame the clip again from scratch.`,
+    confirmLabel: "Change the format",
+    cancelLabel: "Cancel",
+    onConfirm: apply,
+  });
+  return undefined;
 }
 
-function redo() {
-  if (!ed.redo.length) return;
-  ed.undo.push(snapshot());
-  restore(ed.redo.pop());
-}
-
-function doSplit() {
-  if (ed.tool !== "reframe") {
-    ed.tool = "reframe";
-    applyTool();
-  }
-  const { t } = snapMs(ed.ctx, Math.round(ed.t), { on: ed.snap });
-  pushUndo();
-  if (!split(ed.ctx, ed.w.segments, t)) {
-    ed.undo.pop();
-    showToast("Too close to the edge of a part to split here.", { variant: "error" });
-    return;
-  }
-  setDirty();
-  paintPanel();
-  paintTimeline();
-  paintFrame();
-  syncTlTools();
+function toggleFullscreen() {
+  const v = ed.el.querySelector("[data-nle-viewer]");
+  if (document.fullscreenElement) return document.exitFullscreen?.().catch(() => {});
+  return v.requestFullscreen?.().catch(() => showToast("Full screen isn't available here."));
 }
 
 function handleInput(e) {
   if (!ed) return;
   const t = e.target;
-  if (t.matches("[data-clips-scrubber]")) {
-    if (ed.playing) stop();
-    seek(ed.w.startMs + Number(t.value));
+  if (t.matches("[data-nle-zoom]")) return zoomFromSlider(Number(t.value));
+  if (t.matches("[data-nle-volume]")) {
+    ed.volume = Number(t.value);
+    ed.video_el.volume = ed.volume;
+    if (ed.tracks.audio.muted && ed.volume > 0) {
+      ed.tracks.audio.muted = false;
+      ed.video_el.muted = false;
+    }
+    t.style.setProperty("--fill", `${ed.volume * 100}%`);
     return;
   }
-  const seg = segmentAt(ed.w.segments, ed.t);
-  if (t.matches("[data-clips-logo-size]")) {
+  if (t.matches("[data-nle-logo-size]")) {
     ed.w.brand.logoSize = Number(t.value);
     t.style.setProperty("--fill", `${((t.value - t.min) / (t.max - t.min)) * 100}%`);
-    const val = ed.el.querySelector("[data-clips-logo-size-val]");
+    const val = ed.el.querySelector("[data-nle-logo-size-val]");
     if (val) val.textContent = `${Math.round(t.value * 100)}%`;
-    setDirtyQuiet();
+    setDirty();
     paintLogo();
     return;
   }
-  if (t.matches("[data-clips-text-field]")) {
-    const tx = txById(t.dataset.id);
-    if (!tx) return;
-    if (t.dataset.clipsTextField === "size") {
-      tx.size = Number(t.value);
-      t.style.setProperty("--fill", `${((t.value - t.min) / (t.max - t.min)) * 100}%`);
-    } else tx.text = t.value;
-    setDirtyQuiet();
+  const field = t.dataset.nleField;
+  if (field && ed.sel?.kind === "text") {
+    if (!ed.typing) {
+      pushUndo();
+      ed.typing = true;
+    }
+    for (const tx of selTexts()) {
+      if (field === "text") tx.text = t.value;
+      else if (field === "size") tx.size = Number(t.value);
+      else if (field === "x" || field === "y") tx[field] = Math.max(0, Math.min(1, Number(t.value) / 100));
+    }
+    if (t.type === "range") t.style.setProperty("--fill", `${((t.value - t.min) / (t.max - t.min)) * 100}%`);
+    const val = ed.el.querySelector(`[data-nle-val="${field}"]`);
+    if (val) val.textContent = t.value;
+    setDirty();
     paintTexts();
+    later(paintTimeline);
   }
-}
-
-// Typing and sliding mark the clip as changed without repainting the panel
-// under the cursor.
-function setDirtyQuiet() {
-  setDirty();
 }
 
 function handleChange(e) {
-  if (!ed) return;
+  if (!ed) return undefined;
   const t = e.target;
-  const seg = segmentAt(ed.w.segments, ed.t);
-  if (t.matches("[data-clips-layout-pick]")) return edit(() => setLayout(ed.ctx, seg, t.value, ed.t, ratio()));
-  if (t.matches("[data-clips-snap]")) {
-    ed.snap = t.checked;
-    return undefined;
+  ed.typing = false;
+  if (t.matches("[data-nle-layout-pick]")) {
+    const seg = selSeg() || segmentAt(ed.w.segments, ed.t);
+    return edit(() => setLayout(ed.ctx, seg, t.value, ed.t, ratio()));
   }
-  if (t.matches("[data-clips-teaser]")) return edit(() => (ed.w.teaser.on = t.checked), { timeline: false });
-  if (t.matches("[data-clips-brand]")) {
-    const key = t.dataset.clipsBrand;
+  if (t.matches("[data-nle-teaser]")) return edit(() => (ed.w.teaser.on = t.checked));
+  if (t.matches("[data-nle-brand]")) {
+    const key = t.dataset.nleBrand;
     edit(() => (ed.w.brand[key] = t.checked));
-    // A card switched on is shown right away, held on the Output.
+    paintLibrary();
     if (t.checked && (key === "intro" || key === "outro")) {
       if (ed.playing) stop();
       ed.phase = key;
@@ -1641,155 +1819,344 @@ function handleChange(e) {
     }
     return undefined;
   }
-  if (t.matches("[data-clips-text-field]") || t.matches("[data-clips-logo-size]")) {
-    pushUndo();
+  // A typed time (the transport's timecode, a text's In / Out / Duration).
+  const tf = t.dataset.nleTime;
+  if (tf) {
+    const ms = parseTC(t.value);
+    if (ms == null) return paintInspector();
+    if (tf === "playhead") {
+      seek(ed.w.startMs + ms);
+      revealPlayhead();
+      t.blur();
+      return undefined;
+    }
+    const len = clipLen();
+    return edit(() =>
+      selTexts().forEach((tx) => {
+        if (tf === "in") tx.startMs = Math.max(0, Math.min(tx.endMs - MIN_TEXT_MS, ms));
+        else if (tf === "out") tx.endMs = Math.min(len, Math.max(tx.startMs + MIN_TEXT_MS, ms));
+        else tx.endMs = Math.min(len, tx.startMs + Math.max(MIN_TEXT_MS, ms));
+      }),
+    );
+  }
+  if (t.dataset.nleField || t.matches("[data-nle-logo-size]")) {
+    paintInspector();
     paintTimeline();
   }
   return undefined;
 }
+
+function handleDblClick(e) {
+  const layer = e.target.closest("[data-nle-layer]");
+  const onVideo = e.target.closest("[data-nle-text]");
+  if (!layer && !onVideo) return;
+  const id = layer?.dataset.nleLayer || onVideo.dataset.nleText;
+  if (ed.sel?.kind !== "text" || !ed.sel.ids.includes(id)) select({ kind: "text", ids: [id] });
+  const f = ed.el.querySelector('[data-nle-field="text"]');
+  f?.focus();
+  f?.select();
+}
+
+function handleDragStart(e) {
+  const p = e.target.closest?.("[data-nle-text-preset]");
+  if (!p) return;
+  e.dataTransfer.setData("text/x-nle-preset", p.dataset.nleTextPreset);
+  e.dataTransfer.effectAllowed = "copy";
+}
+
+function handleContextMenu(e) {
+  const inTl = e.target.closest("[data-nle-scroll]");
+  const onText = e.target.closest("[data-nle-text]");
+  if (!inTl && !onText) return;
+  e.preventDefault();
+  const layer = e.target.closest("[data-nle-layer]");
+  const seg = e.target.closest("[data-nle-seg]");
+  const marker = e.target.closest("[data-nle-marker]");
+  const id = layer?.dataset.nleLayer || onText?.dataset.nleText;
+  if (id) {
+    if (ed.sel?.kind !== "text" || !ed.sel.ids.includes(id)) select({ kind: "text", ids: [id] });
+    return openMenu(e.clientX, e.clientY, { kind: "text" });
+  }
+  if (marker) {
+    select({ kind: "marker", id: marker.dataset.nleMarker });
+    return openMenu(e.clientX, e.clientY, { kind: "marker" });
+  }
+  if (seg) {
+    select({ kind: "seg", id: seg.dataset.nleSeg });
+    return openMenu(e.clientX, e.clientY, { kind: "seg", id: seg.dataset.nleSeg });
+  }
+  return openMenu(e.clientX, e.clientY, { kind: "empty" });
+}
+
+const isMod = (e) => e.metaKey || e.ctrlKey;
 
 function handleKey(e) {
   if (!ed) return;
-  if (e.key === "Escape" && ed.selectedText && !document.body.classList.contains("has-modal")) {
-    e.preventDefault();
-    return closeTextPop();
+  const k = e.key;
+  const inModal = document.body.classList.contains("has-modal");
+  if (k === "Escape" && !inModal) {
+    const menu = ed.el.querySelector("[data-nle-menu]");
+    const keys = ed.el.querySelector("[data-nle-keys]");
+    if (!menu.hidden) return closeMenu();
+    if (!keys.hidden) return toggleKeys(false);
+    if (e.target.closest?.("input, textarea")) return e.target.blur();
+    if (ed.sel) return select(null);
+    return undefined;
   }
-  // ⌘S / Ctrl+S saves, from anywhere in the editor (fields included).
-  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+  if (isMod(e) && k.toLowerCase() === "s") {
     e.preventDefault();
-    if (ed.dirty && !document.body.classList.contains("has-modal")) save();
-    return;
+    if (ed.dirty && !inModal) save();
+    return undefined;
   }
-  if (e.target.closest?.("[data-clips-splitter]") && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+  if (inModal) return undefined;
+  const gutter = e.target.closest?.("[data-nle-resize], [data-nle-splitter]");
+  if (gutter && k.startsWith("Arrow")) {
     e.preventDefault();
-    applySplit(splitPct + (e.key === "ArrowLeft" ? -2 : 2));
-    return;
+    return nudgeGutter(gutter, k);
   }
-  // The rail is a tablist: ↑ / ↓ walk the tools.
-  const tool = e.target.closest?.("[data-clips-tool]");
-  if (tool && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
-    e.preventDefault();
-    const all = [...ed.el.querySelectorAll("[data-clips-tool]")];
-    const next = all[(all.indexOf(tool) + (e.key === "ArrowDown" ? 1 : all.length - 1)) % all.length];
-    next.click();
-    ed.el.querySelector(`[data-clips-tool="${next.dataset.clipsTool}"]`)?.focus();
-    return;
-  }
-  if (e.target.closest?.("input, textarea, select, [contenteditable=true]")) return;
-  if (document.body.classList.contains("has-modal")) return;
-  // Space and the arrows belong to a control reached with the keyboard (a
-  // button presses, a radio moves). After a mouse click the focus ring isn't
-  // shown (:focus-visible), and Space plays, as in every editor.
+  if (e.target.closest?.("input, textarea, select, [contenteditable=true]")) return undefined;
+  // Space and arrows stay with a keyboard-focused control (a radio moves).
   if (
-    (e.code === "Space" || e.key.startsWith("Arrow")) &&
+    (e.code === "Space" || k.startsWith("Arrow") || k === "Enter") &&
     e.target.matches?.(":focus-visible") &&
-    e.target.closest("button, a[href], summary, [role=option], [role=menuitem], [tabindex]")
+    e.target.closest("button, a[href], summary, [role=option], [role=menuitem], [role=radio], input[type=radio]")
   )
-    return;
-  if (e.code === "Space") {
-    e.preventDefault();
-    togglePlay();
-  } else if (e.key === "s" || e.key === "S") {
-    if (!e.metaKey && !e.ctrlKey) doSplit();
-  } else if (e.key === "ArrowLeft") {
-    e.preventDefault();
-    seek(ed.t - FRAME_MS);
-  } else if (e.key === "ArrowRight") {
-    e.preventDefault();
-    seek(ed.t + FRAME_MS);
-  } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
-    e.preventDefault();
-    if (e.shiftKey) redo();
-    else undo();
+    return undefined;
+  const mod = isMod(e);
+  const lower = k.toLowerCase();
+  const hit = () => e.preventDefault();
+  if (mod && lower === "z") return (hit(), e.shiftKey ? redo() : undo());
+  if (mod && lower === "c") return copySelection() && hit();
+  if (mod && lower === "v") return (hit(), paste());
+  if (mod && lower === "d") return (hit(), duplicateSelection());
+  if (mod && lower === "a") {
+    hit();
+    return ed.w.texts.length && select({ kind: "text", ids: ed.w.texts.map((t) => t.id) });
   }
-}
-
-// ── Pointer: scrub, boundaries, the crop window, text overlays ─
-
-function handlePointerDown(e) {
-  if (!ed || e.button !== 0) return;
-  const t = e.target;
-  // A cut's join is a click — it doesn't start a scrub or a drag.
-  if (t.closest("[data-clips-join]")) return undefined;
-  if (t.closest("[data-clips-knob]")) return startDrag(e, { kind: "scrub" });
-  const bound = t.closest("[data-clips-bound]");
-  if (bound) return startDrag(e, { kind: "bound", k: Number(bound.dataset.clipsBound), el: bound });
-  if (t.closest("[data-clips-splitter]")) return startSplitDrag(e);
-  if (t.closest("[data-clips-overlay]")) return startCropDrag(e);
-  const text = t.closest("[data-clips-text]");
-  if (text) return startTextDrag(e, text);
-  const layer = t.closest("[data-clips-text-pick]");
-  if (layer)
-    return startLayerDrag(
-      e,
-      layer.dataset.clipsTextPick,
-      t.closest("[data-clips-text-edge]")?.dataset.clipsTextEdge || "move",
-    );
-  if (t.closest("[data-clips-scrub]") && !t.closest("[data-clips-seg], [data-clips-text-pick]"))
-    return startDrag(e, { kind: "scrub" });
+  if (mod && lower === "k") return (hit(), splitAtPlayhead());
+  if (mod && (k === "=" || k === "+")) return (hit(), zoomBy(1.6));
+  if (mod && (k === "-" || k === "_")) return (hit(), zoomBy(1 / 1.6));
+  if (mod) return undefined;
+  if (e.altKey && k.startsWith("Arrow") && selTexts().length) {
+    hit();
+    const d = e.shiftKey ? 0.05 : 0.01;
+    const dx = k === "ArrowLeft" ? -d : k === "ArrowRight" ? d : 0;
+    const dy = k === "ArrowUp" ? -d : k === "ArrowDown" ? d : 0;
+    if (!ed.nudging) pushUndo();
+    ed.nudging = true;
+    clearTimeout(ed.nudgeT);
+    ed.nudgeT = setTimeout(() => ed && (ed.nudging = false), 600);
+    selTexts().forEach((tx) => {
+      tx.x = Math.max(0.02, Math.min(0.98, tx.x + dx));
+      tx.y = Math.max(0.02, Math.min(0.98, tx.y + dy));
+    });
+    setDirty();
+    paintTexts();
+    return later(paintInspector);
+  }
+  if (e.code === "Space") return (hit(), togglePlay());
+  switch (k) {
+    case "ArrowLeft":
+    case "ArrowRight": {
+      hit();
+      if (ed.playing) stop();
+      const step = e.shiftKey ? 1000 : FRAME_MS;
+      seek(ed.t + (k === "ArrowRight" ? step : -step));
+      return revealPlayhead();
+    }
+    case "ArrowUp":
+    case "ArrowDown":
+      hit();
+      if (ed.playing) stop();
+      return jumpEdit(k === "ArrowDown" ? 1 : -1);
+    case "Home":
+    case "End":
+      hit();
+      if (ed.playing) stop();
+      seek(k === "Home" ? ed.w.startMs : ed.w.endMs - 1);
+      return revealPlayhead();
+    case "Delete":
+    case "Backspace":
+      hit();
+      return deleteSelection();
+    case "?":
+    case "/":
+      hit();
+      return toggleKeys();
+    default:
+      break;
+  }
+  switch (lower) {
+    case "k":
+      return ed.playing && stop();
+    case "l":
+      if (ed.playing && ed.shuttle > 0) {
+        ed.shuttle = Math.min(4, ed.shuttle * 2);
+        ed.video_el.playbackRate = ed.rate * ed.shuttle;
+        return undefined;
+      }
+      if (ed.playing) stop();
+      return play(1);
+    case "j":
+      if (ed.playing && ed.shuttle < 0) {
+        ed.shuttle = Math.max(-4, ed.shuttle * 2);
+        return undefined;
+      }
+      if (ed.playing) stop();
+      return play(-1);
+    case "s":
+      return splitAtPlayhead();
+    case "i":
+      return setInOut("in");
+    case "o":
+      return setInOut("out");
+    case "t":
+      return addText("body");
+    case "m":
+      return addMarker();
+    case "n":
+      ed.snap = !ed.snap;
+      showToast(ed.snap ? "Snapping on." : "Snapping off.");
+      return paintTimeline();
+    case "v":
+    case "b":
+      ed.tool = lower === "b" ? "blade" : "select";
+      return paintTimeline();
+    case "f":
+      return toggleFullscreen();
+    default:
+      break;
+  }
+  if (k === "Z" && e.shiftKey) return fitTimeline();
   return undefined;
 }
 
-function startDrag(e, d) {
+// ── Pointer: gutters, crop, texts on the video; the timeline's own ──
+
+function handlePointerDown(e) {
+  if (!ed) return undefined;
+  if (e.button === 2) return undefined;
+  if (e.button !== 0) return undefined;
+  const t = e.target;
+  if (!t.closest("[data-nle-menu]")) closeMenu();
+  const keys = ed.el.querySelector("[data-nle-keys]");
+  if (!keys.hidden && !t.closest("[data-nle-keys]")) toggleKeys(false);
+  const gutter = t.closest("[data-nle-resize]");
+  if (gutter) return startGutterDrag(e, gutter.dataset.nleResize);
+  if (t.closest("[data-nle-splitter]")) return startSplitDrag(e);
+  if (t.closest("[data-nle-overlay]")) return startCropDrag(e);
+  const handle = t.closest("[data-nle-text-handle]");
+  if (handle) return startTextResize(e, handle);
+  const text = t.closest("[data-nle-text]");
+  if (text) return startTextDrag(e, text);
+  if (t.closest("[data-ce-box], [data-ce-frame]") && !ed.tracks.captions.locked) {
+    if (ed.sel?.kind !== "captions") select({ kind: "captions" });
+    return undefined;
+  }
+  if (t.closest("[data-nle-logo]")) return select({ kind: "brand", item: "logo" });
+  if (t.closest("[data-nle-scroll]")) return timelinePointerDown(e);
+  return undefined;
+}
+
+// ── Gutters ──
+
+const LIMITS = { left: [220, 460], right: [260, 460] };
+
+function applyLayout() {
+  const root = ed.el.querySelector("[data-nle-root]");
+  const L = ed.layout;
+  root.style.setProperty("--nle-left", `${L.left}px`);
+  root.style.setProperty("--nle-right", `${L.right}px`);
+  root.style.setProperty("--nle-tl", `${L.tl}px`);
+}
+
+function clampLayout() {
+  const L = ed.layout;
+  const h = ed.el.querySelector("[data-nle-root]").clientHeight || 800;
+  L.left = Math.max(LIMITS.left[0], Math.min(LIMITS.left[1], L.left));
+  L.right = Math.max(LIMITS.right[0], Math.min(LIMITS.right[1], L.right));
+  L.tl = Math.max(160, Math.min(Math.round(h * 0.65), L.tl));
+}
+
+function startGutterDrag(e, which) {
   e.preventDefault();
-  ed.drag = d;
-  ed.el.querySelector("[data-clips-timeline]").dataset.drag = d.kind;
-  if (d.kind !== "scrub") pushUndo();
-  const move = (ev) => onDragMove(ev);
+  const g = e.target.closest("[data-nle-resize]");
+  g.classList.add("is-dragging");
+  g.setPointerCapture?.(e.pointerId);
+  const x0 = e.clientX;
+  const y0 = e.clientY;
+  const L0 = { ...ed.layout };
+  const move = (ev) => {
+    if (which === "left") ed.layout.left = L0.left + (ev.clientX - x0);
+    else if (which === "right") ed.layout.right = L0.right - (ev.clientX - x0);
+    else ed.layout.tl = L0.tl - (ev.clientY - y0);
+    clampLayout();
+    applyLayout();
+  };
   const up = () => {
+    g.classList.remove("is-dragging");
     window.removeEventListener("pointermove", move);
     window.removeEventListener("pointerup", up);
-    onDragEnd();
+    writeLayout();
   };
   window.addEventListener("pointermove", move);
   window.addEventListener("pointerup", up);
-  onDragMove(e);
 }
 
-function onDragMove(e) {
-  const d = ed.drag;
-  if (!d) return;
-  const ms = msAt(e.clientX);
-  if (d.kind === "scrub") return seek(snapMs(ed.ctx, ms, { on: ed.snap, radiusMs: 0 }).t);
-  if (d.kind === "bound") {
-    const { t, snapped } = snapMs(ed.ctx, Math.round(ms), { on: ed.snap });
-    const v = moveBoundary(ed.ctx, ed.w.segments, d.k, t);
-    d.at = v;
-    d.label = `${fmtPrecise(v - ed.w.startMs)}${snapped ? " · on the cut" : ""}`;
-    paintTimeline();
-    ed.el.querySelector(`[data-clips-bound="${d.k}"]`)?.classList.toggle("is-snapped", snapped);
-    return seek(v);
-  }
+function nudgeGutter(g, k) {
+  if (g.matches("[data-nle-splitter]")) return applySplit(splitPct + (k === "ArrowLeft" ? -2 : 2));
+  const which = g.dataset.nleResize;
+  const d = 16;
+  if (which === "left") ed.layout.left += k === "ArrowRight" ? d : k === "ArrowLeft" ? -d : 0;
+  if (which === "right") ed.layout.right += k === "ArrowLeft" ? d : k === "ArrowRight" ? -d : 0;
+  if (which === "tl") ed.layout.tl += k === "ArrowUp" ? d : k === "ArrowDown" ? -d : 0;
+  clampLayout();
+  applyLayout();
+  writeLayout();
   return undefined;
 }
 
-function onDragEnd() {
-  const d = ed.drag;
-  ed.drag = null;
-  delete ed.el.querySelector("[data-clips-timeline]").dataset.drag;
-  if (!d) return;
-  if (d.kind === "bound") {
-    settleBoundary(ed.ctx, ed.w.segments, d.k);
-    setDirty();
-    paintPanel();
-  }
-  // A grab that changed nothing leaves nothing to undo.
-  if (d.kind !== "scrub" && ed.undo.at(-1) === snapshot()) {
-    ed.undo.pop();
-    syncTopbar();
-  }
-  paintTimeline();
+// Source / Program split, in % of the stage.
+let splitPct = 55;
+
+function applySplit(pct) {
+  splitPct = Math.max(30, Math.min(80, pct));
+  const stage = ed.el.querySelector("[data-nle-stage]");
+  stage.style.setProperty("--nle-split", `${splitPct}%`);
+  ed.el.querySelector("[data-nle-splitter]")?.setAttribute("aria-valuenow", String(Math.round(splitPct)));
+  sizeCanvases();
   paintFrame();
+  paintTexts();
+  ce.repaintStage();
 }
 
-// The crop window on the source: drag inside to move it, drag a corner to
-// zoom (in Two, that window only). Faces are never shown nor clicked (prod).
+function startSplitDrag(e) {
+  const handle = e.target.closest("[data-nle-splitter]");
+  const stage = ed.el.querySelector("[data-nle-stage]");
+  const r = stage.getBoundingClientRect();
+  e.preventDefault();
+  handle.classList.add("is-dragging");
+  handle.setPointerCapture?.(e.pointerId);
+  const move = (ev) => applySplit(((ev.clientX - r.left) / r.width) * 100);
+  const up = () => {
+    handle.classList.remove("is-dragging");
+    window.removeEventListener("pointermove", move);
+    window.removeEventListener("pointerup", up);
+  };
+  window.addEventListener("pointermove", move);
+  window.addEventListener("pointerup", up);
+}
+
+// ── The crop window on the Source ──
+
 function startCropDrag(e) {
-  const ov = ed.el.querySelector("[data-clips-overlay]");
+  if (ed.tracks.video.locked) return;
+  const ov = ed.el.querySelector("[data-nle-overlay]");
   const r = ov.getBoundingClientRect();
   const at = (ev) => [(ev.clientX - r.left) / r.width, (ev.clientY - r.top) / r.height];
   const [px, py] = at(e);
   const seg = segmentAt(ed.w.segments, ed.t);
+  if (ed.sel?.kind !== "seg" || ed.sel.id !== seg.id) select({ kind: "seg", id: seg.id });
   const res = currentRes();
   const near = (w) => corners(w).some(([x, y]) => Math.abs(x - px) * r.width < 12 && Math.abs(y - py) * r.height < 12);
   const inside = (w) => px >= w.x && px <= w.x + w.w && py >= w.y && py <= w.y + w.h;
@@ -1834,7 +2201,7 @@ function startCropDrag(e) {
     window.removeEventListener("pointerup", up);
     if (!moved) return void ed.undo.pop();
     setDirty();
-    paintPanel();
+    paintInspector();
     paintTimeline();
     paintFrame();
   };
@@ -1844,171 +2211,84 @@ function startCropDrag(e) {
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
-// Source / Output split, in % of the stage: dragged, or nudged with the arrow
-// keys on the focused handle. Kept for the session.
-let splitPct = 64;
-
-function applySplit(pct) {
-  splitPct = Math.max(30, Math.min(80, pct));
-  const stage = ed.el.querySelector("[data-clips-stage]");
-  stage.style.setProperty("--clips-split", `${splitPct}%`);
-  ed.el.querySelector("[data-clips-splitter]")?.setAttribute("aria-valuenow", String(Math.round(splitPct)));
-  sizeCanvases();
-  paintFrame();
-  ce.repaintStage();
-}
-
-function startSplitDrag(e) {
-  const handle = e.target.closest("[data-clips-splitter]");
-  const stage = ed.el.querySelector("[data-clips-stage]");
-  const r = stage.getBoundingClientRect();
-  e.preventDefault();
-  handle.classList.add("is-dragging");
-  handle.setPointerCapture?.(e.pointerId);
-  const move = (ev) => applySplit(((ev.clientX - r.left) / r.width) * 100);
-  const up = () => {
-    handle.classList.remove("is-dragging");
-    window.removeEventListener("pointermove", move);
-    window.removeEventListener("pointerup", up);
-  };
-  window.addEventListener("pointermove", move);
-  window.addEventListener("pointerup", up);
-}
+// ── Texts on the Program: drag to place (magnetic centre lines), corners to size ──
 
 function startTextDrag(e, node) {
-  const out = ed.el.querySelector("[data-clips-output]");
+  const out = ed.el.querySelector("[data-nle-output]");
   const r = out.getBoundingClientRect();
-  const tx = txById(node.dataset.clipsText);
+  const tx = txById(node.dataset.nleText);
   if (!tx) return;
   e.preventDefault();
   e.stopPropagation();
-  ed.selectedText = tx.id;
+  const additive = e.shiftKey;
+  if (additive || ed.sel?.kind !== "text" || !ed.sel.ids.includes(tx.id))
+    select({ kind: "text", ids: [tx.id] }, { additive });
+  if (ed.tracks.text.locked) return;
   pushUndo();
   const sx = e.clientX;
   const sy = e.clientY;
-  const ox = tx.x;
-  const oy = tx.y;
-  const guides = { x: out.querySelector('[data-clips-guide="x"]'), y: out.querySelector('[data-clips-guide="y"]') };
+  const items = selTexts().map((t) => ({ t, x: t.x, y: t.y }));
+  const guides = { x: out.querySelector('[data-nle-guide="x"]'), y: out.querySelector('[data-nle-guide="y"]') };
   const move = (ev) => {
-    tx.x = Math.max(0.05, Math.min(0.95, ox + (ev.clientX - sx) / r.width));
-    tx.y = Math.max(0.05, Math.min(0.95, oy + (ev.clientY - sy) / r.height));
-    // Magnetic: within 8px of the video's centre line, the text sits on it
-    // and the line shows. Alt held drags freely.
-    for (const [k, size] of [
+    const dx = (ev.clientX - sx) / r.width;
+    const dy = (ev.clientY - sy) / r.height;
+    for (const it of items) {
+      it.t.x = Math.max(0.05, Math.min(0.95, it.x + dx));
+      it.t.y = Math.max(0.05, Math.min(0.95, it.y + dy));
+    }
+    // Magnetic: within 8 px of the video's centre lines; Alt drags freely.
+    for (const [key, size] of [
       ["x", r.width],
       ["y", r.height],
     ]) {
-      const on = !ev.altKey && Math.abs(tx[k] - 0.5) * size <= 8;
-      if (on) tx[k] = 0.5;
-      guides[k].hidden = !on;
+      const on = items.length === 1 && !ev.altKey && Math.abs(tx[key] - 0.5) * size <= 8;
+      if (on) tx[key] = 0.5;
+      guides[key].hidden = !on;
     }
-    node.style.left = `${tx.x * 100}%`;
-    node.style.top = `${tx.y * 100}%`;
+    for (const it of items) {
+      const n = ed.el.querySelector(`[data-nle-text="${CSS.escape(it.t.id)}"]`);
+      if (n) {
+        n.style.left = `${it.t.x * 100}%`;
+        n.style.top = `${it.t.y * 100}%`;
+      }
+    }
   };
   const up = () => {
     window.removeEventListener("pointermove", move);
     window.removeEventListener("pointerup", up);
     guides.x.hidden = guides.y.hidden = true;
+    dropNoopUndo();
     setDirty();
     paintTexts();
-    paintTextPop();
-    paintTimeline();
+    paintInspector();
   };
   window.addEventListener("pointermove", move);
   window.addEventListener("pointerup", up);
 }
 
-// A text's layer on the Text track: the body moves it in time, an edge sets
-// its start or its end. A press that doesn't move is a click (it selects).
-function startLayerDrag(e, id, part) {
-  const tx = txById(id);
-  if (!tx) return;
+function startTextResize(e, handle) {
+  const node = handle.closest("[data-nle-text]");
+  const tx = txById(node.dataset.nleText);
+  if (!tx || ed.tracks.text.locked) return;
   e.preventDefault();
+  e.stopPropagation();
   pushUndo();
-  const x0 = e.clientX;
-  const m0 = msAt(e.clientX);
-  const { startMs: s0, endMs: e0 } = tx;
-  const len = clipLen();
-  const MIN = 500;
-  let moved = false;
-  const tl = ed.el.querySelector("[data-clips-timeline]");
-  tl.dataset.drag = part === "move" ? "layer" : "bound";
-  // Magnetic (2026-11-23): an edge within 8px of something worth lining up
-  // with lands on it — the clip's ends, the playhead, the other texts, the
-  // camera cuts, the framing parts. Alt held drags freely.
-  const targets = [
-    [0, "the clip's start"],
-    [len, "the clip's end"],
-    [ed.t - ed.w.startMs, "the playhead"],
-    ...ed.w.texts
-      .filter((o) => o.id !== id)
-      .flatMap((o) => [
-        [o.startMs, "a text"],
-        [o.endMs, "a text"],
-      ]),
-    ...ed.ctx.cuts.map((c) => [c - ed.w.startMs, "a camera cut"]),
-    ...ed.w.segments.slice(1).map((g) => [g.startMs - ed.w.startMs, "a part"]),
-  ].filter(([t]) => t >= 0 && t <= len);
-  const radius = () =>
-    (8 / ed.el.querySelector("[data-clips-tracks]").getBoundingClientRect().width) * ed.viewport.span;
-  // The nearest target to any of the edges given, as [shift, target, label].
-  const snap = (edges, free) => {
-    if (free) return null;
-    let best = null;
-    for (const edge of edges)
-      for (const [t, name] of targets) {
-        const dd = t - edge;
-        if (Math.abs(dd) <= radius() && (!best || Math.abs(dd) < Math.abs(best[0]))) best = [dd, t, name];
-      }
-    return best;
-  };
+  const box = node.getBoundingClientRect();
+  const cx = box.left + box.width / 2;
+  const cy = box.top + box.height / 2;
+  const d0 = Math.hypot(e.clientX - cx, e.clientY - cy) || 1;
+  const s0 = tx.size;
   const move = (ev) => {
-    if (!moved && Math.abs(ev.clientX - x0) < 3) return;
-    moved = true;
-    const d = msAt(ev.clientX) - m0;
-    let hit = null;
-    if (part === "start") {
-      let st = s0 + d;
-      hit = snap([st], ev.altKey);
-      if (hit) st += hit[0];
-      tx.startMs = Math.round(Math.max(0, Math.min(e0 - MIN, st)));
-    } else if (part === "end") {
-      let en = e0 + d;
-      hit = snap([en], ev.altKey);
-      if (hit) en += hit[0];
-      tx.endMs = Math.round(Math.min(len, Math.max(s0 + MIN, en)));
-    } else {
-      let st = s0 + d;
-      hit = snap([st, st + (e0 - s0)], ev.altKey);
-      if (hit) st += hit[0];
-      st = Math.round(Math.max(0, Math.min(len - (e0 - s0), st)));
-      tx.startMs = st;
-      tx.endMs = st + (e0 - s0);
-    }
-    ed.selectedText = tx.id;
-    const at = part === "end" ? tx.endMs : tx.startMs;
-    ed.drag = {
-      kind: "layer",
-      at: ed.w.startMs + at,
-      guide: hit ? ed.w.startMs + hit[1] : null,
-      label: `${fmtPrecise(tx.startMs)} → ${fmtPrecise(tx.endMs)}${hit ? ` · on ${hit[2]}` : ""}`,
-    };
-    seek(ed.w.startMs + (part === "end" ? tx.endMs - 1 : tx.startMs + 1));
+    const d = Math.hypot(ev.clientX - cx, ev.clientY - cy);
+    tx.size = Math.round(Math.max(24, Math.min(160, (s0 * d) / d0)));
     paintTexts();
-    paintTimeline();
   };
   const up = () => {
     window.removeEventListener("pointermove", move);
     window.removeEventListener("pointerup", up);
-    ed.drag = null;
-    delete tl.dataset.drag;
-    if (!moved) {
-      ed.undo.pop();
-      return;
-    }
+    dropNoopUndo();
     setDirty();
-    paintTimeline();
-    paintTextPop();
+    paintInspector();
   };
   window.addEventListener("pointermove", move);
   window.addEventListener("pointerup", up);

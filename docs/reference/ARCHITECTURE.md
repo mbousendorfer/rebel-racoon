@@ -171,7 +171,8 @@ src/
                           views (the layout switch) · layouts/{cockpit, mob_index, mob_side} ·
                           read · pieces · charts (Highcharts, vendored)
     clips/                the Clips space (flag `clipsSpace`): library (/clips) · project (/clips/:id) ·
-                          editor (/clips/:id/edit/:clipId) · shared · open-in-clips (the door from a chat)
+                          editor (/clips/:id/edit/:clipId: editor.js the core, editor-timeline.js the
+                          tracks, editor-panels.js the library + inspector) · shared · open-in-clips
     _analyse-common.js  — shared "chat bubble + numbered picker bar" wizard primitives
     session/
       intake-lifecycle.js — flips source-intake turns loading→ready as sources process

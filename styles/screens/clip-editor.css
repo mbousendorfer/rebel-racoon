@@ -1,0 +1,1588 @@
+/* The clip editor (src/screens/clips/editor*.js), rebuilt 2026-11-23 as a
+   desktop editing workspace: library · viewer · inspector over a full-width
+   timeline, every pane resizable (--nle-left / --nle-right / --nle-tl, set by
+   the gutters and remembered). Light DS like the rest of the Clips space; the
+   footage alone sits on black wells. Blue is for what's interactive and what's
+   selected; tracks and objects are told apart by structure, label and icon,
+   never by a colour per type. */
+
+/* ── The workspace ─────────────────────────────────────────────────── */
+
+.nle {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--nle-left, 300px) 5px minmax(0, 1fr) 5px var(--nle-right, 320px);
+  grid-template-rows: minmax(0, 1fr) 5px var(--nle-tl, 300px);
+  grid-template-areas:
+    "lib gl view gr insp"
+    "gt gt gt gt gt"
+    "tl tl tl tl tl";
+  height: 100%;
+  min-height: 0;
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-body-size);
+}
+
+.nle-lib {
+  grid-area: lib;
+}
+.nle-gutter[data-nle-resize="left"] {
+  grid-area: gl;
+}
+.nle-viewer {
+  grid-area: view;
+}
+.nle-gutter[data-nle-resize="right"] {
+  grid-area: gr;
+}
+.nle-insp {
+  grid-area: insp;
+}
+.nle-gutter--h {
+  grid-area: gt;
+}
+.nle-tl {
+  grid-area: tl;
+}
+
+.nle-lib,
+.nle-insp,
+.nle-viewer,
+.nle-tl {
+  min-width: 0;
+  min-height: 0;
+  background: var(--ref-color-white);
+}
+
+/* A gutter: a hairline that turns into a blue grip on hover and while dragged. */
+.nle-gutter {
+  position: relative;
+  z-index: 3;
+  background: var(--ref-color-grey-05);
+  touch-action: none;
+}
+.nle-gutter--v {
+  cursor: col-resize;
+}
+.nle-gutter--h {
+  cursor: row-resize;
+}
+.nle-gutter::after {
+  content: "";
+  position: absolute;
+  background: var(--ref-color-grey-20);
+  transition: background-color var(--ref-animation-short) ease;
+}
+.nle-gutter--v::after {
+  inset: 0 2px;
+}
+.nle-gutter--h::after {
+  inset: 2px 0;
+}
+.nle-gutter:hover::after,
+.nle-gutter.is-dragging::after,
+.nle-gutter:focus-visible::after {
+  background: var(--ref-color-electric-blue-100);
+}
+.nle-gutter:focus-visible {
+  outline: none;
+}
+
+/* The top bar */
+.nle-title {
+  min-width: 0;
+  max-width: min(420px, 32vw);
+  margin: 0 0 0 var(--ref-spacing-xxs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ref-color-grey-100);
+}
+.nle-topbar-actions,
+.nle-clipnav {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+.nle-clipnav {
+  margin-left: var(--ref-spacing-sm);
+  padding-left: var(--ref-spacing-sm);
+  border-left: 1px solid var(--ref-color-grey-20);
+}
+.nle-clipnav__label {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  white-space: nowrap;
+}
+
+/* Icon buttons of the editor's toolbars: transparent, 32 px; a toggle shows its
+   state in blue. Drawn glyphs follow the DS icons' size and colour. */
+.nle-ib {
+  flex: none;
+}
+.nle-ib--sm {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+}
+.nle-ib[aria-pressed="true"] {
+  background: var(--ref-color-electric-blue-10);
+  color: var(--ref-color-electric-blue-100);
+}
+.nle-glyph {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+.nle-kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 var(--ref-spacing-xxxs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-bottom-width: 2px;
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-white);
+  font: inherit;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ── Library (left) and inspector (right) ─────────────────────────── */
+
+.nle-lib,
+.nle-insp {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.nle-lib__tabs {
+  flex: none;
+  padding: 0 var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+.nle-lib__tabs .ap-tabs-nav {
+  border-bottom: 0;
+}
+
+.nle-lib__body,
+.nle-insp__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm);
+}
+
+.nle-insp__head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  height: 48px;
+  box-sizing: border-box;
+  padding: 0 var(--ref-spacing-xs) 0 var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+.nle-insp__icon {
+  display: inline-flex;
+  color: var(--ref-color-grey-80);
+}
+.nle-insp__title {
+  flex: 1;
+  margin: 0;
+  font-size: var(--sys-text-style-h3-size);
+  font-weight: var(--sys-text-style-h3-weight);
+  line-height: var(--sys-text-style-h3-line-height);
+}
+.nle-insp__foot {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.nle-sec {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding-bottom: var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+.nle-sec:last-of-type {
+  border-bottom: 0;
+}
+.nle-sec__title {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  font-size: var(--sys-text-style-h4-size);
+  font-weight: var(--sys-text-style-h4-weight);
+  line-height: var(--sys-text-style-h4-line-height);
+}
+.nle-count {
+  font-weight: var(--sys-text-style-body-weight);
+  color: var(--ref-color-grey-80);
+}
+.nle-lead,
+.nle-hint {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+.nle-fact {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+.nle-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+.nle-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+}
+
+.nle-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+}
+.nle-facts div {
+  min-width: 0;
+}
+.nle-facts dt {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+.nle-facts dd {
+  margin: 0;
+  font-weight: var(--sys-text-style-body-bold-weight);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.nle-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+.nle-field__label {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+.nle-val {
+  color: var(--ref-color-grey-100);
+  font-variant-numeric: tabular-nums;
+}
+.nle-num input,
+.nle-tcfield input {
+  width: 100%;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+.nle-grid2,
+.nle-grid3 {
+  display: grid;
+  gap: var(--ref-spacing-xs);
+}
+.nle-grid2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.nle-grid3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.nle-radios {
+  display: flex;
+  gap: var(--ref-spacing-md);
+}
+.nle-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  cursor: pointer;
+}
+
+.nle-toggle {
+  align-self: flex-start;
+}
+
+.nle-select {
+  width: auto;
+  position: relative;
+}
+.nle-select--block {
+  width: 100%;
+}
+.nle-select .ap-select-dropdown {
+  z-index: 20;
+}
+.nle-select--up .ap-select-dropdown {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+.nle-dz-icon {
+  margin-right: var(--ref-spacing-xxxs);
+}
+
+/* Library · Transcript */
+.nle-legend__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  list-style: none;
+  cursor: pointer;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+.nle-legend__toggle::-webkit-details-marker {
+  display: none;
+}
+.nle-legend__toggle i {
+  transition: transform var(--ref-animation-short) ease;
+}
+.nle-legend[open] .nle-legend__toggle i {
+  transform: rotate(90deg);
+}
+.nle-legend__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  margin: var(--ref-spacing-xs) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+.nle-legend__list li {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+.nle-words {
+  flex: 1;
+  padding-top: var(--ref-spacing-xs);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+/* Library · Text: the presets, each on a small black well like the video. */
+.nle-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+  gap: var(--ref-spacing-xs);
+}
+.nle-preset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xxs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-md);
+  background: var(--ref-color-white);
+  text-align: left;
+  cursor: grab;
+  transition: border-color var(--ref-animation-short) ease;
+}
+.nle-preset:hover,
+.nle-preset:focus-visible {
+  border-color: var(--ref-color-electric-blue-100);
+}
+.nle-preset__well {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-grey-150);
+}
+.nle-preset .nle-preset__sample {
+  left: 50%;
+  max-width: 86%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+  cursor: inherit;
+}
+.nle-preset__name {
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+.nle-preset__hint {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.nle-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.nle-list__item {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border: 0;
+  border-radius: var(--app-radius-sm);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.nle-list__item:hover {
+  background: var(--ref-color-electric-blue-05);
+}
+.nle-list__item.is-selected {
+  background: var(--ref-color-electric-blue-10);
+  color: var(--ref-color-electric-blue-150);
+}
+.nle-list__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nle-list__meta {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Library · Brand */
+.nle-brandrow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  padding-bottom: var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+.nle-brandrow .nle-hint {
+  grid-column: 1;
+}
+.nle-brandrow .ap-button {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+/* Inspector · Clip: the formats */
+.nle-fmts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+.nle-fmt {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-md);
+  background: var(--ref-color-white);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--ref-animation-short) ease;
+}
+.nle-fmt:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+.nle-fmt.is-on {
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-05);
+}
+.nle-fmt__shape {
+  flex: none;
+  height: 28px;
+  max-width: 36px;
+  border: 1.5px solid var(--ref-color-grey-80);
+  border-radius: 3px;
+}
+.nle-fmt__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+.nle-fmt__name {
+  font-size: var(--sys-text-style-body-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+.nle-teaser.is-off {
+  opacity: 0.5;
+}
+.nle-teaser {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+}
+
+/* Inspector · Framing: the layouts, drawn as what they do to a vertical frame */
+.nle-layouts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ref-spacing-xs);
+}
+.nle-layout > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  text-align: center;
+}
+.nle-layout.is-off {
+  opacity: 0.55;
+}
+.nle-layout__glyph {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 26px;
+  height: 44px;
+  margin-bottom: var(--ref-spacing-xxs);
+  border: 1.5px solid var(--ref-color-grey-80);
+  border-radius: 4px;
+  color: var(--ref-color-grey-80);
+}
+.nle-layout__person {
+  width: 10px;
+  height: 10px;
+  border-radius: 50% 50% 3px 3px;
+  background: var(--ref-color-grey-40);
+}
+.nle-layout__inset {
+  width: 20px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--ref-color-grey-40);
+}
+.nle-layout__name {
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+.nle-layout__hint {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.nle-capsrc {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-caption-size);
+}
+
+/* ── Viewer ───────────────────────────────────────────────────────── */
+
+.nle-viewer {
+  display: flex;
+  flex-direction: column;
+}
+
+.nle-viewer__bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+  height: 48px;
+  box-sizing: border-box;
+  padding: 0 var(--ref-spacing-xs) 0 var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+.nle-viewer__opts {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+}
+.nle-viewer__opts .ap-select-dropdown {
+  right: 0;
+  left: auto;
+}
+
+.nle-viewer__stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  user-select: none;
+}
+
+.nle-monitor {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.nle-monitor--source {
+  display: none;
+  flex: 0 0 var(--nle-split, 55%);
+}
+.nle-monitor--program {
+  flex: 1 1 0;
+}
+[data-mode="dual"] .nle-monitor--source {
+  display: flex;
+}
+.nle-monitor__bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+  height: 32px;
+  padding: 0 var(--ref-spacing-sm);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+[data-mode="dual"] .nle-monitor__bar {
+  display: flex;
+}
+.nle-monitor__name {
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+.nle-monitor__meta {
+  font-variant-numeric: tabular-nums;
+}
+.nle-monitor__body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ref-spacing-sm);
+  background: var(--ref-color-grey-05);
+}
+
+.nle-splitter {
+  display: none;
+  position: relative;
+  flex: none;
+  width: 9px;
+  cursor: col-resize;
+  touch-action: none;
+}
+[data-mode="dual"] .nle-splitter {
+  display: block;
+}
+.nle-splitter::after {
+  content: "";
+  position: absolute;
+  inset: 0 4px;
+  background: var(--ref-color-grey-20);
+  transition: background-color var(--ref-animation-short) ease;
+}
+.nle-splitter:hover::after,
+.nle-splitter.is-dragging::after,
+.nle-splitter:focus-visible::after {
+  background: var(--ref-color-electric-blue-100);
+}
+.nle-splitter:focus-visible {
+  outline: none;
+}
+
+.nle-source {
+  position: relative;
+  background: #000;
+}
+.nle-video,
+.nle-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.nle-overlay {
+  cursor: grab;
+  touch-action: none;
+}
+
+.nle-output {
+  position: relative;
+  overflow: hidden;
+  background: #000;
+  border-radius: var(--app-radius-sm);
+}
+.nle-output.is-outside::after {
+  content: "Outside the clip";
+  position: absolute;
+  inset: auto 0 0;
+  padding: var(--ref-spacing-xxs);
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--ref-color-white);
+  font-size: var(--sys-text-style-caption-size);
+  text-align: center;
+}
+.nle-out-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The footage wells' loading sheen (shared.js marks them ready). */
+.nle-well:not(.is-ready) .nle-output {
+  opacity: 0.6;
+}
+
+/* The captions are placed when they're selected; otherwise only shown. */
+.nle:not([data-sel="captions"]) .cap-ed-frame {
+  display: none;
+}
+.nle .cap-ed-box {
+  cursor: pointer;
+}
+.nle[data-phase="intro"] .cap-ed-box,
+.nle[data-phase="outro"] .cap-ed-box,
+.nle.is-captions-hidden .cap-ed-box,
+.nle.is-captions-hidden .cap-ed-frame {
+  display: none;
+}
+
+.nle-texts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.nle-text {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  max-width: 88%;
+  padding: 0.2em 0.45em;
+  font-family: Montserrat, Roboto, sans-serif;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  white-space: pre-wrap;
+  pointer-events: auto;
+  cursor: move;
+}
+.nle-text--box {
+  background: #fff;
+  color: #111;
+  border-radius: 0.25em;
+}
+.nle-text--plain {
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+.nle-text.is-off {
+  display: none;
+}
+.nle-text.is-selected {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 3px;
+}
+.nle-text__handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--ref-color-electric-blue-100);
+  border-radius: 2px;
+  background: var(--ref-color-white);
+}
+.nle-text__handle--nw {
+  top: -9px;
+  left: -9px;
+  cursor: nwse-resize;
+}
+.nle-text__handle--ne {
+  top: -9px;
+  right: -9px;
+  cursor: nesw-resize;
+}
+.nle-text__handle--se {
+  bottom: -9px;
+  right: -9px;
+  cursor: nwse-resize;
+}
+.nle-text__handle--sw {
+  bottom: -9px;
+  left: -9px;
+  cursor: nesw-resize;
+}
+
+.nle-guide {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  border: 0 dashed var(--ref-color-electric-blue-100);
+}
+.nle-guide--v {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  border-left-width: 1px;
+}
+.nle-guide--h {
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top-width: 1px;
+}
+
+.nle-logo {
+  position: absolute;
+  margin: 5%;
+  cursor: pointer;
+}
+.nle-logo.is-selected {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 3px;
+}
+.nle-logo[data-corner="tl"] {
+  top: var(--dz-top, 0);
+  left: 0;
+}
+.nle-logo[data-corner="tr"] {
+  top: var(--dz-top, 0);
+  right: var(--dz-right, 0);
+}
+.nle-logo[data-corner="bl"] {
+  bottom: var(--dz-bottom, 0);
+  left: 0;
+}
+.nle-logo[data-corner="br"] {
+  bottom: var(--dz-bottom, 0);
+  right: var(--dz-right, 0);
+}
+
+/* Full screen: the viewer alone, on black. */
+.nle-viewer:fullscreen {
+  background: #000;
+}
+.nle-viewer:fullscreen .nle-viewer__bar,
+.nle-viewer:fullscreen .nle-transport,
+.nle-viewer:fullscreen .nle-monitor__bar {
+  background: var(--ref-color-white);
+}
+.nle-viewer:fullscreen .nle-monitor__body {
+  background: #000;
+}
+
+/* Transport: the timecode left, the deck centred, speed and volume right. */
+.nle-transport {
+  flex: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  height: 52px;
+  box-sizing: border-box;
+  padding: 0 var(--ref-spacing-sm);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+.nle-transport__tc {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+/* A fixed box for the time: Averta's digits aren't all the same width. */
+.nle-tc {
+  width: 10ch;
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
+  border: 1px solid transparent;
+  border-radius: var(--app-radius-sm);
+  background: none;
+  font: inherit;
+  font-size: var(--sys-text-style-h3-size);
+  font-weight: var(--sys-text-style-h3-weight);
+  font-variant-numeric: tabular-nums;
+  color: var(--ref-color-grey-100);
+}
+.nle-tc:hover {
+  border-color: var(--ref-color-grey-20);
+}
+.nle-tc:focus {
+  outline: none;
+  border-color: var(--ref-color-electric-blue-100);
+}
+.nle-tc-len {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.nle-transport__ctrls {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+}
+.nle-play {
+  width: 40px;
+  height: 40px;
+  margin: 0 var(--ref-spacing-xxs);
+  border-radius: var(--app-radius-circle);
+}
+.nle-transport__right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+}
+.nle-volume {
+  width: 88px;
+}
+
+/* ── Timeline ─────────────────────────────────────────────────────── */
+
+.nle-tl {
+  display: flex;
+  flex-direction: column;
+  border-top: 0;
+}
+
+.nle-tl__bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  height: 44px;
+  box-sizing: border-box;
+  padding: 0 var(--ref-spacing-xs);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+.nle-tl__group {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+}
+.nle-tl__group--end {
+  margin-left: auto;
+}
+.nle-tl__sep {
+  width: 1px;
+  height: 20px;
+  margin: 0 var(--ref-spacing-xxs);
+  background: var(--ref-color-grey-20);
+}
+.nle-tl__status {
+  min-width: 0;
+  margin-left: var(--ref-spacing-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+.nle-tl__zoom {
+  width: 120px;
+}
+
+.nle-tl__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Track heads: fixed on the left, aligned row for row with the lanes. */
+.nle-tl__heads {
+  flex: none;
+  width: 184px;
+  align-self: flex-start;
+  border-right: 1px solid var(--ref-color-grey-20);
+  background: var(--ref-color-white);
+}
+.nle-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  box-sizing: border-box;
+  padding: 0 var(--ref-spacing-xxs) 0 var(--ref-spacing-xs);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+.nle-head--ruler {
+  background: var(--ref-color-grey-05);
+}
+.nle-head__tc {
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  font-variant-numeric: tabular-nums;
+  color: var(--ref-color-electric-blue-150);
+}
+.nle-head__name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+  text-align: left;
+}
+button.nle-head__name {
+  cursor: pointer;
+}
+button.nle-head__name:hover {
+  color: var(--ref-color-electric-blue-100);
+}
+.nle-head__icon {
+  display: inline-flex;
+  color: var(--ref-color-grey-80);
+}
+.nle-head__name > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nle-head__tools {
+  display: flex;
+  gap: 2px;
+}
+.nle-head.is-dim .nle-head__name {
+  color: var(--ref-color-grey-80);
+}
+
+.nle-tl__scroll {
+  flex: 1;
+  min-width: 0;
+  align-self: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.nle-tl__inner {
+  position: relative;
+  background: var(--ref-color-grey-05);
+  user-select: none;
+}
+.nle-tl__inner[data-tool="blade"] .nle-lane--video,
+.nle-tl__inner[data-tool="blade"] .nle-block--text {
+  cursor: crosshair;
+}
+.nle-tl__cv {
+  position: absolute;
+  left: 0;
+  pointer-events: none;
+}
+.nle-tl__cv--ruler {
+  top: 0;
+  height: 28px;
+  border-bottom: 1px solid var(--ref-color-grey-20);
+  pointer-events: auto;
+  cursor: pointer;
+}
+.nle-tl__lanes,
+.nle-tl__over {
+  position: absolute;
+  inset: 0;
+}
+.nle-tl__lanes {
+  z-index: 2;
+}
+.nle-tl__over {
+  z-index: 4;
+  pointer-events: none;
+}
+
+.nle-lane {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+.nle-lane__clip {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--ref-color-white);
+}
+.nle-lane--video .nle-lane__clip,
+.nle-lane--audio .nle-lane__clip {
+  background: none;
+}
+.nle-lane.is-locked {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0 6px,
+    color-mix(in srgb, var(--ref-color-grey-20) 60%, transparent) 6px 7px
+  );
+}
+.nle-lane.is-dim > :not(.nle-lane__clip) {
+  opacity: 0.4;
+}
+.nle-lane__hint {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0 var(--ref-spacing-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  pointer-events: none;
+}
+.nle-lane__hint--action {
+  border: 0;
+  background: none;
+  text-align: left;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.nle-lane__hint--action:hover {
+  color: var(--ref-color-electric-blue-100);
+}
+.nle-lane__badge {
+  position: absolute;
+  top: 4px;
+  padding: 0 var(--ref-spacing-xxs);
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-grey-100);
+  color: var(--ref-color-white);
+  font-size: var(--sys-text-style-caption-size);
+}
+
+/* A block on a track: white, a hairline, its label; hover = blue border,
+   selected = blue border on a blue-tinted fill. */
+.nle-block {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-width: 4px;
+  padding: 0 var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-100);
+  font: inherit;
+  font-size: var(--sys-text-style-caption-size);
+  text-align: left;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--ref-animation-xshort) ease;
+}
+.nle-block:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+.nle-block.is-selected {
+  z-index: 1;
+  border: 2px solid var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-05);
+}
+.nle-block__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.nle-block--text {
+  bottom: auto;
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  cursor: grab;
+}
+.nle-block__edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 7px;
+  cursor: ew-resize;
+}
+.nle-block__edge--start {
+  left: 0;
+}
+.nle-block__edge--end {
+  right: 0;
+}
+.nle-block--text:hover .nle-block__edge,
+.nle-block--text.is-selected .nle-block__edge {
+  background: color-mix(in srgb, var(--ref-color-electric-blue-100) 22%, transparent);
+}
+.nle-block--cue {
+  padding: 0 var(--ref-spacing-xxs);
+  border-radius: 3px;
+}
+.nle-block--bar {
+  top: 14px;
+  bottom: 4px;
+}
+.nle-block--card {
+  z-index: 1;
+  top: 4px;
+  bottom: 4px;
+  border-style: dashed;
+}
+
+/* Video: the clip's frame over the filmstrip, its parts, the camera cuts, the
+   trim edges. */
+.nle-vclip {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  box-sizing: border-box;
+  border: 1px solid var(--ref-color-grey-60);
+  border-radius: var(--app-radius-sm);
+}
+.nle-part {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin-left: -1px;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.85);
+  background: none;
+  cursor: pointer;
+}
+.nle-part:first-child {
+  border-left: 0;
+}
+.nle-part:hover {
+  box-shadow: inset 0 0 0 2px var(--ref-color-electric-blue-40);
+}
+.nle-part.is-selected {
+  z-index: 1;
+  box-shadow: inset 0 0 0 2px var(--ref-color-electric-blue-100);
+}
+.nle-part__chip {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  max-width: calc(100% - 8px);
+  padding: 1px 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: 16px;
+  pointer-events: none;
+}
+.nle-part.is-edited .nle-part__chip {
+  font-weight: var(--sys-text-style-caption-bold-weight);
+}
+.nle-part.is-selected .nle-part__chip {
+  background: var(--ref-color-electric-blue-100);
+  color: var(--ref-color-white);
+}
+
+.nle-cut {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px dashed var(--ref-color-grey-80);
+  pointer-events: none;
+}
+
+.nle-bound {
+  position: absolute;
+  z-index: 2;
+  top: 4px;
+  bottom: 4px;
+  width: 10px;
+  margin-left: -5px;
+  cursor: ew-resize;
+}
+.nle-bound::after {
+  content: "";
+  position: absolute;
+  inset: 0 4px;
+  border-radius: 1px;
+  background: transparent;
+}
+.nle-bound:hover::after {
+  background: var(--ref-color-electric-blue-100);
+}
+.nle-bound__join {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  background: var(--ref-color-white);
+  opacity: 0;
+  transition: opacity var(--ref-animation-xshort) ease;
+}
+.nle-bound:hover .nle-bound__join,
+.nle-bound__join:focus-visible {
+  opacity: 1;
+}
+
+.nle-trim {
+  position: absolute;
+  z-index: 3;
+  top: 4px;
+  bottom: 4px;
+  width: 12px;
+  cursor: ew-resize;
+}
+.nle-trim--start {
+  margin-left: -2px;
+  border-radius: var(--app-radius-sm) 0 0 var(--app-radius-sm);
+}
+.nle-trim--end {
+  margin-left: -10px;
+  border-radius: 0 var(--app-radius-sm) var(--app-radius-sm) 0;
+}
+.nle-trim::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  border-radius: 2px;
+  background: var(--ref-color-white);
+  box-shadow: 0 0 0 1px var(--ref-color-grey-60);
+}
+.nle-trim:hover,
+[data-drag="trim"] .nle-trim {
+  background: var(--ref-color-electric-blue-100);
+}
+.nle-trim:hover::after,
+[data-drag="trim"] .nle-trim::after {
+  box-shadow: none;
+}
+
+.nle-aclip {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  padding: 0;
+  border: 1px solid var(--ref-color-grey-60);
+  border-radius: var(--app-radius-sm);
+  background: none;
+  cursor: pointer;
+}
+.nle-aclip:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+.nle-aclip.is-selected {
+  border: 2px solid var(--ref-color-electric-blue-100);
+}
+.nle-hidspan {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--ref-color-grey-100) 30%, transparent) 0 2px,
+    transparent 2px 5px
+  );
+  pointer-events: none;
+}
+
+/* Outside the clip: the source still there, dimmed — what a trim can reach. */
+.nle-shade {
+  position: absolute;
+  top: 28px;
+  bottom: 0;
+  background: color-mix(in srgb, var(--ref-color-grey-05) 70%, transparent);
+}
+.nle-inout {
+  position: absolute;
+  top: 0;
+  height: 28px;
+  width: 6px;
+  border: 2px solid var(--ref-color-grey-100);
+}
+.nle-inout--in {
+  border-right: 0;
+}
+.nle-inout--out {
+  margin-left: -6px;
+  border-left: 0;
+}
+
+.nle-marker {
+  position: absolute;
+  top: 2px;
+  width: 12px;
+  height: 14px;
+  margin-left: -6px;
+  padding: 0;
+  border: 0;
+  background: var(--ref-color-grey-100);
+  clip-path: polygon(0 0, 100% 0, 100% 65%, 50% 100%, 0 65%);
+  pointer-events: auto;
+  cursor: pointer;
+}
+.nle-marker:hover,
+.nle-marker.is-selected {
+  background: var(--ref-color-electric-blue-100);
+}
+
+.nle-snapline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed var(--ref-color-electric-blue-100);
+}
+.nle-readout {
+  position: absolute;
+  top: 30px;
+  transform: translateX(-50%);
+  padding: 2px 6px;
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-grey-100);
+  color: var(--ref-color-white);
+  font-size: var(--sys-text-style-caption-size);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.nle-tl__playhead {
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  border-left: 1px solid var(--ref-color-electric-blue-100);
+  pointer-events: none;
+}
+.nle-tl__knob {
+  position: absolute;
+  top: 0;
+  left: -7px;
+  width: 13px;
+  height: 18px;
+  background: var(--ref-color-electric-blue-100);
+  clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%);
+  pointer-events: auto;
+  cursor: ew-resize;
+}
+.nle-tl__blade {
+  position: absolute;
+  z-index: 5;
+  top: 28px;
+  bottom: 0;
+  left: 0;
+  border-left: 1px solid var(--ref-color-electric-blue-100);
+  pointer-events: none;
+}
+
+/* ── Context menu and shortcuts ───────────────────────────────────── */
+
+.nle-menu {
+  position: absolute;
+  z-index: 30;
+  min-width: 240px;
+  padding: var(--ref-spacing-xxs) 0;
+}
+.nle-menu__item {
+  width: 100%;
+}
+.nle-menu__icon {
+  display: inline-flex;
+  width: 16px;
+  color: var(--ref-color-grey-80);
+}
+.nle-menu__item .nle-kbd {
+  margin-left: auto;
+}
+.nle-menu__sep {
+  height: 1px;
+  margin: var(--ref-spacing-xxs) 0;
+  background: var(--ref-color-grey-20);
+}
+
+.nle-keys {
+  position: absolute;
+  z-index: 30;
+  right: var(--ref-spacing-sm);
+  bottom: calc(var(--nle-tl, 300px) + var(--ref-spacing-sm));
+  width: min(640px, calc(100% - 32px));
+  max-height: calc(100% - var(--nle-tl, 300px) - 32px);
+  overflow-y: auto;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-md);
+  background: var(--ref-color-white);
+  box-shadow: var(--app-shadow-popover-lg);
+}
+.nle-keys__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-xs) var(--ref-spacing-xs) var(--ref-spacing-md);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+.nle-keys__title {
+  margin: 0;
+  font-size: var(--sys-text-style-h3-size);
+  font-weight: var(--sys-text-style-h3-weight);
+}
+.nle-keys__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ref-spacing-md);
+  padding: var(--ref-spacing-md);
+}
+.nle-keys__group {
+  margin: 0 0 var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-h4-size);
+  font-weight: var(--sys-text-style-h4-weight);
+}
+.nle-keys dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+.nle-keys__row {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-caption-size);
+}
+.nle-keys__row dd {
+  margin: 0;
+  color: var(--ref-color-grey-100);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nle *,
+  .nle *::after {
+    transition: none !important;
+  }
+}

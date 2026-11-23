@@ -28,7 +28,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock, plural } from "./utils.js?v=2833";
+import { escapeHtml, formatClock, plural } from "./utils.js?v=2841";
 import {
   PRESETS,
   presetById,
@@ -43,7 +43,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=2833";
+} from "./clip-captions.js?v=2841";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -1204,7 +1204,7 @@ function onKeydown(e) {
   }
 }
 
-export function applyPreset(id) {
+function applyPreset(id) {
   const p = presetById(id);
   if (!p && id !== "none") return;
   if (p) Object.assign(state, p.apply);
@@ -1386,17 +1386,14 @@ export function getHiddenSpans() {
   return [...hiddenWords, ...hiddenPauses];
 }
 
-// The clip was trimmed: re-time the transcript onto the new length.
-export function setDuration(sec) {
+// The clip was trimmed in the host's timeline: its words, already cut to the
+// new range and in clip seconds, and its new length. The host keeps the words
+// of the whole window, so trimming back out (or Undo) brings them back.
+export function setWords(next, sec) {
   if (!mounted || !clock) return;
-  const old = duration;
   duration = Math.max(1, sec);
-  if (Math.abs(old - duration) < 0.01) return;
-  const k = duration / old;
-  words.forEach((w) => {
-    w.start = +(w.start * k).toFixed(2);
-    w.end = +(w.end * k).toFixed(2);
-  });
+  words = next.map((w) => ({ ...w }));
+  pausesRemoved = new Set(); // ponytail: pause indices shift with the words; a trim forgets hidden pauses
   recomputeCues();
   renderTranscript();
   renderCleanupBar();
