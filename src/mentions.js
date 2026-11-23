@@ -9,9 +9,9 @@
 // Facebook and X are searched; Instagram and TikTok take a typed handle;
 // YouTube has no mentions.
 
-import { MENTION_DIRECTORY } from "./mocks.js?v=2826";
-import { fold } from "./utils.js?v=2826";
-import { normalizeNetwork } from "./social-profiles.js?v=2826";
+import { MENTION_DIRECTORY } from "./mocks.js?v=2827";
+import { fold } from "./utils.js?v=2827";
+import { normalizeNetwork } from "./social-profiles.js?v=2827";
 
 const SEARCH = new Set(["linkedin", "facebook", "x"]);
 const TYPED = new Set(["instagram", "tiktok"]);

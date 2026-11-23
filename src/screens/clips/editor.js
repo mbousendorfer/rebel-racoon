@@ -29,19 +29,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2826";
-import { isFlagOn } from "../../feature-flags.js?v=2826";
-import { parseHashParams } from "../../url-state.js?v=2826";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2826";
-import { showToast } from "../../components/toast.js?v=2826";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2826";
-import { open as openRename } from "../../components/rename-modal.js?v=2826";
-import { getContextById } from "../../contexts-store.js?v=2826";
-import { escapeHtml } from "../../utils.js?v=2826";
-import * as ce from "../../caption-editor.js?v=2826";
-import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2826";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2826";
-import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2826";
+import { navigate } from "../../router.js?v=2827";
+import { isFlagOn } from "../../feature-flags.js?v=2827";
+import { parseHashParams } from "../../url-state.js?v=2827";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2827";
+import { showToast } from "../../components/toast.js?v=2827";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2827";
+import { open as openRename } from "../../components/rename-modal.js?v=2827";
+import { getContextById } from "../../contexts-store.js?v=2827";
+import { escapeHtml } from "../../utils.js?v=2827";
+import * as ce from "../../caption-editor.js?v=2827";
+import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2827";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2827";
+import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2827";
 import {
   framingContext,
   initialSegments,
@@ -60,7 +60,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2826";
+} from "../../clip-framing.js?v=2827";
 import {
   fmtMs,
   fmtPrecise,
@@ -75,8 +75,8 @@ import {
   dsSelect,
   bindSelectDismiss,
   EDITOR_TOOLS as TOOLS,
-} from "./shared.js?v=2826";
-import { writePostsInChat } from "../../clips-chat.js?v=2826";
+} from "./shared.js?v=2827";
+import { writePostsInChat } from "../../clips-chat.js?v=2827";
 
 const FRAME_MS = 40;
 const CARD_MS = 2000; // intro / outro card length
@@ -283,13 +283,11 @@ function shellHTML() {
         </section>
       </div>
 
+      <!-- Play, the scrubber, the time — the ±5 s buttons were removed (2026-11-23). -->
       <div class="clips-ed__transport" role="toolbar" aria-label="Playback">
-        <!-- Stroked, with the replay / skip glyph: they read as buttons, like Play (2026-11-23). -->
-        <button type="button" class="ap-button stroked grey" data-clips-ed="back5" aria-label="Back 5 seconds" data-tooltip="Back 5 seconds"><i class="ap-icon-rotate-left" aria-hidden="true"></i><span>5 s</span></button>
         <button type="button" class="ap-icon-button stroked" data-clips-ed="play" aria-label="Play" data-tooltip="Play / pause (Space)">
           <i class="ap-icon-play" aria-hidden="true" data-clips-play-icon></i>
         </button>
-        <button type="button" class="ap-button stroked grey" data-clips-ed="fwd5" aria-label="Forward 5 seconds" data-tooltip="Forward 5 seconds"><span>5 s</span><i class="ap-icon-rotate-right" aria-hidden="true"></i></button>
         <input type="range" class="ap-slider clips-ed__scrub" min="0" max="1000" step="1" value="0" data-clips-scrubber aria-label="Position in the clip" />
         <span class="clips-ed__time"><span data-clips-cur>0:00.0</span> / <span data-clips-len>0:00.0</span></span>
       </div>
@@ -1347,10 +1345,6 @@ function handleClick(e) {
       return writePostsInChat(ed.video, [ed.clip.id]);
     case "play":
       return togglePlay();
-    case "back5":
-    case "fwd5":
-      if (ed.playing) stop();
-      return seek(ed.t + (act === "fwd5" ? 5000 : -5000));
     case "teaser-start":
     case "teaser-end":
       return edit(

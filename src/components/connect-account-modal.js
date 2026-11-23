@@ -26,15 +26,15 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2826";
-import { escapeHtml as esc } from "../utils.js?v=2826";
+} from "../modal-coordinator.js?v=2827";
+import { escapeHtml as esc } from "../utils.js?v=2827";
 import {
   getConnectableAccounts,
   connectAccounts,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=2826";
+} from "../social-profiles.js?v=2827";
 
 const MODAL_ID = "connect-account";
 
