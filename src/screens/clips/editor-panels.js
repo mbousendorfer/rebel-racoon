@@ -6,12 +6,12 @@
 //     selected, the clip itself (its range, format, teaser).
 // Both are HTML builders; editor.js owns the events (data-nle-* delegation).
 
-import { ed, fmtTC, clipLen, selTexts, selSeg, capSourceHTML, ratio } from "./editor.js?v=2847";
-import { autoKind, cameraShort } from "./editor-timeline.js?v=2847";
-import { LAYOUTS, twoBlockedReason, cameraName } from "../../clip-framing.js?v=2847";
-import { dsSelect, formatLabel, RATIO_IDS, bestFor, presetLabel } from "./shared.js?v=2847";
-import * as ce from "../../caption-editor.js?v=2847";
-import { escapeHtml } from "../../utils.js?v=2847";
+import { ed, fmtTC, clipLen, selTexts, selSeg, capSourceHTML, ratio } from "./editor.js?v=2849";
+import { autoKind, cameraShort } from "./editor-timeline.js?v=2849";
+import { LAYOUTS, twoBlockedReason, cameraName } from "../../clip-framing.js?v=2849";
+import { dsSelect, formatLabel, RATIO_IDS, bestFor, presetLabel } from "./shared.js?v=2849";
+import * as ce from "../../caption-editor.js?v=2849";
+import { escapeHtml } from "../../utils.js?v=2849";
 
 // The few glyphs the DS doesn't ship (scissors, blade, magnet, speaker, frame
 // steps, loop, in / out): drawn here on the DS's 16 px grid, in currentColor.
@@ -106,7 +106,7 @@ export function libraryHTML() {
 
 function transcriptLib() {
   return `
-    <p class="nle-lead">Click a word to jump to it, double-click to fix it. Hiding a filler or a pause takes it out of the captions; the audio isn't cut.</p>
+    <p class="nle-lead">Click a word to jump to it. Double-click it to fix it.</p>
     <span class="nle-fact" data-ce-reconcile></span>
     <div class="nle-clean" data-ce-cleanup-list></div>
     <details class="nle-legend">
@@ -127,7 +127,7 @@ function textLib() {
   const cards = TEXT_PRESETS.map((p) => {
     const sample = p.text(ed);
     return `<button type="button" class="nle-preset" draggable="true" data-nle-text-preset="${p.id}"
-      aria-label="Add ${escapeHtml(p.name)} at the playhead" data-tooltip="Click to add at the playhead, or drag onto the timeline">
+      aria-label="Add ${escapeHtml(p.name)} at the playhead" data-tooltip="Click to add at the playhead, or drag to the timeline">
       <span class="nle-preset__well" aria-hidden="true">
         <span class="nle-text nle-text--${p.style} nle-preset__sample" style="top:${p.y * 100}%;font-size:${Math.round(p.size / 5)}px">${escapeHtml(sample.length > 28 ? `${sample.slice(0, 26)}…` : sample)}</span>
       </span>
@@ -138,7 +138,7 @@ function textLib() {
   const list = [...ed.w.texts].sort((a, b) => a.startMs - b.startMs);
   const sel = new Set(selTexts().map((t) => t.id));
   return `
-    <p class="nle-lead">Click a style to add it at the playhead, or drag it onto the timeline.</p>
+    <p class="nle-lead">Click a style to add it at the playhead, or drag it to the timeline.</p>
     <div class="nle-presets">${cards}</div>
     ${sec(
       `In this clip <span class="nle-count">${list.length}</span>`,
@@ -151,25 +151,25 @@ function textLib() {
                 <span class="nle-list__name">${escapeHtml(t.text)}</span><span class="nle-list__meta">${fmtTC(t.startMs)}</span></button></li>`,
             )
             .join("")}</ul>`
-        : `<p class="nle-hint">No text yet.</p>`,
+        : `<p class="nle-hint">No text in this clip yet.</p>`,
     )}`;
 }
 
 function brandLib() {
   const b = ed.w.brand;
   const pb = ed.pb;
-  if (!pb) return `<p class="nle-lead">This video has no Playbook: no logo or brand cards to add.</p>`;
+  if (!pb) return `<p class="nle-lead">This video has no Playbook, so there's no logo or brand card to add.</p>`;
   const row = (key, label, desc, enabled = true) => `
     <div class="nle-brandrow">
       ${toggle(`data-nle-brand="${key}" ${enabled ? "" : "disabled"}`, b[key] && enabled, label)}
       <p class="nle-hint">${desc}</p>
-      ${b[key] && enabled ? `<button type="button" class="ap-button ghost grey" data-nle-select="brand:${key}"><span>Edit</span></button>` : ""}
+      ${b[key] && enabled ? `<button type="button" class="ap-button ghost grey" data-nle-select="brand:${key}"><span>Edit ${label.toLowerCase().replace(" on the video", "")}</span></button>` : ""}
     </div>`;
   const fromPb = JSON.stringify(b) === JSON.stringify(ed.look.brand);
   return `
     <p class="nle-lead">From the ${escapeHtml(pb.name)} Playbook. What you change here applies to this clip only.</p>
     ${row("logo", "Logo on the video", pb.brandLogo ? "In a corner, out of the network's buttons." : "This Playbook has no logo yet.", !!pb.brandLogo)}
-    ${row("intro", "Intro card", "2 seconds before the clip, with its title.")}
+    ${row("intro", "Intro card", "2 seconds before the clip, with the clip's title.")}
     ${row("outro", "Outro card", "2 seconds after the clip, with your call to action.")}
     <div class="nle-row">
       ${fromPb ? "" : btn("brand-reset", "Reset to the Playbook's look", { icon: `<i class="ap-icon-reset" aria-hidden="true"></i>`, cls: "ghost grey" })}
@@ -183,7 +183,7 @@ const HEAD = {
   clip: ["ap-icon-video", "Clip"],
   text: ["", "Text"],
   seg: ["ap-icon-cropper", "Framing"],
-  captions: ["ap-icon-closed-captions", "Captions"],
+  captions: ["ap-icon-closed-captions", "Subtitles"],
   brand: ["ap-icon-target", "Brand"],
 };
 
@@ -225,12 +225,12 @@ function clipInsp() {
         <div><dt>Ends at</dt><dd>${fmtTC(ed.w.endMs)}</dd></div>
         <div><dt>Length</dt><dd>${fmtTC(clipLen())}</dd></div>
       </dl>
-      <p class="nle-hint">In the source video. Drag the clip's edges on the Video track to trim it, or press I and O at the playhead.</p>
-      <div class="nle-row">${btn("set-in", "Start here", { kbd: "I", icon: GLYPH.markIn })}${btn("set-out", "End here", { kbd: "O", icon: GLYPH.markOut })}</div>`,
+      <p class="nle-hint">Times in the source video. To trim the clip, drag its edges on the Video track, or press I and O at the playhead.</p>
+      <div class="nle-row">${btn("set-in", "Set start", { kbd: "At the playhead · I", icon: GLYPH.markIn })}${btn("set-out", "Set end", { kbd: "At the playhead · O", icon: GLYPH.markOut })}</div>`,
     )}
     ${sec(
       "Format",
-      `<p class="nle-hint">A new format starts over from my framing.</p>
+      `<p class="nle-hint">In a new format, I reframe the clip from scratch.</p>
       <div class="nle-fmts">
         ${card("video", `Same as the video · ${formatLabel(videoRatio)}`, "", !own)}
         ${RATIO_IDS.map((id) => card(id, formatLabel(id), bestFor(id), own && ed.w.ratioId === id)).join("")}
@@ -239,7 +239,7 @@ function clipInsp() {
     ${sec(
       "Teaser",
       `${toggle("data-nle-teaser", tz.on, "Open with a teaser")}
-      <p class="nle-hint">A short moment of the clip plays first, then the clip from the start.</p>
+      <p class="nle-hint">A short moment of the clip plays first, then the whole clip.</p>
       <div class="nle-teaser${tz.on ? "" : " is-off"}">
         <dl class="nle-facts">
           <div><dt>From</dt><dd>${fmtTC(tz.startMs)}</dd></div>
@@ -247,16 +247,16 @@ function clipInsp() {
           <div><dt>Video length</dt><dd>${fmtTC(clipLen() + (tz.on ? tz.endMs - tz.startMs : 0))}</dd></div>
         </dl>
         <div class="nle-row">
-          <button type="button" class="ap-button stroked grey" data-nle="teaser-start" ${off}><span>Start at the playhead</span></button>
-          <button type="button" class="ap-button stroked grey" data-nle="teaser-end" ${off}><span>End at the playhead</span></button>
+          <button type="button" class="ap-button stroked grey" data-nle="teaser-start" data-tooltip="At the playhead" ${off}><span>Set start</span></button>
+          <button type="button" class="ap-button stroked grey" data-nle="teaser-end" data-tooltip="At the playhead" ${off}><span>Set end</span></button>
         </div>
-        <button type="button" class="ap-button ghost grey" data-nle="teaser-play" ${off}><i class="ap-icon-play" aria-hidden="true"></i><span>Play the teaser</span></button>
+        <button type="button" class="ap-button ghost grey" data-nle="teaser-play" ${off}><i class="ap-icon-play" aria-hidden="true"></i><span>Play teaser</span></button>
       </div>`,
     )}
     ${sec(
-      "Captions",
+      "Subtitles",
       `<p class="nle-hint">${escapeHtml(presetLabel(ce.getState()?.presetId))}${ed.capOwn ? " · this clip's own style" : " · the video's style"}</p>
-      <div class="nle-row"><button type="button" class="ap-button stroked grey" data-nle-select="captions"><span>Edit the captions</span></button></div>`,
+      <div class="nle-row"><button type="button" class="ap-button stroked grey" data-nle-select="captions"><span>Edit subtitles</span></button></div>`,
     )}`;
 }
 
@@ -303,8 +303,8 @@ function textInsp() {
               <label class="nle-field"><span class="nle-field__label">X %</span><span class="ap-input-group nle-num"><input type="number" min="0" max="100" step="1" value="${Math.round(one.x * 100)}" data-nle-field="x" aria-label="Horizontal position, in percent" /></span></label>
               <label class="nle-field"><span class="nle-field__label">Y %</span><span class="ap-input-group nle-num"><input type="number" min="0" max="100" step="1" value="${Math.round(one.y * 100)}" data-nle-field="y" aria-label="Vertical position, in percent" /></span></label>
             </div>
-            <div class="nle-row">${btn("center-x", "Center across", { cls: "ghost grey" })}${btn("center-y", "Center down", { cls: "ghost grey" })}</div>
-            <p class="nle-hint">Drag it on the video, a corner to resize. ⌥ + arrows nudge it.</p>`,
+            <div class="nle-row">${btn("center-x", "Center horizontally", { cls: "ghost grey" })}${btn("center-y", "Center vertically", { cls: "ghost grey" })}</div>
+            <p class="nle-hint">Drag the text on the video to move it, or a corner to resize it. ⌥ + arrows nudge it.</p>`,
           )
         : ""
     }
@@ -313,14 +313,14 @@ function textInsp() {
         ? sec(
             "Timing",
             `<div class="nle-grid3">${tcField("in", fmtTC(one.startMs), "In")}${tcField("out", fmtTC(one.endMs), "Out")}${tcField("dur", fmtTC(one.endMs - one.startMs), "Duration")}</div>
-            <p class="nle-hint">In the clip's time. Or drag the layer and its edges on the Text track.</p>`,
+            <p class="nle-hint">Times in the clip. You can also drag the text and its edges on the Text track.</p>`,
           )
         : ""
     }
     ${sec("Animation", `<div class="nle-grid2">${anim("animIn", "In")}${anim("animOut", "Out")}</div>`)}
     <div class="nle-insp__foot">
-      ${btn("duplicate", "Duplicate", { kbd: "⌘D", icon: `<i class="ap-icon-copy" aria-hidden="true"></i>`, cls: "ghost grey" })}
-      ${btn("delete", ts.length > 1 ? "Delete them" : "Delete", { kbd: "⌫", icon: `<i class="ap-icon-trash" aria-hidden="true"></i>`, cls: "ghost grey" })}
+      ${btn("duplicate", ts.length > 1 ? "Duplicate texts" : "Duplicate text", { kbd: "⌘D", icon: `<i class="ap-icon-copy" aria-hidden="true"></i>`, cls: "ghost grey" })}
+      ${btn("delete", ts.length > 1 ? "Delete texts" : "Delete text", { kbd: "⌫", icon: `<i class="ap-icon-trash" aria-hidden="true"></i>`, cls: "ghost grey" })}
     </div>`;
 }
 
@@ -334,7 +334,7 @@ function segInsp() {
   const hints = {
     AUTO: `I chose ${autoKind(seg)}`,
     ONE: "One window",
-    TWO: "Two, stacked",
+    TWO: "Stacked",
     FIT: "Whole frame, blurred fill",
   };
   const glyph = {
@@ -356,8 +356,8 @@ function segInsp() {
   }).join("");
   const gesture =
     seg.layout === "TWO"
-      ? "On the Source, drag a window to move it, a corner to zoom that window."
-      : "On the Source, drag the window to move it, a corner to zoom.";
+      ? "On the Source, drag a window to move it, or a corner to zoom it."
+      : "On the Source, drag the window to move it, or a corner to zoom.";
   return `
     ${sec(
       `Part ${i + 1} of ${segs.length}`,
@@ -367,7 +367,7 @@ function segInsp() {
         <div><dt>To</dt><dd>${fmtTC(seg.endMs - ed.w.startMs)}</dd></div>
         <div><dt>Shot</dt><dd>${escapeHtml(cameraShort(seg.camera))}</dd></div>
       </dl>
-      <p class="nle-hint">The clip is cut in parts, one per camera shot, each framed by me. ${gesture}</p>`,
+      <p class="nle-hint">I cut the clip in parts, one per camera shot, and framed each one. ${gesture}</p>`,
     )}
     ${sec(
       "Layout",
@@ -377,10 +377,10 @@ function segInsp() {
     ${sec(
       "Parts",
       `<div class="nle-row">
-        ${btn("join-prev", "Join with the previous", { cls: "ghost grey" }).replace("<button", i > 0 ? "<button" : "<button disabled")}
-        ${btn("join-next", "Join with the next", { cls: "ghost grey" }).replace("<button", i < segs.length - 1 ? "<button" : "<button disabled")}
+        ${btn("join-prev", "Join previous part", { cls: "ghost grey" }).replace("<button", i > 0 ? "<button" : "<button disabled")}
+        ${btn("join-next", "Join next part", { cls: "ghost grey" }).replace("<button", i < segs.length - 1 ? "<button" : "<button disabled")}
       </div>
-      <p class="nle-hint">Split a part with S at the playhead, or the blade (B) on the Video track.</p>`,
+      <p class="nle-hint">To split a part, press S at the playhead, or use the split tool (B) on the Video track.</p>`,
     )}
     <div class="nle-insp__foot">
       ${seg.origin === "USER" ? btn("reset-seg", "Reset part", { icon: `<i class="ap-icon-reset" aria-hidden="true"></i>`, cls: "ghost grey" }) : ""}
@@ -391,7 +391,7 @@ function segInsp() {
 function captionsInsp() {
   return `
     <div class="nle-capsrc" data-nle-cap-source>${capSourceHTML()}</div>
-    <p class="nle-hint">Drag the captions on the video to place them, a handle to size their box. Their words are in the Transcript.</p>
+    <p class="nle-hint">Drag the subtitles on the video to place them. Their words are in the Transcript tab.</p>
     ${ce.tabsHTML()}
     <div class="cap-ed__tabpanel nle-captabs" data-ce-tabpanel></div>`;
 }
@@ -421,13 +421,13 @@ function brandInsp() {
           style="--fill:${((b.logoSize - 0.08) / 0.22) * 100}%" aria-label="Logo size" /></label>
       <p class="nle-hint">It stays out of the zones the network's buttons cover.</p>`,
     )}
-    <div class="nle-insp__foot">${btn("delete", "Remove the logo", { cls: "ghost grey", icon: `<i class="ap-icon-trash" aria-hidden="true"></i>` })}</div>`;
+    <div class="nle-insp__foot">${btn("delete", "Remove logo", { cls: "ghost grey", icon: `<i class="ap-icon-trash" aria-hidden="true"></i>` })}</div>`;
   }
   const intro = item === "intro";
   return `${sec(
     intro ? "Intro card" : "Outro card",
-    `<p class="nle-hint">${intro ? "2 seconds before the clip: your logo and the clip's title, on your brand colour." : "2 seconds after the clip: your logo and your call to action."}</p>
-    ${toggle(`data-nle-brand="${item}"`, b[item], intro ? "Show the intro card" : "Show the outro card")}`,
+    `<p class="nle-hint">${intro ? "Plays for 2 seconds before the clip: your logo and the clip's title, on your brand color." : "Plays for 2 seconds after the clip: your logo and your call to action."}</p>
+    `,
   )}
-  <div class="nle-insp__foot">${btn("delete", `Remove the ${item}`, { cls: "ghost grey", icon: `<i class="ap-icon-trash" aria-hidden="true"></i>` })}</div>`;
+  <div class="nle-insp__foot">${btn("delete", intro ? "Remove intro card" : "Remove outro card", { cls: "ghost grey", icon: `<i class="ap-icon-trash" aria-hidden="true"></i>` })}</div>`;
 }

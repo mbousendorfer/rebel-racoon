@@ -28,7 +28,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock, plural } from "./utils.js?v=2847";
+import { escapeHtml, formatClock, plural } from "./utils.js?v=2849";
 import {
   PRESETS,
   presetById,
@@ -43,7 +43,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=2847";
+} from "./clip-captions.js?v=2849";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -562,7 +562,7 @@ function renderCleanupBar() {
   }
   const anyPending = fillers.some((f) => !words[f.startIdx].removed) || pauses.some((p) => !pausesRemoved.has(p.idx));
   bar.innerHTML = `
-    <span class="cap-ed-cleanup-bar__count">${fillers.length} filler${fillers.length === 1 ? "" : "s"} · ${pauses.length} pause${pauses.length === 1 ? "" : "s"} — click to remove</span>
+    <span class="cap-ed-cleanup-bar__count">${fillers.length} filler${fillers.length === 1 ? "" : "s"} · ${pauses.length} pause${pauses.length === 1 ? "" : "s"} · Click to hide</span>
     <span class="cap-ed-cleanup-bar__actions">
       <button type="button" class="ap-button ghost grey" data-ce-cleanup-all="${anyPending ? "remove" : "restore"}">${anyPending ? "Hide all" : "Show all"}</button>
       <button type="button" class="ap-button ghost grey" data-ce-cleanup-done>Done</button>
@@ -588,7 +588,7 @@ function renderCleanupList() {
         <span data-ce-clean-th></span>
         <input type="range" class="ap-slider" min="0.2" max="1.5" step="0.1" value="${pauseThreshold}" data-ce-pause-threshold aria-label="Pause threshold" />
       </label>
-      <p class="cap-ed-clean-note">Hidden words and pauses leave the subtitles only — the audio isn't cut.</p>`;
+      <p class="cap-ed-clean-note">Hidden words and pauses leave the subtitles only. The audio isn't cut.</p>`;
   }
   const hidden =
     fillers.filter((f) => words[f.startIdx].removed).length + pauses.filter((p) => pausesRemoved.has(p.idx)).length;

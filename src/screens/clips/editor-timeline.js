@@ -43,7 +43,7 @@ import {
   MIN_TEXT_MS,
   MIN_CLIP_MS,
   CARD_MS,
-} from "./editor.js?v=2847";
+} from "./editor.js?v=2849";
 import {
   segmentAt,
   moveBoundary,
@@ -53,12 +53,12 @@ import {
   LAYOUTS,
   resolve,
   merge,
-} from "../../clip-framing.js?v=2847";
-import { ratioOf } from "./shared.js?v=2847";
-import * as ce from "../../caption-editor.js?v=2847";
-import { deriveCues } from "../../clip-captions.js?v=2847";
-import { escapeHtml } from "../../utils.js?v=2847";
-import { GLYPH } from "./editor-panels.js?v=2847";
+} from "../../clip-framing.js?v=2849";
+import { ratioOf } from "./shared.js?v=2849";
+import * as ce from "../../caption-editor.js?v=2849";
+import { deriveCues } from "../../clip-captions.js?v=2849";
+import { escapeHtml } from "../../utils.js?v=2849";
+import { GLYPH } from "./editor-panels.js?v=2849";
 
 const RULER_H = 32;
 const FIT_PAD = 40; // px of air each side of the clip when fitted
@@ -71,7 +71,7 @@ const x = (ms) => (ms - ed.range.from) * ed.tl.pxPerMs;
 const scroller = () => ed.el.querySelector("[data-nle-scroll]");
 const q = (sel) => ed.el.querySelector(sel);
 
-function msAt(clientX) {
+export function msAt(clientX) {
   const r = q("[data-nle-inner]").getBoundingClientRect();
   return ed.range.from + (clientX - r.left) / ed.tl.pxPerMs;
 }
@@ -116,7 +116,7 @@ function rows() {
     },
     {
       id: "captions",
-      label: "Captions",
+      label: "Subtitles",
       icon: `<i class="ap-icon-closed-captions" aria-hidden="true"></i>`,
       h: 44,
       toggles: ["hidden", "locked"],
@@ -167,30 +167,30 @@ function barHTML() {
   const delLabel = !sel
     ? "Delete"
     : {
-        text: "Delete the text",
-        seg: "Delete the part (joins it)",
-        brand: "Remove from the clip",
+        text: sel.ids?.length > 1 ? "Delete texts" : "Delete text",
+        seg: "Join this part with its neighbor",
+        brand: `Remove ${{ logo: "logo", intro: "intro card", outro: "outro card" }[sel.item] || "item"}`,
       }[sel.kind] || "Delete";
   return `
     <div class="nle-tl__group" role="group" aria-label="Tools">
-      ${tbtn("tool-select", "Select", `<i class="ap-icon-click" aria-hidden="true"></i>`, { kbd: "V", pressed: ed.tool === "select" })}
-      ${tbtn("tool-blade", "Blade: click a track to cut it", GLYPH.blade, { kbd: "B", pressed: ed.tool === "blade" })}
+      ${tbtn("tool-select", "Select tool", `<i class="ap-icon-click" aria-hidden="true"></i>`, { kbd: "V", pressed: ed.tool === "select" })}
+      ${tbtn("tool-blade", "Split tool: click a text or the video to split it", GLYPH.blade, { kbd: "B", pressed: ed.tool === "blade" })}
     </div>
     <span class="nle-tl__sep" aria-hidden="true"></span>
     <div class="nle-tl__group" role="group" aria-label="Edit">
       ${tbtn("split", "Split at the playhead", GLYPH.cut, { kbd: "S" })}
       ${tbtn("delete", delLabel, `<i class="ap-icon-trash" aria-hidden="true"></i>`, { kbd: "⌫", disabled: !sel || sel.kind === "captions" })}
-      ${tbtn("set-in", "Start the clip at the playhead", GLYPH.markIn, { kbd: "I" })}
-      ${tbtn("set-out", "End the clip at the playhead", GLYPH.markOut, { kbd: "O" })}
+      ${tbtn("set-in", "Set the clip's start at the playhead", GLYPH.markIn, { kbd: "I" })}
+      ${tbtn("set-out", "Set the clip's end at the playhead", GLYPH.markOut, { kbd: "O" })}
     </div>
     <span class="nle-tl__sep" aria-hidden="true"></span>
-    ${tbtn("snap", ed.snap ? "Snapping is on" : "Snapping is off", GLYPH.magnet, { kbd: "N", pressed: ed.snap })}
+    ${tbtn("snap", ed.snap ? "Snapping on" : "Snapping off", GLYPH.magnet, { kbd: "N", pressed: ed.snap })}
     <span class="nle-tl__status" data-nle-tl-status>${statusText()}</span>
     <div class="nle-tl__group nle-tl__group--end" role="group" aria-label="Zoom">
       ${tbtn("zoom-out", "Zoom out", `<i class="ap-icon-minus" aria-hidden="true"></i>`, { kbd: "⌘−" })}
       <input type="range" class="ap-slider nle-tl__zoom" min="0" max="100" step="1" data-nle-zoom aria-label="Timeline zoom" />
       ${tbtn("zoom-in", "Zoom in", `<i class="ap-icon-plus" aria-hidden="true"></i>`, { kbd: "⌘+" })}
-      <button type="button" class="ap-button ghost grey nle-tl__fit" data-nle="zoom-fit" data-tooltip="Fit the clip · ⇧Z"><span>Fit</span></button>
+      <button type="button" class="ap-button ghost grey nle-tl__fit" data-nle="zoom-fit" data-tooltip="Fit the clip to the timeline · ⇧Z"><span>Fit</span></button>
       <span class="nle-tl__sep" aria-hidden="true"></span>
       ${tbtn("keys", "Keyboard shortcuts", `<i class="ap-icon-keyboard" aria-hidden="true"></i>`, { kbd: "?" })}
     </div>`;
@@ -199,13 +199,13 @@ function barHTML() {
 // What the selection is, said in the bar (a status line, like Premiere's).
 function statusText() {
   const s = ed.sel;
-  if (!s) return ed.tool === "blade" ? "Blade: click a text or the video to cut it there." : "";
+  if (!s) return ed.tool === "blade" ? "Split tool: click a text or the video to split it there." : "";
   if (s.kind === "text") return s.ids.length > 1 ? `${s.ids.length} texts selected` : "1 text selected";
   if (s.kind === "seg") {
     const i = ed.w.segments.findIndex((g) => g.id === s.id);
     return `Part ${i + 1} of ${ed.w.segments.length} selected`;
   }
-  return { captions: "Captions selected", brand: "Brand selected" }[s.kind] || "";
+  return { captions: "Subtitles selected", brand: "Brand item selected" }[s.kind] || "";
 }
 
 const TOGGLE = {
@@ -270,28 +270,28 @@ function brandLane() {
   if (b.logo && ed.pb?.brandLogo)
     items.push(
       `<button type="button" class="nle-block nle-block--bar${on("logo") ? " is-selected" : ""}" data-nle-brand-item="logo" style="${span(s, e)}">
-        <span class="nle-block__label">Logo · ${{ tl: "Top left", tr: "Top right", bl: "Bottom left", br: "Bottom right" }[b.corner] || "Top right"}</span></button>`,
+        <span class="nle-block__label">Logo · ${{ tl: "top left", tr: "top right", bl: "bottom left", br: "bottom right" }[b.corner] || "top right"}</span></button>`,
     );
   const cardW = CARD_MS;
   if (b.intro)
     items.push(
       `<button type="button" class="nle-block nle-block--card${on("intro") ? " is-selected" : ""}" data-nle-brand-item="intro" style="${span(s, s + cardW)}">
-        <span class="nle-block__label">Intro · plays first</span></button>`,
+        <span class="nle-block__label">Intro card</span></button>`,
     );
   if (b.outro)
     items.push(
       `<button type="button" class="nle-block nle-block--card${on("outro") ? " is-selected" : ""}" data-nle-brand-item="outro" style="${span(e - cardW, e)}">
-        <span class="nle-block__label">Outro · plays last</span></button>`,
+        <span class="nle-block__label">Outro card</span></button>`,
     );
   if (!items.length)
-    return `<span class="nle-lane__hint" style="${span(s, e)}">No logo, intro or outro. Add them from Brand.</span>`;
+    return `<span class="nle-lane__hint" style="${span(s, e)}">No logo, intro card, or outro card. Add them from the Brand tab.</span>`;
   return items.join("");
 }
 
 function textLane(tp) {
   const s = ed.w.startMs;
   if (!ed.w.texts.length)
-    return `<span class="nle-lane__hint" style="${span(s, ed.w.endMs)}">Drag a text here from the Text panel, or press T.</span>`;
+    return `<span class="nle-lane__hint" style="${span(s, ed.w.endMs)}">No text yet. Drag a style here from the Text tab, or press T.</span>`;
   const sel = new Set(selTexts().map((t) => t.id));
   return ed.w.texts
     .map((tx) => {
@@ -311,7 +311,7 @@ function captionLane() {
   const st = ce.getState();
   const s = ed.w.startMs;
   if (!st || st.presetId === "none")
-    return `<button type="button" class="nle-lane__hint nle-lane__hint--action" data-nle-select="captions" style="${span(s, ed.w.endMs)}">No captions. Select to pick a style.</button>`;
+    return `<button type="button" class="nle-lane__hint nle-lane__hint--action" data-nle-select="captions" style="${span(s, ed.w.endMs)}">No subtitles. Click to pick a style.</button>`;
   const on = ed.sel?.kind === "captions";
   // What the cleanup hid (fillers, pauses), hatched under the lines it left.
   const hidden = ce
@@ -372,8 +372,8 @@ function videoLane() {
     .map((c) => `<span class="nle-cut" style="left:${x(c)}px" title="Camera cut"></span>`)
     .join("");
   return `${cuts}<div class="nle-vclip" style="${span(s, e)}">${parts}</div>${bounds}
-    <span class="nle-trim nle-trim--start" data-nle-trim="start" style="left:${x(s)}px" data-tooltip="Drag to trim the start · I"></span>
-    <span class="nle-trim nle-trim--end" data-nle-trim="end" style="left:${x(e)}px" data-tooltip="Drag to trim the end · O"></span>`;
+    <span class="nle-trim nle-trim--start" data-nle-trim="start" style="left:${x(s)}px" data-tooltip="Drag to trim the start"></span>
+    <span class="nle-trim nle-trim--end" data-nle-trim="end" style="left:${x(e)}px" data-tooltip="Drag to trim the end"></span>`;
 }
 
 function overHTML() {
@@ -449,7 +449,9 @@ function setZoom(px, anchorMs, anchorX) {
 
 export function fitTimeline() {
   const sc = scroller();
-  if (!sc?.clientWidth) return;
+  // Not laid out yet (the first resize can come before the timeline has a
+  // width): try again on the next frame rather than staying blank.
+  if (!sc?.clientWidth) return void later(fitTimeline);
   const px = Math.max(minPx(), Math.min(MAX_PX_PER_MS, (sc.clientWidth - FIT_PAD * 2) / clipLen()));
   setZoom(px, ed.w.startMs, FIT_PAD);
 }

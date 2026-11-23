@@ -24,19 +24,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2847";
-import { isFlagOn } from "../../feature-flags.js?v=2847";
-import { parseHashParams } from "../../url-state.js?v=2847";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2847";
-import { showToast } from "../../components/toast.js?v=2847";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2847";
-import { open as openRename } from "../../components/rename-modal.js?v=2847";
-import { getContextById } from "../../contexts-store.js?v=2847";
-import { escapeHtml } from "../../utils.js?v=2847";
-import * as ce from "../../caption-editor.js?v=2847";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2847";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2847";
-import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2847";
+import { navigate } from "../../router.js?v=2849";
+import { isFlagOn } from "../../feature-flags.js?v=2849";
+import { parseHashParams } from "../../url-state.js?v=2849";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2849";
+import { showToast } from "../../components/toast.js?v=2849";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2849";
+import { open as openRename } from "../../components/rename-modal.js?v=2849";
+import { getContextById } from "../../contexts-store.js?v=2849";
+import { escapeHtml } from "../../utils.js?v=2849";
+import * as ce from "../../caption-editor.js?v=2849";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2849";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2849";
+import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2849";
 import {
   framingContext,
   initialSegments,
@@ -50,7 +50,7 @@ import {
   merge,
   snapMs,
   resetSegment,
-} from "../../clip-framing.js?v=2847";
+} from "../../clip-framing.js?v=2849";
 import {
   RATIO_IDS,
   ratioOf,
@@ -62,8 +62,8 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2847";
-import { writePostsInChat } from "../../clips-chat.js?v=2847";
+} from "./shared.js?v=2849";
+import { writePostsInChat } from "../../clips-chat.js?v=2849";
 import {
   timelineShellHTML,
   paintTimeline,
@@ -72,13 +72,14 @@ import {
   fitTimeline,
   zoomBy,
   zoomFromSlider,
+  msAt,
   timelinePointerDown,
   timelinePointerMove,
   timelineWheel,
   timelineDrop,
   revealPlayhead,
-} from "./editor-timeline.js?v=2847";
-import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2847";
+} from "./editor-timeline.js?v=2849";
+import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2849";
 
 const FPS = 25;
 export const FRAME_MS = 1000 / FPS;
@@ -377,10 +378,10 @@ function shellHTML() {
           </div>
         </section>
         <div class="nle-splitter" data-nle-splitter role="separator" aria-orientation="vertical"
-          aria-label="Resize Source and Program" aria-valuemin="30" aria-valuemax="80" aria-valuenow="55" tabindex="0"></div>
-        <section class="nle-monitor nle-monitor--program" aria-label="Program">
+          aria-label="Resize Source and Output" aria-valuemin="30" aria-valuemax="80" aria-valuenow="55" tabindex="0"></div>
+        <section class="nle-monitor nle-monitor--program" aria-label="Output">
           <header class="nle-monitor__bar">
-            <span class="nle-monitor__name">Program</span>
+            <span class="nle-monitor__name">Output</span>
             <span class="nle-monitor__meta" data-nle-program-meta></span>
           </header>
           <div class="nle-monitor__body nle-well" data-nle-output-wrap>
@@ -841,7 +842,7 @@ function paintViewerBar() {
   const videoRatio = ed.video.settings.ratio;
   const own = ed.w.ratioId !== videoRatio;
   host.innerHTML = `
-    <div class="ap-segmented-control" role="group" aria-label="Monitors">${seg("program", "Program")}${seg("dual", "Source + Program")}</div>
+    <div class="ap-segmented-control" role="group" aria-label="Monitors">${seg("program", "Output")}${seg("dual", "Source + output")}</div>
     <div class="nle-viewer__opts">
       ${dsSelect({
         label: "Safe area",
@@ -853,7 +854,7 @@ function paintViewerBar() {
         options: Object.entries(DEAD_ZONE_LABELS).map(([id, label]) => ({ id, label, lead: dzIcon(id) })),
       })}
       ${dsSelect({
-        label: own ? "This clip" : "Format",
+        label: "Format",
         valueHtml: escapeHtml(formatLabel(ed.w.ratioId)),
         current: own ? ed.w.ratioId : "video",
         attr: "data-nle-format",
@@ -1120,11 +1121,14 @@ function setInOut(which) {
   })();
   if (!ok) {
     ed.undo.pop();
-    return showToast(`The clip can't be shorter than ${MIN_CLIP_MS / 1000} seconds.`, { variant: "error" });
+    return showToast(
+      `A clip can't be shorter than ${MIN_CLIP_MS / 1000} seconds. Move the playhead further from the other edge.`,
+      { variant: "error" },
+    );
   }
   setDirty();
   refreshAll();
-  showToast(which === "in" ? "The clip now starts here." : "The clip now ends here.");
+  showToast(`Clip trimmed · ${fmtTC(clipLen())} long`);
   return undefined;
 }
 
@@ -1176,7 +1180,9 @@ function splitAtPlayhead() {
     pushUndo();
     if (!splitTexts(under, at)) {
       ed.undo.pop();
-      return showToast("Too close to the edge of the text to split here.", { variant: "error" });
+      return showToast("Can't split this close to the text's edge. Move the playhead further in.", {
+        variant: "error",
+      });
     }
     setDirty();
     paintTimeline();
@@ -1187,12 +1193,13 @@ function splitAtPlayhead() {
 }
 
 export function splitPartAt(ms) {
-  if (ed.tracks.video.locked) return showToast("The Video track is locked.", { variant: "error" });
+  if (ed.tracks.video.locked)
+    return showToast("The Video track is locked. Unlock it to split a part.", { variant: "error" });
   const { t } = snapMs(ed.ctx, Math.round(ms), { on: ed.snap });
   pushUndo();
   if (!split(ed.ctx, ed.w.segments, t)) {
     ed.undo.pop();
-    return showToast("Too close to the edge of a part to split here.", { variant: "error" });
+    return showToast("Can't split this close to a part's edge. Move the playhead further in.", { variant: "error" });
   }
   setDirty();
   paintInspector();
@@ -1223,7 +1230,8 @@ function deleteSelection() {
   else if (s.kind === "seg" && !ed.tracks.video.locked) {
     // Deleting a part joins it with its neighbour: the clip stays whole.
     const i = ed.w.segments.findIndex((x) => x.id === s.id);
-    if (ed.w.segments.length < 2 || i < 0) return void showToast("A clip keeps at least one part.");
+    if (ed.w.segments.length < 2 || i < 0)
+      return void showToast("A clip needs at least one part, so this one stays.", { variant: "error" });
     edit(() => merge(ed.ctx, ed.w.segments, ed.w.segments[i], i > 0 ? -1 : 1));
     select({ kind: "seg", id: segmentAt(ed.w.segments, ed.t).id });
   } else if (s.kind === "brand")
@@ -1237,7 +1245,7 @@ function copySelection() {
   const ts = selTexts();
   if (!ts.length) return false;
   clipboard = JSON.parse(JSON.stringify(ts));
-  showToast(ts.length === 1 ? "Text copied." : `${ts.length} texts copied.`);
+  showToast(ts.length === 1 ? "Text copied" : `${ts.length} texts copied`);
   return true;
 }
 
@@ -1305,19 +1313,19 @@ export function openMenu(x, y, target) {
   if (target.kind === "text") {
     html =
       menuItem("split", "Split at the playhead", { kbd: "S", icon: GLYPH.cut }) +
-      menuItem("duplicate", "Duplicate", { kbd: "⌘D", icon: `<i class="ap-icon-copy"></i>` }) +
-      menuItem("copy", "Copy", { kbd: "⌘C" }) +
+      menuItem("duplicate", "Duplicate text", { kbd: "⌘D", icon: `<i class="ap-icon-copy"></i>` }) +
+      menuItem("copy", "Copy text", { kbd: "⌘C" }) +
       menuItem("paste", "Paste at the playhead", { kbd: "⌘V", disabled: !hasClip }) +
       SEP +
-      menuItem("delete", "Delete", { kbd: "⌫", icon: `<i class="ap-icon-trash"></i>` });
+      menuItem("delete", "Delete text", { kbd: "⌫", icon: `<i class="ap-icon-trash"></i>` });
   } else if (target.kind === "seg") {
     const i = ed.w.segments.findIndex((s) => s.id === target.id);
     html =
       menuItem("split-part", "Split the part here", { kbd: "S", icon: GLYPH.cut }) +
-      menuItem("join-prev", "Join with the previous part", { disabled: i < 1 }) +
-      menuItem("join-next", "Join with the next part", { disabled: i >= ed.w.segments.length - 1 }) +
+      menuItem("join-prev", "Join previous part", { disabled: i < 1 }) +
+      menuItem("join-next", "Join next part", { disabled: i >= ed.w.segments.length - 1 }) +
       SEP +
-      menuItem("reset-seg", "Reset this part", { icon: `<i class="ap-icon-reset"></i>` }) +
+      menuItem("reset-seg", "Reset part", { icon: `<i class="ap-icon-reset"></i>` }) +
       menuItem("set-in", "Start the clip here", { kbd: "I" }) +
       menuItem("set-out", "End the clip here", { kbd: "O" });
   } else {
@@ -1389,7 +1397,7 @@ const SHORTCUTS = [
     "Playback",
     [
       ["Space", "Play / pause"],
-      ["J · K · L", "Reverse · stop · forward (press again to speed up)"],
+      ["J · K · L", "Play backward · stop · play forward (press again to go faster)"],
       ["← →", "Previous / next frame"],
       ["⇧← ⇧→", "One second back / forward"],
       ["↑ ↓", "Previous / next edit point"],
@@ -1400,32 +1408,32 @@ const SHORTCUTS = [
     "Editing",
     [
       ["S · ⌘K", "Split at the playhead"],
-      ["I · O", "Start / end the clip at the playhead"],
+      ["I · O", "Set the clip's start / end at the playhead"],
       ["T", "Add text at the playhead"],
       ["⌫", "Delete the selection"],
       ["⌘C · ⌘V · ⌘D", "Copy · paste · duplicate texts"],
       ["⌘A", "Select every text"],
-      ["⌥ + arrows", "Nudge the selected text on the video"],
+      ["⌥ + arrows", "Nudge the selected text"],
     ],
   ],
   [
     "Timeline",
     [
-      ["V · B", "Select tool · blade tool"],
-      ["N", "Snapping on / off"],
+      ["V · B", "Select tool · split tool"],
+      ["N", "Turn snapping on or off"],
       ["⌘+ · ⌘−", "Zoom in / out"],
       ["⇧Z", "Fit the clip in the timeline"],
-      ["Alt (while dragging)", "Move freely, no snapping"],
+      ["⌥ while dragging", "Drag without snapping"],
     ],
   ],
   [
-    "Edit",
+    "General",
     [
       ["⌘Z · ⇧⌘Z", "Undo · redo"],
       ["⌘S", "Save changes"],
-      ["F", "Full screen viewer"],
+      ["F", "Full screen"],
       ["Esc", "Deselect · close"],
-      ["?", "This list"],
+      ["?", "Show this list"],
     ],
   ],
 ];
@@ -1710,9 +1718,9 @@ function pickFormat(node) {
   if (!ed.w.segments.some((x) => x.origin === "USER")) return apply();
   openConfirm({
     title: "Change the format?",
-    body: `Your framing was made for ${formatLabel(ed.w.ratioId)}. In ${formatLabel(id)}, I frame the clip again from scratch.`,
+    body: `Your framing was made for ${formatLabel(ed.w.ratioId)}. In ${formatLabel(id)}, I reframe the clip from scratch, and your framing changes are lost.`,
     confirmLabel: "Change the format",
-    cancelLabel: "Cancel",
+    cancelLabel: `Keep ${formatLabel(ed.w.ratioId)}`,
     onConfirm: apply,
   });
   return undefined;
@@ -1721,7 +1729,9 @@ function pickFormat(node) {
 function toggleFullscreen() {
   const v = ed.el.querySelector("[data-nle-viewer]");
   if (document.fullscreenElement) return document.exitFullscreen?.().catch(() => {});
-  return v.requestFullscreen?.().catch(() => showToast("Full screen isn't available here."));
+  return v
+    .requestFullscreen?.()
+    .catch(() => showToast("Full screen isn't available in this browser.", { variant: "error" }));
 }
 
 function handleInput(e) {
@@ -1844,6 +1854,11 @@ function handleContextMenu(e) {
   if (id) {
     if (ed.sel?.kind !== "text" || !ed.sel.ids.includes(id)) select({ kind: "text", ids: [id] });
     return openMenu(e.clientX, e.clientY, { kind: "text" });
+  }
+  // « … here » in the menu means where you right-clicked: the playhead goes there.
+  if (inTl) {
+    if (ed.playing) stop();
+    seek(msAt(e.clientX));
   }
   if (seg) {
     select({ kind: "seg", id: seg.dataset.nleSeg });
@@ -1978,7 +1993,7 @@ function handleKey(e) {
       return addText("body");
     case "n":
       ed.snap = !ed.snap;
-      showToast(ed.snap ? "Snapping on." : "Snapping off.");
+      showToast(ed.snap ? "Snapping on" : "Snapping off");
       return paintTimeline();
     case "v":
     case "b":
