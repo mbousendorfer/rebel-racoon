@@ -1693,6 +1693,16 @@ body.clips-editing .app-content {
   border-color: var(--ref-color-electric-blue-100);
 }
 
+/* A narrow part's lines end with « … » instead of being cut mid-word (the
+   full label is the button's aria-label). */
+.clips-tl__seg-cam,
+.clips-tl__seg-lay {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .clips-tl__seg-cam {
   font-weight: var(--sys-text-style-caption-bold-weight);
 }
@@ -1783,7 +1793,7 @@ body.clips-editing .app-content {
   bottom: -4px;
   width: 2px;
   margin-left: -1px;
-  background: var(--ref-color-orange-100);
+  background: var(--ref-color-electric-blue-100); /* a control: blue, like the slider above */
   pointer-events: none;
   z-index: 3;
 }
@@ -1796,7 +1806,7 @@ body.clips-editing .app-content {
   width: 14px;
   height: 14px;
   border-radius: var(--app-radius-circle);
-  background: var(--ref-color-orange-100);
+  background: var(--ref-color-electric-blue-100);
   pointer-events: auto;
   cursor: grab;
   transition: transform 120ms ease;
