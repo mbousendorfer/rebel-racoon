@@ -14,15 +14,15 @@
 //   - blockInDemo(): every way to schedule asks for a real brand instead.
 //   - exitDemo(): wipes it all and goes back to the real setup.
 
-import { newChatPath } from "./utils.js?v=2825";
-import { DEMO_ACCOUNTS, DEMO_PLAYBOOK, DEMO_SAMPLES } from "./mocks.js?v=2825";
-import { isDemo, isDemoDone, markDemoDone, writeDemo } from "./demo-mode.js?v=2825";
-import { postAssistantMessage, postUserTurn } from "./assistant.js?v=2825";
-import * as inlineQuestion from "./inline-question.js?v=2825";
-import { getPosts, subscribe as subscribePosts } from "./posts-store.js?v=2825";
-import { open as openConfirm } from "./components/confirm-modal.js?v=2825";
-import { showToast } from "./components/toast.js?v=2825";
-import { pushScriptedSource, completeScriptedSource } from "./sources-stream.js?v=2825";
+import { newChatPath } from "./utils.js?v=2826";
+import { DEMO_ACCOUNTS, DEMO_PLAYBOOK, DEMO_SAMPLES } from "./mocks.js?v=2826";
+import { isDemo, isDemoDone, markDemoDone, writeDemo } from "./demo-mode.js?v=2826";
+import { postAssistantMessage, postUserTurn } from "./assistant.js?v=2826";
+import * as inlineQuestion from "./inline-question.js?v=2826";
+import { getPosts, subscribe as subscribePosts } from "./posts-store.js?v=2826";
+import { open as openConfirm } from "./components/confirm-modal.js?v=2826";
+import { showToast } from "./components/toast.js?v=2826";
+import { pushScriptedSource, completeScriptedSource } from "./sources-stream.js?v=2826";
 
 const PROFILES_KEY = "archie-connected-profiles";
 
