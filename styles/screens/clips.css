@@ -1485,7 +1485,12 @@ body.clips-editing .app-content {
   padding: var(--ref-spacing-xs) var(--ref-spacing-md);
 }
 
+/* A fixed box for the time: Averta's digits aren't all the same width (its
+   tabular-nums doesn't hold), so a changing time moved Play while playing
+   (2026-11-23). Room for « 12:59.9 / 12:59.9 ». */
 .clips-ed__time {
+  flex: none;
+  width: 17ch;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
   color: var(--ref-color-grey-100);
