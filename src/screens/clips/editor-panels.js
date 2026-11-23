@@ -6,12 +6,12 @@
 //     selected, the clip itself (its range, format, teaser).
 // Both are HTML builders; editor.js owns the events (data-nle-* delegation).
 
-import { ed, fmtTC, clipLen, selTexts, selSeg, capSourceHTML, ratio } from "./editor.js?v=2849";
-import { autoKind, cameraShort } from "./editor-timeline.js?v=2849";
-import { LAYOUTS, twoBlockedReason, cameraName } from "../../clip-framing.js?v=2849";
-import { dsSelect, formatLabel, RATIO_IDS, bestFor, presetLabel } from "./shared.js?v=2849";
-import * as ce from "../../caption-editor.js?v=2849";
-import { escapeHtml } from "../../utils.js?v=2849";
+import { ed, fmtTC, clipLen, selTexts, selSeg, capSourceHTML, ratio } from "./editor.js?v=2850";
+import { autoKind, cameraShort } from "./editor-timeline.js?v=2850";
+import { LAYOUTS, twoBlockedReason, cameraName } from "../../clip-framing.js?v=2850";
+import { dsSelect, presetLabel } from "./shared.js?v=2850";
+import * as ce from "../../caption-editor.js?v=2850";
+import { escapeHtml } from "../../utils.js?v=2850";
 
 // The few glyphs the DS doesn't ship (scissors, blade, magnet, speaker, frame
 // steps, loop, in / out): drawn here on the DS's 16 px grid, in currentColor.
@@ -208,15 +208,10 @@ export function inspectorHTML() {
 }
 
 function clipInsp() {
-  const videoRatio = ed.video.settings.ratio;
-  const own = ed.w.ratioId !== videoRatio || !!ed.clip.ratio;
-  const card = (id, label, meta, on) => `
-    <button type="button" class="nle-fmt${on ? " is-on" : ""}" data-nle-format="${id}" aria-pressed="${on}">
-      <span class="nle-fmt__shape" style="aspect-ratio:${(id === "video" ? videoRatio : id).replace(":", "/")}" aria-hidden="true"></span>
-      <span class="nle-fmt__text"><span class="nle-fmt__name">${escapeHtml(label)}</span>${meta}</span>
-    </button>`;
   const tz = ed.w.teaser;
   const off = tz.on ? "" : "disabled";
+  // Range first (what the clip is), then its subtitles, then the teaser. The
+  // format is the viewer's Format select: one place for it.
   return `
     ${sec(
       "Range",
@@ -225,38 +220,32 @@ function clipInsp() {
         <div><dt>Ends at</dt><dd>${fmtTC(ed.w.endMs)}</dd></div>
         <div><dt>Length</dt><dd>${fmtTC(clipLen())}</dd></div>
       </dl>
-      <p class="nle-hint">Times in the source video. To trim the clip, drag its edges on the Video track, or press I and O at the playhead.</p>
+      <p class="nle-hint">In the source video. Drag the clip's edges on the timeline to trim it.</p>
       <div class="nle-row">${btn("set-in", "Set start", { kbd: "At the playhead · I", icon: GLYPH.markIn })}${btn("set-out", "Set end", { kbd: "At the playhead · O", icon: GLYPH.markOut })}</div>`,
     )}
     ${sec(
-      "Format",
-      `<p class="nle-hint">In a new format, I reframe the clip from scratch.</p>
-      <div class="nle-fmts">
-        ${card("video", `Same as the video · ${formatLabel(videoRatio)}`, "", !own)}
-        ${RATIO_IDS.map((id) => card(id, formatLabel(id), bestFor(id), own && ed.w.ratioId === id)).join("")}
-      </div>`,
+      "Subtitles",
+      `<dl class="nle-facts nle-facts--one"><div><dt>Style</dt><dd>${escapeHtml(presetLabel(ce.getState()?.presetId))}${ed.capOwn ? " · this clip's own" : " · the video's"}</dd></div></dl>
+      <div class="nle-row"><button type="button" class="ap-button stroked grey" data-nle-select="captions"><span>Edit subtitles</span></button></div>`,
     )}
     ${sec(
       "Teaser",
       `${toggle("data-nle-teaser", tz.on, "Open with a teaser")}
-      <p class="nle-hint">A short moment of the clip plays first, then the whole clip.</p>
-      <div class="nle-teaser${tz.on ? "" : " is-off"}">
-        <dl class="nle-facts">
-          <div><dt>From</dt><dd>${fmtTC(tz.startMs)}</dd></div>
-          <div><dt>To</dt><dd>${fmtTC(tz.endMs)}</dd></div>
-          <div><dt>Video length</dt><dd>${fmtTC(clipLen() + (tz.on ? tz.endMs - tz.startMs : 0))}</dd></div>
-        </dl>
-        <div class="nle-row">
-          <button type="button" class="ap-button stroked grey" data-nle="teaser-start" data-tooltip="At the playhead" ${off}><span>Set start</span></button>
-          <button type="button" class="ap-button stroked grey" data-nle="teaser-end" data-tooltip="At the playhead" ${off}><span>Set end</span></button>
-        </div>
-        <button type="button" class="ap-button ghost grey" data-nle="teaser-play" ${off}><i class="ap-icon-play" aria-hidden="true"></i><span>Play teaser</span></button>
-      </div>`,
-    )}
-    ${sec(
-      "Subtitles",
-      `<p class="nle-hint">${escapeHtml(presetLabel(ce.getState()?.presetId))}${ed.capOwn ? " · this clip's own style" : " · the video's style"}</p>
-      <div class="nle-row"><button type="button" class="ap-button stroked grey" data-nle-select="captions"><span>Edit subtitles</span></button></div>`,
+      <p class="nle-hint">A short moment plays first, then the whole clip.</p>
+      ${
+        tz.on
+          ? `<dl class="nle-facts">
+              <div><dt>From</dt><dd>${fmtTC(tz.startMs)}</dd></div>
+              <div><dt>To</dt><dd>${fmtTC(tz.endMs)}</dd></div>
+              <div><dt>Video length</dt><dd>${fmtTC(clipLen() + tz.endMs - tz.startMs)}</dd></div>
+            </dl>
+            <div class="nle-row">
+              <button type="button" class="ap-button stroked grey" data-nle="teaser-start" data-tooltip="At the playhead" ${off}><span>Set start</span></button>
+              <button type="button" class="ap-button stroked grey" data-nle="teaser-end" data-tooltip="At the playhead" ${off}><span>Set end</span></button>
+              <button type="button" class="ap-button ghost grey" data-nle="teaser-play" ${off}><i class="ap-icon-play" aria-hidden="true"></i><span>Play teaser</span></button>
+            </div>`
+          : ""
+      }`,
     )}`;
 }
 

@@ -24,19 +24,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2849";
-import { isFlagOn } from "../../feature-flags.js?v=2849";
-import { parseHashParams } from "../../url-state.js?v=2849";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2849";
-import { showToast } from "../../components/toast.js?v=2849";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2849";
-import { open as openRename } from "../../components/rename-modal.js?v=2849";
-import { getContextById } from "../../contexts-store.js?v=2849";
-import { escapeHtml } from "../../utils.js?v=2849";
-import * as ce from "../../caption-editor.js?v=2849";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2849";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2849";
-import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2849";
+import { navigate } from "../../router.js?v=2850";
+import { isFlagOn } from "../../feature-flags.js?v=2850";
+import { parseHashParams } from "../../url-state.js?v=2850";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2850";
+import { showToast } from "../../components/toast.js?v=2850";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2850";
+import { open as openRename } from "../../components/rename-modal.js?v=2850";
+import { getContextById } from "../../contexts-store.js?v=2850";
+import { escapeHtml } from "../../utils.js?v=2850";
+import * as ce from "../../caption-editor.js?v=2850";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2850";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2850";
+import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2850";
 import {
   framingContext,
   initialSegments,
@@ -50,7 +50,7 @@ import {
   merge,
   snapMs,
   resetSegment,
-} from "../../clip-framing.js?v=2849";
+} from "../../clip-framing.js?v=2850";
 import {
   RATIO_IDS,
   ratioOf,
@@ -62,8 +62,8 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2849";
-import { writePostsInChat } from "../../clips-chat.js?v=2849";
+} from "./shared.js?v=2850";
+import { writePostsInChat } from "../../clips-chat.js?v=2850";
 import {
   timelineShellHTML,
   paintTimeline,
@@ -78,8 +78,8 @@ import {
   timelineWheel,
   timelineDrop,
   revealPlayhead,
-} from "./editor-timeline.js?v=2849";
-import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2849";
+} from "./editor-timeline.js?v=2850";
+import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2850";
 
 const FPS = 25;
 export const FRAME_MS = 1000 / FPS;
@@ -408,7 +408,7 @@ function shellHTML() {
         <div class="nle-transport__ctrls">
           ${iconBtn("to-start", "Go to start", GLYPH.toStart, { kbd: "Home" })}
           ${iconBtn("step-back", "Previous frame", GLYPH.stepBack, { kbd: "←" })}
-          <button type="button" class="ap-icon-button stroked nle-play" data-nle="play" aria-label="Play" data-tooltip="Play / pause · Space">
+          <button type="button" class="ap-icon-button stroked blue nle-play" data-nle="play" aria-label="Play" data-tooltip="Play / pause · Space">
             <i class="ap-icon-play" aria-hidden="true" data-nle-play-icon></i>
           </button>
           ${iconBtn("step-fwd", "Next frame", GLYPH.stepFwd, { kbd: "→" })}
