@@ -544,25 +544,6 @@
   gap: var(--ref-spacing-lg) var(--ref-spacing-md);
 }
 
-/* Where the clips sit in the video — read at a glance {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 6px;
-  background: rgba(0, 0, 0, 0.55);
-}
-
-/* The step the video waits for {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  margin-top: var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-body-bold-size);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-electric-blue-100);
-}
-
 /* A progress bar — the DS ships none in CSS-UI. */
 .clips-progress {
   display: flex;
@@ -1168,14 +1149,10 @@ body.clips-editing .app-content {
 }
 
 /* Footage loading: until a well's first frame is in (shared.js marks it
-   .is-ready),
-it shows a sheen on the DS's darkest surface,
-never a black
-   rectangle,
+   .is-ready), it shows a sheen on the DS's darkest surface, never a black
+   rectangle, and holds back what sits on the footage (subtitle lines). */
 .clips-showcase__source:not(.is-ready),
-.clips-preview:not(.is-ready),
-.clips-ed__stage:not(.is-ready) .clips-ed__source,
-.clips-ed__stage:not(.is-ready) .clips-ed__output {
+.clips-preview:not(.is-ready) {
   background: linear-gradient(
       100deg,
       var(--ref-color-grey-150) 30%,
@@ -1194,19 +1171,9 @@ never a black
 
 @media (prefers-reduced-motion: reduce) {
   .clips-showcase__source,
-.clips-preview,
-.clips-ed__source,
-.clips-ed__output {
+  .clips-preview {
     animation: none;
   }
-}
-
-/* ── A failed analysis ─────────────────────────────────────────────
-   The card is not a link (it holds its own buttons): no hover border,
-no
-   press. The veil names where it stopped; the reason sits under the name as
-   the DS error message; Try again / Remove close the card {
-  border-color: var(--ref-color-grey-20);
 }
 
 /* ── Project · step 1: the clips page (2026-11-20) ──────────────────
@@ -1578,23 +1545,7 @@ no
   }
 }
 
-/* ── « Rien ne bloque » (2026-11-20): trim in place,
-render,
-removed {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xxs);
-  background: rgba(0, 0, 0, 0.64);
-  color: #fff;
-  font-size: var(--sys-text-style-caption-size);
-  font-weight: 700;
-  line-height: 1.3;
-  text-align: center;
-}
+/* ── Trim (2026-11-20; clip-trim-modal.js): the source, a filmstrip, two handles ── */
 
 .clips-trim__player {
   position: relative;
@@ -1841,27 +1792,6 @@ removed {
 .clips-who__acts {
   display: flex;
   gap: var(--ref-spacing-xs);
-}
-
-/* ── The fixed frame (A,
-2026-11-20,
-after Opus Clip and Riverside) ──────
-   Every card the same size whatever the clip's format: the clip at its real
-   shape in a dark 4:3 stage,
-its format written on it; the body under it;
-   the actions in a footer {
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--ref-spacing-sm);
-}
-
-/* Kept = the interactive blue on the card's border {
-  border-color: var(--ref-color-electric-blue-100);
-}
-
-/* Waiting cards: the stage and two lines {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  border-radius: var(--app-radius-lg) var(--app-radius-lg) 0 0;
 }
 
 /* ── The recap's facts (2026-11-20) ─────────────────────────────────── */
