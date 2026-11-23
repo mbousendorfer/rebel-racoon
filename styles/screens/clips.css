@@ -1200,6 +1200,7 @@ body.clips-editing .app-content {
 }
 
 .clips-ed__stage {
+  position: relative; /* the Add text action and the text popover sit on it */
   user-select: none;
   flex: 1;
   min-height: 0;
@@ -2042,28 +2043,6 @@ body.clips-editing .app-content {
   align-self: flex-start;
 }
 
-.clips-ed__text-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-sm);
-}
-
-.clips-ed__text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-sm);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-md);
-}
-
-.clips-ed__text.is-selected {
-  border-color: var(--ref-color-electric-blue-100);
-}
-
 .clips-ed__rail {
   display: flex;
   flex-direction: column;
@@ -2185,12 +2164,6 @@ body.clips-editing .app-content {
 
 .clips-ed__cap-source strong {
   color: var(--ref-color-grey-100);
-}
-
-.clips-ed__text-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 
 /* An intro / outro card is shown alone, without the subtitles. */
@@ -3184,4 +3157,85 @@ its format written on it; the body under it;
 
 .clips-recap__key i.is-kept {
   background: var(--ref-color-electric-blue-100);
+}
+
+/* ── Text: an action on the video, a popover by the text (2026-11-23) ── */
+.clips-ed__stage-acts {
+  position: absolute;
+  top: var(--ref-spacing-sm);
+  right: var(--ref-spacing-sm);
+  z-index: 6;
+}
+
+.clips-ed__add-text {
+  position: relative;
+}
+
+.clips-ed__add-text > summary {
+  list-style: none;
+  background: var(--ref-color-white);
+}
+
+.clips-ed__add-text > summary::-webkit-details-marker {
+  display: none;
+}
+
+.clips-ed__add-text .clips-more__menu {
+  left: auto;
+  right: 0;
+  min-width: 220px;
+}
+
+.clips-ed__text-pop {
+  position: absolute;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  width: 300px;
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+  background: var(--ref-color-white);
+  box-shadow: var(--app-shadow-popover-lg);
+}
+
+.clips-ed__text-pop[hidden] {
+  display: none;
+}
+
+.clips-ed__text-pop-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.clips-ed__text-pop-title {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-ed__text-pop-when {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-ed__text-pop-when b {
+  color: var(--ref-color-grey-100);
+  font-variant-numeric: tabular-nums;
+}
+
+.clips-ed__text-pop-at {
+  display: flex;
+  gap: var(--ref-spacing-xxs);
+}
+
+.clips-ed__text-pop-foot {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--ref-spacing-xs);
+  border-top: 1px solid var(--ref-color-grey-20);
 }

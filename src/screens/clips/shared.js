@@ -2,14 +2,14 @@
 // editor share: time formatting, the video-wide options (format, subtitles),
 // and the live reframed previews.
 
-import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2829";
-import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2829";
-import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2829";
-import { escapeHtml } from "../../utils.js?v=2829";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2829";
-import { showToast } from "../../components/toast.js?v=2829";
-import { navigate } from "../../router.js?v=2829";
-import { getVideo, getVideos, removeVideo, subscribe as subscribeVideos } from "../../videos-store.js?v=2829";
+import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2831";
+import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2831";
+import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2831";
+import { escapeHtml } from "../../utils.js?v=2831";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2831";
+import { showToast } from "../../components/toast.js?v=2831";
+import { navigate } from "../../router.js?v=2831";
+import { getVideo, getVideos, removeVideo, subscribe as subscribeVideos } from "../../videos-store.js?v=2831";
 
 // A footage well shows a loading sheen until its first frame is in (clips.css,
 // `:not(.is-ready)`): every well is marked here, once, from the media events
@@ -75,7 +75,6 @@ export const EDITOR_TOOLS = [
   { id: "subtitles", label: "Subtitles", icon: "ap-icon-closed-captions", hint: "Their style, font and effects" },
   { id: "transcript", label: "Transcript", icon: "ap-icon-file--text", hint: "Fix a word, hide fillers and pauses" },
   { id: "reframe", label: "Reframe", icon: "ap-icon-cropper", hint: "Who's in the frame, part by part" },
-  { id: "text", label: "Text", icon: "ap-icon-alt-text", hint: "Titles and text on the video" },
   { id: "teaser", label: "Teaser", icon: "ap-icon-play", hint: "A short moment that plays first" },
   { id: "brand", label: "Brand", icon: "ap-icon-target", hint: "Your logo, an intro and an outro" },
 ];
