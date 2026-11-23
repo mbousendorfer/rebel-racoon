@@ -9,13 +9,13 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2818";
-import { isFlagOn } from "../../feature-flags.js?v=2818";
-import { renderTopbar } from "../../components/topbar.js?v=2818";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2818";
-import { isDemo } from "../../demo-mode.js?v=2818";
-import { getPosts } from "../../posts-store.js?v=2818";
-import { escapeHtml, plural } from "../../utils.js?v=2818";
+import { navigate } from "../../router.js?v=2819";
+import { isFlagOn } from "../../feature-flags.js?v=2819";
+import { renderTopbar } from "../../components/topbar.js?v=2819";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2819";
+import { isDemo } from "../../demo-mode.js?v=2819";
+import { getPosts } from "../../posts-store.js?v=2819";
+import { escapeHtml, plural } from "../../utils.js?v=2819";
 import {
   getVideos,
   exampleVideo,
@@ -25,7 +25,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2818";
+} from "../../videos-store.js?v=2819";
 import {
   fmtMs,
   previewMarkup,
@@ -38,7 +38,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2818";
+} from "./shared.js?v=2819";
 
 let target = null;
 let disposeShowcase = null;
@@ -300,9 +300,9 @@ const SORTS = [
 ];
 const FILTERS = [
   { id: "all", label: "All" },
-  { id: "running", label: "In progress" },
-  { id: "pick", label: "To pick" },
-  { id: "posts", label: "With posts" },
+  { id: "running", label: "Analyzing" },
+  { id: "pick", label: "Clips to review" },
+  { id: "posts", label: "Posts written" },
   { id: "empty", label: "No clips" },
 ];
 const list = { query: "", sort: "newest", filter: "all", view: "grid" };
@@ -327,7 +327,11 @@ function sorted(videos) {
 
 function renderCollection(videos) {
   const count = (id) => (id === "all" ? videos.length : videos.filter((v) => stateOf(v) === id).length);
-  const tabs = FILTERS.filter((f) => f.id === "all" || count(f.id)).map(
+  // The tabs only show when they sort something: two states at least
+  // (« je comprends pas le all - to pick » — All · 2 next to To pick · 2 said nothing).
+  const used = FILTERS.filter((f) => f.id !== "all" && count(f.id));
+  if (used.length < 2) list.filter = "all";
+  const tabs = (used.length < 2 ? [] : FILTERS.filter((f) => f.id === "all" || count(f.id))).map(
     (f) =>
       `<button type="button" class="ap-tabs-tab${list.filter === f.id ? " active" : ""}" role="tab" aria-selected="${list.filter === f.id}" data-clips-filter="${f.id}">${f.label} · ${count(f.id)}</button>`,
   );
@@ -341,7 +345,7 @@ function renderCollection(videos) {
         <span class="ap-counter normal grey">${videos.length}</span>
       </header>
       <div class="clips-library__tools">
-        <div class="ap-tabs clips-library__filters"><div class="ap-tabs-nav" role="tablist" aria-label="Filter videos">${tabs.join("")}</div></div>
+        ${tabs.length ? `<div class="ap-tabs clips-library__filters"><div class="ap-tabs-nav" role="tablist" aria-label="Filter videos">${tabs.join("")}</div></div>` : ""}
         <span class="clips-library__grow"></span>
         <div class="ap-input-group clips-library__search">
           <i class="ap-icon-search" aria-hidden="true"></i>
@@ -376,7 +380,7 @@ function renderRow(v) {
   const status = {
     running: `<span class="ap-status blue no-dot" data-clips-stage-of="${escapeHtml(v.id)}">${escapeHtml(stageLabel(v))}</span>`,
     empty: `<span class="ap-status red">${v.failure?.kind === "crash" ? "Stopped" : "No clips"}</span>`,
-    pick: `<span class="ap-status orange">${plural(v.clips.length, "clip")} to pick</span>`,
+    pick: `<span class="ap-status orange">${plural(v.clips.length, "clip")} to review</span>`,
     posts: `<span class="ap-status green">${plural(posts, "post")}</span>`,
   }[st];
   const next = nextOf(v);

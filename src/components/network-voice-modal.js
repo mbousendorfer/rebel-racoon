@@ -20,19 +20,19 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2818";
-import { getContextById } from "../contexts-store.js?v=2818";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2818";
+} from "../modal-coordinator.js?v=2819";
+import { getContextById } from "../contexts-store.js?v=2819";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2819";
 import {
   missingNetworkVoices,
   voiceChoices,
   useDefaultVoice,
   editNetworkVoiceInPlaybook,
   documentName,
-} from "../network-voice-flow.js?v=2818";
-import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2818";
-import { openVoiceProposal } from "./voice-proposal-modal.js?v=2818";
-import { escapeHtml } from "../utils.js?v=2818";
+} from "../network-voice-flow.js?v=2819";
+import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2819";
+import { openVoiceProposal } from "./voice-proposal-modal.js?v=2819";
+import { escapeHtml } from "../utils.js?v=2819";
 
 const MODAL_ID = "network-voice";
 

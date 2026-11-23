@@ -6,15 +6,15 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { newId } from "./utils.js?v=2818";
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2818";
-import { findConnector } from "./connectors-store.js?v=2818";
-import { createSessionNotifier } from "./store-utils.js?v=2818";
-import { addPostDraft } from "./posts-store.js?v=2818";
-import { showToast } from "./components/toast.js?v=2818";
-import { isFlagOn } from "./feature-flags.js?v=2818";
-import { offerMentions } from "./mention-flow.js?v=2818";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2818";
+import { newId } from "./utils.js?v=2819";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2819";
+import { findConnector } from "./connectors-store.js?v=2819";
+import { createSessionNotifier } from "./store-utils.js?v=2819";
+import { addPostDraft } from "./posts-store.js?v=2819";
+import { showToast } from "./components/toast.js?v=2819";
+import { isFlagOn } from "./feature-flags.js?v=2819";
+import { offerMentions } from "./mention-flow.js?v=2819";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2819";
 
 // How this module reads a session's ideas, injected rather than imported.
 //

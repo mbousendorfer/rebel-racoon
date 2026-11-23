@@ -2,11 +2,11 @@
 // active brand, the list to switch to, and what a switch re-points (see
 // switchPlaybook). Moved out of sidebar.js, unchanged.
 
-import { isWorkspaceMode, getActivePlaybook, setActivePlaybook } from "../../active-playbook.js?v=2818";
-import { escapeHtml } from "../../utils.js?v=2818";
-import { visibleContexts } from "../../playbook-access.js?v=2818";
-import { getPath, navigate } from "../../router.js?v=2818";
-import { closePanel as closeRightPanel } from "../right-panel.js?v=2818";
+import { isWorkspaceMode, getActivePlaybook, setActivePlaybook } from "../../active-playbook.js?v=2819";
+import { escapeHtml } from "../../utils.js?v=2819";
+import { visibleContexts } from "../../playbook-access.js?v=2819";
+import { getPath, navigate } from "../../router.js?v=2819";
+import { closePanel as closeRightPanel } from "../right-panel.js?v=2819";
 
 // Initials for the collapsed rail. Playbooks are named "Brand · framing", so
 // the part before the separator is the identity — "Acme · Q2 marketing" is an
