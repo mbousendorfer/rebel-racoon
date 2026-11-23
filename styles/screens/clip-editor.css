@@ -572,6 +572,26 @@
   font-size: var(--sys-text-style-caption-size);
 }
 
+/* The Subtitles tabs (caption-editor.js) follow the inspector: no second
+   inset (the body already gives one), field labels in body ink, group titles
+   in h3 like every other section. Scoped to this host: the Video Clips modal
+   keeps caption-editor.css as it is. */
+.nle-captabs {
+  padding: var(--ref-spacing-sm) 0 0;
+}
+.nle-captabs .cap-ed-flabel {
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  font-weight: var(--sys-text-style-body-weight);
+  color: var(--ref-color-grey-100);
+}
+.nle-captabs .cap-ed-group-label {
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+}
+
 /* ── Viewer ───────────────────────────────────────────────────────── */
 
 .nle-viewer {
