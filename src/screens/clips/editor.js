@@ -29,19 +29,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2832";
-import { isFlagOn } from "../../feature-flags.js?v=2832";
-import { parseHashParams } from "../../url-state.js?v=2832";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2832";
-import { showToast } from "../../components/toast.js?v=2832";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2832";
-import { open as openRename } from "../../components/rename-modal.js?v=2832";
-import { getContextById } from "../../contexts-store.js?v=2832";
-import { escapeHtml } from "../../utils.js?v=2832";
-import * as ce from "../../caption-editor.js?v=2832";
-import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2832";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2832";
-import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2832";
+import { navigate } from "../../router.js?v=2833";
+import { isFlagOn } from "../../feature-flags.js?v=2833";
+import { parseHashParams } from "../../url-state.js?v=2833";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2833";
+import { showToast } from "../../components/toast.js?v=2833";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2833";
+import { open as openRename } from "../../components/rename-modal.js?v=2833";
+import { getContextById } from "../../contexts-store.js?v=2833";
+import { escapeHtml } from "../../utils.js?v=2833";
+import * as ce from "../../caption-editor.js?v=2833";
+import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2833";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2833";
+import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2833";
 import {
   framingContext,
   initialSegments,
@@ -60,7 +60,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2832";
+} from "../../clip-framing.js?v=2833";
 import {
   fmtMs,
   fmtPrecise,
@@ -75,8 +75,8 @@ import {
   dsSelect,
   bindSelectDismiss,
   EDITOR_TOOLS as TOOLS,
-} from "./shared.js?v=2832";
-import { writePostsInChat } from "../../clips-chat.js?v=2832";
+} from "./shared.js?v=2833";
+import { writePostsInChat } from "../../clips-chat.js?v=2833";
 
 const FRAME_MS = 40;
 const CARD_MS = 2000; // intro / outro card length
@@ -280,6 +280,8 @@ function shellHTML() {
               <canvas class="clips-ed__out-canvas" data-clips-out></canvas>
               <div class="cap-ed__deadzones" data-ce-deadzones></div>
               <div class="clips-ed__texts" data-clips-texts data-ce-no-toggle></div>
+              <span class="clips-ed__guide clips-ed__guide--v" data-clips-guide="x" hidden></span>
+              <span class="clips-ed__guide clips-ed__guide--h" data-clips-guide="y" hidden></span>
               <img class="clips-ed__logo" data-clips-logo alt="" hidden />
               <div class="cap-ed-box" data-ce-box></div>
               <div class="cap-ed-frame" data-ce-frame>${handles}</div>
@@ -886,6 +888,7 @@ function paintTimeline() {
         <div class="clips-tl__playhead" data-clips-playhead style="left:${pctIn(ed.t)}">
           <span class="clips-tl__knob" data-clips-knob aria-hidden="true"></span>
         </div>
+        ${ed.drag?.guide != null ? `<span class="clips-tl__guide" style="left:${pctIn(ed.drag.guide)}"></span>` : ""}
         ${ed.drag?.label ? `<span class="clips-tl__readout" style="left:${pctIn(ed.drag.at)}">${escapeHtml(ed.drag.label)}</span>` : ""}
       </div>
     </div>
@@ -1885,15 +1888,27 @@ function startTextDrag(e, node) {
   const sy = e.clientY;
   const ox = tx.x;
   const oy = tx.y;
+  const guides = { x: out.querySelector('[data-clips-guide="x"]'), y: out.querySelector('[data-clips-guide="y"]') };
   const move = (ev) => {
     tx.x = Math.max(0.05, Math.min(0.95, ox + (ev.clientX - sx) / r.width));
     tx.y = Math.max(0.05, Math.min(0.95, oy + (ev.clientY - sy) / r.height));
+    // Magnetic: within 8px of the video's centre line, the text sits on it
+    // and the line shows. Alt held drags freely.
+    for (const [k, size] of [
+      ["x", r.width],
+      ["y", r.height],
+    ]) {
+      const on = !ev.altKey && Math.abs(tx[k] - 0.5) * size <= 8;
+      if (on) tx[k] = 0.5;
+      guides[k].hidden = !on;
+    }
     node.style.left = `${tx.x * 100}%`;
     node.style.top = `${tx.y * 100}%`;
   };
   const up = () => {
     window.removeEventListener("pointermove", move);
     window.removeEventListener("pointerup", up);
+    guides.x.hidden = guides.y.hidden = true;
     setDirty();
     paintTexts();
     paintTextPop();
@@ -1918,20 +1933,66 @@ function startLayerDrag(e, id, part) {
   let moved = false;
   const tl = ed.el.querySelector("[data-clips-timeline]");
   tl.dataset.drag = part === "move" ? "layer" : "bound";
+  // Magnetic (2026-11-23): an edge within 8px of something worth lining up
+  // with lands on it — the clip's ends, the playhead, the other texts, the
+  // camera cuts, the framing parts. Alt held drags freely.
+  const targets = [
+    [0, "the clip's start"],
+    [len, "the clip's end"],
+    [ed.t - ed.w.startMs, "the playhead"],
+    ...ed.w.texts
+      .filter((o) => o.id !== id)
+      .flatMap((o) => [
+        [o.startMs, "a text"],
+        [o.endMs, "a text"],
+      ]),
+    ...ed.ctx.cuts.map((c) => [c - ed.w.startMs, "a camera cut"]),
+    ...ed.w.segments.slice(1).map((g) => [g.startMs - ed.w.startMs, "a part"]),
+  ].filter(([t]) => t >= 0 && t <= len);
+  const radius = () =>
+    (8 / ed.el.querySelector("[data-clips-tracks]").getBoundingClientRect().width) * ed.viewport.span;
+  // The nearest target to any of the edges given, as [shift, target, label].
+  const snap = (edges, free) => {
+    if (free) return null;
+    let best = null;
+    for (const edge of edges)
+      for (const [t, name] of targets) {
+        const dd = t - edge;
+        if (Math.abs(dd) <= radius() && (!best || Math.abs(dd) < Math.abs(best[0]))) best = [dd, t, name];
+      }
+    return best;
+  };
   const move = (ev) => {
     if (!moved && Math.abs(ev.clientX - x0) < 3) return;
     moved = true;
     const d = msAt(ev.clientX) - m0;
-    if (part === "start") tx.startMs = Math.round(Math.max(0, Math.min(e0 - MIN, s0 + d)));
-    else if (part === "end") tx.endMs = Math.round(Math.min(len, Math.max(s0 + MIN, e0 + d)));
-    else {
-      const st = Math.round(Math.max(0, Math.min(len - (e0 - s0), s0 + d)));
+    let hit = null;
+    if (part === "start") {
+      let st = s0 + d;
+      hit = snap([st], ev.altKey);
+      if (hit) st += hit[0];
+      tx.startMs = Math.round(Math.max(0, Math.min(e0 - MIN, st)));
+    } else if (part === "end") {
+      let en = e0 + d;
+      hit = snap([en], ev.altKey);
+      if (hit) en += hit[0];
+      tx.endMs = Math.round(Math.min(len, Math.max(s0 + MIN, en)));
+    } else {
+      let st = s0 + d;
+      hit = snap([st, st + (e0 - s0)], ev.altKey);
+      if (hit) st += hit[0];
+      st = Math.round(Math.max(0, Math.min(len - (e0 - s0), st)));
       tx.startMs = st;
       tx.endMs = st + (e0 - s0);
     }
     ed.selectedText = tx.id;
     const at = part === "end" ? tx.endMs : tx.startMs;
-    ed.drag = { kind: "layer", at: ed.w.startMs + at, label: `${fmtPrecise(tx.startMs)} → ${fmtPrecise(tx.endMs)}` };
+    ed.drag = {
+      kind: "layer",
+      at: ed.w.startMs + at,
+      guide: hit ? ed.w.startMs + hit[1] : null,
+      label: `${fmtPrecise(tx.startMs)} → ${fmtPrecise(tx.endMs)}${hit ? ` · on ${hit[2]}` : ""}`,
+    };
     seek(ed.w.startMs + (part === "end" ? tx.endMs - 1 : tx.startMs + 1));
     paintTexts();
     paintTimeline();

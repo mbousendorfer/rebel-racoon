@@ -4,9 +4,9 @@
 // clip id, straight into that clip's editor — the one editor.
 // "Write posts", the other door, is clips-chat.js.
 
-import { navigate } from "../../router.js?v=2832";
-import { playbookForNewWork, sessionPlaybookId } from "../../active-playbook.js?v=2832";
-import { importFromSource } from "../../videos-store.js?v=2832";
+import { navigate } from "../../router.js?v=2833";
+import { playbookForNewWork, sessionPlaybookId } from "../../active-playbook.js?v=2833";
+import { importFromSource } from "../../videos-store.js?v=2833";
 
 export function openInClips(sessionId, source, clipId = null) {
   const contextId = sessionPlaybookId(sessionId) || playbookForNewWork()?.id || null;

@@ -1876,6 +1876,42 @@ body.clips-editing .app-content {
 }
 
 /* What a drag is setting, read live above the timeline. */
+/* A layer that snapped: the line it landed on, across the tracks. */
+.clips-tl__guide {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 0;
+  border-left: 1px dashed var(--ref-color-electric-blue-100);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* A text dragged onto the video's centre line: the line shows. */
+.clips-ed__guide {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.clips-ed__guide[hidden] {
+  display: none;
+}
+
+.clips-ed__guide--v {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  border-left: 1px dashed var(--ref-color-electric-blue-100);
+}
+
+.clips-ed__guide--h {
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px dashed var(--ref-color-electric-blue-100);
+}
+
 .clips-tl__readout {
   position: absolute;
   top: 0; /* over the ruler, which reads the same time */
