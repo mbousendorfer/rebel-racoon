@@ -1444,12 +1444,7 @@ body.clips-editing .app-content {
   display: none;
 }
 
-.clips-ed[data-tool="text"] .clips-ed-text.is-off {
-  display: block;
-  opacity: 0.35;
-}
-
-.clips-ed[data-tool="text"] .clips-ed-text.is-selected {
+.clips-ed-text.is-selected {
   outline: 2px solid var(--ref-color-electric-blue-100);
   outline-offset: 2px;
 }
@@ -1501,11 +1496,6 @@ body.clips-editing .app-content {
    goes. */
 .clips-ed:not([data-tool="reframe"]) .clips-tl__legend {
   display: none;
-}
-
-.clips-ed:not([data-tool="reframe"]) .clips-tl__frames {
-  opacity: 0.45;
-  pointer-events: none;
 }
 
 /* ── Timeline ── */
@@ -1762,12 +1752,37 @@ body.clips-editing .app-content {
   background: var(--ref-color-grey-80);
 }
 
+/* The Text track: one 28px layer per text. */
+.clips-tl__texts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.clips-tl__layer {
+  position: relative;
+  height: 28px;
+  touch-action: none;
+}
+
+.clips-tl__layer.is-empty {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--ref-spacing-xs);
+  border: 1px dashed var(--ref-color-grey-20);
+  border-radius: var(--app-radius-sm);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
 .clips-tl__text {
   position: absolute;
   top: 0;
   bottom: 0;
-  min-width: 6px;
-  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  min-width: 16px;
+  padding: 0 10px;
   overflow: hidden;
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-sm);
@@ -1775,9 +1790,52 @@ body.clips-editing .app-content {
   color: var(--ref-color-grey-100);
   font: inherit;
   font-size: var(--sys-text-style-caption-size);
+  cursor: grab;
+}
+
+.clips-tl__text-label {
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  cursor: pointer;
+}
+
+/* Its edges: grab one to set where the text starts or ends. */
+.clips-tl__text-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+.clips-tl__text-edge--start {
+  left: 0;
+}
+
+.clips-tl__text-edge--end {
+  right: 0;
+}
+
+.clips-tl__text-edge::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  left: 3px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--ref-color-grey-60);
+}
+
+.clips-tl__text:hover .clips-tl__text-edge::after,
+.clips-tl__text.is-current .clips-tl__text-edge::after {
+  background: var(--ref-color-electric-blue-100);
+}
+
+.clips-ed__timeline[data-drag="layer"],
+.clips-ed__timeline[data-drag="layer"] * {
+  cursor: grabbing;
 }
 
 .clips-tl__text:hover {
@@ -2647,8 +2705,7 @@ on black {
    Output is alone, without its bar; a quick bar under it (format, subtitles,
    safe area), then prod's transport. The timeline shows in Reframe only, cut
    down to the framing parts. */
-.clips-ed:not([data-tool="reframe"]) .clips-ed__monitor-bar,
-.clips-ed:not([data-tool="reframe"]) .clips-ed__timeline {
+.clips-ed:not([data-tool="reframe"]) .clips-ed__monitor-bar {
   display: none;
 }
 
@@ -2657,18 +2714,36 @@ on black {
   padding-top: var(--ref-spacing-sm);
 }
 
-.clips-ed[data-tool="reframe"] .clips-tl__labels,
-.clips-ed[data-tool="reframe"] .clips-tl__tracks {
-  grid-template-rows: 20px 40px;
+/* The timeline shows in every tool (2026-11-23): the ruler, the Framing parts
+   in Reframe, and the Text track — one layer per text — everywhere. */
+.clips-tl__labels,
+.clips-tl__tracks {
+  grid-template-rows: 20px 40px auto;
 }
 
-.clips-ed[data-tool="reframe"] .clips-tl__labels > :nth-child(2),
-.clips-ed[data-tool="reframe"] .clips-tl__labels > :nth-child(3),
-.clips-ed[data-tool="reframe"] .clips-tl__labels > :nth-child(5),
-.clips-ed[data-tool="reframe"] .clips-tl__subs,
-.clips-ed[data-tool="reframe"] .clips-tl__trim,
-.clips-ed[data-tool="reframe"] .clips-tl__texts {
+.clips-tl__labels > :nth-child(2),
+.clips-tl__labels > :nth-child(3),
+.clips-tl__subs,
+.clips-tl__trim {
   display: none;
+}
+
+.clips-ed:not([data-tool="reframe"]) .clips-tl__labels > :nth-child(4),
+.clips-ed:not([data-tool="reframe"]) .clips-tl__frames,
+.clips-ed:not([data-tool="reframe"]) .clips-tl__bar [data-clips-ed="split"],
+.clips-ed:not([data-tool="reframe"]) .clips-tl__snap {
+  display: none;
+}
+
+.clips-ed:not([data-tool="reframe"]) .clips-tl__labels,
+.clips-ed:not([data-tool="reframe"]) .clips-tl__tracks {
+  grid-template-rows: 20px auto;
+}
+
+/* « Text » sits level with its first layer. */
+.clips-tl__labels > :nth-child(5) {
+  align-self: start;
+  line-height: 28px;
 }
 
 /* The clip's settings, above the video: three selects alike, a hairline
@@ -3159,14 +3234,8 @@ its format written on it; the body under it;
   background: var(--ref-color-electric-blue-100);
 }
 
-/* ── Text: an action on the video, a popover by the text (2026-11-23) ── */
-.clips-ed__stage-acts {
-  position: absolute;
-  top: var(--ref-spacing-sm);
-  right: var(--ref-spacing-sm);
-  z-index: 6;
-}
-
+/* ── Text: added from the timeline, edited in a popover beside the Output,
+   timed by its layer on the Text track (2026-11-23) ── */
 .clips-ed__add-text {
   position: relative;
 }
@@ -3180,9 +3249,10 @@ its format written on it; the body under it;
   display: none;
 }
 
+/* In the timeline's bar, at the screen's foot: the menu opens upward. */
 .clips-ed__add-text .clips-more__menu {
-  left: auto;
-  right: 0;
+  top: auto;
+  bottom: calc(100% + var(--ref-spacing-xxxs));
   min-width: 220px;
 }
 
@@ -3213,24 +3283,6 @@ its format written on it; the body under it;
 .clips-ed__text-pop-title {
   font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--ref-color-grey-100);
-}
-
-.clips-ed__text-pop-when {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-}
-
-.clips-ed__text-pop-when b {
-  color: var(--ref-color-grey-100);
-  font-variant-numeric: tabular-nums;
-}
-
-.clips-ed__text-pop-at {
-  display: flex;
-  gap: var(--ref-spacing-xxs);
 }
 
 .clips-ed__text-pop-foot {

@@ -29,19 +29,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2831";
-import { isFlagOn } from "../../feature-flags.js?v=2831";
-import { parseHashParams } from "../../url-state.js?v=2831";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2831";
-import { showToast } from "../../components/toast.js?v=2831";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2831";
-import { open as openRename } from "../../components/rename-modal.js?v=2831";
-import { getContextById } from "../../contexts-store.js?v=2831";
-import { escapeHtml } from "../../utils.js?v=2831";
-import * as ce from "../../caption-editor.js?v=2831";
-import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2831";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2831";
-import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2831";
+import { navigate } from "../../router.js?v=2832";
+import { isFlagOn } from "../../feature-flags.js?v=2832";
+import { parseHashParams } from "../../url-state.js?v=2832";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2832";
+import { showToast } from "../../components/toast.js?v=2832";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2832";
+import { open as openRename } from "../../components/rename-modal.js?v=2832";
+import { getContextById } from "../../contexts-store.js?v=2832";
+import { escapeHtml } from "../../utils.js?v=2832";
+import * as ce from "../../caption-editor.js?v=2832";
+import { DEAD_ZONES, deriveCues } from "../../clip-captions.js?v=2832";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2832";
+import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2832";
 import {
   framingContext,
   initialSegments,
@@ -60,7 +60,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2831";
+} from "../../clip-framing.js?v=2832";
 import {
   fmtMs,
   fmtPrecise,
@@ -75,8 +75,8 @@ import {
   dsSelect,
   bindSelectDismiss,
   EDITOR_TOOLS as TOOLS,
-} from "./shared.js?v=2831";
-import { writePostsInChat } from "../../clips-chat.js?v=2831";
+} from "./shared.js?v=2832";
+import { writePostsInChat } from "../../clips-chat.js?v=2832";
 
 const FRAME_MS = 40;
 const CARD_MS = 2000; // intro / outro card length
@@ -252,23 +252,9 @@ function shellHTML() {
       <div class="clips-ed__quick" data-clips-quick role="group" aria-label="This clip's settings"></div>
 
       <div class="clips-ed__stage" data-clips-stage>
-        <!-- Text: an action on the video, edited in a popover by the text
-             (2026-11-23: « ajouter l'outil comme une action avec un popover »). -->
-        <div class="clips-ed__stage-acts">
-          <details class="clips-more clips-ed__add-text">
-            <summary class="ap-button stroked grey"><i class="ap-icon-plus" aria-hidden="true"></i><span>Add text</span></summary>
-            <div class="ap-action-dropdown clips-more__menu" role="menu">
-              <button type="button" role="menuitem" class="ap-action-dropdown-item" data-clips-ed="add-hook">
-                <i class="ap-icon-archie-official" aria-hidden="true"></i>
-                <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">The clip's title</span></div></div>
-              </button>
-              <button type="button" role="menuitem" class="ap-action-dropdown-item" data-clips-ed="add-text">
-                <i class="ap-icon-pen" aria-hidden="true"></i>
-                <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">Your own text</span></div></div>
-              </button>
-            </div>
-          </details>
-        </div>
+        <!-- A text is edited in a popover beside the Output; its time is its
+             layer on the timeline's Text track (2026-11-23: « gérer ça comme un
+             calque sur une piste comme tous les éditeurs vidéo »). -->
         <div class="clips-ed__text-pop" data-clips-text-pop role="dialog" aria-label="Text" hidden></div>
         <section class="clips-ed__monitor clips-ed__monitor--source" aria-label="Source">
           <header class="clips-ed__monitor-bar">
@@ -722,32 +708,30 @@ function paintTextPop() {
     <label class="clips-ed__field"><span>Size</span>
       <input type="range" class="ap-slider" min="36" max="120" step="2" value="${tx.size}" data-clips-text-field="size" data-id="${tx.id}"
         style="--fill:${((tx.size - 36) / 84) * 100}%" aria-label="Size" /></label>
-    <div class="clips-ed__text-pop-when">
-      <span>On screen <b>${fmtPrecise(tx.startMs)}</b> → <b>${fmtPrecise(tx.endMs)}</b></span>
-      <span class="clips-ed__text-pop-at">
-        <button type="button" class="ap-button ghost grey" data-clips-text-at="start" data-id="${tx.id}" data-tooltip="Start at the playhead">Start here</button>
-        <button type="button" class="ap-button ghost grey" data-clips-text-at="end" data-id="${tx.id}" data-tooltip="End at the playhead">End here</button>
-      </span>
-    </div>
     <div class="clips-ed__text-pop-foot"><button type="button" class="ap-button primary blue" data-clips-text-done>Done</button></div>`;
   pop.hidden = false;
   placeTextPop();
 }
 
-// Under the text when there's room, else above it; kept inside the stage.
+// Beside the Output, level with the text, so it never covers the video;
+// over the stage's edge only when there's no room on either side.
 function placeTextPop() {
   const pop = ed.el.querySelector("[data-clips-text-pop]");
   if (!pop || pop.hidden) return;
   const node = ed.el.querySelector(`[data-clips-text="${CSS.escape(ed.selectedText || "")}"]`);
+  const out = ed.el.querySelector("[data-clips-output]");
   const stage = ed.el.querySelector("[data-clips-stage]");
-  if (!node || !stage) return;
+  if (!out || !stage) return;
   const s = stage.getBoundingClientRect();
-  const n = node.getBoundingClientRect();
+  const o = out.getBoundingClientRect();
+  const n = (node || out).getBoundingClientRect();
   const w = pop.offsetWidth;
   const h = pop.offsetHeight;
-  const left = Math.max(8, Math.min(s.width - w - 8, n.left - s.left + n.width / 2 - w / 2));
-  const below = n.bottom - s.top + 8;
-  const top = below + h <= s.height - 8 ? below : Math.max(8, n.top - s.top - h - 8);
+  const gap = 16;
+  let left = o.right - s.left + gap;
+  if (left + w > s.width - 8) left = o.left - s.left - gap - w;
+  if (left < 8) left = s.width - w - 8;
+  const top = Math.max(8, Math.min(s.height - h - 8, n.top - s.top + n.height / 2 - h / 2));
   pop.style.left = `${left}px`;
   pop.style.top = `${top}px`;
 }
@@ -841,20 +825,41 @@ function paintTimeline() {
     .filter((c) => c > ed.w.startMs && c < ed.w.endMs)
     .map((c) => `<span class="clips-tl__cut" style="left:${pctIn(c)}"></span>`)
     .join("");
-  const texts = ed.w.texts
-    .map(
-      (
-        tx,
-      ) => `<button type="button" class="clips-tl__text${tx.id === ed.selectedText ? " is-current" : ""}" data-clips-text-pick="${tx.id}"
-        style="left:${pctIn(ed.w.startMs + tx.startMs)};width:${((tx.endMs - tx.startMs) / v.span) * 100}%">${escapeHtml(tx.text)}</button>`,
-    )
-    .join("");
+  // The Text track: one layer per text, like any video editor — drag it to
+  // move it in time, drag an edge to set where it starts or ends.
+  const texts = ed.w.texts.length
+    ? ed.w.texts
+        .map(
+          (tx) => `<div class="clips-tl__layer" data-clips-scrub>
+        <button type="button" class="clips-tl__text${tx.id === ed.selectedText ? " is-current" : ""}" data-clips-text-pick="${tx.id}"
+          style="left:${pctIn(ed.w.startMs + tx.startMs)};width:${((tx.endMs - tx.startMs) / v.span) * 100}%"
+          aria-label="${escapeHtml(tx.text)}, ${fmtPrecise(tx.startMs)} to ${fmtPrecise(tx.endMs)}">
+          <span class="clips-tl__text-edge clips-tl__text-edge--start" data-clips-text-edge="start" aria-hidden="true"></span>
+          <span class="clips-tl__text-label">${escapeHtml(tx.text)}</span>
+          <span class="clips-tl__text-edge clips-tl__text-edge--end" data-clips-text-edge="end" aria-hidden="true"></span>
+        </button>
+      </div>`,
+        )
+        .join("")
+    : `<div class="clips-tl__layer is-empty" data-clips-scrub><span>No text yet. Add text puts one at the playhead.</span></div>`;
   const b = ed.w.brand;
   host.innerHTML = `
     <div class="clips-tl__bar" role="toolbar" aria-label="At the playhead">
       <span class="clips-tl__bar-label">At the playhead</span>
       <button type="button" class="ap-button stroked grey" data-clips-ed="split" data-tooltip="A new framing part — the clip stays whole (S)">${ICON.cut}<span>Split part</span></button>
-      <button type="button" class="ap-button stroked grey" data-clips-ed="add-text"><i class="ap-icon-plus" aria-hidden="true"></i><span>Add text</span></button>
+      <details class="clips-more clips-ed__add-text">
+        <summary class="ap-button stroked grey"><i class="ap-icon-plus" aria-hidden="true"></i><span>Add text</span></summary>
+        <div class="ap-action-dropdown clips-more__menu" role="menu">
+          <button type="button" role="menuitem" class="ap-action-dropdown-item" data-clips-ed="add-hook">
+            <i class="ap-icon-archie-official" aria-hidden="true"></i>
+            <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">The clip's title</span></div></div>
+          </button>
+          <button type="button" role="menuitem" class="ap-action-dropdown-item" data-clips-ed="add-text">
+            <i class="ap-icon-pen" aria-hidden="true"></i>
+            <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">Your own text</span></div></div>
+          </button>
+        </div>
+      </details>
       <label class="ap-toggle-container clips-tl__snap"><input type="checkbox" data-clips-snap ${ed.snap ? "checked" : ""} /><i></i><span>Snap to camera cuts</span></label>
     </div>
     <div class="clips-tl" data-clips-tl>
@@ -877,7 +882,7 @@ function paintTimeline() {
           </div>
         </div>
         <div class="clips-tl__frames" data-clips-scrub>${cuts}${segHTML}${bounds}</div>
-        <div class="clips-tl__texts" data-clips-scrub>${texts}</div>
+        <div class="clips-tl__texts">${texts}</div>
         <div class="clips-tl__playhead" data-clips-playhead style="left:${pctIn(ed.t)}">
           <span class="clips-tl__knob" data-clips-knob aria-hidden="true"></span>
         </div>
@@ -1350,11 +1355,7 @@ function handleClick(e) {
   if (!ed) return;
   const t = e.target;
   // A click elsewhere on the video closes the text popover.
-  if (
-    ed.selectedText &&
-    t.closest("[data-clips-stage]") &&
-    !t.closest("[data-clips-text-pop], [data-clips-text], .clips-ed__add-text")
-  )
+  if (ed.selectedText && t.closest("[data-clips-stage]") && !t.closest("[data-clips-text-pop], [data-clips-text]"))
     closeTextPop();
   if (t.closest("[data-clips-intro-close]")) {
     try {
@@ -1524,16 +1525,6 @@ function handleClick(e) {
     return edit(() => {
       txById(style.dataset.id).style = style.dataset.clipsTextStyle;
       paintTexts();
-    });
-  const at = t.closest("[data-clips-text-at]");
-  if (at)
-    return edit(() => {
-      const tx = txById(at.dataset.id);
-      const rel = ed.t - ed.w.startMs;
-      if (at.dataset.clipsTextAt === "start") tx.startMs = Math.min(rel, tx.endMs - 500);
-      else tx.endMs = Math.max(rel, tx.startMs + 500);
-      paintTexts();
-      paintTextPop();
     });
   const rm = t.closest("[data-clips-text-remove]");
   if (rm)
@@ -1724,6 +1715,13 @@ function handlePointerDown(e) {
   if (t.closest("[data-clips-overlay]")) return startCropDrag(e);
   const text = t.closest("[data-clips-text]");
   if (text) return startTextDrag(e, text);
+  const layer = t.closest("[data-clips-text-pick]");
+  if (layer)
+    return startLayerDrag(
+      e,
+      layer.dataset.clipsTextPick,
+      t.closest("[data-clips-text-edge]")?.dataset.clipsTextEdge || "move",
+    );
   if (t.closest("[data-clips-scrub]") && !t.closest("[data-clips-seg], [data-clips-text-pick]"))
     return startDrag(e, { kind: "scrub" });
   return undefined;
@@ -1900,6 +1898,56 @@ function startTextDrag(e, node) {
     paintTexts();
     paintTextPop();
     paintTimeline();
+  };
+  window.addEventListener("pointermove", move);
+  window.addEventListener("pointerup", up);
+}
+
+// A text's layer on the Text track: the body moves it in time, an edge sets
+// its start or its end. A press that doesn't move is a click (it selects).
+function startLayerDrag(e, id, part) {
+  const tx = txById(id);
+  if (!tx) return;
+  e.preventDefault();
+  pushUndo();
+  const x0 = e.clientX;
+  const m0 = msAt(e.clientX);
+  const { startMs: s0, endMs: e0 } = tx;
+  const len = clipLen();
+  const MIN = 500;
+  let moved = false;
+  const tl = ed.el.querySelector("[data-clips-timeline]");
+  tl.dataset.drag = part === "move" ? "layer" : "bound";
+  const move = (ev) => {
+    if (!moved && Math.abs(ev.clientX - x0) < 3) return;
+    moved = true;
+    const d = msAt(ev.clientX) - m0;
+    if (part === "start") tx.startMs = Math.round(Math.max(0, Math.min(e0 - MIN, s0 + d)));
+    else if (part === "end") tx.endMs = Math.round(Math.min(len, Math.max(s0 + MIN, e0 + d)));
+    else {
+      const st = Math.round(Math.max(0, Math.min(len - (e0 - s0), s0 + d)));
+      tx.startMs = st;
+      tx.endMs = st + (e0 - s0);
+    }
+    ed.selectedText = tx.id;
+    const at = part === "end" ? tx.endMs : tx.startMs;
+    ed.drag = { kind: "layer", at: ed.w.startMs + at, label: `${fmtPrecise(tx.startMs)} → ${fmtPrecise(tx.endMs)}` };
+    seek(ed.w.startMs + (part === "end" ? tx.endMs - 1 : tx.startMs + 1));
+    paintTexts();
+    paintTimeline();
+  };
+  const up = () => {
+    window.removeEventListener("pointermove", move);
+    window.removeEventListener("pointerup", up);
+    ed.drag = null;
+    delete tl.dataset.drag;
+    if (!moved) {
+      ed.undo.pop();
+      return;
+    }
+    setDirty();
+    paintTimeline();
+    paintTextPop();
   };
   window.addEventListener("pointermove", move);
   window.addEventListener("pointerup", up);
