@@ -9,13 +9,13 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2819";
-import { isFlagOn } from "../../feature-flags.js?v=2819";
-import { renderTopbar } from "../../components/topbar.js?v=2819";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2819";
-import { isDemo } from "../../demo-mode.js?v=2819";
-import { getPosts } from "../../posts-store.js?v=2819";
-import { escapeHtml, plural } from "../../utils.js?v=2819";
+import { navigate } from "../../router.js?v=2823";
+import { isFlagOn } from "../../feature-flags.js?v=2823";
+import { renderTopbar } from "../../components/topbar.js?v=2823";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2823";
+import { isDemo } from "../../demo-mode.js?v=2823";
+import { getPosts } from "../../posts-store.js?v=2823";
+import { escapeHtml, plural } from "../../utils.js?v=2823";
 import {
   getVideos,
   exampleVideo,
@@ -25,7 +25,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2819";
+} from "../../videos-store.js?v=2823";
 import {
   fmtMs,
   previewMarkup,
@@ -38,7 +38,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2819";
+} from "./shared.js?v=2823";
 
 let target = null;
 let disposeShowcase = null;
@@ -491,9 +491,10 @@ function renderCard(v) {
       : "";
   const next = nextOf(v);
   const n = v.clips.length;
+  const href = `#/clips/${encodeURIComponent(v.id)}${next?.tab || ""}`;
   return mediaCard({
-    tag: "a",
-    attrs: `href="#/clips/${encodeURIComponent(v.id)}${next?.tab || ""}" data-clips-card data-state="${stateOf(v)}" data-name="${escapeHtml(v.name.toLowerCase())}"`,
+    href,
+    attrs: `data-clips-card data-state="${stateOf(v)}" data-name="${escapeHtml(v.name.toLowerCase())}"`,
     stage: thumb(v),
     over:
       map +
@@ -515,9 +516,18 @@ function renderCard(v) {
             scheduled ? fact("calendar", `<b>${scheduled}</b> scheduled`) : "",
           ]
         : [],
-    foot: next
-      ? `<span class="media-card__next">${next.text}<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>`
-      : "",
+    // The foot: where the card leads, and ⋯ with Remove (the clips go too —
+    // confirmRemoveVideo says so).
+    foot: `${next ? `<a class="media-card__next" href="${href}">${next.text}<i class="ap-icon-arrow-right" aria-hidden="true"></i></a>` : ""}
+      <details class="clips-more">
+        <summary class="ap-icon-button transparent grey" aria-label="More actions for « ${escapeHtml(v.name)} »" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
+        <div class="ap-action-dropdown clips-more__menu" role="menu">
+          <button type="button" role="menuitem" class="ap-action-dropdown-item red-mode" data-clips-remove-video="${escapeHtml(v.id)}">
+            <i class="ap-icon-trash" aria-hidden="true"></i>
+            <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">Remove this video</span></div></div>
+          </button>
+        </div>
+      </details>`,
   });
 }
 
@@ -605,7 +615,10 @@ function onClick(e) {
   const retry = t.closest("[data-clips-retry]");
   if (retry) return retryAnalysis(retry.dataset.clipsRetry);
   const remove = t.closest("[data-clips-remove-video]");
-  if (remove) return confirmRemoveVideo(remove.dataset.clipsRemoveVideo);
+  if (remove) {
+    remove.closest("details")?.removeAttribute("open");
+    return confirmRemoveVideo(remove.dataset.clipsRemoveVideo);
+  }
   const row = t.closest("tr[data-href]");
   if (row) return navigate(row.dataset.href.slice(1));
   return undefined;

@@ -2,14 +2,14 @@
 // editor share: time formatting, the video-wide options (format, subtitles),
 // and the live reframed previews.
 
-import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2819";
-import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2819";
-import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2819";
-import { escapeHtml } from "../../utils.js?v=2819";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2819";
-import { showToast } from "../../components/toast.js?v=2819";
-import { navigate } from "../../router.js?v=2819";
-import { getVideo, getVideos, removeVideo, subscribe as subscribeVideos } from "../../videos-store.js?v=2819";
+import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2823";
+import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2823";
+import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2823";
+import { escapeHtml } from "../../utils.js?v=2823";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2823";
+import { showToast } from "../../components/toast.js?v=2823";
+import { navigate } from "../../router.js?v=2823";
+import { getVideo, getVideos, removeVideo, subscribe as subscribeVideos } from "../../videos-store.js?v=2823";
 
 // A footage well shows a loading sheen until its first frame is in (clips.css,
 // `:not(.is-ready)`): every well is marked here, once, from the media events
@@ -319,11 +319,13 @@ export function confirmRemoveVideo(id, { onRemoved } = {}) {
   const v = getVideo(id);
   if (!v) return;
   openConfirm({
-    title: "Remove this video?",
+    // The clips go with the video: the dialog says it in its title and its
+    // button, not only in its body (2026-11-23).
+    title: v.clips.length ? "Remove this video and its clips?" : "Remove this video?",
     body: v.clips.length
-      ? `« ${v.name} » leaves Clips, with its ${v.clips.length} clip${v.clips.length === 1 ? "" : "s"}. Drafts already written stay.`
-      : `« ${v.name} » leaves Clips.`,
-    confirmLabel: "Remove",
+      ? `« ${v.name} » leaves Clips with its ${v.clips.length} clip${v.clips.length === 1 ? "" : "s"}: you won't be able to review, edit or post them anymore. This can't be undone. Posts already written in a chat stay.`
+      : `« ${v.name} » leaves Clips. This can't be undone.`,
+    confirmLabel: v.clips.length ? "Remove the video and its clips" : "Remove the video",
     cancelLabel: "Cancel",
     danger: true,
     onConfirm: () => {
@@ -367,10 +369,16 @@ export function mediaCard({
   desc = "",
   facts = [],
   foot = "",
+  href = "",
 }) {
   const m = meta.filter(Boolean);
   const f = facts.filter(Boolean);
-  return `<${tag} class="media-card ${cls}" ${attrs}>
+  // A card that opens something: one link over the whole card (named by the
+  // title), so its foot can still hold buttons — a link can't hold buttons.
+  const cover = href
+    ? `<a class="media-card__cover" href="${href}" aria-label="${escapeHtml(titleTip || title.replace(/<[^>]+>/g, ""))}"></a>`
+    : "";
+  return `<${tag} class="media-card ${cls}" ${attrs}>${cover}
     <span class="media-card__stage">${stage}${over}${tl ? `<span class="media-card__tl">${tl}</span>` : ""}${tr ? `<span class="media-card__tr">${tr}</span>` : ""}${bl ? `<span class="media-card__bl">${bl}</span>` : ""}${br ? `<span class="media-card__br">${br}</span>` : ""}</span>
     <span class="media-card__body">
       <span class="media-card__title"${titleTip ? ` title="${escapeHtml(titleTip)}"` : ""}>${title}</span>

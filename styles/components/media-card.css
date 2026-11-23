@@ -21,9 +21,28 @@
   border-color: var(--ref-color-electric-blue-100);
 }
 
-a.media-card:focus-visible {
+/* A card that opens something: one link over it all; the corners and the
+   foot sit above it, so their buttons stay buttons. */
+.media-card:has(.media-card__cover) {
+  position: relative;
+}
+
+.media-card__cover {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.media-card__cover:focus-visible {
   outline: 2px solid var(--ref-color-electric-blue-100);
   outline-offset: 2px;
+}
+
+.media-card__cover ~ .media-card__stage .media-card__tl,
+.media-card__cover ~ .media-card__stage .media-card__tr,
+.media-card__cover ~ .media-card__foot {
+  z-index: 3;
 }
 
 /* ── The stage: a dark 4:3 well, the media at its real shape ── */
@@ -237,6 +256,7 @@ a.media-card:focus-visible {
 /* What the card leads to (a link card): the interactive blue, an arrow. */
 .media-card__next {
   display: inline-flex;
+  text-decoration: none;
   align-items: center;
   gap: var(--ref-spacing-xxs);
   padding: 0 var(--ref-spacing-xxs);

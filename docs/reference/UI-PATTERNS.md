@@ -130,6 +130,7 @@ Exemples en place : [`screens/topics.js`](../../src/screens/topics.js) (la toolb
 - **La scène** : un puits `grey-150` en 4:3, le média à sa vraie forme (vidéo source en `object-fit: contain`, aperçu de clip à son format). Quatre coins : en haut à gauche la case (garder) ou un statut, en haut à droite ⋯, en bas à gauche **ce que c'est** (le format nommé : « Landscape 16:9 », « Vertical 9:16 »), en bas à droite **la durée** — toutes en `chip()` (fond noir 72 %, légende blanche). `over` pour un voile (`veil()` : analyse en cours, rendu, échec) ou la carte des clips au pied de la scène.
 - **Le corps** : le titre (deux lignes), une ligne de méta (« · »), une description (deux lignes), des faits (`fact()` : icône + nombre nommé en mots — le même vocabulaire que le récap de la vidéo).
 - **Le pied** (filet `grey-20`) : les actions (`ghost grey`, ⋯ à droite) ou, pour une carte-lien, ce vers quoi elle mène (`media-card__next`, bleu + flèche).
+- **Une carte qui ouvre quelque chose** : `href` pose un lien sur toute la carte (`.media-card__cover`, nommé par le titre) ; les coins du haut et le pied passent au-dessus, donc leurs boutons (⋯, Remove…) restent des boutons — jamais un `<a>` racine qui contiendrait des boutons.
 - Survol / focus : bordure bleue ; gardé (`.is-kept`) : bordure bleue tenue. Les grilles : `.media-cards` (`minmax(280px, 1fr)`).
 
 Ne pas recréer une carte de clip ou de vidéo à côté : décliner celle-ci.

@@ -19,9 +19,9 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2819";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2819";
-import { detectUrlService } from "../url-services.js?v=2819";
+} from "../modal-coordinator.js?v=2823";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2823";
+import { detectUrlService } from "../url-services.js?v=2823";
 
 const MODAL_ID = "fill-document";
 const ACCEPT = ".pdf,.doc,.docx,.txt,.md,.rtf,.pptx,.csv";
