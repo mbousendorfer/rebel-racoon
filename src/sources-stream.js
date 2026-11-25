@@ -8,14 +8,22 @@
 // The state machine timers live here (not inside the modal) so uploads
 // continue in background after the user closes the modal.
 
-import { newId, prettyUrl } from "./utils.js?v=2852";
-import { sourcesBySession as seedByCsesssion, DEMO_CLIPS } from "./mocks.js?v=2852";
-import { isDemo } from "./demo-mode.js?v=2852";
-import { isFlagOn } from "./feature-flags.js?v=2852";
-import { isNewUser } from "./user-mode.js?v=2852";
-import { createNotifier } from "./store-utils.js?v=2852";
-import { detectUrlService } from "./url-services.js?v=2852";
-import { showToast } from "./components/toast.js?v=2852";
+import { newId, prettyUrl } from "./utils.js?v=2853";
+import { sourcesBySession as seedByCsesssion, DEMO_CLIPS } from "./mocks.js?v=2853";
+import { isDemo } from "./demo-mode.js?v=2853";
+import { isFlagOn } from "./feature-flags.js?v=2853";
+import { isNewUser } from "./user-mode.js?v=2853";
+import { createNotifier } from "./store-utils.js?v=2853";
+import { detectUrlService } from "./url-services.js?v=2853";
+import { showToast } from "./components/toast.js?v=2853";
+import {
+  getVideo,
+  importFromSource,
+  chatClipOf,
+  syncClipsFromChat,
+  subscribe as subscribeVideos,
+} from "./videos-store.js?v=2853";
+import { sessionPlaybookId } from "./active-playbook.js?v=2853";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.
@@ -135,6 +143,39 @@ function findSourceOwner(sourceId) {
     if (list.some((s) => s.id === sourceId)) return sid;
   }
   return null;
+}
+
+// ─── One truth for clips (flag clipsSpace) ───────────────────────────────
+// A chat's video with clips lives in its Playbook's Clips library: the video
+// (videos-store) holds the clips, `source.clips` is their mirror, so every chat
+// reader stays as it was. Edits from the chat go back through updateSourceClips.
+
+// Writes the video's clips onto the source; true when they changed. The old
+// chat clip is merged in, so its chat-only fields (hue, format…) stay.
+function mirrorVideoClips(src) {
+  const video = src.fromVideo && getVideo(src.fromVideo);
+  if (!video) return false;
+  const before = new Map((src.clips || []).map((c) => [c.id, c]));
+  const next = video.clips.map((c) => ({ ...before.get(chatClipOf(video, c).id), ...chatClipOf(video, c) }));
+  const sig = (list) => JSON.stringify((list || []).map((c) => [c.id, c.start, c.end, c.title, c.videoUrl]));
+  if (sig(next) === sig(src.clips)) return false;
+  src.clips = next;
+  return true;
+}
+
+function linkToVideo(sessionId, src) {
+  if (!isFlagOn("clipsSpace") || !src.clips?.length || src.fromVideo) return;
+  src.fromVideo = importFromSource({ sessionId, source: src, contextId: sessionPlaybookId(sessionId) }).id;
+  mirrorVideoClips(src);
+}
+
+if (isFlagOn("clipsSpace")) {
+  for (const [sid, list] of sourcesBySession) for (const src of list) linkToVideo(sid, src);
+  subscribeVideos(() => {
+    for (const [sid, list] of sourcesBySession) {
+      if (list.map(mirrorVideoClips).some(Boolean)) notifySources(sid);
+    }
+  });
 }
 
 // ─── Public API ──────────────────────────────────────────────────────────
@@ -383,6 +424,7 @@ function attachVideoClips(src) {
   src.clips = clips;
   src.clipExtractionStatus = "ready";
   if (!src.durationSec) src.durationSec = 1458;
+  linkToVideo(findSourceOwner(src.id), src);
   return clips.length;
 }
 
@@ -672,6 +714,7 @@ export function addReadySource(
     // A video from the Clips space carries its clips (clips, durationSec, fromVideo).
     ...extra,
   });
+  if (isFlagOn("clipsSpace")) mirrorVideoClips(list[0]); // the space sent it: all the video's clips
   notifySources(sessionId);
   return id;
 }
@@ -744,6 +787,11 @@ export function updateSourceClips(sourceId, nextClips) {
   if (!sessionId) return;
   const source = sourcesBySession.get(sessionId).find((s) => s.id === sourceId);
   if (!source) return;
+  // A linked source: the video takes the edit, the mirror brings it back.
+  if (isFlagOn("clipsSpace") && source.fromVideo && getVideo(source.fromVideo)) {
+    syncClipsFromChat(source.fromVideo, nextClips);
+    return;
+  }
   source.clips = nextClips.map((c) => ({ ...c }));
   notifySources(sessionId);
 }

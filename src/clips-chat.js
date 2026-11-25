@@ -6,11 +6,11 @@
 // Kept out of screens/clips/ so the session screen can import it statically
 // (the attach must land before the chat's intake starts watching).
 
-import { navigate } from "./router.js?v=2852";
-import { setHandoff, consumeHandoff } from "./handoff.js?v=2852";
-import { newChatPath } from "./utils.js?v=2852";
-import { getVideo } from "./videos-store.js?v=2852";
-import { addReadySource } from "./sources-stream.js?v=2852";
+import { navigate } from "./router.js?v=2853";
+import { setHandoff, consumeHandoff } from "./handoff.js?v=2853";
+import { newChatPath } from "./utils.js?v=2853";
+import { getVideo, chatClipOf } from "./videos-store.js?v=2853";
+import { addReadySource } from "./sources-stream.js?v=2853";
 
 const CLIPS_CHAT_HANDOFF = "clipsToChat";
 
@@ -33,17 +33,7 @@ export function attachClipsToChat(sessionId) {
   const clips = video.clips.filter((c) => pending.clipIds.includes(c.id));
   if (!clips.length) return null;
   const sourceId = `src-${video.id}`;
-  const chatClip = (c) => ({
-    id: c.id,
-    start: c.startMs / 1000,
-    end: c.endMs / 1000,
-    title: c.title,
-    summary: c.summary || "",
-    why: c.why || "",
-    tags: c.tags || [],
-    network: c.network,
-    videoUrl: video.url, // the chat's players show this video, not demo footage
-  });
+  const chatClip = (c) => chatClipOf(video, c);
   addReadySource(sessionId, {
     id: sourceId,
     filename: video.name,

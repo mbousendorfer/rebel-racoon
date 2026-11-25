@@ -28,11 +28,11 @@
 //             preset), transcript, segments (null = auto framing), texts[],
 //             brand (null = the Playbook's clip look) }
 
-import { newId } from "./utils.js?v=2852";
-import { seedVideos } from "./mocks.js?v=2852";
-import { isNewUser } from "./user-mode.js?v=2852";
-import { createNotifier } from "./store-utils.js?v=2852";
-import { getDefaultContext, getContextById } from "./contexts-store.js?v=2852";
+import { newId } from "./utils.js?v=2853";
+import { seedVideos } from "./mocks.js?v=2853";
+import { isNewUser } from "./user-mode.js?v=2853";
+import { createNotifier } from "./store-utils.js?v=2853";
+import { getDefaultContext, getContextById } from "./contexts-store.js?v=2853";
 
 const MIN_VIDEO_MS = 30 * 1000;
 const MAX_VIDEO_MS = 2 * 60 * 60 * 1000;
@@ -541,6 +541,52 @@ export function importFromSource({ sessionId, source, contextId }) {
   if (!clips.length) runAnalysis(video);
   notify();
   return video;
+}
+
+// A chat shows its video's clips (flag clipsSpace): the video is the one truth,
+// `source.clips` its mirror (sources-stream). The chat keeps the ids it knew
+// (`fromClipId`), and plays this video's footage.
+const chatKey = (c) => c.fromClipId || c.id;
+
+export function chatClipOf(video, c) {
+  return {
+    id: chatKey(c),
+    start: c.startMs / 1000,
+    end: c.endMs / 1000,
+    title: c.title,
+    summary: c.summary || "",
+    why: c.why || "",
+    tags: c.tags || [],
+    network: c.network,
+    videoUrl: video.url,
+  };
+}
+
+// The chat's edits (delete, Undo, the modal, the Clip Studio) come back here.
+// A clip the chat drops goes to `removed` (as removeClip), so its Undo brings it
+// back whole, review and editing included.
+export function syncClipsFromChat(videoId, chatClips) {
+  const v = getVideo(videoId);
+  if (!v) return;
+  const pool = new Map([...(v.removed || []), ...v.clips].map((c) => [chatKey(c), c]));
+  const next = chatClips.map((cc) => {
+    const c =
+      pool.get(cc.id) ||
+      freshClip({ id: newId("clip"), fromClipId: cc.id, why: "", summary: "", reviewed: true, selected: true });
+    return Object.assign(c, {
+      startMs: Math.round(cc.start * 1000),
+      endMs: Math.round(cc.end * 1000),
+      title: cc.title,
+      summary: cc.summary ?? c.summary,
+      why: cc.why ?? c.why,
+      tags: cc.tags || c.tags,
+      network: cc.network ?? c.network,
+    });
+  });
+  const kept = new Set(next);
+  v.removed = [...v.clips.filter((c) => !kept.has(c)), ...(v.removed || []).filter((c) => !kept.has(c))];
+  v.clips = next.sort((a, b) => a.startMs - b.startMs);
+  notify();
 }
 
 function addVideoShell(standIn, contextId) {

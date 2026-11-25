@@ -250,7 +250,7 @@ Store [`schedule-store.js`](../../src/schedule-store.js) : file upcoming, `getQu
 
 ## 6. Video clips
 
-> **Flag `clipsSpace` ON** : tout ce qui suit reste vrai dans un chat, mais le travail sur une vidéo a son espace à part — la bibliothèque, l'éditeur unique et les drafts, §20. Le starter « Extract video clips » y mène, et un chat y rouvre sa vidéo (« Open in Clips »).
+> **Flag `clipsSpace` ON** : tout ce qui suit reste vrai dans un chat, mais le travail sur une vidéo a son espace à part — la bibliothèque, l'éditeur unique et les drafts, §20. Le starter « Extract video clips » y mène, et un chat y rouvre sa vidéo (« Open in Clips »). Les clips d'un chat **sont** ceux de sa vidéo : dès qu'une vidéo du chat a des clips (seed compris), elle entre dans la bibliothèque du Playbook et le panneau en montre le miroir — tous ses clips, sur son footage ; une suppression, un Undo ou une édition dans le chat revient sur la vidéo, et _Edit_ sur une carte de clip ouvre l'éditeur de l'espace.
 
 ### Extraction & formats
 
@@ -1272,7 +1272,7 @@ Rien n'est écrit avant **Save changes** ; un Undo qui ramène à l'état enregi
 
 - La ligne **Clips** de la rail (`ap-icon-video`, compteur = les vidéos du Playbook).
 - Le starter **Extract video clips** (home, chat neuf) → `/clips`.
-- Depuis un chat : la carte « N clips to review », le menu d'une source vidéo (**Open in Clips**) et _Edit clip_ sur un draft du chat importent la source **une fois** dans la bibliothèque du Playbook du chat, avec ses clips, et ouvrent la vidéo — ou directement l'éditeur du clip ([`open-in-clips.js`](../../src/screens/clips/open-in-clips.js)). Le chat garde ses clips.
+- Depuis un chat : la carte « N clips to review », le menu d'une source vidéo (**Open in Clips**) et _Edit clip_ sur un draft du chat ouvrent la vidéo du chat dans la bibliothèque de son Playbook — ou directement l'éditeur du clip ([`open-in-clips.js`](../../src/screens/clips/open-in-clips.js)). La vidéo y est déjà : une source vidéo qui a des clips y entre d'elle-même, et le chat montre ses clips en miroir (`sources-stream` · `linkToVideo`, `mirrorVideoClips`), _Edit_ sur une carte de clip du panneau compris.
 - **Branding › How your clips look** sur la fiche : le preset de départ, le logo et son coin, intro / outro. Sauvé à chaque changement, comme le look image.
 
 `npm run check:framing` vérifie le moteur de cadrage sur les deux vidéos seedées.

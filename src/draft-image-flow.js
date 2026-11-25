@@ -23,20 +23,20 @@
 // message: the image appearing in the slot is the feedback; a failure says so
 // in a toast.
 
-import { sessionPlaybookId } from "./active-playbook.js?v=2852";
-import { showToast } from "./components/toast.js?v=2852";
-import { setHandoff } from "./handoff.js?v=2852";
-import { navigate } from "./router.js?v=2852";
-import * as inlineQuestion from "./inline-question.js?v=2852";
+import { sessionPlaybookId } from "./active-playbook.js?v=2853";
+import { showToast } from "./components/toast.js?v=2853";
+import { setHandoff } from "./handoff.js?v=2853";
+import { navigate } from "./router.js?v=2853";
+import * as inlineQuestion from "./inline-question.js?v=2853";
 import {
   finishPending,
   postAssistantMessage,
   postImageLookSet,
   postSelectionEcho,
   startPending,
-} from "./assistant.js?v=2852";
-import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=2852";
-import { escapeHtml, newChatPath } from "./utils.js?v=2852";
+} from "./assistant.js?v=2853";
+import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=2853";
+import { escapeHtml, newChatPath } from "./utils.js?v=2853";
 import {
   defaultQuickLook,
   generateQuickImage,
@@ -45,7 +45,7 @@ import {
   setImageLook,
   styleFromImages,
   suggestImageSubject,
-} from "./modules/image-studio/index.js?v=2852";
+} from "./modules/image-studio/index.js?v=2853";
 
 const FALLBACK_SUBJECT = "One simple object that stands for the idea, on a plain background. No text in the image.";
 
