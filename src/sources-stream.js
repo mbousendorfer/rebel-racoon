@@ -8,22 +8,22 @@
 // The state machine timers live here (not inside the modal) so uploads
 // continue in background after the user closes the modal.
 
-import { newId, prettyUrl } from "./utils.js?v=2853";
-import { sourcesBySession as seedByCsesssion, DEMO_CLIPS } from "./mocks.js?v=2853";
-import { isDemo } from "./demo-mode.js?v=2853";
-import { isFlagOn } from "./feature-flags.js?v=2853";
-import { isNewUser } from "./user-mode.js?v=2853";
-import { createNotifier } from "./store-utils.js?v=2853";
-import { detectUrlService } from "./url-services.js?v=2853";
-import { showToast } from "./components/toast.js?v=2853";
+import { newId, prettyUrl } from "./utils.js?v=2854";
+import { sourcesBySession as seedByCsesssion, DEMO_CLIPS } from "./mocks.js?v=2854";
+import { isDemo } from "./demo-mode.js?v=2854";
+import { isFlagOn } from "./feature-flags.js?v=2854";
+import { isNewUser } from "./user-mode.js?v=2854";
+import { createNotifier } from "./store-utils.js?v=2854";
+import { detectUrlService } from "./url-services.js?v=2854";
+import { showToast } from "./components/toast.js?v=2854";
 import {
   getVideo,
   importFromSource,
   chatClipOf,
   syncClipsFromChat,
   subscribe as subscribeVideos,
-} from "./videos-store.js?v=2853";
-import { sessionPlaybookId } from "./active-playbook.js?v=2853";
+} from "./videos-store.js?v=2854";
+import { sessionPlaybookId } from "./active-playbook.js?v=2854";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.
@@ -161,6 +161,18 @@ function mirrorVideoClips(src) {
   if (sig(next) === sig(src.clips)) return false;
   src.clips = next;
   return true;
+}
+
+// Every write of a source's clips goes through here: a linked source writes
+// into its video (the mirror brings them back); an unlinked one takes them,
+// then joins the library if it now has clips.
+function writeClips(sessionId, src, clips) {
+  if (isFlagOn("clipsSpace") && src.fromVideo && getVideo(src.fromVideo)) {
+    syncClipsFromChat(src.fromVideo, clips);
+    return;
+  }
+  src.clips = clips;
+  linkToVideo(sessionId, src);
 }
 
 function linkToVideo(sessionId, src) {
@@ -421,10 +433,9 @@ function transitionToDone(upload) {
 // in toasts / UI labels.
 function attachVideoClips(src) {
   const clips = buildClipsForSource(src.id);
-  src.clips = clips;
   src.clipExtractionStatus = "ready";
   if (!src.durationSec) src.durationSec = 1458;
-  linkToVideo(findSourceOwner(src.id), src);
+  writeClips(findSourceOwner(src.id), src, clips);
   return clips.length;
 }
 
@@ -787,12 +798,11 @@ export function updateSourceClips(sourceId, nextClips) {
   if (!sessionId) return;
   const source = sourcesBySession.get(sessionId).find((s) => s.id === sourceId);
   if (!source) return;
-  // A linked source: the video takes the edit, the mirror brings it back.
-  if (isFlagOn("clipsSpace") && source.fromVideo && getVideo(source.fromVideo)) {
-    syncClipsFromChat(source.fromVideo, nextClips);
-    return;
-  }
-  source.clips = nextClips.map((c) => ({ ...c }));
+  writeClips(
+    sessionId,
+    source,
+    nextClips.map((c) => ({ ...c })),
+  );
   notifySources(sessionId);
 }
 
