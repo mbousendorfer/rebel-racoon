@@ -24,11 +24,20 @@
 // video door is the clips starter. What is local (the rotation, #3's typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2921";
-import { escapeHtml } from "../../utils.js?v=2921";
-import { networkIcon } from "../../social-profiles.js?v=2921";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2922";
+import { escapeHtml } from "../../utils.js?v=2922";
+import { networkIcon } from "../../social-profiles.js?v=2922";
 
 const esc = escapeHtml;
+
+// The skeleton a piece shows before it comes in (asked: « afficher un skeleton
+// avant chaque apparition de nouvel élément »): its shape in grey, shimmering,
+// laid over it; new-start.css plays it on the reveal and on each new set.
+const SKEL = {
+  line: `<span class="ns-skel ns-skel--line" aria-hidden="true"></span>`,
+  door: `<span class="ns-skel ns-skel--door" aria-hidden="true"><b class="ns-skel__stage"></b><b class="ns-skel__title"></b><b></b><b></b><b class="ns-skel__short"></b><b class="ns-skel__go"></b></span>`,
+  ask: `<span class="ns-skel ns-skel--ask" aria-hidden="true"><b class="ns-skel__tile"></b><b></b></span>`,
+};
 
 // The hooks session.js reads to run a workflow starter, by its action.
 function starterAttrs(action) {
@@ -69,6 +78,7 @@ const KIND = {
 
 const row = ([k, text]) => `
   <li>
+    ${SKEL.ask}
     <button type="button" class="ns-ask" data-starter="new-start" data-starter-prompt="${esc(text)}"
       title="Edit it before sending">
       <span class="ns-tile ns-tile--sm ns-tone--${KIND[k].tone}" aria-hidden="true"><i class="${KIND[k].icon}"></i></span>
@@ -104,6 +114,7 @@ function doors() {
   return `
       <div class="ns-doors">
         <a class="ns-door" href="#/welcome-alt" data-ns-reveal style="--i: 1">
+          ${SKEL.door}
           <span class="ns-door__stage ns-voice" aria-hidden="true">
             <span class="ns-voice__post ns-voice__post--before">
               <span class="ap-status grey no-dot">Without a Playbook</span>
@@ -122,6 +133,7 @@ function doors() {
         </a>
 
         <button type="button" class="ns-door" ${starterAttrs("open-video-clips")} data-ns-reveal style="--i: 2">
+          ${SKEL.door}
           <span class="ns-door__stage ns-cut" aria-hidden="true">
             ${frame("ns-cut__wide", 500)}
             <span class="ns-cut__scan"></span>
@@ -172,6 +184,7 @@ const wallCard = ([kind, net, text]) => {
 // #4's third turn: the same requests as text, each led by its tone tile, no box.
 const suggestion = ([k, text], n) => `
   <li data-ns-reveal style="--i: ${5 + n}">
+    ${SKEL.ask}
     <button type="button" class="ns-suggest" data-starter="new-start" data-starter-prompt="${esc(text)}"
       title="Edit it before sending">
       <span class="ns-tile ns-tile--sm ns-tone--${KIND[k].tone}" aria-hidden="true"><i class="${KIND[k].icon}"></i></span>
@@ -202,14 +215,14 @@ export function renderNewStart({ composer, variant = 2 }) {
       <div class="ns-turn ns-turn--next" data-ns-next>
         <span class="ns-turn__gutter" aria-hidden="true"></span>
         <div class="ns-turn__body">
-          <p class="ns-say" data-ns-reveal style="--i: 0">Here's what I do best. Pick one, or tell me what you need.</p>
+          <p class="ns-say" data-ns-reveal style="--i: 0">${SKEL.line}Here's what I do best. Pick one, or tell me what you need.</p>
           ${doors()}
         </div>
       </div>
       <div class="ns-turn ns-turn--next" data-ns-next>
         <span class="ns-turn__gutter" aria-hidden="true"></span>
         <div class="ns-turn__body ns-suggests" data-ns-rotor>
-          <p class="ns-say" data-ns-reveal style="--i: 4">Or ask me something like:</p>
+          <p class="ns-say" data-ns-reveal style="--i: 4">${SKEL.line}Or ask me something like:</p>
           ${SETS.map((s, i) => `<ul class="ns-suggests__set" data-ns-set="${i}"${i ? " hidden" : ""} aria-label="Things you can ask me">${s.map((x, n) => suggestion(x, n)).join("")}</ul>`).join("")}
         </div>
       </div>
@@ -222,7 +235,7 @@ export function renderNewStart({ composer, variant = 2 }) {
       <div class="ns-turn ns-turn--next" data-ns-next>
         <span class="ns-turn__gutter" aria-hidden="true"></span>
         <div class="ns-turn__body">
-          <p class="ns-say" data-ns-reveal style="--i: 0">Here's what I do best. Pick one, or tell me what you need.</p>
+          <p class="ns-say" data-ns-reveal style="--i: 0">${SKEL.line}Here's what I do best. Pick one, or tell me what you need.</p>
           ${doors()}
         </div>
       </div>
@@ -267,7 +280,7 @@ class ArchieNewStart extends HTMLElement {
 
   // #3 / #4: the first turn types itself, once per page load; when it is done
   // the rest comes in one piece after the other ([data-ns-reveal], --i sets
-  // the order), like a reply being written. A re-render shows it all at once.
+  // the order), each its skeleton first, like a reply being written. A re-render shows it all at once.
   hello() {
     const p = this.querySelector("[data-ns-hello]");
     if (!p || greeted || reduced()) return;
@@ -280,7 +293,7 @@ class ArchieNewStart extends HTMLElement {
       n += 2;
       p.textContent = text.slice(0, n);
       if (n < text.length) this.typing = setTimeout(step, 22);
-      else this.classList.remove("is-typing");
+      else this.classList.replace("is-typing", "is-revealing");
     };
     this.typing = setTimeout(step, 350);
   }

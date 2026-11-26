@@ -238,20 +238,165 @@
 /* After the hello is typed, the rest comes in one piece after the other —
    the line, each door, the next line, each request — not as one block
    (asked: « les autres éléments apparaissent en 1 bloc très abruptement »).
-   --i is each piece's place in that order, set in the markup. */
-.ns--thread [data-ns-reveal] {
-  --ns-at: calc(200ms + var(--i, 0) * 140ms);
-  /* The doors' hover border keeps its own, undelayed transition. */
-  transition:
-    opacity var(--ref-animation-long) var(--app-ease-out) var(--ns-at),
-    transform var(--ref-animation-long) var(--app-ease-out) var(--ns-at),
-    border-color var(--ref-animation-short) var(--app-ease-standard);
-}
-
+   --i is each piece's place in that order, set in the markup. Each piece
+   first rises as its skeleton (.ns-skel, its shape in grey, shimmering),
+   which holds --ns-skel, then fades off the real piece (asked: « afficher un
+   skeleton avant chaque apparition de nouvel élément »). A new set of
+   requests does the same, row after row. */
 .ns--thread.is-typing [data-ns-reveal] {
   opacity: 0;
-  transform: translateY(8px);
-  transition: none;
+}
+
+.ns--thread.is-revealing [data-ns-reveal],
+[data-ns-set].is-dealt li {
+  --ns-skel: 650ms;
+  position: relative;
+  animation:
+    ns-rise var(--ref-animation-long) var(--app-ease-out) var(--ns-at) both,
+    ns-hold 0s calc(var(--ns-at) + var(--ns-skel)) backwards;
+}
+
+.ns--thread.is-revealing [data-ns-reveal] {
+  --ns-at: calc(200ms + var(--i, 0) * 140ms);
+}
+
+[data-ns-set].is-dealt li {
+  --ns-skel: 450ms;
+  --ns-at: 0ms;
+}
+
+[data-ns-set].is-dealt li:nth-child(2) {
+  --ns-at: 60ms;
+}
+
+[data-ns-set].is-dealt li:nth-child(3) {
+  --ns-at: 120ms;
+}
+
+/* The line is as wide as its words, so its skeleton is too. */
+.ns-say[data-ns-reveal] {
+  width: fit-content;
+}
+
+@keyframes ns-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* The real piece stays hidden under its skeleton until it holds no more. */
+@keyframes ns-hold {
+  from {
+    visibility: hidden;
+  }
+}
+
+.ns-skel {
+  display: none;
+}
+
+.ns--thread.is-revealing [data-ns-reveal] > .ns-skel,
+[data-ns-set].is-dealt li > .ns-skel {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  visibility: visible;
+  pointer-events: none;
+  animation: ns-skel-out var(--ref-animation-normal) var(--app-ease-standard) calc(var(--ns-at) + var(--ns-skel))
+    forwards;
+}
+
+@keyframes ns-skel-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* Every block shares the chat-switch skeleton's grey and sheen. */
+.ns-skel--line,
+.ns-skel b {
+  display: block;
+  border-radius: 6px;
+  background: linear-gradient(
+    100deg,
+    var(--ref-color-grey-10) 0%,
+    var(--ref-color-grey-05) 50%,
+    var(--ref-color-grey-10) 100%
+  );
+  background-size: 200% 100%;
+  animation: app-shimmer 1.4s linear infinite;
+}
+
+/* One bar per line of text, with the line's air above and below it. */
+.ns-skel--line {
+  --ns-lh: var(--sys-text-style-body-line-height);
+  mask: repeating-linear-gradient(
+    to bottom,
+    transparent 0 4px,
+    #000 4px calc(var(--ns-lh) - 4px),
+    transparent calc(var(--ns-lh) - 4px) var(--ns-lh)
+  );
+}
+
+/* A door: the card, its stage, its title, three lines, its link. */
+.ns-skel--door {
+  inset: -1px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: 16px;
+  background: var(--ref-color-white);
+}
+
+.ns-skel--door b {
+  width: calc(100% - 2 * var(--ref-spacing-xxs));
+  height: 12px;
+  margin-left: var(--ref-spacing-xxs);
+}
+
+.ns-skel--door .ns-skel__stage {
+  width: 100%;
+  height: 168px;
+  margin: 0 0 var(--ref-spacing-xs);
+  border-radius: 10px;
+}
+
+.ns-skel--door .ns-skel__title {
+  width: 55%;
+  height: 18px;
+}
+
+.ns-skel--door .ns-skel__short {
+  width: 60%;
+}
+
+.ns-skel--door .ns-skel__go {
+  width: 140px;
+  height: 16px;
+  margin-top: var(--ref-spacing-xs);
+}
+
+/* A request: its tile, then a bar as long as its words. */
+.ns-skel--ask {
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.ns-skel--ask b {
+  flex: 1;
+  height: 12px;
+}
+
+.ns-skel--ask .ns-skel__tile {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
 }
 
 .ns--thread .ns-doors {
@@ -274,18 +419,6 @@
 
 .ns-asks__set:not([hidden]) {
   animation: ns-deal var(--ref-animation-normal) var(--app-ease-standard);
-}
-
-.ns-asks__set:not([hidden]) li {
-  animation: ns-deal var(--ref-animation-normal) var(--app-ease-standard) both;
-}
-
-.ns-asks__set li:nth-child(2) {
-  animation-delay: 60ms;
-}
-
-.ns-asks__set li:nth-child(3) {
-  animation-delay: 120ms;
 }
 
 @keyframes ns-deal {
@@ -776,19 +909,6 @@ g:nth-child(3) > .ns-spark {
   margin: var(--ref-spacing-xs) 0 0;
   padding: 0;
   list-style: none;
-}
-
-/* Only a rotation deals the rows: the first paint is the reveal's. */
-.ns-suggests__set.is-dealt li {
-  animation: ns-deal var(--ref-animation-normal) var(--app-ease-standard) both;
-}
-
-.ns-suggests__set li:nth-child(2) {
-  animation-delay: 60ms;
-}
-
-.ns-suggests__set li:nth-child(3) {
-  animation-delay: 120ms;
 }
 
 .ns-suggest {
