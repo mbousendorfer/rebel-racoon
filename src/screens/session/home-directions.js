@@ -25,19 +25,19 @@
 // the way the Clips space frames it; the top posts with their images and score;
 // the Topic Feed's fresh Topics.
 
-import { isFlagOn } from "../../feature-flags.js?v=2854";
-import { chatStarters } from "../../mocks.js?v=2854";
-import { getVideos, getVideo, exampleVideo } from "../../videos-store.js?v=2854";
-import { getTopPosts } from "../../top-posts-store.js?v=2854";
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2854";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2854";
-import { findTopicSource } from "../../topics-catalog.js?v=2854";
-import { getContextById } from "../../contexts-store.js?v=2854";
-import { voicesToFinish } from "../../voice-parts.js?v=2854";
-import { networkLabel, networkIcon } from "../../social-profiles.js?v=2854";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2854";
-import { escapeHtml, formatClock } from "../../utils.js?v=2854";
-import "../../archie-pixels.js?v=2854";
+import { isFlagOn } from "../../feature-flags.js?v=2857";
+import { chatStarters } from "../../mocks.js?v=2857";
+import { getVideos, getVideo, exampleVideo } from "../../videos-store.js?v=2857";
+import { getTopPosts } from "../../top-posts-store.js?v=2857";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2857";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2857";
+import { findTopicSource } from "../../topics-catalog.js?v=2857";
+import { getContextById } from "../../contexts-store.js?v=2857";
+import { voicesToFinish } from "../../voice-parts.js?v=2857";
+import { networkLabel, networkIcon } from "../../social-profiles.js?v=2857";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2857";
+import { escapeHtml, formatClock } from "../../utils.js?v=2857";
+import "../../archie-pixels.js?v=2857";
 
 const DIRECTIONS = [
   ["homeOneInput", oneInput],
@@ -73,7 +73,7 @@ const WORDMARK = `
 
 // The hooks session.js reads to run a workflow starter, by its action.
 // `text` replaces the starter's own prompt (an example request says it its way).
-function starterAttrs(action, text) {
+export function starterAttrs(action, text) {
   const s = chatStarters.find((x) => x.action === action);
   if (!s) return "";
   const prompt = (text || s.prompt || "")

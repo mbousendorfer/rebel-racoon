@@ -1,22 +1,23 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2854";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2854";
-import { getContextById } from "../../contexts-store.js?v=2854";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2854";
-import { renderTopicCard } from "../../components/topic-card.js?v=2854";
-import { findTopicSource } from "../../topics-catalog.js?v=2854";
-import { html, raw } from "../../utils.js?v=2854";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2854";
-import { renderStarterCards } from "../../components/starter-card.js?v=2854";
-import { isFlagOn } from "../../feature-flags.js?v=2854";
-import { isDemo } from "../../demo-mode.js?v=2854";
-import { voicesToFinish } from "../../voice-parts.js?v=2854";
-import { networkLabel } from "../../social-profiles.js?v=2854";
-import { parseHashParams } from "../../url-state.js?v=2854";
-import "../../archie-pixels.js?v=2854";
-import { activeHomeDirection } from "./home-directions.js?v=2854";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2857";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2857";
+import { getContextById, getContexts } from "../../contexts-store.js?v=2857";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2857";
+import { renderTopicCard } from "../../components/topic-card.js?v=2857";
+import { findTopicSource } from "../../topics-catalog.js?v=2857";
+import { html, raw } from "../../utils.js?v=2857";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2857";
+import { renderStarterCards } from "../../components/starter-card.js?v=2857";
+import { isFlagOn } from "../../feature-flags.js?v=2857";
+import { isDemo } from "../../demo-mode.js?v=2857";
+import { voicesToFinish } from "../../voice-parts.js?v=2857";
+import { networkLabel } from "../../social-profiles.js?v=2857";
+import { parseHashParams } from "../../url-state.js?v=2857";
+import "../../archie-pixels.js?v=2857";
+import { activeHomeDirection } from "./home-directions.js?v=2857";
+import { renderNewStart } from "./new-start.js?v=2857";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -139,6 +140,9 @@ function renderFreshTopics(session, { staged = false } = {}) {
 // ("Quick — which context?") was removed — the composer picker is now
 // the single, always-visible context affordance.
 export function renderEmptyHero(sessionId, composerMarkup = "", session = null) {
+  // Flag newStart: no Playbook yet → the page that introduces Archie. It
+  // outranks the eight homes, which all assume a Playbook to draw from.
+  if (isFlagOn("newStart") && !getContexts().length) return renderNewStart({ composer: composerMarkup });
   // Five new-chat homes, one flag each (home-directions.js); the first ON wins.
   // The first chat after the run keeps its « Playbook is ready » box on top.
   const direction = activeHomeDirection();

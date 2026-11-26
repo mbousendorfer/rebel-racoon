@@ -1650,3 +1650,297 @@
 .nch-drawer__list .nch-ask:is(:hover, :focus-visible) {
   background: var(--ref-color-white);
 }
+
+/* ══ New Start (flag newStart) — the first chat with no Playbook ═════════════
+   The composer, three example requests that change, then two doors that each
+   play what they do (src/screens/session/new-start.js). The rows are the
+   .nch-ask rows above; only the layout and the two stages are new here. */
+.ns-asks,
+.ns-doors {
+  width: 100%;
+  max-width: 740px;
+}
+
+.ns-asks {
+  margin-top: calc(-1 * var(--ref-spacing-xs));
+}
+
+.ns-asks__set:not([hidden]) {
+  animation: ns-deal var(--ref-animation-normal) var(--app-ease-standard);
+}
+
+.ns-asks__set:not([hidden]) li {
+  animation: ns-deal var(--ref-animation-normal) var(--app-ease-standard) both;
+}
+
+.ns-asks__set li:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.ns-asks__set li:nth-child(3) {
+  animation-delay: 120ms;
+}
+
+@keyframes ns-deal {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.ns-doors {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--ref-spacing-sm);
+  margin-top: var(--ref-spacing-md);
+}
+
+/* A door is the whole card: hover = blue border, nothing else moves. */
+.ns-door {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: 16px;
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-100);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.ns-door:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.ns-door:focus-visible {
+  outline: none;
+  border-color: var(--ref-color-electric-blue-100);
+  box-shadow: 0 0 0 2px var(--ref-color-electric-blue-100);
+}
+
+.ns-door__stage {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 168px;
+  margin-bottom: var(--ref-spacing-xs);
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.ns-door__title {
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  padding: 0 var(--ref-spacing-xxs);
+}
+
+.ns-door__desc {
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+  padding: 0 var(--ref-spacing-xxs);
+}
+
+.ns-door__go {
+  margin: var(--ref-spacing-xxs) var(--ref-spacing-xxs) 0;
+}
+
+/* Both stages run on one 9s loop, so the two doors breathe together. */
+.ns-door {
+  --ns-loop: 9s;
+}
+
+/* ── Door 1 · a generic post, then the same news in a brand's voice ───────── */
+.ns-voice {
+  background: var(--ref-color-grey-05);
+}
+
+.ns-voice__post {
+  position: absolute;
+  inset: var(--ref-spacing-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+  background: var(--ref-color-white);
+  animation: ns-before var(--ns-loop) var(--app-ease-standard) infinite;
+}
+
+.ns-voice__post--after {
+  animation-name: ns-after;
+}
+
+.ns-voice__text {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-100);
+}
+
+/* What only the brand could say: the specific is what a Playbook buys. */
+.ns-voice__text mark {
+  padding: 0 2px;
+  border-radius: 2px;
+  background: var(--app-butter);
+  color: inherit;
+}
+
+@keyframes ns-before {
+  0%,
+  38% {
+    opacity: 1;
+    transform: none;
+  }
+  46%,
+  92% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ns-after {
+  0%,
+  40% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  50%,
+  90% {
+    opacity: 1;
+    transform: none;
+  }
+  98%,
+  100% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ── Door 2 · the wide shot, cut into three vertical clips ──────────────── */
+.ns-cut {
+  background: #000; /* the footage's well, as everywhere in Clips */
+}
+
+.ns-cut video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ns-cut__wide {
+  position: absolute;
+  inset: 0;
+  animation: ns-wide var(--ns-loop) var(--app-ease-standard) infinite;
+}
+
+.ns-cut__clips {
+  position: absolute;
+  inset: var(--ref-spacing-xs) 0;
+  display: flex;
+  justify-content: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.ns-cut__clip {
+  position: relative;
+  height: 100%;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: 6px;
+  opacity: 0;
+  animation: ns-clip var(--ns-loop) var(--app-ease-standard) infinite;
+}
+
+.ns-cut__clip:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.ns-cut__clip:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* The call's tiles sit on black bands: zoom in so the speaker fills the clip. */
+.ns-cut__clip video {
+  transform: scale(1.7);
+}
+
+.ns-cut__caption {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-100);
+  font-size: 10px;
+  line-height: 14px;
+  font-weight: var(--sys-text-style-body-bold-weight);
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+@keyframes ns-wide {
+  0%,
+  36% {
+    opacity: 1;
+    transform: none;
+  }
+  46%,
+  90% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ns-clip {
+  0%,
+  38% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+  48%,
+  88% {
+    opacity: 1;
+    transform: none;
+  }
+  96%,
+  100% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+}
+
+/* Reduced motion: no loop, the doors show their result. */
+@media (prefers-reduced-motion: reduce) {
+  .ns-voice__post,
+  .ns-cut__wide,
+  .ns-cut__clip,
+  .ns-asks__set,
+  .ns-asks__set li {
+    animation: none;
+  }
+  .ns-voice__post--before,
+  .ns-cut__wide {
+    opacity: 0;
+  }
+  .ns-cut__clip {
+    opacity: 1;
+  }
+}

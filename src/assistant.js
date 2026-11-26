@@ -6,15 +6,16 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { newId } from "./utils.js?v=2854";
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2854";
-import { findConnector } from "./connectors-store.js?v=2854";
-import { createSessionNotifier } from "./store-utils.js?v=2854";
-import { addPostDraft } from "./posts-store.js?v=2854";
-import { showToast } from "./components/toast.js?v=2854";
-import { isFlagOn } from "./feature-flags.js?v=2854";
-import { offerMentions } from "./mention-flow.js?v=2854";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2854";
+import { newId } from "./utils.js?v=2857";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2857";
+import { findConnector } from "./connectors-store.js?v=2857";
+import { createSessionNotifier } from "./store-utils.js?v=2857";
+import { addPostDraft } from "./posts-store.js?v=2857";
+import { showToast } from "./components/toast.js?v=2857";
+import { isFlagOn } from "./feature-flags.js?v=2857";
+import { getContexts } from "./contexts-store.js?v=2857";
+import { offerMentions } from "./mention-flow.js?v=2857";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2857";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -954,7 +955,12 @@ function seedThread(sessionId) {
   // One greeting, whether or not a Playbook is attached yet: the first read
   // often comes from the topbar, before the chat's Playbook is known, and the
   // composer's own picker already asks for one when it's missing.
-  const greeting = "Hi. Drop a source or tell me what to post, and I'll draft from it in your Brand's voice.";
+  // Except with no Playbook at all (flag newStart): « your Brand's voice »
+  // would promise what a first-time chat can't keep.
+  const greeting =
+    isFlagOn("newStart") && !getContexts().length
+      ? "Hi. Drop a source or tell me what to post, and I'll draft from it. No Playbook yet, so my drafts will be generic."
+      : "Hi. Drop a source or tell me what to post, and I'll draft from it in your Brand's voice.";
 
   threads.set(sessionId, [
     {

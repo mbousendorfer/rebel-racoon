@@ -376,4 +376,21 @@ export const FLAGS = Object.freeze([
       "at and edit). Scheduling opens a This is a demo dialog instead; Exit " +
       "demo in the topbar wipes it all and goes back to the real setup.",
   },
+  {
+    id: "newStart",
+    group: "Onboarding",
+    tip: "A first-time user with no Playbook lands on a new chat that introduces Archie, instead of being sent into the setup run.",
+    label: "UP-New Start",
+    default: false,
+    hides:
+      "When ON, a first-time user (mode new-alt) with no Playbook lands on a " +
+      "new chat instead of the setup run: the composer, three example " +
+      "requests that change every few seconds (one is always a video), and " +
+      "two doors, each playing what it does: Sound like your brand (a " +
+      "generic post rewritten in a brand's voice, opens the Playbook setup) " +
+      "and Turn a video into clips (a wide video cut into three vertical " +
+      "clips, starts the clips flow). The user can also send right away: " +
+      "without a Playbook the drafts are generic. OFF: the run is the first " +
+      "screen, as before.",
+  },
 ]);
