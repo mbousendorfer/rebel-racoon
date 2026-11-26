@@ -95,93 +95,139 @@
 }
 
 /* ── First run: no Playbook yet ───────────────────────────────────
-   An example plays once: the Playbook's four parts fill in, Archie reads
-   them, a LinkedIn post types itself from them. Anatomy and gaps from the
-   DS empty-state recipe (illustration ↔ text lg, title ↔ description xxxs,
-   text ↔ actions md, text capped at 420px... widened to 520 here: the
-   sentence defines the object, two lines read better than four). Route tier:
-   .ap-h1 + .ap-subtitle. The stage is wider than the recipe's 345 because it
-   shows two objects side by side; under 560px of room it stacks. Every
-   delay is one timeline (ms): parts 500→2150, link 2700, post 3100,
-   words 3500 + 70 each, « Sounds like » 5400. Reduced motion → the end
-   state at once (base.css). */
+   An example: a Playbook fills in, I read it, three posts on three networks
+   come out of it; then each part lights in turn (butter, Archie's colour) with
+   the words or the image it shaped. Centred in the whole page: the page and
+   its body grow to the scroller's height when this is all they hold.
+   One timeline (ms): sheet 100 · parts 500 + 350 each · mark 2000 · wires
+   2200 · posts 2500 + 250 each, their words 45 apart · loop from 4600, 8 s,
+   2 s per part. The Bramble & Bean palette comes in as --b0…--b3 (brand
+   data, not DS colours). Reduced motion → the end state at once (base.css),
+   the loop frozen on its first frame, nothing lit. */
+.contexts-view__page:has(.pb-first),
+.contexts-view__body:has(.pb-first) {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
 .pb-first {
+  --pb-loop: 8s;
+  --pb-loop-start: 4600ms;
   container-type: inline-size;
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: var(--ref-spacing-xl) var(--ref-spacing-md);
-  min-height: 60vh;
-  justify-content: center;
+  padding: var(--ref-spacing-lg) var(--ref-spacing-md) var(--ref-spacing-xxl);
 }
 
+/* ── The stage ── */
 .pb-first__stage {
-  display: flex;
+  position: relative;
+  display: grid;
+  grid-template-columns: 272px 128px 264px;
   align-items: center;
-  justify-content: center;
   text-align: left;
-  margin-bottom: var(--ref-spacing-lg);
+  margin-bottom: var(--ref-spacing-xl);
+  color: var(--ref-color-grey-100);
+}
+/* A dot field behind the scene, fading out at the edges. */
+.pb-first__stage::before {
+  content: "";
+  position: absolute;
+  inset: -48px -96px;
+  z-index: -1;
+  background-image: radial-gradient(var(--ref-color-grey-20) 1.2px, transparent 1.6px);
+  background-size: 16px 16px;
+  mask-image: radial-gradient(ellipse at center, #000 35%, transparent 72%);
+  animation: pb-first-in 800ms ease-out both;
 }
 
-.pb-first__card {
+/* ── The Playbook: the catalogue card's anatomy, filled ── */
+.pb-first__sheet {
   background: var(--app-surface);
   border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--ref-border-radius-md);
-  padding: var(--ref-spacing-sm);
-  color: var(--ref-color-grey-100);
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  animation: app-rise 400ms var(--app-ease-out) both;
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
+  animation: app-rise 500ms var(--app-ease-out) 100ms both;
 }
-.pb-first__playbook {
-  width: 272px;
+.pb-first__cover {
+  position: relative;
+  display: flex;
+  height: 48px;
 }
-.pb-first__post {
-  width: 252px;
-  min-height: 196px;
-  animation-delay: 3100ms;
+.pb-first__cover > span:not(.pb-first__example) {
+  flex: 1;
+  transform-origin: left center;
+  animation: pb-first-grow-x 500ms var(--app-ease-out) both;
+  animation-delay: calc(200ms + var(--j, 0) * 80ms);
+}
+.pb-first__cover span:nth-child(2) {
+  --j: 1;
+}
+.pb-first__cover span:nth-child(3) {
+  --j: 2;
+}
+.pb-first__cover span:nth-child(4) {
+  --j: 3;
 }
 
-.pb-first__card-head {
+.pb-first__sheet-head {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: var(--ref-spacing-xxs);
-  margin-bottom: var(--ref-spacing-xs);
+  margin: -20px var(--ref-spacing-sm) var(--ref-spacing-xs);
 }
+.pb-first__sheet-name {
+  flex: 1;
+  white-space: nowrap;
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+}
+.pb-first__example {
+  position: absolute;
+  top: var(--ref-spacing-xxs);
+  right: var(--ref-spacing-xxs);
+  padding: 0 var(--ref-spacing-xxs);
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--app-surface);
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
 .pb-first__logo {
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  flex: none;
+  width: 20px;
+  height: 20px;
   border-radius: var(--app-radius-circle);
-  /* Bramble & Bean's own primary: brand data, not a DS colour. */
-  background: #6b3a22;
+  background: var(--b0);
   color: var(--ref-color-white);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  font-size: 12px;
-}
-.pb-first__card-title {
-  flex: 1;
+  font-size: 11px;
   font-weight: var(--sys-text-style-body-bold-weight);
 }
-.pb-first__example {
-  padding: 0 var(--ref-spacing-xxs);
-  border-radius: var(--ref-border-radius-sm);
-  background: var(--ref-color-grey-05);
-  color: var(--ref-color-grey-80);
-  font-size: 12px;
-}
-.pb-first__network {
-  font-size: var(--sys-icon-css-sm);
+.pb-first__logo--lg {
+  /* Above the cover's flats, whose grow animation makes them layers. */
+  position: relative;
+  z-index: 1;
+  width: 40px;
+  height: 40px;
+  font-size: var(--sys-text-style-h3-size);
+  box-shadow: 0 0 0 3px var(--app-surface);
 }
 
 .pb-first__parts {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 var(--ref-spacing-xs) var(--ref-spacing-xs);
   display: grid;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xxxs);
 }
 .pb-first__part {
   display: grid;
@@ -190,148 +236,231 @@
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-xxs);
   border-radius: var(--ref-border-radius-sm);
-  background: var(--ref-color-grey-05);
+  --pb-rest: var(--ref-color-grey-05);
+  background: var(--pb-rest);
   color: var(--ref-color-grey-80);
-  animation: app-rise 360ms var(--app-ease-out) both;
-  animation-delay: calc(500ms + var(--i) * 550ms);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  animation:
+    app-rise 360ms var(--app-ease-out) calc(500ms + var(--i) * 350ms) both,
+    pb-first-spot var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--i) * 2s) infinite;
 }
 .pb-first__part-label {
   font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--ref-color-grey-100);
 }
 .pb-first__part-value {
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 12px;
+  font-size: var(--sys-text-style-caption-size);
 }
 .pb-first__part-check {
   color: var(--ref-color-green-100);
-  animation: pb-first-pop 280ms var(--app-ease-out) both;
-  animation-delay: calc(800ms + var(--i) * 550ms);
+  animation: pb-first-pop 280ms var(--app-ease-out) calc(750ms + var(--i) * 350ms) both;
 }
 .pb-first__swatches {
   display: flex;
-  gap: 4px;
+  gap: var(--ref-spacing-xxxs);
 }
 .pb-first__swatches span {
   width: 14px;
   height: 14px;
   border-radius: var(--app-radius-circle);
   box-shadow: inset 0 0 0 1px var(--ref-color-grey-20);
-  animation: pb-first-pop 240ms var(--app-ease-out) both;
-  animation-delay: 2300ms;
-}
-.pb-first__swatches span:nth-child(2) {
-  animation-delay: 2360ms;
-}
-.pb-first__swatches span:nth-child(3) {
-  animation-delay: 2420ms;
-}
-.pb-first__swatches span:nth-child(4) {
-  animation-delay: 2480ms;
+  animation: pb-first-pop 240ms var(--app-ease-out) calc(1650ms + var(--j) * 70ms) both;
 }
 
-/* The link: two lines drawn toward the post, Archie's mark between them. */
-.pb-first__link {
-  display: flex;
-  align-items: center;
-  width: 88px;
-}
-.pb-first__line {
-  flex: 1;
-  height: 0;
-  border-top: 2px dashed var(--ref-color-grey-20);
-  transform-origin: left center;
-  animation: pb-first-grow-x 300ms var(--app-ease-out) both;
-  animation-delay: 2700ms;
-}
-.pb-first__line:last-child {
-  animation-delay: 2950ms;
-}
-.pb-first__mark {
+/* ── Me, reading it: the mark on butter, wires out to the posts ── */
+.pb-first__wires {
+  position: relative;
+  align-self: stretch;
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+}
+.pb-first__wires svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  animation: pb-first-draw 500ms var(--app-ease-out) 2200ms both;
+}
+.pb-first__wires path {
+  fill: none;
+  stroke: var(--app-butter-accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1 7;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.7;
+  animation: pb-first-flow 900ms linear 2200ms infinite;
+}
+.pb-first__mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
   border-radius: var(--app-radius-circle);
   background: var(--app-butter);
   color: var(--app-archie-mark);
-  animation: pb-first-pop 320ms var(--app-ease-out) both;
-  animation-delay: 2800ms;
+  box-shadow: 0 0 0 6px var(--ref-color-grey-05);
+  animation: pb-first-pop 360ms var(--app-ease-out) 2000ms both;
 }
 .pb-first__mark i {
-  width: 18px;
-  height: 14px;
+  width: 24px;
+  height: 18px;
+}
+/* A slow ring while I work. */
+.pb-first__mark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid var(--app-butter-accent);
+  opacity: 0;
+  animation: pb-first-ring 2s ease-out 2400ms infinite;
 }
 
-.pb-first__words {
-  margin: 0 0 var(--ref-spacing-xs);
+/* ── What comes out: three posts, three networks ── */
+.pb-first__posts {
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: var(--ref-spacing-xs);
 }
-.pb-first__words span {
-  animation: pb-first-in 160ms linear both;
-  animation-delay: calc(3500ms + var(--w) * 70ms);
+.pb-first__post {
+  display: flex;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs);
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  animation: app-rise 420ms var(--app-ease-out) calc(2500ms + var(--k) * 250ms) both;
 }
-
-.pb-first__sounds {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  padding: 0 var(--ref-spacing-xxs);
-  border-radius: var(--ref-border-radius-sm);
-  background: var(--app-butter);
-  color: var(--ref-color-grey-100);
-  font-size: 12px;
-  animation: app-rise 320ms var(--app-ease-out) both;
-  animation-delay: 5400ms;
+.pb-first__post:nth-child(2) {
+  transform: translateX(16px);
+  --app-rise-from: 8px;
 }
-.pb-first__sounds i {
-  color: var(--app-butter-accent);
-}
-
-.pb-first__copy {
+.pb-first__post-body {
+  flex: 1;
+  min-width: 0;
   display: grid;
   gap: var(--ref-spacing-xxxs);
-  max-width: 520px;
+  align-content: start;
+}
+.pb-first__post-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+}
+.pb-first__post-head span:not(.pb-first__logo) {
+  flex: 1;
+}
+.pb-first__post-head i {
+  font-size: var(--sys-icon-css-sm);
+}
+.pb-first__post-text {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-100);
+}
+.pb-first__word {
+  animation: pb-first-in 160ms linear both;
+  animation-delay: calc(2750ms + var(--k) * 250ms + var(--w) * 45ms);
+}
+.pb-first__trace {
+  border-radius: var(--ref-border-radius-sm);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0 2px;
+  margin: 0 -2px;
+  animation: pb-first-spot var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--i) * 2s) infinite;
+}
+
+/* The Instagram photo, drawn in the brand's palette: a latte from above. */
+.pb-first__photo {
+  --i: 3;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  align-self: stretch;
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--b1);
+  animation: pb-first-photo var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + 3 * 2s) infinite;
+}
+.pb-first__cup {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--app-radius-circle);
+  background: radial-gradient(circle, var(--b3) 0 22%, var(--b1) 23% 48%, var(--b0) 49%);
+  box-shadow: 0 0 0 5px var(--ref-color-white);
+  animation: pb-first-pop 400ms var(--app-ease-out) 2900ms both;
+}
+.pb-first__cup::after {
+  content: "";
+  position: absolute;
+  right: -14px;
+  top: -6px;
+  width: 16px;
+  height: 9px;
+  border-radius: 0 100% 0 100%;
+  background: var(--b2);
+}
+
+/* ── The words ── */
+.pb-first__copy {
+  display: grid;
+  gap: var(--ref-spacing-xxs);
+  max-width: 540px;
+  color: var(--ref-color-grey-100);
+  animation: app-rise 500ms var(--app-ease-out) 300ms both;
 }
 .pb-first__copy h2,
 .pb-first__copy p {
   margin: 0;
   text-wrap: pretty;
 }
+.pb-first__copy h2 {
+  text-wrap: balance;
+}
 .pb-first__copy .ap-subtitle {
   color: var(--ref-color-grey-80);
 }
-
 .pb-first__action {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--ref-spacing-sm);
   margin-top: var(--ref-spacing-md);
+  animation: app-rise 500ms var(--app-ease-out) 450ms both;
 }
 .pb-first__hint {
   margin: 0;
   color: var(--ref-color-grey-80);
 }
 
-@container (max-width: 560px) {
+/* Narrow: the Playbook, then me, then the posts, one under the other. */
+@container (max-width: 720px) {
   .pb-first__stage {
-    flex-direction: column;
+    grid-template-columns: minmax(0, 300px);
+    justify-content: center;
   }
-  .pb-first__link {
-    width: auto;
-    height: 56px;
-    flex-direction: column;
+  .pb-first__wires {
+    height: 72px;
   }
-  .pb-first__line {
-    width: 0;
-    height: auto;
-    border-top: 0;
-    border-left: 2px dashed var(--ref-color-grey-20);
-    transform-origin: center top;
-    animation-name: app-grow-y;
+  .pb-first__wires svg {
+    display: none;
+  }
+  .pb-first__post:nth-child(2) {
+    transform: none;
   }
 }
 
@@ -349,6 +478,52 @@
 @keyframes pb-first-in {
   from {
     opacity: 0;
+  }
+}
+@keyframes pb-first-draw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes pb-first-flow {
+  to {
+    stroke-dashoffset: -8;
+  }
+}
+@keyframes pb-first-ring {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+/* A part and its traces, lit for a quarter of the loop. */
+@keyframes pb-first-spot {
+  0%,
+  28%,
+  100% {
+    background-color: var(--pb-rest, transparent);
+  }
+  5%,
+  22% {
+    background-color: var(--app-butter);
+  }
+}
+@keyframes pb-first-photo {
+  0%,
+  28%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  5%,
+  22% {
+    box-shadow: 0 0 0 3px var(--app-butter-accent);
   }
 }
 

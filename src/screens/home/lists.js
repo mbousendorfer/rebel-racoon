@@ -11,19 +11,19 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=2873";
-import { isFlagOn } from "../../feature-flags.js?v=2873";
-import { escapeAttr, escapeText } from "../../utils.js?v=2873";
-import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2873";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2873";
-import { getSessions } from "../../sessions-store.js?v=2873";
-import { renderEmptyState } from "../../components/empty-state.js?v=2873";
-import { getSources, getIdeas } from "../../library.js?v=2873";
-import { getPosts } from "../../posts-store.js?v=2873";
-import { getContextById } from "../../contexts-store.js?v=2873";
-import { voicesToFinish } from "../../voice-parts.js?v=2873";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2873";
-import { pageState } from "../home.js?v=2873";
+} from "../../playbook-access.js?v=2876";
+import { isFlagOn } from "../../feature-flags.js?v=2876";
+import { escapeAttr, escapeText } from "../../utils.js?v=2876";
+import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2876";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2876";
+import { getSessions } from "../../sessions-store.js?v=2876";
+import { renderEmptyState } from "../../components/empty-state.js?v=2876";
+import { getSources, getIdeas } from "../../library.js?v=2876";
+import { getPosts } from "../../posts-store.js?v=2876";
+import { getContextById } from "../../contexts-store.js?v=2876";
+import { voicesToFinish } from "../../voice-parts.js?v=2876";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2876";
+import { pageState } from "../home.js?v=2876";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -312,67 +312,104 @@ export function chatPlaybook(session) {
   return ctx && canView(ctx) ? ctx : null;
 }
 
-// No Playbook at all: the page has to say what one IS before asking for one.
-// An example plays once, in order — a Playbook's four parts fill in, then a
-// post is written from them — so "what it is" and "what it's for" are the same
-// picture. The brand is the made-up café of the demo (Bramble & Bean), labelled
-// as an example so nobody reads it as their own. The illustration is decorative
+// No Playbook at all: the page has to say what one IS before asking for one,
+// and show it rather than list it. An example plays once: a Playbook fills in
+// its four parts, I read it, and three posts on three networks come out of it.
+// Then it keeps going, quietly: each part lights in turn with the words (or the
+// image) it shaped in the posts, so "every draft comes from it" is something
+// you watch, not a claim. The brand is the made-up café of the demo (Bramble &
+// Bean), tagged Example so nobody reads it as their own. Decorative
 // (aria-hidden): the title and the sentence carry everything it shows.
+// `[text]{part}` in a post marks a trace of that part; the CSS lights it.
+const FIRST_RUN_BRAND = ["#6B3A22", "#C8874E", "#7A8F4E", "#F7EFE5"];
 const FIRST_RUN_PARTS = [
-  { icon: "ap-icon-buildings", label: "Business", value: "Café and roaster" },
-  { icon: "ap-icon-multiple-users", label: "Audience", value: "Coffee regulars" },
-  { icon: "ap-icon-megaphone", label: "Voice", value: "Warm and plain" },
-  { icon: "ap-icon-image", label: "Look", swatches: ["#6B3A22", "#C8874E", "#7A8F4E", "#F7EFE5"] },
+  { id: "business", icon: "ap-icon-buildings", label: "Business", value: "Café and roaster" },
+  { id: "audience", icon: "ap-icon-multiple-users", label: "Audience", value: "Regulars, brewers" },
+  { id: "voice", icon: "ap-icon-megaphone", label: "Voice", value: "Warm and plain" },
+  { id: "look", icon: "ap-icon-image", label: "Look" },
 ];
-const FIRST_RUN_POST =
-  "This week's guest roast is in: Ethiopia Guji. Bright, a little berry, very good with Saturday's brunch. Come taste it before it's gone ☕";
+const FIRST_RUN_POSTS = [
+  {
+    network: "ap-icon-linkedin-official",
+    text: "[Regulars]{audience}, this week's [guest roast]{business} is in: Ethiopia Guji. Bright, a little berry. [Come taste it before it's gone.]{voice}",
+  },
+  {
+    network: "ap-icon-instagram-official",
+    image: true,
+    text: "[Saturday brunch]{business}, flat white on the side. [See you at 10?]{voice}",
+  },
+  {
+    network: "ap-icon-facebook-official",
+    text: "[Home brewers]{audience}: the [autumn blend]{business} is back in 250 g bags. [Grab one on your way out.]{voice}",
+  },
+];
+const FIRST_RUN_INDEX = Object.fromEntries(FIRST_RUN_PARTS.map((p, i) => [p.id, i]));
+
+// Word by word (each word its own --w for the typing), traces wrapped.
+function firstRunText(text) {
+  let w = 0;
+  const words = (s) =>
+    s
+      .split(/(\s+)/)
+      .map((t) => (/^\s*$/.test(t) ? t : `<span class="pb-first__word" style="--w:${w++}">${escapeText(t)}</span>`))
+      .join("");
+  return text.replace(/\[([^\]]+)\]\{(\w+)\}|([^[]+)/g, (_, trace, part, plain) =>
+    trace ? `<span class="pb-first__trace" style="--i:${FIRST_RUN_INDEX[part]}">${words(trace)}</span>` : words(plain),
+  );
+}
 
 function renderPlaybooksFirstRun() {
+  const logo = `<span class="pb-first__logo">B</span>`;
   const parts = FIRST_RUN_PARTS.map(
     (p, i) => `
       <li class="pb-first__part" style="--i:${i}">
-        <i class="${p.icon}" aria-hidden="true"></i>
+        <i class="${p.icon}"></i>
         <span class="pb-first__part-label">${p.label}</span>
         ${
-          p.swatches
-            ? `<span class="pb-first__swatches">${p.swatches.map((c) => `<span style="background:${c}"></span>`).join("")}</span>`
-            : `<span class="pb-first__part-value">${p.value}</span>`
+          p.value
+            ? `<span class="pb-first__part-value">${p.value}</span>`
+            : `<span class="pb-first__swatches">${FIRST_RUN_BRAND.map((_, j) => `<span style="background:var(--b${j});--j:${j}"></span>`).join("")}</span>`
         }
-        <i class="ap-icon-check pb-first__part-check" aria-hidden="true"></i>
+        <i class="ap-icon-check pb-first__part-check"></i>
       </li>`,
   ).join("");
-  const words = FIRST_RUN_POST.split(" ")
-    .map((w, i) => `<span style="--w:${i}">${escapeText(w)}</span>`)
-    .join(" ");
+  const posts = FIRST_RUN_POSTS.map(
+    (post, k) => `
+      <div class="pb-first__post${post.image ? " pb-first__post--image" : ""}" style="--k:${k}">
+        ${post.image ? `<span class="pb-first__photo"><span class="pb-first__cup"></span></span>` : ""}
+        <div class="pb-first__post-body">
+          <div class="pb-first__post-head">${logo}<span>Bramble &amp; Bean</span><i class="${post.network}"></i></div>
+          <p class="pb-first__post-text">${firstRunText(post.text)}</p>
+        </div>
+      </div>`,
+  ).join("");
   return `
-    <div class="pb-first">
+    <div class="pb-first" style="${FIRST_RUN_BRAND.map((c, j) => `--b${j}:${c}`).join(";")}">
       <div class="pb-first__stage" aria-hidden="true">
-        <div class="pb-first__card pb-first__playbook">
-          <div class="pb-first__card-head">
-            <span class="pb-first__logo">B</span>
-            <span class="pb-first__card-title">Bramble &amp; Bean</span>
+        <div class="pb-first__sheet">
+          <div class="pb-first__cover">
+            ${FIRST_RUN_BRAND.map((_, j) => `<span style="background:var(--b${j})"></span>`).join("")}
             <span class="pb-first__example">Example</span>
+          </div>
+          <div class="pb-first__sheet-head">
+            <span class="pb-first__logo pb-first__logo--lg">B</span>
+            <span class="pb-first__sheet-name">Bramble &amp; Bean</span>
           </div>
           <ul class="pb-first__parts">${parts}</ul>
         </div>
-        <div class="pb-first__link">
-          <span class="pb-first__line"></span>
+        <div class="pb-first__wires">
+          <svg viewBox="0 0 120 300" preserveAspectRatio="none">
+            <path d="M0 150 C 60 150, 60 50, 120 50" />
+            <path d="M0 150 L 120 150" />
+            <path d="M0 150 C 60 150, 60 250, 120 250" />
+          </svg>
           <span class="pb-first__mark"><i class="ap-icon-archie-official"></i></span>
-          <span class="pb-first__line"></span>
         </div>
-        <div class="pb-first__card pb-first__post">
-          <div class="pb-first__card-head">
-            <span class="pb-first__logo">B</span>
-            <span class="pb-first__card-title">Bramble &amp; Bean</span>
-            <i class="ap-icon-linkedin-official pb-first__network"></i>
-          </div>
-          <p class="pb-first__words">${words}</p>
-          <span class="pb-first__sounds"><i class="ap-icon-check"></i>Sounds like Bramble &amp; Bean</span>
-        </div>
+        <div class="pb-first__posts">${posts}</div>
       </div>
       <div class="pb-first__copy">
         <h2 class="ap-h1">Teach me your Brand once</h2>
-        <p class="ap-subtitle">A Playbook is what I know about one Brand: what it does, who it talks to, how it sounds, and how it looks. I write every draft from it, so you never explain your Brand twice.</p>
+        <p class="ap-subtitle">A Playbook is what I know about one Brand: what it does, who it talks to, how it sounds, and how it looks. I write every draft from it, on every network, so you never explain your Brand twice.</p>
       </div>
       <div class="pb-first__action">
         <button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create your first Playbook</span></button>
