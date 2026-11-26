@@ -31,26 +31,26 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=2917";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2917";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=2917";
+import { html, raw } from "../../utils.js?v=2918";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2918";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=2918";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=2917";
-import { getPath, navigate } from "../../router.js?v=2917";
-import { isFlagOn } from "../../feature-flags.js?v=2917";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2917";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2917";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=2917";
-import { openNewPlaybookFlow } from "../../context-builder.js?v=2917";
-import { firstRunText, FIRST_RUN_BRAND } from "../home/lists.js?v=2917";
-import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=2917";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=2917";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=2917";
-import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=2917";
+} from "../../active-playbook.js?v=2918";
+import { getPath, navigate } from "../../router.js?v=2918";
+import { isFlagOn } from "../../feature-flags.js?v=2918";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2918";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2918";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=2918";
+import { openNewPlaybookFlow } from "../../context-builder.js?v=2918";
+import { firstRunText, FIRST_RUN_BRAND } from "../home/lists.js?v=2918";
+import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=2918";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=2918";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=2918";
+import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=2918";
 
 // ── Module state ──────────────────────────────────────────────────────────
 
