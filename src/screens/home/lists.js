@@ -12,19 +12,19 @@ import {
   canDelete,
   canView,
   usableContexts,
-} from "../../playbook-access.js?v=2913";
-import { isFlagOn } from "../../feature-flags.js?v=2913";
-import { escapeAttr, escapeText } from "../../utils.js?v=2913";
-import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2913";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2913";
-import { getSessions } from "../../sessions-store.js?v=2913";
-import { renderEmptyState } from "../../components/empty-state.js?v=2913";
-import { getSources, getIdeas } from "../../library.js?v=2913";
-import { getPosts } from "../../posts-store.js?v=2913";
-import { getContextById } from "../../contexts-store.js?v=2913";
-import { voicesToFinish } from "../../voice-parts.js?v=2913";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2913";
-import { pageState } from "../home.js?v=2913";
+} from "../../playbook-access.js?v=2914";
+import { isFlagOn } from "../../feature-flags.js?v=2914";
+import { escapeAttr, escapeText } from "../../utils.js?v=2914";
+import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2914";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2914";
+import { getSessions } from "../../sessions-store.js?v=2914";
+import { renderEmptyState } from "../../components/empty-state.js?v=2914";
+import { getSources, getIdeas } from "../../library.js?v=2914";
+import { getPosts } from "../../posts-store.js?v=2914";
+import { getContextById } from "../../contexts-store.js?v=2914";
+import { voicesToFinish } from "../../voice-parts.js?v=2914";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2914";
+import { pageState } from "../home.js?v=2914";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -341,10 +341,10 @@ const FIRST_RUN_POSTS = [
 // The wires, in the wires box's own pixels (144 × 360): the card into my mark,
 // then my mark out to the three posts, whose centres sit at 56 / 180 / 304.
 const FIRST_RUN_WIRES = [
-  "M0 180 L24 180",
-  "M72 180 C 110 180, 106 56, 144 56",
-  "M72 180 L160 180", // the Instagram post sits 16px further right
-  "M72 180 C 110 180, 106 304, 144 304",
+  "M0 180 L32 180",
+  "M64 180 C 110 180, 106 56, 144 56",
+  "M64 180 L160 180", // the Instagram post sits 16px further right
+  "M64 180 C 110 180, 106 304, 144 304",
 ];
 const FIRST_RUN_INDEX = Object.fromEntries(FIRST_RUN_PARTS.map((p, i) => [p.id, i]));
 
@@ -407,7 +407,6 @@ function renderPlaybooksFirstRun() {
           </svg>
           ${FIRST_RUN_WIRES.flatMap((d, n) => [0, 1].map((h) => `<span class="pb-first__spark${n ? "" : " pb-first__spark--in"}" style="offset-path:path('${d}');--n:${n};--h:${h}"></span>`)).join("")}
           <span class="pb-first__mark">
-            <svg class="pb-first__orbit" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" pathLength="24" /></svg>
             <i class="ap-icon-archie-official"></i>
           </span>
         </div>
@@ -482,7 +481,6 @@ function renderChatsFirstRun() {
           </svg>
           ${FIRST_RUN_WIRES.flatMap((d, n) => [0, 1].map((h) => `<span class="pb-first__spark${n ? "" : " pb-first__spark--in"}" style="offset-path:path('${d}');--n:${n};--h:${h}"></span>`)).join("")}
           <span class="pb-first__mark">
-            <svg class="pb-first__orbit" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" pathLength="24" /></svg>
             <i class="ap-icon-archie-official"></i>
           </span>
         </div>

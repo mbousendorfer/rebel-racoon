@@ -312,8 +312,7 @@ body.empty-state-ground .pb-first__stage::before {
    FIRST_RUN_WIRES): each wire draws itself in (pathLength 1, dashoffset 1 → 0),
    then sparks run along it, from the card into my mark and from my mark out to
    each post, two per wire, half a run apart (CSS offset-path, so the sparks
-   keep the page's one timeline and its reduced-motion rule). A dashed orbit
-   turns around the mark while I work. */
+   keep the page's one timeline and its reduced-motion rule). */
 .pb-first__wires {
   position: relative;
   width: 144px;
@@ -355,39 +354,27 @@ body.empty-state-ground .pb-first__stage::before {
   animation-duration: 0.9s;
   animation-delay: calc(2500ms + var(--h) * 450ms);
 }
+/* My mark as the conversation draws it (chat.css .e-turn__mark): my white
+   glyph on my own orange, a solid disc, 32px (between the thread's 24 and the
+   48 butter ball it replaced, 2026-11-26), centred at 48 / 180. No dotted
+   orbit: it read as a thin ring floating off the disc. */
 .pb-first__mark {
   position: absolute;
-  left: 24px;
-  top: 156px;
+  left: 32px;
+  top: 164px;
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--app-radius-circle);
-  background: var(--app-butter);
-  color: var(--app-archie-mark);
+  background: var(--app-archie-mark);
+  color: var(--ref-color-white);
   animation: pb-first-pop 360ms var(--app-ease-out) 2000ms both;
 }
 .pb-first__mark i {
-  width: 24px;
-  height: 18px;
-}
-.pb-first__orbit {
-  position: absolute;
-  inset: -8px;
-  width: 64px;
-  height: 64px;
-  overflow: visible;
-  animation: pb-first-spin 9s linear 2400ms infinite;
-}
-.pb-first__orbit circle {
-  fill: none;
-  stroke: var(--app-butter-accent);
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-dasharray: 0.5 1.5;
-  stroke-opacity: 0.6;
-  animation: pb-first-in 400ms ease-out 2300ms both;
+  width: 16px;
+  height: 12px;
+  background: var(--ref-color-white);
 }
 
 /* ── What comes out: three posts, three networks ── */
@@ -530,8 +517,8 @@ body.empty-state-ground .pb-first__stage::before {
     display: none;
   }
   .pb-first__mark {
-    left: calc(50% - 24px);
-    top: 24px;
+    left: calc(50% - 16px);
+    top: 32px;
   }
   .pb-first__posts {
     height: auto;
@@ -683,11 +670,6 @@ body.empty-state-ground .pb-first__stage::before {
   100% {
     offset-distance: 100%;
     opacity: 0;
-  }
-}
-@keyframes pb-first-spin {
-  to {
-    transform: rotate(360deg);
   }
 }
 @keyframes pb-first-pop {

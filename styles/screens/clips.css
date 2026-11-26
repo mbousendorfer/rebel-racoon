@@ -490,14 +490,15 @@
   width: 24px;
   height: 24px;
   border-radius: var(--app-radius-circle);
-  background: var(--app-butter);
-  box-shadow: 0 0 0 1px var(--app-butter-accent);
-  color: var(--app-archie-mark);
+  /* The conversation's mark (chat.css .e-turn__mark): white on my orange. */
+  background: var(--app-archie-mark);
+  color: var(--ref-color-white);
 }
 
 .clips-showcase__mark i {
   width: 14px;
   height: 11px;
+  background: var(--ref-color-white);
 }
 
 .clips-showcase__badge,
