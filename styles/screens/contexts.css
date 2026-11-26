@@ -311,7 +311,7 @@
   left: 0;
   width: 6px;
   height: 6px;
-  margin: -3px 0 0 -3px;
+  /* No margin: offset-anchor already puts the spark's centre on the path. */
   border-radius: var(--app-radius-circle);
   background: var(--app-butter-accent);
   box-shadow: 0 0 0 3px var(--app-butter);
