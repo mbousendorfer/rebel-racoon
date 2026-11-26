@@ -511,6 +511,131 @@
   }
 }
 
+/* ── First run, Chats tab: the same stage, told for a chat ──
+   One example chat (you ask, a file rides along, I answer), then what it
+   holds, named like the table's columns: sources · ideas · drafts, each lit in
+   turn. The wires, mark and outputs keep the timeline above; the chat's own
+   (ms): sheet 100 · your words 400 + 45 each · file 900 · my words 1300 + 45
+   each · loop from 4400, 6 s, 2 s per output. */
+.pb-first--chats {
+  --pb-loop: 6s;
+  --pb-loop-start: 4400ms;
+}
+.chat-first__chat {
+  display: grid;
+  align-content: start;
+}
+.chat-first__head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+.chat-first__name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+.chat-first__example {
+  padding: 0 var(--ref-spacing-xxs);
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+.chat-first__thread {
+  display: grid;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+}
+/* Two sides, like the thread: yours on the right, mine on the left. */
+.chat-first__bubble {
+  justify-self: end;
+  max-width: 85%;
+  margin: 0;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-grey-05);
+}
+.chat-first__bubble .pb-first__word {
+  animation-delay: calc(400ms + var(--w) * 45ms);
+}
+.chat-first__file {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin-top: calc(-1 * var(--ref-spacing-xs));
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-sm);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  animation: pb-first-pop 280ms var(--app-ease-out) 900ms both;
+}
+.chat-first__reply {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  align-items: start;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+}
+.chat-first__reply > i {
+  width: 16px;
+  height: 12px;
+  margin-top: 4px;
+  color: var(--app-archie-mark);
+  animation: pb-first-pop 240ms var(--app-ease-out) 1250ms both;
+}
+.chat-first__reply .pb-first__word {
+  animation-delay: calc(1300ms + var(--w) * 45ms);
+}
+
+.chat-first__out {
+  --pb-rest: var(--app-surface);
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  animation:
+    app-rise 420ms var(--app-ease-out) calc(2500ms + var(--k) * 250ms) both,
+    pb-first-spot var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--i) * 2s) infinite;
+}
+.chat-first__out-label {
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+}
+.chat-first__out-line {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+.chat-first__out-line > span {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chat-first__out-line > i {
+  flex: none;
+  font-size: var(--sys-icon-css-sm);
+}
+
 @keyframes pb-first-stroke {
   to {
     stroke-dashoffset: 0;

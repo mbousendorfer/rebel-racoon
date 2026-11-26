@@ -11,19 +11,20 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=2885";
-import { isFlagOn } from "../../feature-flags.js?v=2885";
-import { escapeAttr, escapeText } from "../../utils.js?v=2885";
-import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2885";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2885";
-import { getSessions } from "../../sessions-store.js?v=2885";
-import { renderEmptyState } from "../../components/empty-state.js?v=2885";
-import { getSources, getIdeas } from "../../library.js?v=2885";
-import { getPosts } from "../../posts-store.js?v=2885";
-import { getContextById } from "../../contexts-store.js?v=2885";
-import { voicesToFinish } from "../../voice-parts.js?v=2885";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2885";
-import { pageState } from "../home.js?v=2885";
+  usableContexts,
+} from "../../playbook-access.js?v=2886";
+import { isFlagOn } from "../../feature-flags.js?v=2886";
+import { escapeAttr, escapeText } from "../../utils.js?v=2886";
+import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2886";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2886";
+import { getSessions } from "../../sessions-store.js?v=2886";
+import { renderEmptyState } from "../../components/empty-state.js?v=2886";
+import { getSources, getIdeas } from "../../library.js?v=2886";
+import { getPosts } from "../../posts-store.js?v=2886";
+import { getContextById } from "../../contexts-store.js?v=2886";
+import { voicesToFinish } from "../../voice-parts.js?v=2886";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2886";
+import { pageState } from "../home.js?v=2886";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -236,13 +237,7 @@ export function renderChatsTab() {
           wrapperClass: "contexts-view__empty contexts-view__empty--rich",
           level: 2,
         })
-      : renderEmptyState({
-          icon: "ap-icon-single-chat-bubble",
-          title: "No chats yet",
-          body: "Start one from the box above: pick a Playbook and tell me what you need.",
-          wrapperClass: "contexts-view__empty contexts-view__empty--rich",
-          level: 2,
-        });
+      : renderChatsFirstRun();
   }
 
   const body = rows
@@ -425,6 +420,85 @@ function renderPlaybooksFirstRun() {
       <div class="pb-first__action">
         <button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create your first Playbook</span></button>
         <p class="pb-first__hint">Start from your website, your files, or a few questions.</p>
+      </div>
+    </div>
+  `;
+}
+
+// No chat yet: the Playbooks' first run, told for a chat. One example chat
+// (Bramble & Bean again, tagged Example): you ask, a file rides along, I answer,
+// and the three things a chat holds come out of it, named the way the table's
+// columns name them (sources · ideas · drafts). Then each one lights in turn.
+// Same stage, wires and timeline as the Playbook's (.pb-first), so the two tabs
+// read as one family. The action follows the hero: with a Playbook the box
+// above starts a chat, so the button focuses it; without one there is no box,
+// and the Playbook comes first. Decorative scene, the copy carries it all.
+const CHAT_OUTPUTS = [
+  { label: "1 source", lines: [{ icon: "ap-icon-file--pdf", text: "autumn-menu.pdf" }] },
+  {
+    label: "3 ideas",
+    lines: [
+      { text: "Guji, bright and a little berry" },
+      { text: "Brewing it at home" },
+      { text: "Why we roast in autumn" },
+    ],
+  },
+  {
+    label: "2 drafts",
+    lines: [
+      { icon: "ap-icon-linkedin-official", text: "Regulars, the autumn blend is in…" },
+      { icon: "ap-icon-instagram-official", text: "Saturday brunch, flat white on…" },
+    ],
+  },
+];
+
+function renderChatsFirstRun() {
+  const hasPlaybook = usableContexts().length > 0;
+  const outputs = CHAT_OUTPUTS.map(
+    (out, k) => `
+      <div class="pb-first__post chat-first__out" style="--k:${k};--i:${k}">
+        <span class="chat-first__out-label">${out.label}</span>
+        ${out.lines.map((l) => `<span class="chat-first__out-line">${l.icon ? `<i class="${l.icon}"></i>` : ""}<span>${l.text}</span></span>`).join("")}
+      </div>`,
+  ).join("");
+  return `
+    <div class="pb-first pb-first--chats" style="${FIRST_RUN_BRAND.map((c, j) => `--b${j}:${c}`).join(";")}">
+      <div class="pb-first__stage" aria-hidden="true">
+        <div class="pb-first__sheet chat-first__chat">
+          <div class="chat-first__head">
+            <span class="pb-first__logo">B</span>
+            <span class="chat-first__name">Autumn blend launch</span>
+            <span class="chat-first__example">Example</span>
+          </div>
+          <div class="chat-first__thread">
+            <p class="chat-first__bubble">${firstRunText("Write about our autumn blend. The menu is attached.")}</p>
+            <span class="chat-first__file"><i class="ap-icon-file--pdf"></i>autumn-menu.pdf</span>
+            <p class="chat-first__reply"><i class="ap-icon-archie-official"></i><span>${firstRunText("Here are three ideas from your menu, and two drafts.")}</span></p>
+          </div>
+        </div>
+        <div class="pb-first__wires">
+          <svg class="pb-first__wire-lines" viewBox="0 0 144 360">
+            ${FIRST_RUN_WIRES.map((d, n) => `<path d="${d}" pathLength="1" style="--n:${n}" />`).join("")}
+          </svg>
+          ${FIRST_RUN_WIRES.flatMap((d, n) => [0, 1].map((h) => `<span class="pb-first__spark${n ? "" : " pb-first__spark--in"}" style="offset-path:path('${d}');--n:${n};--h:${h}"></span>`)).join("")}
+          <span class="pb-first__mark">
+            <svg class="pb-first__orbit" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" pathLength="24" /></svg>
+            <i class="ap-icon-archie-official"></i>
+          </span>
+        </div>
+        <div class="pb-first__posts">${outputs}</div>
+      </div>
+      <div class="pb-first__copy">
+        <h2 class="ap-h1">Bring me a source, get drafts back</h2>
+        <p class="ap-subtitle">Start with a link, a file, or a few words. Each chat keeps its sources, ideas, and drafts together.</p>
+      </div>
+      <div class="pb-first__action">
+        ${
+          hasPlaybook
+            ? `<button type="button" class="ap-button primary blue" data-home-focus-prompt><i class="ap-icon-plus"></i><span>Start your first chat</span></button>`
+            : `<button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create your first Playbook</span></button>
+               <p class="pb-first__hint">Every chat writes from a Playbook, so it comes first.</p>`
+        }
       </div>
     </div>
   `;

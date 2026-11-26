@@ -1,27 +1,27 @@
-import { escapeAttr, html, newChatPath, raw } from "../utils.js?v=2885";
-import { conceptText } from "../concepts.js?v=2885";
-import { renderTopbar, setTopbarActions } from "../components/topbar.js?v=2885";
+import { escapeAttr, html, newChatPath, raw } from "../utils.js?v=2886";
+import { conceptText } from "../concepts.js?v=2886";
+import { renderTopbar, setTopbarActions } from "../components/topbar.js?v=2886";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=2885";
-import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=2885";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2885";
-import { closePanel as closeRightPanel } from "../components/right-panel.js?v=2885";
-import { navigate, getPath } from "../router.js?v=2885";
-import { isFlagOn } from "../feature-flags.js?v=2885";
-import { setHandoff } from "../handoff.js?v=2885";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2885";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2885";
-import { visibleContexts, usableContexts, isMine } from "../playbook-access.js?v=2885";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2885";
-import { voicesToFinish } from "../voice-parts.js?v=2885";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2885";
-import { installMoreMenu } from "../components/more-menu.js?v=2885";
-import { showToast } from "../components/toast.js?v=2885";
-import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=2885";
+} from "../contexts-store.js?v=2886";
+import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=2886";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2886";
+import { closePanel as closeRightPanel } from "../components/right-panel.js?v=2886";
+import { navigate, getPath } from "../router.js?v=2886";
+import { isFlagOn } from "../feature-flags.js?v=2886";
+import { setHandoff } from "../handoff.js?v=2886";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2886";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2886";
+import { visibleContexts, usableContexts, isMine } from "../playbook-access.js?v=2886";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2886";
+import { voicesToFinish } from "../voice-parts.js?v=2886";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2886";
+import { installMoreMenu } from "../components/more-menu.js?v=2886";
+import { showToast } from "../components/toast.js?v=2886";
+import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=2886";
 import {
   chatPlaybook,
   renderChatsTab,
@@ -29,7 +29,7 @@ import {
   renderContextsEmpty,
   renderGhostCard,
   renderPlaybooksTable,
-} from "./home/lists.js?v=2885";
+} from "./home/lists.js?v=2886";
 
 // The account HOME — and the Playbooks catalogue it merged with.
 //
@@ -329,6 +329,8 @@ function renderHomeTabs(playbookCount, chatCount, tab) {
 // Under the tabs rather than beside them: the DS nav owns its full-width rule,
 // and hanging a search field inside a [role=tablist] would put a non-tab in it.
 function renderHomeToolbar(tab, totalChats) {
+  // No chat yet: the empty state explains a chat, and a search over nothing is noise.
+  if (tab === "chats" && !getSessions().length) return "";
   // No Playbook yet: the empty state below explains it, so no hint here.
   const hint =
     tab === "playbooks"
@@ -554,6 +556,13 @@ function bind(root) {
     if (ownerTab) {
       pageState.owner = ownerTab.dataset.contextsOwner;
       paint();
+      return;
+    }
+    // The Chats tab's first run: the box above is where a chat starts.
+    if (event.target.closest("[data-home-focus-prompt]")) {
+      const field = root.querySelector("[data-home-prompt]");
+      field?.scrollIntoView({ behavior: "smooth", block: "center" });
+      field?.focus({ preventScroll: true });
       return;
     }
     if (event.target.closest("[data-contexts-clear-query]")) {
