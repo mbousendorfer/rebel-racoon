@@ -5,18 +5,18 @@
 // « La boîte d'abord, automatique par défaut » (B1, picked 2026-11-20): one box
 // stages a video — a file first, then a YouTube link (prod's order; no Drive)
 // — and Find the best moments starts the analysis. Asking for something
-// specific (prod's focus) is a link that opens a field, never a step. Under
+// specific (prod's focus) opens the app's composer in the box, never a step. Under
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2901";
-import { isFlagOn } from "../../feature-flags.js?v=2901";
-import { renderTopbar } from "../../components/topbar.js?v=2901";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2901";
-import { isDemo } from "../../demo-mode.js?v=2901";
-import { getPosts } from "../../posts-store.js?v=2901";
-import { escapeHtml, plural } from "../../utils.js?v=2901";
-import { networkIcon } from "../../social-profiles.js?v=2901";
+import { navigate } from "../../router.js?v=2902";
+import { isFlagOn } from "../../feature-flags.js?v=2902";
+import { renderTopbar } from "../../components/topbar.js?v=2902";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2902";
+import { isDemo } from "../../demo-mode.js?v=2902";
+import { getPosts } from "../../posts-store.js?v=2902";
+import { escapeHtml, plural } from "../../utils.js?v=2902";
+import { networkIcon } from "../../social-profiles.js?v=2902";
 import {
   getVideos,
   exampleVideo,
@@ -26,7 +26,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2901";
+} from "../../videos-store.js?v=2902";
 import {
   fmtMs,
   previewMarkup,
@@ -39,7 +39,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2901";
+} from "./shared.js?v=2902";
 
 let target = null;
 let disposeShowcase = null;
@@ -58,6 +58,7 @@ export function renderClipsLibrary(_params, el) {
   el.addEventListener("submit", onSubmit);
   el.addEventListener("change", onChange);
   el.addEventListener("input", onInput);
+  el.addEventListener("keydown", onKeyDown);
   el.addEventListener("dragover", onDragOver);
   el.addEventListener("dragleave", onDragLeave);
   el.addEventListener("drop", onDrop);
@@ -69,6 +70,7 @@ export function renderClipsLibrary(_params, el) {
     el.removeEventListener("submit", onSubmit);
     el.removeEventListener("change", onChange);
     el.removeEventListener("input", onInput);
+    el.removeEventListener("keydown", onKeyDown);
     el.removeEventListener("dragover", onDragOver);
     el.removeEventListener("dragleave", onDragLeave);
     el.removeEventListener("drop", onDrop);
@@ -135,7 +137,6 @@ const FOCUS_EXAMPLES = ["About pricing", "With a guest", "In the first 10 minute
 // What the box holds until Find: a staged file, a YouTube link, a request.
 const add = { file: null, url: "", specific: false, focus: "" };
 const ready = () => !!add.file || !!add.url.trim();
-const ctaLabel = () => (add.specific && add.focus.trim() ? "Find these moments" : "Find the best moments");
 
 // The box, rebuilt 2026-11-20 (« pauvre et mal foutu »), tightened 2026-11-26:
 // two ways in side by side, the file first and wider — a real dropzone (icon,
@@ -173,15 +174,27 @@ function renderAddBox() {
           <p class="clips-box__rules" data-clips-rights ${add.url.trim() ? "" : "hidden"}>Using a video you don't own may violate copyright laws. By continuing, you confirm this is your own content.</p>
         </div>
       </div>`;
+  // The request, asked (2026-11-26): the app's own composer, the same one the
+  // project page asks for other clips with (Archie's mark, the field, the
+  // examples in its toolbar, the orange send), in place of the footer. Enter
+  // or the send finds these moments; Back to the best moments closes it.
   const specific = add.specific
-    ? `<div class="clips-box__specific">
-        <label class="clips-box__label" for="clipsFocus">What should the clips be about?</label>
-        <div class="ap-input-group"><i class="ap-icon-sparkles" aria-hidden="true"></i>
-          <input id="clipsFocus" type="text" data-clips-focus placeholder="A topic, a person, a part of the video, a length" value="${escapeHtml(add.focus)}" /></div>
-        <div class="clips-box__examples"><span>For example</span>${FOCUS_EXAMPLES.map(
-          (x) =>
-            `<button type="button" class="ap-tag grey" data-clips-focus-try="${escapeHtml(x)}">${escapeHtml(x)}</button>`,
-        ).join("")}</div>
+    ? `<div class="clips-box__ask session__composer-card">
+        <div class="session__composer-input-row">
+          <span class="clips-ask__mark" aria-hidden="true"><i class="ap-icon-archie-official"></i></span>
+          <textarea class="session__composer-input-field" id="clipsFocus" data-clips-focus rows="2" aria-label="What should the clips be about?"
+            placeholder="What should the clips be about? A topic, a person, a part of the video, a length…">${escapeHtml(add.focus)}</textarea>
+        </div>
+        <div class="session__composer-toolbar">
+          ${FOCUS_EXAMPLES.map(
+            (x) =>
+              `<button type="button" class="ap-button stroked grey" data-clips-focus-try="${escapeHtml(x)}"><span>${escapeHtml(x)}</span></button>`,
+          ).join("")}
+          <button type="button" class="ap-button ghost grey clips-box__ask-back" data-clips-specific="off"><span>Back to the best moments</span></button>
+          <button type="button" class="ap-button primary orange session__composer-send" data-clips-start aria-label="Find these moments" title="Find these moments (Enter)">
+            <i class="ap-icon-arrow-up" aria-hidden="true"></i>
+          </button>
+        </div>
       </div>`
     : "";
   return `
@@ -195,18 +208,18 @@ function renderAddBox() {
       ${specific}
       <p class="ap-form-message error clips-hero__error" id="clipsAddError" role="alert" hidden></p>
       ${demo ? `<p class="clips-box__rules">The demo works with its own videos: adding one of yours is off.</p>` : ""}
-      <footer class="clips-box__foot">
-        <span class="clips-box__hint">${add.specific ? "Only the moments that match, framed and subtitled." : "One clip per 2 minutes of video, 3 to 10 clips."}</span>
+      ${
+        add.specific
+          ? ""
+          : `<footer class="clips-box__foot">
+        <span class="clips-box__hint">One clip per 2 minutes of video, 3 to 10 clips.</span>
         <span class="clips-box__foot-end">
-          ${
-            add.specific
-              ? `<button type="button" class="ap-button stroked grey" data-clips-specific="off"><span>Back to the best moments</span></button>`
-              : `<button type="button" class="ap-button stroked grey" data-clips-specific="on" ${off}><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Looking for something specific?</span></button>`
-          }
+          <button type="button" class="ap-button stroked grey" data-clips-specific="on" ${off}><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Looking for something specific?</span></button>
           <button type="button" class="ap-button primary orange" data-clips-start ${off}>
-            <i class="ap-icon-archie-official" aria-hidden="true"></i><span data-clips-start-label>${ctaLabel()}</span></button>
+            <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Find the best moments</span></button>
         </span>
-      </footer>
+      </footer>`
+      }
       <div class="clips-hero__drop" aria-hidden="true"><i class="ap-icon-upload"></i><span>Drop your video to start</span></div>
     </section>`;
 }
@@ -220,9 +233,6 @@ function paintBox(focusSel) {
 }
 
 function syncGo() {
-  const b = target?.querySelector("[data-clips-start]");
-  if (!b) return;
-  b.querySelector("[data-clips-start-label]").textContent = ctaLabel();
   const rights = target.querySelector("[data-clips-rights]");
   if (rights) rights.hidden = !add.url.trim();
 }
@@ -740,6 +750,13 @@ function onInput(e) {
   if (t.matches("[data-clips-focus]")) add.focus = t.value;
   clearAddError();
   return syncGo();
+}
+
+// The request's composer: Enter finds, Shift+Enter a new line (the chat's keys).
+function onKeyDown(e) {
+  if (e.key !== "Enter" || e.shiftKey || e.isComposing || !e.target.matches("[data-clips-focus]")) return;
+  e.preventDefault();
+  start();
 }
 
 function onChange(e) {

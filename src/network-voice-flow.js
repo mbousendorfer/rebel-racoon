@@ -33,7 +33,7 @@
 // onReady() runs IMMEDIATELY when every network already has a voice, so
 // callers wrap unconditionally.
 
-import { sessionPlaybookId } from "./active-playbook.js?v=2901";
+import { sessionPlaybookId } from "./active-playbook.js?v=2902";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -43,13 +43,13 @@ import {
   postVoiceTurn,
   resolveTurn,
   getThread,
-} from "./assistant.js?v=2901";
-import { getContextById, updateContext } from "./contexts-store.js?v=2901";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2901";
-import { setHandoff } from "./handoff.js?v=2901";
-import { navigate } from "./router.js?v=2901";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2901";
-import { getPosts } from "./posts-store.js?v=2901";
+} from "./assistant.js?v=2902";
+import { getContextById, updateContext } from "./contexts-store.js?v=2902";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2902";
+import { setHandoff } from "./handoff.js?v=2902";
+import { navigate } from "./router.js?v=2902";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2902";
+import { getPosts } from "./posts-store.js?v=2902";
 import {
   networkVoice,
   canLearnFrom,
@@ -57,7 +57,7 @@ import {
   brandVoiceAsIs,
   voiceNetworks,
   adaptNetworkVoice,
-} from "./voice-parts.js?v=2901";
+} from "./voice-parts.js?v=2902";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;

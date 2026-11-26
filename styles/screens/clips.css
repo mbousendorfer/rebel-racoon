@@ -194,11 +194,6 @@
   min-width: 0;
 }
 
-.clips-box__label {
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
 .clips-box__link {
   width: 100%;
 }
@@ -247,24 +242,14 @@
   text-overflow: ellipsis;
 }
 
-.clips-box__specific {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  max-width: 640px;
+/* The request, asked: the chat's composer card as is (session.css), in place
+   of the footer. Back sits right, by the send. */
+.clips-box__ask-back {
+  margin-left: auto;
 }
 
-.clips-box__examples {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-}
-
-.clips-box__examples .ap-tag {
-  cursor: pointer;
+.clips-box__ask .ap-button.session__composer-send {
+  margin-left: 0;
 }
 
 /* The footer: the hint left, the request + the CTA grouped right. No
