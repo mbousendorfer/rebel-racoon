@@ -9,14 +9,14 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2903";
-import { isFlagOn } from "../../feature-flags.js?v=2903";
-import { renderTopbar } from "../../components/topbar.js?v=2903";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2903";
-import { isDemo } from "../../demo-mode.js?v=2903";
-import { getPosts } from "../../posts-store.js?v=2903";
-import { escapeHtml, plural } from "../../utils.js?v=2903";
-import { networkIcon } from "../../social-profiles.js?v=2903";
+import { navigate } from "../../router.js?v=2904";
+import { isFlagOn } from "../../feature-flags.js?v=2904";
+import { renderTopbar } from "../../components/topbar.js?v=2904";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2904";
+import { isDemo } from "../../demo-mode.js?v=2904";
+import { getPosts } from "../../posts-store.js?v=2904";
+import { escapeHtml, plural } from "../../utils.js?v=2904";
+import { networkIcon } from "../../social-profiles.js?v=2904";
 import {
   getVideos,
   exampleVideo,
@@ -26,7 +26,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2903";
+} from "../../videos-store.js?v=2904";
 import {
   fmtMs,
   previewMarkup,
@@ -39,7 +39,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2903";
+} from "./shared.js?v=2904";
 
 let target = null;
 let disposeShowcase = null;
@@ -175,20 +175,26 @@ function renderAddBox() {
         </div>
       </div>`;
   // The request, asked (2026-11-26): the chat's composer, kept as the chat
-  // has it (the field, then the toolbar: a stroked button on the left, the
-  // square orange send on the right), in place of the footer. The examples
+  // has it, in place of the footer. The mode is the chat's connector chip, a
+  // DS tag at the start of the field (« Specific moments » + ×, the × going
+  // back to the best moments): a stroked « Back to the best moments » in the
+  // toolbar read as a tool, not as the mode it undoes. The toolbar keeps the
+  // send alone. The examples
   // sit under the card, in the composer's hint line, as text links: inside
   // the toolbar as buttons they crowded it (2026-11-26). Enter or the send
-  // finds these moments; Back to the best moments closes it.
+  // finds these moments.
   const specific = add.specific
     ? `<div class="clips-box__ask">
         <div class="session__composer-card">
           <div class="session__composer-input-row">
+            <div class="session__composer-connector">
+              <span class="ap-tag grey"><span>Specific moments</span><button type="button" data-clips-specific="off"
+                aria-label="Back to the best moments" title="Back to the best moments"><i class="ap-icon-close" aria-hidden="true"></i></button></span>
+            </div>
             <textarea class="session__composer-input-field" id="clipsFocus" data-clips-focus rows="2" aria-label="What should the clips be about?"
               placeholder="What should the clips be about? A topic, a person, a part of the video, a length…">${escapeHtml(add.focus)}</textarea>
           </div>
           <div class="session__composer-toolbar">
-            <button type="button" class="ap-button stroked grey" data-clips-specific="off"><span>Back to the best moments</span></button>
             <button type="button" class="ap-button primary orange session__composer-send" data-clips-start aria-label="Find these moments" title="Find these moments (Enter)">
               <i class="ap-icon-arrow-up" aria-hidden="true"></i>
             </button>
