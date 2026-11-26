@@ -12,19 +12,19 @@ import {
   canDelete,
   canView,
   usableContexts,
-} from "../../playbook-access.js?v=2920";
-import { isFlagOn } from "../../feature-flags.js?v=2920";
-import { escapeAttr, escapeText } from "../../utils.js?v=2920";
-import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2920";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2920";
-import { getSessions } from "../../sessions-store.js?v=2920";
-import { renderEmptyState } from "../../components/empty-state.js?v=2920";
-import { getSources, getIdeas } from "../../library.js?v=2920";
-import { getPosts } from "../../posts-store.js?v=2920";
-import { getContextById } from "../../contexts-store.js?v=2920";
-import { voicesToFinish } from "../../voice-parts.js?v=2920";
-import { networkIcon, networkLabel, renderAvatar } from "../../social-profiles.js?v=2920";
-import { pageState } from "../home.js?v=2920";
+} from "../../playbook-access.js?v=2921";
+import { isFlagOn } from "../../feature-flags.js?v=2921";
+import { escapeAttr, escapeText } from "../../utils.js?v=2921";
+import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2921";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2921";
+import { getSessions } from "../../sessions-store.js?v=2921";
+import { renderEmptyState } from "../../components/empty-state.js?v=2921";
+import { getSources, getIdeas } from "../../library.js?v=2921";
+import { getPosts } from "../../posts-store.js?v=2921";
+import { getContextById } from "../../contexts-store.js?v=2921";
+import { voicesToFinish } from "../../voice-parts.js?v=2921";
+import { networkIcon, networkLabel, renderAvatar } from "../../social-profiles.js?v=2921";
+import { pageState } from "../home.js?v=2921";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -380,7 +380,7 @@ function renderPlaybooksFirstRun() {
       <div class="pb-first__post${post.image ? " pb-first__post--image" : ""}" style="--k:${k}">
         ${post.image ? `<span class="pb-first__photo"><span class="pb-first__cup"></span></span>` : ""}
         <div class="pb-first__post-body">
-          <div class="pb-first__post-head">${renderAvatar({ photo: "assets/avatars/bramble-bean.svg", initials: "B", network: post.network, square: true })}<span>Bramble &amp; Bean</span></div>
+          <div class="pb-first__post-head">${renderAvatar({ photo: "assets/avatars/bramble-bean.svg", initials: "B", network: post.network })}<span>Bramble &amp; Bean</span></div>
           <p class="pb-first__post-text">${firstRunText(post.text)}</p>
         </div>
       </div>`,

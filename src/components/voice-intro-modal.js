@@ -26,11 +26,11 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2920";
-import { getContextById } from "../contexts-store.js?v=2920";
-import { playbookForNewWork } from "../active-playbook.js?v=2920";
-import { isNewUser } from "../user-mode.js?v=2920";
-import { networkLabel, networkIcon, renderAvatar } from "../social-profiles.js?v=2920";
+} from "../modal-coordinator.js?v=2921";
+import { getContextById } from "../contexts-store.js?v=2921";
+import { playbookForNewWork } from "../active-playbook.js?v=2921";
+import { isNewUser } from "../user-mode.js?v=2921";
+import { networkLabel, networkIcon, renderAvatar } from "../social-profiles.js?v=2921";
 import {
   networkVoice,
   voiceNetworks,
@@ -39,7 +39,7 @@ import {
   baseValue,
   voiceItemsHtml,
   voiceNetTagHtml,
-} from "../voice-parts.js?v=2920";
+} from "../voice-parts.js?v=2921";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -48,11 +48,11 @@ import {
   voiceChoices,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2920";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2920";
-import "../archie-pixels.js?v=2920";
-import { navigate } from "../router.js?v=2920";
-import { escapeHtml } from "../utils.js?v=2920";
+} from "../network-voice-flow.js?v=2921";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2921";
+import "../archie-pixels.js?v=2921";
+import { navigate } from "../router.js?v=2921";
+import { escapeHtml } from "../utils.js?v=2921";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -137,7 +137,7 @@ function postCardHtml(ctx, net, meta = null) {
   return `
     <article class="voice-intro__post" aria-label="${escapeHtml(label)} post">
       <header class="voice-intro__post-head">
-        ${renderAvatar({ photo: brandIcon(ctx), initials: brandOf(ctx).charAt(0).toUpperCase(), network: net === "brand" ? "" : net, size: 32, square: true })}
+        ${renderAvatar({ photo: brandIcon(ctx), initials: brandOf(ctx).charAt(0).toUpperCase(), network: net === "brand" ? "" : net, size: 32 })}
         <span class="voice-intro__who">
           <span class="voice-intro__who-name">${escapeHtml(brandOf(ctx))}</span>
           <span class="voice-intro__who-meta">${escapeHtml(meta || (isBase ? "Default voice · every network" : label))}</span>

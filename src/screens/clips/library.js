@@ -9,14 +9,14 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2920";
-import { isFlagOn } from "../../feature-flags.js?v=2920";
-import { renderTopbar } from "../../components/topbar.js?v=2920";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2920";
-import { isDemo } from "../../demo-mode.js?v=2920";
-import { getPosts } from "../../posts-store.js?v=2920";
-import { escapeHtml, plural } from "../../utils.js?v=2920";
-import { renderAvatar } from "../../social-profiles.js?v=2920";
+import { navigate } from "../../router.js?v=2921";
+import { isFlagOn } from "../../feature-flags.js?v=2921";
+import { renderTopbar } from "../../components/topbar.js?v=2921";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2921";
+import { isDemo } from "../../demo-mode.js?v=2921";
+import { getPosts } from "../../posts-store.js?v=2921";
+import { escapeHtml, plural } from "../../utils.js?v=2921";
+import { renderAvatar } from "../../social-profiles.js?v=2921";
 import {
   getVideos,
   exampleVideo,
@@ -26,7 +26,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2920";
+} from "../../videos-store.js?v=2921";
 import {
   fmtMs,
   previewMarkup,
@@ -39,7 +39,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2920";
+} from "./shared.js?v=2921";
 
 let target = null;
 let disposeShowcase = null;
@@ -347,7 +347,7 @@ function renderShowcase(v) {
                 (c, k) => `<div class="clips-showcase__post" data-k="${k}">
                   <div class="clips-showcase__post-media">${preview(c)}</div>
                   <div class="clips-showcase__post-body">
-                    <span class="clips-showcase__post-head">${renderAvatar({ photo: logo, initials: brand.charAt(0), network: c.network, square: true })}<b>${brand}</b></span>
+                    <span class="clips-showcase__post-head">${renderAvatar({ photo: logo, initials: brand.charAt(0), network: c.network })}<b>${brand}</b></span>
                     <p class="clips-showcase__post-text">${words(c.summary || c.title)}</p>
                     <span class="clips-showcase__post-foot"><span class="ap-status grey">Draft</span></span>
                   </div>
