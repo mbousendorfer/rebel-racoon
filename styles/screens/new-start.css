@@ -585,11 +585,36 @@
   cursor: pointer;
 }
 
+/* Less uniform (asked: « un peu trop uniforme »): the line is me talking, the
+   requests are things you'd say — quoted, in bold; the pen shows on the one
+   you point at, since a click puts it in the box. */
+.ns-suggest__text {
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.ns-suggest__go {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  background-color: var(--ref-color-electric-blue-100);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity var(--ref-animation-short) var(--app-ease-standard),
+    transform var(--ref-animation-short) var(--app-ease-standard);
+}
+
 .ns-suggest:hover .ns-suggest__text,
 .ns-suggest:focus-visible .ns-suggest__text {
   text-decoration: underline;
   text-decoration-color: var(--ref-color-electric-blue-100);
   text-underline-offset: 3px;
+}
+
+.ns-suggest:hover .ns-suggest__go,
+.ns-suggest:focus-visible .ns-suggest__go {
+  opacity: 1;
+  transform: none;
 }
 
 .ns-suggest:focus-visible {

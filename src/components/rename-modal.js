@@ -21,7 +21,7 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2869";
+} from "../modal-coordinator.js?v=2870";
 
 const MODAL_ID = "rename";
 

@@ -24,9 +24,9 @@
 // video door is the clips starter. What is local (the rotation, #3's typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2869";
-import { escapeHtml } from "../../utils.js?v=2869";
-import { networkIcon } from "../../social-profiles.js?v=2869";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2870";
+import { escapeHtml } from "../../utils.js?v=2870";
+import { networkIcon } from "../../social-profiles.js?v=2870";
 
 const esc = escapeHtml;
 
@@ -158,7 +158,8 @@ const suggestion = ([k, text], n) => `
     <button type="button" class="ns-suggest" data-starter="new-start" data-starter-prompt="${esc(text)}"
       title="Put it in the box to edit">
       <span class="ns-tile ns-tile--sm ns-tone--${KIND[k].tone}" aria-hidden="true"><i class="${KIND[k].icon}"></i></span>
-      <span class="ns-suggest__text">${esc(text)}</span>
+      <span class="ns-suggest__text">“${esc(text)}”</span>
+      <i class="ap-icon-pen ns-suggest__go" aria-hidden="true"></i>
     </button>
   </li>`;
 
