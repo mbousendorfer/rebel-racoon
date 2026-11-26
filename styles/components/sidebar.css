@@ -537,14 +537,14 @@
   font-size: var(--sys-text-style-body-bold-size);
   line-height: var(--sys-text-style-body-bold-line-height);
   font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
+  color: var(--ref-color-grey-60); /* disabled: a placeholder, not content */
 }
 
 .app-sidebar__empty-hint {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-80);
+  color: var(--ref-color-grey-60);
 }
 
 /* ── Footer ─────────────────────────────────────────────────────────── */
