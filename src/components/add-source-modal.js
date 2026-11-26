@@ -9,31 +9,31 @@
 // upload state machines live outside in sources-stream.js so they
 // continue running even after the modal closes.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2918";
-import { iconFor } from "../file-kinds.js?v=2918";
-import { connectorDocs } from "../mocks.js?v=2918";
+import { html, raw, escapeHtml } from "../utils.js?v=2919";
+import { iconFor } from "../file-kinds.js?v=2919";
+import { connectorDocs } from "../mocks.js?v=2919";
 import {
   getConnectors,
   findConnector,
   setConnectorStatus,
   subscribe as subscribeConnectors,
-} from "../connectors-store.js?v=2918";
-import { postConnectPrompt } from "../assistant.js?v=2918";
-import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2918";
+} from "../connectors-store.js?v=2919";
+import { postConnectPrompt } from "../assistant.js?v=2919";
+import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2919";
 import {
   requestOpen,
   notifyClose,
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2918";
-import { navigate } from "../router.js?v=2918";
-import { renderConnectorLogo } from "../connectors-view.js?v=2918";
-import { isFlagOn } from "../feature-flags.js?v=2918";
-import { showToast } from "./toast.js?v=2918";
-import { dropzoneHTML } from "./dropzone.js?v=2918";
-import { isDemo } from "../demo-mode.js?v=2918";
-import { addDemoSource } from "../demo-flow.js?v=2918";
+} from "../modal-coordinator.js?v=2919";
+import { navigate } from "../router.js?v=2919";
+import { renderConnectorLogo } from "../connectors-view.js?v=2919";
+import { isFlagOn } from "../feature-flags.js?v=2919";
+import { showToast } from "./toast.js?v=2919";
+import { dropzoneHTML } from "./dropzone.js?v=2919";
+import { isDemo } from "../demo-mode.js?v=2919";
+import { addDemoSource } from "../demo-flow.js?v=2919";
 
 const MODAL_ID = "addSource";
 import {
@@ -45,7 +45,7 @@ import {
   cancelUpload,
   getUploads,
   subscribeUploads,
-} from "../sources-stream.js?v=2918";
+} from "../sources-stream.js?v=2919";
 
 let backdrop, modal, contentEl, footerEl, fileInput;
 let initialized = false;

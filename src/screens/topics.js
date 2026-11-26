@@ -32,17 +32,17 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=2918";
-import { conceptText } from "../concepts.js?v=2918";
-import { navigate, getPath } from "../router.js?v=2918";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2918";
-import { renderTopbar } from "../components/topbar.js?v=2918";
-import { showToast } from "../components/toast.js?v=2918";
-import { renderEmptyState } from "../components/empty-state.js?v=2918";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2918";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2918";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2918";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2918";
+import { html, raw, escapeAttr } from "../utils.js?v=2919";
+import { conceptText } from "../concepts.js?v=2919";
+import { navigate, getPath } from "../router.js?v=2919";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2919";
+import { renderTopbar } from "../components/topbar.js?v=2919";
+import { showToast } from "../components/toast.js?v=2919";
+import { renderEmptyState } from "../components/empty-state.js?v=2919";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2919";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2919";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2919";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2919";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -53,7 +53,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=2918";
+} from "../topics-store.js?v=2919";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -62,19 +62,19 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=2918";
-import { renderTopicCard } from "../components/topic-card.js?v=2918";
+} from "../topics-catalog.js?v=2919";
+import { renderTopicCard } from "../components/topic-card.js?v=2919";
 import {
   renderTopicArticle,
   renderTopicHeader,
   renderTopicActions,
   renderTopicStates,
-} from "../topic-article.js?v=2918";
-import { firstRunText, FIRST_RUN_BRAND } from "./home/lists.js?v=2918";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2918";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=2918";
-import { useTopicInChat } from "../topic-flow.js?v=2918";
-import { canEdit } from "../playbook-access.js?v=2918";
+} from "../topic-article.js?v=2919";
+import { firstRunText, FIRST_RUN_BRAND } from "./home/lists.js?v=2919";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2919";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=2919";
+import { useTopicInChat } from "../topic-flow.js?v=2919";
+import { canEdit } from "../playbook-access.js?v=2919";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -918,9 +918,13 @@ function renderEmpty(total, feed) {
 // ⚠️ Replaces six text rows → six wires → three Topics (2026-11-26): too much
 // text, then too many objects. Keep it to one Topic.
 const FIRST_RUN_PHOTO = (id) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=400&h=300&q=70`;
+// A made-up account's picture: the DS avatar with an image, the accent colour
+// and the initials behind it in case the photo does not load.
+const FIRST_RUN_FACE = (id) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=96&h=96&q=70`;
 const FIRST_RUN_POSTS = [
   {
     who: "Northside Coffee",
+    face: "photo-1501339847302-ac426a4a7cbb",
     initials: "NC",
     accent: "green",
     network: "instagram",
@@ -928,6 +932,7 @@ const FIRST_RUN_POSTS = [
   },
   {
     who: "Maya Brews",
+    face: "photo-1494790108377-be9c29b29330",
     initials: "MB",
     accent: "orange",
     network: "instagram",
@@ -935,6 +940,7 @@ const FIRST_RUN_POSTS = [
   },
   {
     who: "Mill Lane Café",
+    face: "photo-1447933601403-0c6688de566e",
     initials: "ML",
     accent: "purple",
     network: "facebook",
@@ -946,7 +952,7 @@ function renderTopicsFirstRun(feed) {
   const brand = FIRST_RUN_BRAND.map((c, j) => `--b${j}:${c}`).join(";");
   const source = findTopicSource("competitor-posts");
   const avatar = (p, k) =>
-    `<span class="ap-avatar size-24 social-post-card__avatar" data-accent="${p.accent}" style="--k:${k}"><span class="ap-avatar-initials">${p.initials}</span></span>`;
+    `<span class="ap-avatar size-24 social-post-card__avatar" data-accent="${p.accent}" style="--k:${k}"><span class="ap-avatar-initials">${p.initials}</span><img src="${FIRST_RUN_FACE(p.face)}" alt="" loading="lazy" /></span>`;
   const posts = FIRST_RUN_POSTS.map(
     (p, k) => `
       <div class="topic-first__post" style="--k:${k}">

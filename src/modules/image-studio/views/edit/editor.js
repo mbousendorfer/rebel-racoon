@@ -16,10 +16,10 @@
 // caret, drop the slider under the pointer, or replay a popover's entrance.
 // Everything else goes change → repaint.
 
-import { html, raw } from "../../lib/html.js?v=2918";
-import { delegate, wait } from "../../lib/delegate.js?v=2918";
-import { IMAGE_PRESETS, REDRAW_MS, outlineMetrics, shadowMetrics } from "../../config/edit.js?v=2918";
-import { bakeDoc } from "../../render/edit-export.js?v=2918";
+import { html, raw } from "../../lib/html.js?v=2919";
+import { delegate, wait } from "../../lib/delegate.js?v=2919";
+import { IMAGE_PRESETS, REDRAW_MS, outlineMetrics, shadowMetrics } from "../../config/edit.js?v=2919";
+import { bakeDoc } from "../../render/edit-export.js?v=2919";
 import {
   cropDoc,
   docSignature,
@@ -32,9 +32,9 @@ import {
   removeLayer,
   textLayer,
   undo,
-} from "../../state/edit-doc.js?v=2918";
-import { editFrame, textStyle } from "./canvas.js?v=2918";
-import { composer, layersPanel, redrawTarget, toolPalette, viewToggle } from "./panels.js?v=2918";
+} from "../../state/edit-doc.js?v=2919";
+import { editFrame, textStyle } from "./canvas.js?v=2919";
+import { composer, layersPanel, redrawTarget, toolPalette, viewToggle } from "./panels.js?v=2919";
 
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 const DEFAULT_CROP = { xF: 0.15, yF: 0.15, wF: 0.7, hF: 0.7 };
