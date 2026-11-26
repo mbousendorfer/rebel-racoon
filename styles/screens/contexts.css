@@ -136,12 +136,13 @@
   margin-bottom: var(--ref-spacing-xl);
   color: var(--ref-color-grey-100);
 }
-/* A dot field across the whole empty state, fading out at its edges: the
-   Clips hero's one (clips.css, .clips-hero-example), 2026-11-26. */
-.pb-first::before {
+/* A field of square pixels behind the scene only, never behind the text,
+   fading out at its edges: the Clips hero's one (clips.css,
+   .clips-hero-example), 2026-11-26. */
+.pb-first__stage::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -64px -200px -32px;
   z-index: -1;
   /* Square pixels: a 2px square in the corner of each 16px tile. */
   background: conic-gradient(from 270deg at 2px 2px, var(--ref-color-grey-20) 25%, transparent 0) 7px 7px / 16px 16px;
@@ -164,7 +165,7 @@ body.empty-state-ground .contexts-view:has(.pb-first) {
     var(--ref-color-white);
   background-attachment: local;
 }
-body.empty-state-ground .pb-first::before {
+body.empty-state-ground .pb-first__stage::before {
   background: conic-gradient(
       from 270deg at 4px 4px,
       color-mix(in srgb, var(--ref-color-orange-100) 30%, transparent) 25%,
