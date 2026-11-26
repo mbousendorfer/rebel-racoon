@@ -58,14 +58,15 @@
 /* « La boîte d'abord » (B1), rebuilt 2026-11-20, tightened 2026-11-26: a
    head (title + what it does, on one line), the two ways in side by side —
    the dropzone first and wider, « or » on a hairline, the YouTube field
-   centred on it, unlabelled — then a footer like a dialog's: the request on
-   the left, the hint and the CTA grouped right. */
+   centred on it, unlabelled — then the footer row, in the body (its hairline
+   band went 2026-11-26): the hint on the left, the request (stroked) and the
+   CTA grouped right. */
 .clips-box {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-md) var(--ref-spacing-md) 0;
+  padding: var(--ref-spacing-md);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-xl);
   background: var(--ref-color-white);
@@ -266,15 +267,13 @@
   cursor: pointer;
 }
 
-/* The footer: a hairline, the request left, hint + CTA grouped right. */
+/* The footer: the hint left, the request + the CTA grouped right. No
+   hairline band since 2026-11-26: it sits in the body, under the ways in. */
 .clips-box__foot {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--ref-spacing-sm);
-  margin: var(--ref-spacing-xxs) calc(-1 * var(--ref-spacing-md)) 0;
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  border-top: 1px solid var(--ref-color-grey-20);
 }
 
 .clips-box__foot-end {

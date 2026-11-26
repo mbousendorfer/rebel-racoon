@@ -9,14 +9,14 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2900";
-import { isFlagOn } from "../../feature-flags.js?v=2900";
-import { renderTopbar } from "../../components/topbar.js?v=2900";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2900";
-import { isDemo } from "../../demo-mode.js?v=2900";
-import { getPosts } from "../../posts-store.js?v=2900";
-import { escapeHtml, plural } from "../../utils.js?v=2900";
-import { networkIcon } from "../../social-profiles.js?v=2900";
+import { navigate } from "../../router.js?v=2901";
+import { isFlagOn } from "../../feature-flags.js?v=2901";
+import { renderTopbar } from "../../components/topbar.js?v=2901";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2901";
+import { isDemo } from "../../demo-mode.js?v=2901";
+import { getPosts } from "../../posts-store.js?v=2901";
+import { escapeHtml, plural } from "../../utils.js?v=2901";
+import { networkIcon } from "../../social-profiles.js?v=2901";
 import {
   getVideos,
   exampleVideo,
@@ -26,7 +26,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2900";
+} from "../../videos-store.js?v=2901";
 import {
   fmtMs,
   previewMarkup,
@@ -39,7 +39,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2900";
+} from "./shared.js?v=2901";
 
 let target = null;
 let disposeShowcase = null;
@@ -141,9 +141,11 @@ const ctaLabel = () => (add.specific && add.focus.trim() ? "Find these moments" 
 // two ways in side by side, the file first and wider — a real dropzone (icon,
 // « Drop your video here », Upload a video, prod's rules) — then « or » and the
 // YouTube field, always there, with no label of its own (its icon and
-// placeholder say it; a « From YouTube » heading competed with the title). A staged file takes the whole width as a card (its frame, name,
-// length, Remove). A footer like a dialog's: the request on the left, the CTA
-// grouped right with what it will do. The CTA is never a pale disabled button:
+// placeholder say it; a « From YouTube » heading competed with the title). A
+// staged file takes the whole width as a card (its frame, name, length,
+// Remove). A footer row, no hairline band (2026-11-26): what the CTA will do
+// on the left, then grouped right the request as a stroked secondary (a ghost
+// alone in the left corner went unseen) and the CTA. The CTA is never a pale disabled button:
 // clicked with nothing added, it says so under the box.
 function renderAddBox() {
   const demo = isDemo();
@@ -194,13 +196,13 @@ function renderAddBox() {
       <p class="ap-form-message error clips-hero__error" id="clipsAddError" role="alert" hidden></p>
       ${demo ? `<p class="clips-box__rules">The demo works with its own videos: adding one of yours is off.</p>` : ""}
       <footer class="clips-box__foot">
-        ${
-          add.specific
-            ? `<button type="button" class="ap-button ghost grey" data-clips-specific="off"><span>Back to the best moments</span></button>`
-            : `<button type="button" class="ap-button ghost grey" data-clips-specific="on" ${off}><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Looking for something specific?</span></button>`
-        }
+        <span class="clips-box__hint">${add.specific ? "Only the moments that match, framed and subtitled." : "One clip per 2 minutes of video, 3 to 10 clips."}</span>
         <span class="clips-box__foot-end">
-          <span class="clips-box__hint">${add.specific ? "Only the moments that match, framed and subtitled." : "One clip per 2 minutes of video, 3 to 10 clips."}</span>
+          ${
+            add.specific
+              ? `<button type="button" class="ap-button stroked grey" data-clips-specific="off"><span>Back to the best moments</span></button>`
+              : `<button type="button" class="ap-button stroked grey" data-clips-specific="on" ${off}><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Looking for something specific?</span></button>`
+          }
           <button type="button" class="ap-button primary orange" data-clips-start ${off}>
             <i class="ap-icon-archie-official" aria-hidden="true"></i><span data-clips-start-label>${ctaLabel()}</span></button>
         </span>
