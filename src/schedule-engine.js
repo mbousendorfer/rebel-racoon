@@ -5,9 +5,9 @@
 //   planSlots(posts, strategy, prevSlots?) → [{ post, when, pinned }]
 //   defaultStrategy(playbookId)           → the Playbook's saved rhythm, from tomorrow
 
-import { getQueue, dayKey } from "./schedule-store.js?v=2895";
-import { normalizeNetwork } from "./social-profiles.js?v=2895";
-import { getPreset } from "./schedule-presets-store.js?v=2895";
+import { getQueue, dayKey } from "./schedule-store.js?v=2896";
+import { normalizeNetwork } from "./social-profiles.js?v=2896";
+import { getPreset } from "./schedule-presets-store.js?v=2896";
 
 // Per-network suggested publishing windows. Each entry lists
 // { dow: [0..6 sunday-first], hours: [24h]} — mirrors the kind of static

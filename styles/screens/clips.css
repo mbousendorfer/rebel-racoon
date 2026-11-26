@@ -334,20 +334,46 @@
 }
 
 /* The showcase: your video → its clips → their posts, laid flat
-   (2026-11-26). The intro (ms): source 100 · playhead 300 → 1900, each
+   (2026-11-26), the empty library's hero above the box. The intro (ms): source 100 · playhead 300 → 1900, each
    moment as it passes · « N moments found » 1900 · step arrows 2100 · clips
    2300 + 200 each · Posts 3000. Then library.js loops a beat per clip
    (.is-lit on everything with its data-k, .is-beat on the stage to replay the
    arrows): the moment, the clip ringed in butter, its post sliding in and
    writing itself word by word, the source, the clip and the post playing.
    Reduced motion → the end state, the first post shown, no loop. */
-.clips-showcase {
+/* The empty library's hero, above the box: the showcase on the dot field
+   (the Playbooks' one), no card, the field across the page's width and
+   fading out at its edges; the « Example » caption under it. */
+.clips-hero-example {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-lg) 0 var(--ref-spacing-xs);
+}
+
+.clips-hero-example::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(var(--ref-color-grey-20) 1.2px, transparent 1.6px);
+  background-size: 16px 16px;
+  mask-image: radial-gradient(ellipse 60% 70% at center, #000 45%, transparent 100%);
+}
+
+.clips-hero-example__caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xs);
   margin: 0;
-  padding: var(--ref-spacing-lg);
-  border-radius: var(--app-radius-lg);
-  background: var(--ref-color-grey-05);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-showcase {
   min-width: 0;
-  overflow: hidden;
 }
 
 .clips-showcase__stage {
@@ -357,16 +383,6 @@
   align-items: flex-start;
   justify-content: center;
   gap: var(--ref-spacing-sm);
-}
-/* A dot field behind the scene, fading out at the edges (the Playbooks' one). */
-.clips-showcase__stage::before {
-  content: "";
-  position: absolute;
-  inset: -24px -40px;
-  z-index: -1;
-  background-image: radial-gradient(var(--ref-color-grey-20) 1.2px, transparent 1.6px);
-  background-size: 16px 16px;
-  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 70%);
 }
 
 .clips-showcase__col {
@@ -732,11 +748,6 @@
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xs);
-}
-
-.clips-library__caption {
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
 }
 
 .clips-library__title {

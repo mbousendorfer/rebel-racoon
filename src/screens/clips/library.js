@@ -9,14 +9,14 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2895";
-import { isFlagOn } from "../../feature-flags.js?v=2895";
-import { renderTopbar } from "../../components/topbar.js?v=2895";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2895";
-import { isDemo } from "../../demo-mode.js?v=2895";
-import { getPosts } from "../../posts-store.js?v=2895";
-import { escapeHtml, plural } from "../../utils.js?v=2895";
-import { networkIcon } from "../../social-profiles.js?v=2895";
+import { navigate } from "../../router.js?v=2896";
+import { isFlagOn } from "../../feature-flags.js?v=2896";
+import { renderTopbar } from "../../components/topbar.js?v=2896";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2896";
+import { isDemo } from "../../demo-mode.js?v=2896";
+import { getPosts } from "../../posts-store.js?v=2896";
+import { escapeHtml, plural } from "../../utils.js?v=2896";
+import { networkIcon } from "../../social-profiles.js?v=2896";
 import {
   getVideos,
   exampleVideo,
@@ -26,7 +26,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2895";
+} from "../../videos-store.js?v=2896";
 import {
   fmtMs,
   previewMarkup,
@@ -39,7 +39,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2895";
+} from "./shared.js?v=2896";
 
 let target = null;
 let disposeShowcase = null;
@@ -108,18 +108,14 @@ function paint() {
   target.innerHTML = `
     <div class="clips-view">
       <div class="clips-view__page clips-library-page">
-        ${renderAddBox()}
         ${
           showcase
-            ? `<section class="clips-library" aria-labelledby="clips-example-title">
-                <header class="clips-library__head">
-                  <h2 class="clips-library__title" id="clips-example-title">What you'll get</h2>
-                  <span class="ap-tag grey mini">Example</span>
-                  <span class="clips-library__caption">A ${Math.round(showcase.durationMs / 60000)}-minute podcast, cut into ${showcase.clips.length} clips</span>
-                </header>
+            ? `<section class="clips-hero-example" aria-label="Example: what you'll get">
                 ${renderShowcase(showcase)}
-              </section>`
-            : renderCollection(videos)
+                <p class="clips-hero-example__caption"><span class="ap-tag grey mini">Example</span><span>A ${Math.round(showcase.durationMs / 60000)}-minute podcast, cut into ${showcase.clips.length} clips</span></p>
+              </section>
+              ${renderAddBox()}`
+            : `${renderAddBox()}${renderCollection(videos)}`
         }
       </div>
     </div>`;
