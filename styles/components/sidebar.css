@@ -111,16 +111,6 @@
   color: inherit;
 }
 
-/* BETA chip — compact pill with the mermaid AI gradient so the brand
-   carries the same signature as the sparkles mark next to it. White
-   text on the gradient background reads as "AI lives here", which is
-   the truth-claim Archie is making at the brand mark. */
-/* Visuals come from the DS `.ap-badge.blue`; this only handles placement. */
-.app-sidebar__brand-beta {
-  margin-left: var(--ref-spacing-xxxs);
-  flex-shrink: 0;
-}
-
 /* ── New conversation CTA ───────────────────────────────────────────── */
 /* In the expanded sidebar, "+ New conversation" lives inside the nav
    group as a regular `.app-sidebar__nav-item` (cf. renderNav() — same

@@ -8,7 +8,7 @@
 // { done }; switching user mode clears it with the rest of the
 // session, and leaving the demo removes it.
 
-import { isFlagOn } from "./feature-flags.js?v=2923";
+import { isFlagOn } from "./feature-flags.js?v=2924";
 
 export const DEMO_KEY = "archie-demo";
 
