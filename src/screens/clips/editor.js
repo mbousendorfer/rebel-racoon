@@ -24,19 +24,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2889";
-import { isFlagOn } from "../../feature-flags.js?v=2889";
-import { parseHashParams } from "../../url-state.js?v=2889";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2889";
-import { showToast } from "../../components/toast.js?v=2889";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2889";
-import { open as openRename } from "../../components/rename-modal.js?v=2889";
-import { getContextById } from "../../contexts-store.js?v=2889";
-import { escapeHtml } from "../../utils.js?v=2889";
-import * as ce from "../../caption-editor.js?v=2889";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2889";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2889";
-import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2889";
+import { navigate } from "../../router.js?v=2890";
+import { isFlagOn } from "../../feature-flags.js?v=2890";
+import { parseHashParams } from "../../url-state.js?v=2890";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2890";
+import { showToast } from "../../components/toast.js?v=2890";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2890";
+import { open as openRename } from "../../components/rename-modal.js?v=2890";
+import { getContextById } from "../../contexts-store.js?v=2890";
+import { escapeHtml } from "../../utils.js?v=2890";
+import * as ce from "../../caption-editor.js?v=2890";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2890";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2890";
+import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2890";
 import {
   framingContext,
   initialSegments,
@@ -50,7 +50,7 @@ import {
   merge,
   snapMs,
   resetSegment,
-} from "../../clip-framing.js?v=2889";
+} from "../../clip-framing.js?v=2890";
 import {
   RATIO_IDS,
   ratioOf,
@@ -62,8 +62,8 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2889";
-import { writePostsInChat } from "../../clips-chat.js?v=2889";
+} from "./shared.js?v=2890";
+import { writePostsInChat } from "../../clips-chat.js?v=2890";
 import {
   timelineShellHTML,
   paintTimeline,
@@ -78,8 +78,8 @@ import {
   timelineWheel,
   timelineDrop,
   revealPlayhead,
-} from "./editor-timeline.js?v=2889";
-import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2889";
+} from "./editor-timeline.js?v=2890";
+import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2890";
 
 const FPS = 25;
 export const FRAME_MS = 1000 / FPS;
