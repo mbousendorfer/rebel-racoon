@@ -32,17 +32,17 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=2910";
-import { conceptText } from "../concepts.js?v=2910";
-import { navigate, getPath } from "../router.js?v=2910";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2910";
-import { renderTopbar } from "../components/topbar.js?v=2910";
-import { showToast } from "../components/toast.js?v=2910";
-import { renderEmptyState } from "../components/empty-state.js?v=2910";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2910";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2910";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2910";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2910";
+import { html, raw, escapeAttr } from "../utils.js?v=2912";
+import { conceptText } from "../concepts.js?v=2912";
+import { navigate, getPath } from "../router.js?v=2912";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2912";
+import { renderTopbar } from "../components/topbar.js?v=2912";
+import { showToast } from "../components/toast.js?v=2912";
+import { renderEmptyState } from "../components/empty-state.js?v=2912";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2912";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2912";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2912";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2912";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -53,7 +53,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=2910";
+} from "../topics-store.js?v=2912";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -62,19 +62,19 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=2910";
-import { renderTopicCard } from "../components/topic-card.js?v=2910";
+} from "../topics-catalog.js?v=2912";
+import { renderTopicCard } from "../components/topic-card.js?v=2912";
 import {
   renderTopicArticle,
   renderTopicHeader,
   renderTopicActions,
   renderTopicStates,
-} from "../topic-article.js?v=2910";
-import { firstRunText, FIRST_RUN_BRAND } from "./home/lists.js?v=2910";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2910";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=2910";
-import { useTopicInChat } from "../topic-flow.js?v=2910";
-import { canEdit } from "../playbook-access.js?v=2910";
+} from "../topic-article.js?v=2912";
+import { firstRunText, FIRST_RUN_BRAND } from "./home/lists.js?v=2912";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2912";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=2912";
+import { useTopicInChat } from "../topic-flow.js?v=2912";
+import { canEdit } from "../playbook-access.js?v=2912";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -970,12 +970,12 @@ function renderTopicsFirstRun(feed) {
         <div class="topic-first__deck">${posts}</div>
         <div class="pb-first__wires topic-first__wires">
           <svg class="pb-first__wire-lines" viewBox="0 0 144 300">
-            <path d="M0 150 L24 150" pathLength="1" style="--n:0" />
-            <path d="M72 150 L144 150" pathLength="1" style="--n:1" />
+            <path d="M0 150 L32 150" pathLength="1" style="--n:0" />
+            <path d="M64 150 L144 150" pathLength="1" style="--n:1" />
           </svg>
-          <span class="pb-first__spark topic-first__spark topic-first__spark--in" style="offset-path:path('M0 150 L24 150')"></span>
-          <span class="pb-first__spark topic-first__spark" style="offset-path:path('M72 150 L144 150')"></span>
-          <span class="pb-first__mark">
+          <span class="pb-first__spark topic-first__spark topic-first__spark--in" style="offset-path:path('M0 150 L32 150')"></span>
+          <span class="pb-first__spark topic-first__spark" style="offset-path:path('M64 150 L144 150')"></span>
+          <span class="pb-first__mark topic-first__mark">
             <svg class="pb-first__orbit" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" pathLength="24" /></svg>
             <i class="ap-icon-archie-official"></i>
           </span>

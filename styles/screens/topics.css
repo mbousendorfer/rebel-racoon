@@ -551,8 +551,29 @@
 .pb-first--topics .pb-first__wires {
   height: 300px;
 }
-.pb-first--topics .pb-first__mark {
-  top: 126px;
+/* My mark as the conversation draws it (chat.css .e-turn__mark): my white
+   glyph on my own orange, a solid disc. 32px, between the thread's 24 and
+   the Playbooks' 48 butter one, so the cards stay the subject. */
+.pb-first--topics .topic-first__mark {
+  left: 32px;
+  top: 134px;
+  width: 32px;
+  height: 32px;
+  background: var(--app-archie-mark);
+  color: var(--ref-color-white);
+}
+.pb-first--topics .topic-first__mark i {
+  width: 16px;
+  height: 12px;
+  background: var(--ref-color-white);
+}
+.topic-first__mark .pb-first__orbit {
+  inset: -8px;
+  width: 48px;
+  height: 48px;
+}
+.topic-first__mark .pb-first__orbit circle {
+  stroke: var(--app-archie-mark);
 }
 /* One spark per post, in step with the lift: in, then out to the Topic. */
 .topic-first__spark {
@@ -616,8 +637,9 @@
   .pb-first--topics .pb-first__wires {
     height: 96px;
   }
-  .pb-first--topics .pb-first__mark {
-    top: 24px;
+  .pb-first--topics .topic-first__mark {
+    left: calc(50% - 16px);
+    top: 32px;
   }
 }
 
