@@ -1,4 +1,4 @@
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2888";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2889";
 
 // Shared aspect-ratio catalog for video clips.
 //

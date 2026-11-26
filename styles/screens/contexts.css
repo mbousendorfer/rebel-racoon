@@ -175,6 +175,7 @@ body.empty-state-ground .pb-first__stage::before {
   background: var(--app-surface);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
+  box-shadow: var(--app-shadow-card);
   overflow: hidden;
   animation: app-rise 500ms var(--app-ease-out) 100ms both;
 }
@@ -399,6 +400,7 @@ body.empty-state-ground .pb-first__stage::before {
   background: var(--app-surface);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
+  box-shadow: var(--app-shadow-card);
   animation: app-rise 420ms var(--app-ease-out) calc(2500ms + var(--k) * 250ms) both;
 }
 .pb-first__post:nth-child(2) {
