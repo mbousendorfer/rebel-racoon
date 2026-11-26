@@ -243,13 +243,13 @@
 }
 
 /* The request, asked: the chat's composer card as is (session.css), in place
-   of the footer. Back sits right, by the send. */
-.clips-box__ask-back {
-  margin-left: auto;
-}
-
-.clips-box__ask .ap-button.session__composer-send {
-  margin-left: 0;
+   of the footer; its hint line under it, left-aligned like the box, holds
+   the examples as links. */
+.clips-box__ask-hint {
+  justify-content: flex-start;
+  margin: var(--ref-spacing-xxs) 0 0;
+  padding: 0;
+  gap: var(--ref-spacing-xxs);
 }
 
 /* The footer: the hint left, the request + the CTA grouped right. No

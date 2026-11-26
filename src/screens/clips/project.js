@@ -7,32 +7,32 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2902";
-import { isFlagOn } from "../../feature-flags.js?v=2902";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2902";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2902";
-import { showToast } from "../../components/toast.js?v=2902";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2902";
-import { open as openTrim, openAdd } from "../../components/clip-trim-modal.js?v=2902";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2902";
-import { startRewrite } from "../../draft-rewrite.js?v=2902";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2902";
-import { renderPostCard } from "../../components/post-card.js?v=2902";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2902";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2902";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2902";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2902";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2902";
-import { open as openRename } from "../../components/rename-modal.js?v=2902";
-import { writePostsInChat } from "../../clips-chat.js?v=2902";
+import { navigate } from "../../router.js?v=2903";
+import { isFlagOn } from "../../feature-flags.js?v=2903";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2903";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2903";
+import { showToast } from "../../components/toast.js?v=2903";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2903";
+import { open as openTrim, openAdd } from "../../components/clip-trim-modal.js?v=2903";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2903";
+import { startRewrite } from "../../draft-rewrite.js?v=2903";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2903";
+import { renderPostCard } from "../../components/post-card.js?v=2903";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2903";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2903";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2903";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2903";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2903";
+import { open as openRename } from "../../components/rename-modal.js?v=2903";
+import { writePostsInChat } from "../../clips-chat.js?v=2903";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2902";
-import { escapeHtml, plural } from "../../utils.js?v=2902";
+} from "../../posts-store.js?v=2903";
+import { escapeHtml, plural } from "../../utils.js?v=2903";
 import {
   getVideo,
   draftKey,
@@ -50,7 +50,7 @@ import {
   askForClips,
   trimClip,
   updateClip,
-} from "../../videos-store.js?v=2902";
+} from "../../videos-store.js?v=2903";
 import {
   fmtMs,
   lookSelect,
@@ -68,7 +68,7 @@ import {
   chip,
   fact,
   veil,
-} from "./shared.js?v=2902";
+} from "./shared.js?v=2903";
 
 let target = null;
 let videoId = null;

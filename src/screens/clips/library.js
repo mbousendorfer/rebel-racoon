@@ -9,14 +9,14 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2902";
-import { isFlagOn } from "../../feature-flags.js?v=2902";
-import { renderTopbar } from "../../components/topbar.js?v=2902";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2902";
-import { isDemo } from "../../demo-mode.js?v=2902";
-import { getPosts } from "../../posts-store.js?v=2902";
-import { escapeHtml, plural } from "../../utils.js?v=2902";
-import { networkIcon } from "../../social-profiles.js?v=2902";
+import { navigate } from "../../router.js?v=2903";
+import { isFlagOn } from "../../feature-flags.js?v=2903";
+import { renderTopbar } from "../../components/topbar.js?v=2903";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2903";
+import { isDemo } from "../../demo-mode.js?v=2903";
+import { getPosts } from "../../posts-store.js?v=2903";
+import { escapeHtml, plural } from "../../utils.js?v=2903";
+import { networkIcon } from "../../social-profiles.js?v=2903";
 import {
   getVideos,
   exampleVideo,
@@ -26,7 +26,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2902";
+} from "../../videos-store.js?v=2903";
 import {
   fmtMs,
   previewMarkup,
@@ -39,7 +39,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2902";
+} from "./shared.js?v=2903";
 
 let target = null;
 let disposeShowcase = null;
@@ -174,27 +174,30 @@ function renderAddBox() {
           <p class="clips-box__rules" data-clips-rights ${add.url.trim() ? "" : "hidden"}>Using a video you don't own may violate copyright laws. By continuing, you confirm this is your own content.</p>
         </div>
       </div>`;
-  // The request, asked (2026-11-26): the app's own composer, the same one the
-  // project page asks for other clips with (Archie's mark, the field, the
-  // examples in its toolbar, the orange send), in place of the footer. Enter
-  // or the send finds these moments; Back to the best moments closes it.
+  // The request, asked (2026-11-26): the chat's composer, kept as the chat
+  // has it (the field, then the toolbar: a stroked button on the left, the
+  // square orange send on the right), in place of the footer. The examples
+  // sit under the card, in the composer's hint line, as text links: inside
+  // the toolbar as buttons they crowded it (2026-11-26). Enter or the send
+  // finds these moments; Back to the best moments closes it.
   const specific = add.specific
-    ? `<div class="clips-box__ask session__composer-card">
-        <div class="session__composer-input-row">
-          <span class="clips-ask__mark" aria-hidden="true"><i class="ap-icon-archie-official"></i></span>
-          <textarea class="session__composer-input-field" id="clipsFocus" data-clips-focus rows="2" aria-label="What should the clips be about?"
-            placeholder="What should the clips be about? A topic, a person, a part of the video, a length…">${escapeHtml(add.focus)}</textarea>
+    ? `<div class="clips-box__ask">
+        <div class="session__composer-card">
+          <div class="session__composer-input-row">
+            <textarea class="session__composer-input-field" id="clipsFocus" data-clips-focus rows="2" aria-label="What should the clips be about?"
+              placeholder="What should the clips be about? A topic, a person, a part of the video, a length…">${escapeHtml(add.focus)}</textarea>
+          </div>
+          <div class="session__composer-toolbar">
+            <button type="button" class="ap-button stroked grey" data-clips-specific="off"><span>Back to the best moments</span></button>
+            <button type="button" class="ap-button primary orange session__composer-send" data-clips-start aria-label="Find these moments" title="Find these moments (Enter)">
+              <i class="ap-icon-arrow-up" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
-        <div class="session__composer-toolbar">
-          ${FOCUS_EXAMPLES.map(
-            (x) =>
-              `<button type="button" class="ap-button stroked grey" data-clips-focus-try="${escapeHtml(x)}"><span>${escapeHtml(x)}</span></button>`,
-          ).join("")}
-          <button type="button" class="ap-button ghost grey clips-box__ask-back" data-clips-specific="off"><span>Back to the best moments</span></button>
-          <button type="button" class="ap-button primary orange session__composer-send" data-clips-start aria-label="Find these moments" title="Find these moments (Enter)">
-            <i class="ap-icon-arrow-up" aria-hidden="true"></i>
-          </button>
-        </div>
+        <p class="session__composer-hint clips-box__ask-hint">For example: ${FOCUS_EXAMPLES.map(
+          (x) =>
+            `<button type="button" class="ap-link small" data-clips-focus-try="${escapeHtml(x)}">${escapeHtml(x)}</button>`,
+        ).join(`<span aria-hidden="true">·</span>`)}</p>
       </div>`
     : "";
   return `
