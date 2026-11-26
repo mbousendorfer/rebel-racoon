@@ -24,9 +24,9 @@
 // video door is the clips starter. What is local (the rotation, #3's typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2890";
-import { escapeHtml } from "../../utils.js?v=2890";
-import { networkIcon } from "../../social-profiles.js?v=2890";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2891";
+import { escapeHtml } from "../../utils.js?v=2891";
+import { networkIcon } from "../../social-profiles.js?v=2891";
 
 const esc = escapeHtml;
 
@@ -70,7 +70,7 @@ const KIND = {
 const row = ([k, text]) => `
   <li>
     <button type="button" class="ns-ask" data-starter="new-start" data-starter-prompt="${esc(text)}"
-      title="Put it in the box to edit">
+      title="Edit it before sending">
       <span class="ns-tile ns-tile--sm ns-tone--${KIND[k].tone}" aria-hidden="true"><i class="${KIND[k].icon}"></i></span>
       <span class="ns-ask__text">${esc(text)}</span>
       <i class="ap-icon-pen ns-ask__go" aria-hidden="true"></i>
@@ -116,8 +116,8 @@ function doors() {
             </span>
             ${SPARKS}
           </span>
-          <span class="ns-door__title">Sound like your brand</span>
-          <span class="ns-door__desc">Without a Playbook, my posts stay generic. Give me your website and I'll learn your voice, your audience and your look.</span>
+          <span class="ns-door__title">Sound like your Brand</span>
+          <span class="ns-door__desc">Without a Playbook, my posts stay generic. Show me your website or a few files, and I'll learn your voice, your audience, and your look.</span>
           <span class="ap-link standalone ns-door__go">Create my Playbook<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
         </a>
 
@@ -133,7 +133,7 @@ function doors() {
             </span>
           </span>
           <span class="ns-door__title">Turn a video into clips</span>
-          <span class="ns-door__desc">Drop a video or a YouTube link. I'll find the best moments, frame them vertical and caption them.</span>
+          <span class="ns-door__desc">Drop a video or a YouTube link. I'll find the best moments, reframe them for vertical, and add subtitles.</span>
           <span class="ap-link standalone ns-door__go">Try it with a video<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
         </button>
       </div>`;
@@ -173,7 +173,7 @@ const wallCard = ([kind, net, text]) => {
 const suggestion = ([k, text], n) => `
   <li data-ns-reveal style="--i: ${5 + n}">
     <button type="button" class="ns-suggest" data-starter="new-start" data-starter-prompt="${esc(text)}"
-      title="Put it in the box to edit">
+      title="Edit it before sending">
       <span class="ns-tile ns-tile--sm ns-tone--${KIND[k].tone}" aria-hidden="true"><i class="${KIND[k].icon}"></i></span>
       <span class="ns-suggest__text">“${esc(text)}”</span>
       <i class="ap-icon-pen ns-suggest__go" aria-hidden="true"></i>
@@ -182,7 +182,7 @@ const suggestion = ([k, text], n) => `
 
 // #3 and #4's first turn, typed once per page load.
 const HELLO =
-  "Hi, I'm Archie. Give me a link, a file, a video or just an idea, and I'll turn it into posts ready to schedule.";
+  "Hi, I'm Archie. Give me a link, a file, a video, or an idea, and I'll turn it into posts ready to schedule.";
 
 const hello = () => `
       <div class="ns-turn">
@@ -202,7 +202,7 @@ export function renderNewStart({ composer, variant = 2 }) {
       <div class="ns-turn ns-turn--next" data-ns-next>
         <span class="ns-turn__gutter" aria-hidden="true"></span>
         <div class="ns-turn__body">
-          <p class="ns-say" data-ns-reveal style="--i: 0">Here's where I'm best. Pick one, or just tell me what you need.</p>
+          <p class="ns-say" data-ns-reveal style="--i: 0">Here's what I do best. Pick one, or tell me what you need.</p>
           ${doors()}
         </div>
       </div>
@@ -222,7 +222,7 @@ export function renderNewStart({ composer, variant = 2 }) {
       <div class="ns-turn ns-turn--next" data-ns-next>
         <span class="ns-turn__gutter" aria-hidden="true"></span>
         <div class="ns-turn__body">
-          <p class="ns-say" data-ns-reveal style="--i: 0">Here's where I'm best. Pick one, or just tell me what you need.</p>
+          <p class="ns-say" data-ns-reveal style="--i: 0">Here's what I do best. Pick one, or tell me what you need.</p>
           ${doors()}
         </div>
       </div>

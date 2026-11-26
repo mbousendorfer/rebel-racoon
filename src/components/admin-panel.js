@@ -18,12 +18,12 @@ import {
   replayVoiceIntro,
   resetNetworkVoices,
   armClipsFailure,
-} from "../admin-menu.js?v=2890";
+} from "../admin-menu.js?v=2891";
 import {
   renderChatGalleryPanel,
   runChatGalleryItem,
   filterChatGallery,
-} from "../screens/session/chat-gallery.js?v=2890";
+} from "../screens/session/chat-gallery.js?v=2891";
 
 let root = null;
 

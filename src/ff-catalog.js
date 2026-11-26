@@ -279,7 +279,7 @@ export const FLAGS = Object.freeze([
   {
     id: "demoMode",
     group: "Onboarding",
-    tip: "From the first screen, try Archie on a made-up brand (Bramble & Bean) with pretend accounts — one wave of drafts, nothing can be scheduled.",
+    tip: "From the first screen, try Archie on a made-up brand (Bramble & Bean) with pretend accounts: one wave of drafts, nothing can be scheduled.",
     label: "UP-Onboarding: demo brand",
     default: false,
     hides:

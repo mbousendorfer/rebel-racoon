@@ -12,19 +12,19 @@ import {
   canDelete,
   canView,
   usableContexts,
-} from "../../playbook-access.js?v=2890";
-import { isFlagOn } from "../../feature-flags.js?v=2890";
-import { escapeAttr, escapeText } from "../../utils.js?v=2890";
-import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2890";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2890";
-import { getSessions } from "../../sessions-store.js?v=2890";
-import { renderEmptyState } from "../../components/empty-state.js?v=2890";
-import { getSources, getIdeas } from "../../library.js?v=2890";
-import { getPosts } from "../../posts-store.js?v=2890";
-import { getContextById } from "../../contexts-store.js?v=2890";
-import { voicesToFinish } from "../../voice-parts.js?v=2890";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2890";
-import { pageState } from "../home.js?v=2890";
+} from "../../playbook-access.js?v=2891";
+import { isFlagOn } from "../../feature-flags.js?v=2891";
+import { escapeAttr, escapeText } from "../../utils.js?v=2891";
+import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2891";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2891";
+import { getSessions } from "../../sessions-store.js?v=2891";
+import { renderEmptyState } from "../../components/empty-state.js?v=2891";
+import { getSources, getIdeas } from "../../library.js?v=2891";
+import { getPosts } from "../../posts-store.js?v=2891";
+import { getContextById } from "../../contexts-store.js?v=2891";
+import { voicesToFinish } from "../../voice-parts.js?v=2891";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2891";
+import { pageState } from "../home.js?v=2891";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -418,7 +418,7 @@ function renderPlaybooksFirstRun() {
         <p class="ap-subtitle">Everything I know about your Brand, in one place. Every draft starts here.</p>
       </div>
       <div class="pb-first__action">
-        <button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create your first Playbook</span></button>
+        <button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create my Playbook</span></button>
         <p class="pb-first__hint">Start from your website, your files, or a few questions.</p>
       </div>
     </div>
@@ -473,7 +473,7 @@ function renderChatsFirstRun() {
           <div class="chat-first__thread">
             <p class="chat-first__bubble">${firstRunText("Write about our autumn blend. The menu is attached.")}</p>
             <span class="chat-first__file"><i class="ap-icon-file--pdf"></i>autumn-menu.pdf</span>
-            <p class="chat-first__reply"><i class="ap-icon-archie-official"></i><span>${firstRunText("Here are three ideas from your menu, and two drafts.")}</span></p>
+            <p class="chat-first__reply"><i class="ap-icon-archie-official"></i><span>${firstRunText("Here are 3 ideas from your menu and 2 drafts.")}</span></p>
           </div>
         </div>
         <div class="pb-first__wires">
@@ -496,8 +496,8 @@ function renderChatsFirstRun() {
         ${
           hasPlaybook
             ? `<button type="button" class="ap-button primary blue" data-home-focus-prompt><i class="ap-icon-plus"></i><span>Start your first chat</span></button>`
-            : `<button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create your first Playbook</span></button>
-               <p class="pb-first__hint">Every chat writes from a Playbook, so it comes first.</p>`
+            : `<button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create my Playbook</span></button>
+               <p class="pb-first__hint">Every chat starts from a Playbook, so create one first.</p>`
         }
       </div>
     </div>
