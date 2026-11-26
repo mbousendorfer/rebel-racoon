@@ -8,14 +8,14 @@
 // this list too), then the review. Right, the scene that teaches what a
 // Playbook changes (welcome-alt-explainer.js).
 
-import { startDemo } from "../demo-flow.js?v=2879";
-import { isFlagOn } from "../feature-flags.js?v=2879";
-import { html, raw } from "../utils.js?v=2879";
-import { navigate } from "../router.js?v=2879";
-import { setHandoff } from "../handoff.js?v=2879";
-import { flowSteps, startFlow, STEP_TEXT, tint } from "./welcome-alt-shell.js?v=2879";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2879";
-import { paintExplainer } from "./welcome-alt-explainer.js?v=2879";
+import { startDemo } from "../demo-flow.js?v=2881";
+import { isFlagOn } from "../feature-flags.js?v=2881";
+import { html, raw } from "../utils.js?v=2881";
+import { navigate } from "../router.js?v=2881";
+import { setHandoff } from "../handoff.js?v=2881";
+import { flowSteps, startFlow, STEP_TEXT, tint } from "./welcome-alt-shell.js?v=2881";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2881";
+import { paintExplainer } from "./welcome-alt-explainer.js?v=2881";
 
 // What a Playbook holds, shown rather than told: its parts, under their
 // Playbook names, glyphs and tints.

@@ -813,6 +813,52 @@ g:nth-child(3) > .ns-spark {
   font-weight: var(--sys-text-style-body-bold-weight);
 }
 
+/* The chat's « thinking » sheen (chat.css, e-sheen), much lighter: a blue
+   light — blue, they are things to click — crosses each request once every
+   6s, one line after the other, then rests (asked: « en bleu peut-être, ou
+   avec l'animation qu'on a du thinking … très léger »). Pointed at, the
+   sheen stops and the request is plain ink, underlined. */
+.ns-suggest__text {
+  /* One box, so a request on two lines gets one band, not one per line. */
+  display: inline-block;
+  color: transparent;
+  background-image: linear-gradient(
+    100deg,
+    var(--ref-color-grey-100) 42%,
+    var(--ref-color-electric-blue-100) 50%,
+    var(--ref-color-grey-100) 58%
+  );
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: ns-sheen 6s linear infinite;
+}
+
+.ns-suggests__set li:nth-child(2) .ns-suggest__text {
+  animation-delay: 0.35s;
+}
+
+.ns-suggests__set li:nth-child(3) .ns-suggest__text {
+  animation-delay: 0.7s;
+}
+
+.ns-suggest:is(:hover, :focus-visible) .ns-suggest__text {
+  animation: none;
+  color: var(--ref-color-grey-100);
+  background-image: none;
+}
+
+@keyframes ns-sheen {
+  0% {
+    background-position: 100% 0;
+  }
+  25%,
+  100% {
+    background-position: 0 0;
+  }
+}
+
 .ns-suggest__go {
   flex: none;
   width: 16px;
@@ -856,7 +902,8 @@ g:nth-child(3) > .ns-spark {
   .ns-cut__clip .ns-cut__caption,
   .ns-asks__set,
   .ns-asks__set li,
-  .ns-suggests__set li {
+  .ns-suggests__set li,
+  .ns-suggest__text {
     animation: none;
   }
   .ns-voice__post--before,
