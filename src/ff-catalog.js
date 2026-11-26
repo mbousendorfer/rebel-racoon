@@ -289,7 +289,7 @@ export const FLAGS = Object.freeze([
       "is always a video), and two doors that play what they do: Sound like " +
       "your brand (opens the Playbook setup) and Turn a video into clips. " +
       "Sending right away is fine: without a Playbook the drafts are generic. " +
-      "Turning it on switches to First-time user. If both are ON, #2 wins. Both OFF: the run is the " +
+      "Turning it on switches to First-time user. If several are ON, the lowest number wins. All OFF: the run is the " +
       "first screen, as before.",
   },
   {
@@ -306,7 +306,24 @@ export const FLAGS = Object.freeze([
       "is always a video), and two doors that play what they do: Sound like " +
       "your brand (opens the Playbook setup) and Turn a video into clips. " +
       "Sending right away is fine: without a Playbook the drafts are generic. " +
-      "Turning it on switches to First-time user. If both are ON, #2 wins. Both OFF: the run is the " +
+      "Turning it on switches to First-time user. If several are ON, the lowest number wins. All OFF: the run is the " +
+      "first screen, as before.",
+  },
+  {
+    id: "newStart4",
+    group: "Onboarding",
+    tip: "#3 with the composer at the foot of the screen, as in a started chat: Archie's turns centred, the example requests as his third turn.",
+    label: "UP-New Start #4: Archie opens, composer at the foot",
+    default: false,
+    hides:
+      "#4: #3 with the composer at the foot of the screen, as in a started chat. Archie's turns sit centred; the example requests are his third turn, « Or ask me something like: », three text links. " +
+      "Shared by the three: a first-time user (mode new-alt) with no Playbook " +
+      "lands on a new chat instead of the setup run. Under the top: the " +
+      "composer, three example requests that change every few seconds (one " +
+      "is always a video), and two doors that play what they do: Sound like " +
+      "your brand (opens the Playbook setup) and Turn a video into clips. " +
+      "Sending right away is fine: without a Playbook the drafts are generic. " +
+      "Turning it on switches to First-time user. If several are ON, the lowest number wins. All OFF: the run is the " +
       "first screen, as before.",
   },
 ]);

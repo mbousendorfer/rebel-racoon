@@ -2,15 +2,15 @@
 // the Playbook picker and the workflow starters. Reads the page state home.js
 // owns. Moved out of home.js, unchanged.
 
-import { usableContexts } from "../../playbook-access.js?v=2864";
-import { getActivePlaybookId } from "../../active-playbook.js?v=2864";
-import { isFlagOn } from "../../feature-flags.js?v=2864";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2864";
-import { escapeAttr, escapeText } from "../../utils.js?v=2864";
-import { conceptHint } from "../../concepts.js?v=2864";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2864";
-import { renderStarterCards } from "../../components/starter-card.js?v=2864";
-import { pageState } from "../home.js?v=2864";
+import { usableContexts } from "../../playbook-access.js?v=2865";
+import { getActivePlaybookId } from "../../active-playbook.js?v=2865";
+import { isFlagOn } from "../../feature-flags.js?v=2865";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2865";
+import { escapeAttr, escapeText } from "../../utils.js?v=2865";
+import { conceptHint } from "../../concepts.js?v=2865";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2865";
+import { renderStarterCards } from "../../components/starter-card.js?v=2865";
+import { pageState } from "../home.js?v=2865";
 
 // ── The hero — the reason this page exists ────────────────────────────────
 //

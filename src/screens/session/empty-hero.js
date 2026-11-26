@@ -1,22 +1,22 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2864";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2864";
-import { getContextById, getContexts } from "../../contexts-store.js?v=2864";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2864";
-import { renderTopicCard } from "../../components/topic-card.js?v=2864";
-import { findTopicSource } from "../../topics-catalog.js?v=2864";
-import { html, raw } from "../../utils.js?v=2864";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2864";
-import { renderStarterCards } from "../../components/starter-card.js?v=2864";
-import { isFlagOn, newStartVariant } from "../../feature-flags.js?v=2864";
-import { isDemo } from "../../demo-mode.js?v=2864";
-import { voicesToFinish } from "../../voice-parts.js?v=2864";
-import { networkLabel } from "../../social-profiles.js?v=2864";
-import { parseHashParams } from "../../url-state.js?v=2864";
-import "../../archie-pixels.js?v=2864";
-import { renderNewStart } from "./new-start.js?v=2864";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2865";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2865";
+import { getContextById, getContexts } from "../../contexts-store.js?v=2865";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2865";
+import { renderTopicCard } from "../../components/topic-card.js?v=2865";
+import { findTopicSource } from "../../topics-catalog.js?v=2865";
+import { html, raw } from "../../utils.js?v=2865";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2865";
+import { renderStarterCards } from "../../components/starter-card.js?v=2865";
+import { isFlagOn, newStartVariant } from "../../feature-flags.js?v=2865";
+import { isDemo } from "../../demo-mode.js?v=2865";
+import { voicesToFinish } from "../../voice-parts.js?v=2865";
+import { networkLabel } from "../../social-profiles.js?v=2865";
+import { parseHashParams } from "../../url-state.js?v=2865";
+import "../../archie-pixels.js?v=2865";
+import { renderNewStart } from "./new-start.js?v=2865";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -138,10 +138,16 @@ function renderFreshTopics(session, { staged = false } = {}) {
 // inline inside this hero). The previous inline AI question flow
 // ("Quick — which context?") was removed — the composer picker is now
 // the single, always-visible context affordance.
+// New Start #4: the composer at the foot of the screen, as in a started chat.
+export function composerAtFoot() {
+  return newStartVariant() === 4 && !getContexts().length;
+}
+
 export function renderEmptyHero(sessionId, composerMarkup = "", session = null) {
-  // Flags newStart2 / newStart3: no Playbook yet → the page that introduces Archie.
+  // Flags newStart2 · 3 · 4: no Playbook yet → the page that introduces Archie.
+  // #4 leaves the composer out: session.js puts it at the foot (composerAtFoot).
   if (newStartVariant() && !getContexts().length)
-    return renderNewStart({ composer: composerMarkup, variant: newStartVariant() });
+    return renderNewStart({ composer: composerAtFoot() ? "" : composerMarkup, variant: newStartVariant() });
   const sources = getStreamSources(sessionId);
   const firstSource = sources.find((s) => s.status !== "Processing") || sources[0] || null;
   const sourceLabel = firstSource ? `"${firstSource.filename}"` : "your source";

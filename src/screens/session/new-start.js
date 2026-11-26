@@ -24,9 +24,9 @@
 // video door is the clips starter. What is local (the rotation, #3's typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2864";
-import { escapeHtml } from "../../utils.js?v=2864";
-import { networkIcon } from "../../social-profiles.js?v=2864";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2865";
+import { escapeHtml } from "../../utils.js?v=2865";
+import { networkIcon } from "../../social-profiles.js?v=2865";
 
 const esc = escapeHtml;
 
@@ -123,7 +123,7 @@ function doors() {
 }
 
 const asks = () => `
-      <div class="ns-asks" aria-label="Things you can ask me">
+      <div class="ns-asks" data-ns-rotor aria-label="Things you can ask me">
         ${SETS.map((s, i) => `<ul class="ns-asks__set" data-ns-set="${i}"${i ? " hidden" : ""}>${s.map(row).join("")}</ul>`).join("")}
       </div>`;
 
@@ -152,20 +152,55 @@ const wallCard = ([kind, net, text]) => {
   return `<span class="ns-wall__card"><i class="${networkIcon(net)}"></i><span>${esc(text)}</span></span>`;
 };
 
-// #3's first turn, typed once per page load.
+// #4's third turn: the same requests as text links, no box around them.
+const suggestion = ([k, text]) => `
+  <li>
+    <button type="button" class="ns-suggest" data-starter="new-start" data-starter-prompt="${esc(text)}"
+      title="Put it in the box to edit">
+      <span class="ns-tile ns-tile--sm ns-tone--${KIND[k].tone}" aria-hidden="true"><i class="${KIND[k].icon}"></i></span>
+      <span class="ns-suggest__text">${esc(text)}</span>
+    </button>
+  </li>`;
+
+// #3 and #4's first turn, typed once per page load.
 const HELLO =
   "Hi, I'm Archie. Give me a link, a file, a video or just an idea, and I'll turn it into posts ready to schedule.";
 
-export function renderNewStart({ composer, variant = 2 }) {
-  if (variant === 3) {
-    return `
-    <archie-new-start class="empty-chat empty-chat--rows ns ns--thread" data-empty-chat>
+const hello = () => `
       <div class="ns-turn">
         ${MARK}
         <div class="ns-turn__body">
           <p class="ns-say" data-ns-hello aria-label="${esc(HELLO)}">${esc(HELLO)}</p>
         </div>
+      </div>`;
+
+export function renderNewStart({ composer, variant = 2 }) {
+  // #4: #3 with the composer at the foot (session.js renders it there), the
+  // turns centred, the requests as my third turn instead of a box.
+  if (variant === 4) {
+    return `
+    <archie-new-start class="empty-chat ns ns--thread ns--foot" data-empty-chat>
+      ${hello()}
+      <div class="ns-turn ns-turn--next" data-ns-next>
+        <span class="ns-turn__gutter" aria-hidden="true"></span>
+        <div class="ns-turn__body">
+          <p class="ns-say">Here's where I'm best. Pick one, or just tell me what you need.</p>
+          ${doors()}
+        </div>
       </div>
+      <div class="ns-turn ns-turn--next" data-ns-next>
+        <span class="ns-turn__gutter" aria-hidden="true"></span>
+        <div class="ns-turn__body ns-suggests" data-ns-rotor>
+          <p class="ns-say">Or ask me something like:</p>
+          ${SETS.map((s, i) => `<ul class="ns-suggests__set" data-ns-set="${i}"${i ? " hidden" : ""} aria-label="Things you can ask me">${s.map(suggestion).join("")}</ul>`).join("")}
+        </div>
+      </div>
+    </archie-new-start>`;
+  }
+  if (variant === 3) {
+    return `
+    <archie-new-start class="empty-chat empty-chat--rows ns ns--thread" data-empty-chat>
+      ${hello()}
       <div class="ns-turn ns-turn--next" data-ns-next>
         <span class="ns-turn__gutter" aria-hidden="true"></span>
         <div class="ns-turn__body">
@@ -201,8 +236,8 @@ class ArchieNewStart extends HTMLElement {
     this.show(shown);
     this.hello();
     this.timer = setInterval(() => {
-      const asks = this.querySelector(".ns-asks");
-      if (reduced() || document.hidden || asks?.matches(":hover, :focus-within")) return;
+      const rotor = this.querySelector("[data-ns-rotor]");
+      if (reduced() || document.hidden || rotor?.matches(":hover, :focus-within")) return;
       this.show((shown + 1) % SETS.length);
     }, 6000);
   }
