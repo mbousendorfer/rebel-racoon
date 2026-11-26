@@ -4,8 +4,8 @@
 // text with the Image Studio's outline and shadow (config/edit.js metrics), a
 // wrapped block and its band when it has a box.
 
-import { outlineMetrics, shadowMetrics, textFamily } from "../config/edit.js?v=2859";
-import { isBase } from "../state/edit-doc.js?v=2859";
+import { outlineMetrics, shadowMetrics, textFamily } from "../config/edit.js?v=2860";
+import { isBase } from "../state/edit-doc.js?v=2860";
 
 function loadImage(url) {
   return new Promise((resolve, reject) => {

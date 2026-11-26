@@ -8,8 +8,8 @@
 // Suggested values become menthol chips (AI-suggested). Other static
 // option lists come from the brief panel renderer.
 
-import { hostname } from "./utils.js?v=2859";
-import { objectivesInText } from "./objective-measures.js?v=2859";
+import { hostname } from "./utils.js?v=2860";
+import { objectivesInText } from "./objective-measures.js?v=2860";
 
 const AGORAPULSE = {
   name: "Agorapulse",

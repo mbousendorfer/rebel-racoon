@@ -1651,8 +1651,8 @@
   background: var(--ref-color-white);
 }
 
-/* ══ New Start (flags newStart1…3) — the first chat with no Playbook ═════════
-   Three tops over the same body: the composer, three example requests that
+/* ══ New Start (flags newStart2 · newStart3) — the first chat with no Playbook ═════════
+   Two tops over the same body: the composer, three example requests that
    change, then two doors that each play what they do
    (src/screens/session/new-start.js). No pixel halo, no wordmark, no wash:
    the page is redrawn from nothing (asked 2026-11-26). The rows are the
@@ -1682,20 +1682,6 @@
   line-height: var(--sys-text-style-marketing-line-height);
   font-weight: var(--sys-text-style-marketing-weight);
   color: var(--ref-color-grey-100);
-}
-
-/* #1 · the blank page: the mark and a large headline, left on the column. */
-.ns-top {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xs);
-  margin-bottom: var(--ref-spacing-xs);
-}
-
-.ns-top .ns-mark {
-  width: 32px;
-  height: 32px;
 }
 
 /* #2 · the wall of posts: a band of formats drifting under the headline's

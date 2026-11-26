@@ -1,17 +1,17 @@
-// New Start (flags newStart1…3, 2026-11-26): the new chat a first-time user
+// New Start (flags newStart2 · newStart3, 2026-11-26): the new chat a first-time user
 // lands on while they have no Playbook. Asked: « un utilisateur arrive sur cette
 // page, et découvre Archie … il faut lui indiquer qu'il est possible de créer un
 // Playbook … sous le textarea, des requêtes … qui tournent … une entrée pour le
 // vidéo clipping », then « 1 · Portes vivantes » for the body, then « pas fan
 // que tu aies réutilisé le nuage de points … redesign cet écran de rien » and
-// « les 3 sous 3 FS » for the top. So: three tops, one per flag, no pixel halo,
-// no wordmark —
-//   #1 the blank page: Archie's mark and a large headline, nothing else;
+// « les 3 sous 3 FS » for the top, then « #1 : supprimes ». So: two tops, one
+// per flag, no pixel halo, no wordmark (#1, a mark and a large headline on a
+// blank page, was deleted) —
 //   #2 the wall of posts: the formats I write drift behind the headline;
 //   #3 Archie opens: no hero, two turns of a thread — hello (typed live), then
 //      the doors as my offer — and the composer under them.
 //
-// The body, the same under all three: the real composer, three example
+// The body, the same under both: the real composer, three example
 // requests (a new set every few seconds, one is always a video), then two
 // doors, each playing what it does:
 //   · Sound like your brand — a generic post rewritten in a brand's voice → the
@@ -24,10 +24,10 @@
 // video door is the clips starter. What is local (the rotation, #3's typing)
 // lives in <archie-new-start>, which wires itself like <archie-home>.
 
-import { seedVideos } from "../../mocks.js?v=2859";
-import { escapeHtml } from "../../utils.js?v=2859";
-import { starterAttrs } from "./home-directions.js?v=2859";
-import { networkIcon } from "../../social-profiles.js?v=2859";
+import { seedVideos } from "../../mocks.js?v=2860";
+import { escapeHtml } from "../../utils.js?v=2860";
+import { starterAttrs } from "./home-directions.js?v=2860";
+import { networkIcon } from "../../social-profiles.js?v=2860";
 
 const esc = escapeHtml;
 
@@ -77,7 +77,7 @@ const frame = (cls, sec, pos = "50%", caption = "") => `
     ${caption ? `<span class="ns-cut__caption">${esc(caption)}</span>` : ""}
   </span>`;
 
-// The doors and the requests are the same under the three tops.
+// The doors and the requests are the same under both tops.
 function doors() {
   return `
       <div class="ns-doors">
@@ -121,7 +121,7 @@ const asks = () => `
 // No halo, no wordmark: the composer on the page's own ground.
 const lead = (composer) => `<div class="empty-chat__lead ns__lead">${composer}</div>`;
 
-const MARK = `<span class="e-turn__mark ns-mark" aria-hidden="true"><i class="ap-icon-archie-official"></i></span>`;
+const MARK = `<span class="e-turn__mark" aria-hidden="true"><i class="ap-icon-archie-official"></i></span>`;
 
 // #2's band: the formats I write, drifting. Twice the same run, so the loop
 // has no seam (the track moves by half its width).
@@ -147,7 +147,7 @@ const wallCard = ([kind, net, text]) => {
 const HELLO =
   "Hi, I'm Archie. Give me a link, a file, a video or just an idea, and I'll turn it into posts ready to schedule.";
 
-export function renderNewStart({ composer, variant = 1 }) {
+export function renderNewStart({ composer, variant = 2 }) {
   if (variant === 3) {
     return `
     <archie-new-start class="empty-chat empty-chat--rows ns ns--thread" data-empty-chat>
@@ -168,21 +168,12 @@ export function renderNewStart({ composer, variant = 1 }) {
       ${asks()}
     </archie-new-start>`;
   }
-  const top =
-    variant === 2
-      ? `
+  return `
+    <archie-new-start class="empty-chat empty-chat--rows ns ns--wall" data-empty-chat>
       <div class="ns-wall" aria-hidden="true">
         <div class="ns-wall__track">${[...WALL, ...WALL].map(wallCard).join("")}</div>
       </div>
-      <h1 class="ns-title">What should we post this week?</h1>`
-      : `
-      <header class="ns-top">
-        ${MARK}
-        <h1 class="ns-title">What can I write for you today?</h1>
-      </header>`;
-  return `
-    <archie-new-start class="empty-chat empty-chat--rows ns ns--${variant === 2 ? "wall" : "blank"}" data-empty-chat>
-      ${top}
+      <h1 class="ns-title">What should we post this week?</h1>
       ${lead(composer)}
       ${asks()}
       ${doors()}

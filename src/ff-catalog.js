@@ -377,23 +377,6 @@ export const FLAGS = Object.freeze([
       "demo in the topbar wipes it all and goes back to the real setup.",
   },
   {
-    id: "newStart1",
-    group: "Onboarding",
-    tip: "No decor: a small Archie mark and a large headline, left-aligned on the composer's column. All the motion is in the doors.",
-    label: "UP-New Start #1: blank page",
-    default: false,
-    hides:
-      "#1: the editorial blank page. No background effect at all, a small Archie mark and a large left-aligned headline over the composer. " +
-      "Shared by the three: a first-time user (mode new-alt) with no Playbook " +
-      "lands on a new chat instead of the setup run. Under the top: the " +
-      "composer, three example requests that change every few seconds (one " +
-      "is always a video), and two doors that play what they do: Sound like " +
-      "your brand (opens the Playbook setup) and Turn a video into clips. " +
-      "Sending right away is fine: without a Playbook the drafts are generic. " +
-      "If several are ON, the lowest number wins. All OFF: the run is the " +
-      "first screen, as before.",
-  },
-  {
     id: "newStart2",
     group: "Onboarding",
     tip: "Behind the headline, a band of post formats (LinkedIn, Instagram, a vertical clip, a carousel) drifts slowly: the page's mood is what Archie makes.",
@@ -407,7 +390,7 @@ export const FLAGS = Object.freeze([
       "is always a video), and two doors that play what they do: Sound like " +
       "your brand (opens the Playbook setup) and Turn a video into clips. " +
       "Sending right away is fine: without a Playbook the drafts are generic. " +
-      "If several are ON, the lowest number wins. All OFF: the run is the " +
+      "If both are ON, #2 wins. Both OFF: the run is the " +
       "first screen, as before.",
   },
   {
@@ -424,7 +407,7 @@ export const FLAGS = Object.freeze([
       "is always a video), and two doors that play what they do: Sound like " +
       "your brand (opens the Playbook setup) and Turn a video into clips. " +
       "Sending right away is fine: without a Playbook the drafts are generic. " +
-      "If several are ON, the lowest number wins. All OFF: the run is the " +
+      "If both are ON, #2 wins. Both OFF: the run is the " +
       "first screen, as before.",
   },
 ]);

@@ -18,11 +18,11 @@
 // modal EMBEDS (the panel is a view of that dialog, the design's own "the panel
 // slides"); `open()` wraps the same flow in a standalone body-level dialog.
 
-import { escapeHtml as esc, newId } from "../utils.js?v=2859";
-import { getConnectedProfileById } from "../social-profiles.js?v=2859";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2859";
-import { getContextById } from "../contexts-store.js?v=2859";
-import { catalogEntries } from "../objective-measures.js?v=2859";
+import { escapeHtml as esc, newId } from "../utils.js?v=2860";
+import { getConnectedProfileById } from "../social-profiles.js?v=2860";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2860";
+import { getContextById } from "../contexts-store.js?v=2860";
+import { catalogEntries } from "../objective-measures.js?v=2860";
 
 // ── The shared flow ──────────────────────────────────────────────────────────
 // One view. All interactions are click-driven except the search input (the host
