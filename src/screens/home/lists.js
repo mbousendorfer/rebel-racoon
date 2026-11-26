@@ -12,19 +12,19 @@ import {
   canDelete,
   canView,
   usableContexts,
-} from "../../playbook-access.js?v=2904";
-import { isFlagOn } from "../../feature-flags.js?v=2904";
-import { escapeAttr, escapeText } from "../../utils.js?v=2904";
-import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2904";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2904";
-import { getSessions } from "../../sessions-store.js?v=2904";
-import { renderEmptyState } from "../../components/empty-state.js?v=2904";
-import { getSources, getIdeas } from "../../library.js?v=2904";
-import { getPosts } from "../../posts-store.js?v=2904";
-import { getContextById } from "../../contexts-store.js?v=2904";
-import { voicesToFinish } from "../../voice-parts.js?v=2904";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2904";
-import { pageState } from "../home.js?v=2904";
+} from "../../playbook-access.js?v=2907";
+import { isFlagOn } from "../../feature-flags.js?v=2907";
+import { escapeAttr, escapeText } from "../../utils.js?v=2907";
+import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2907";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2907";
+import { getSessions } from "../../sessions-store.js?v=2907";
+import { renderEmptyState } from "../../components/empty-state.js?v=2907";
+import { getSources, getIdeas } from "../../library.js?v=2907";
+import { getPosts } from "../../posts-store.js?v=2907";
+import { getContextById } from "../../contexts-store.js?v=2907";
+import { voicesToFinish } from "../../voice-parts.js?v=2907";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2907";
+import { pageState } from "../home.js?v=2907";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -316,7 +316,7 @@ export function chatPlaybook(session) {
 // Bean), tagged Example so nobody reads it as their own. Decorative
 // (aria-hidden): the title and the sentence carry everything it shows.
 // `[text]{part}` in a post marks a trace of that part; the CSS lights it.
-const FIRST_RUN_BRAND = ["#6B3A22", "#C8874E", "#7A8F4E", "#F7EFE5"];
+export const FIRST_RUN_BRAND = ["#6B3A22", "#C8874E", "#7A8F4E", "#F7EFE5"];
 const FIRST_RUN_PARTS = [
   { id: "business", icon: "ap-icon-buildings", label: "Business", value: "Café and roaster" },
   { id: "audience", icon: "ap-icon-multiple-users", label: "Audience", value: "Regulars, brewers" },
@@ -349,7 +349,7 @@ const FIRST_RUN_WIRES = [
 const FIRST_RUN_INDEX = Object.fromEntries(FIRST_RUN_PARTS.map((p, i) => [p.id, i]));
 
 // Word by word (each word its own --w for the typing), traces wrapped.
-function firstRunText(text) {
+export function firstRunText(text) {
   let w = 0;
   const words = (s) =>
     s

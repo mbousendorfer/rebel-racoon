@@ -455,6 +455,239 @@
   height: 100%;
 }
 
+/* ── Nothing to read yet: the first run ──────────────────────────────────────
+   The Playbooks' stage (.pb-first, contexts.css), told for the feed: six posts
+   from Bramble & Bean's neighbours, read one by one under a butter scan; they
+   converge on my mark; three Topics come out. Then each Topic lights with its
+   two posts and their wires (6 s loop, 2 s per Topic). Timeline (ms): sheet
+   100 · posts 400 + 120 each · scan 1000 → 2000 · mark 2000 · wires 2150 ·
+   sparks from 2500 · Topics 2500 + 250 each, their words 45 apart · loop from
+   4600. The concept line above goes while this is shown: it says the same. */
+.topics-view:has(.pb-first--topics) .topics-view__lead {
+  display: none;
+}
+/* Grows past the reader when narrow (the page scrolls); the dot field's
+   overhang is clipped, never a sideways scroll. */
+.topics-view__blank:has(.pb-first--topics) {
+  height: auto;
+  min-height: 100%;
+  overflow-x: clip;
+}
+.pb-first--topics {
+  --pb-loop: 6s;
+  --pb-loop-start: 4600ms;
+}
+.pb-first--topics .pb-first__stage {
+  grid-template-columns: 280px 176px 280px;
+}
+
+/* The sheet is exactly the wires box's height, its rows a fixed 50px, so
+   each post's centre sits on its wire (80 + 50k in the SVG: the border, the
+   6px padding, then 25px into its row). */
+.topic-first__sheet {
+  display: grid;
+  grid-template-rows: 48px 1fr;
+  height: 360px;
+}
+.topic-first__head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: 0 var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+.topic-first__name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+/* Listening: a dot and a ring that keeps leaving it. */
+.topic-first__live {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  overflow: visible;
+  fill: var(--app-butter-accent);
+}
+.topic-first__ring {
+  fill: none;
+  stroke: var(--app-butter-accent);
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: topic-first-ping 2s var(--app-ease-out) 600ms infinite both;
+}
+
+.topic-first__posts {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  display: grid;
+  grid-auto-rows: 50px;
+  overflow: hidden;
+}
+/* The scan: one butter band down the posts while I read them. */
+.topic-first__posts::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 56px;
+  background: linear-gradient(transparent, color-mix(in srgb, var(--app-butter) 85%, transparent), transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--app-butter-accent) 40%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  animation: topic-first-scan 1000ms ease-in-out 1000ms both;
+}
+.topic-first__post {
+  --pb-rest: transparent;
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+  padding: 0 var(--ref-spacing-sm);
+  animation:
+    app-rise 360ms var(--app-ease-out) calc(400ms + var(--k) * 120ms) both,
+    pb-first-spot var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--i) * 2s) infinite;
+}
+.topic-first__post-body {
+  display: grid;
+  min-width: 0;
+}
+.topic-first__who {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+}
+.topic-first__who i {
+  font-size: var(--sys-icon-css-sm);
+}
+.topic-first__said {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
+/* My mark sits mid-box: the posts converge from the left. */
+.pb-first--topics .pb-first__wires {
+  width: 176px;
+}
+.pb-first--topics .pb-first__mark {
+  left: 64px;
+}
+/* A wire lights with its Topic, in the same beat as the posts. */
+.pb-first--topics .pb-first__wire-lines path {
+  animation:
+    pb-first-stroke 520ms var(--app-ease-out) calc(2150ms + var(--n) * 140ms) forwards,
+    topic-first-wire var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--i) * 2s) infinite;
+}
+/* Into my mark: one spark per post, a slow trickle. */
+.topic-first__spark-in {
+  animation-duration: 2.4s;
+  animation-delay: calc(2400ms + var(--k) * 400ms);
+}
+
+/* The Topic: the feed card's meta run, its headline, what it came from. */
+.topic-first__topic {
+  --pb-rest: var(--app-surface);
+  flex-direction: column;
+  justify-content: center;
+  /* Tight enough to fit a third of the 360px column, so the rows stay equal
+     and each centre sits on its wire (57 / 180 / 303). */
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  animation:
+    app-rise 420ms var(--app-ease-out) calc(2500ms + var(--k) * 250ms) both,
+    pb-first-spot var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--i) * 2s) infinite;
+}
+.topic-first__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+.topic-first__meta .topic-badge {
+  width: 20px;
+  height: 20px;
+}
+.topic-first__meta .topic-states {
+  margin-left: auto;
+}
+.topic-first__headline {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  text-wrap: pretty;
+}
+.topic-first__from {
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
+@container (max-width: 720px) {
+  .pb-first--topics .pb-first__stage {
+    grid-template-columns: minmax(0, 300px);
+  }
+  .pb-first--topics .pb-first__wires {
+    width: auto;
+  }
+  .pb-first--topics .pb-first__mark {
+    left: calc(50% - 24px);
+  }
+}
+
+@keyframes topic-first-ping {
+  from {
+    opacity: 0.8;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+@keyframes topic-first-scan {
+  0% {
+    opacity: 0;
+    transform: translateY(-56px);
+  }
+  15%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(312px);
+  }
+}
+@keyframes topic-first-wire {
+  0%,
+  28%,
+  100% {
+    stroke-opacity: 0.45;
+    stroke-width: 1.5;
+  }
+  5%,
+  22% {
+    stroke-opacity: 1;
+    stroke-width: 2.5;
+  }
+}
+
 .topics-view__empty {
   display: flex;
   flex-direction: column;

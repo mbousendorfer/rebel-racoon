@@ -32,17 +32,17 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=2904";
-import { conceptText } from "../concepts.js?v=2904";
-import { navigate, getPath } from "../router.js?v=2904";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2904";
-import { renderTopbar } from "../components/topbar.js?v=2904";
-import { showToast } from "../components/toast.js?v=2904";
-import { renderEmptyState } from "../components/empty-state.js?v=2904";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2904";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2904";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2904";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2904";
+import { html, raw, escapeAttr } from "../utils.js?v=2907";
+import { conceptText } from "../concepts.js?v=2907";
+import { navigate, getPath } from "../router.js?v=2907";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2907";
+import { renderTopbar } from "../components/topbar.js?v=2907";
+import { showToast } from "../components/toast.js?v=2907";
+import { renderEmptyState } from "../components/empty-state.js?v=2907";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2907";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2907";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2907";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2907";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -53,7 +53,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=2904";
+} from "../topics-store.js?v=2907";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -62,13 +62,19 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=2904";
-import { renderTopicCard } from "../components/topic-card.js?v=2904";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=2904";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2904";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=2904";
-import { useTopicInChat } from "../topic-flow.js?v=2904";
-import { canEdit } from "../playbook-access.js?v=2904";
+} from "../topics-catalog.js?v=2907";
+import { renderTopicCard } from "../components/topic-card.js?v=2907";
+import {
+  renderTopicArticle,
+  renderTopicHeader,
+  renderTopicActions,
+  renderTopicStates,
+} from "../topic-article.js?v=2907";
+import { firstRunText, FIRST_RUN_BRAND } from "./home/lists.js?v=2907";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2907";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=2907";
+import { useTopicInChat } from "../topic-flow.js?v=2907";
+import { canEdit } from "../playbook-access.js?v=2907";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -885,26 +891,7 @@ function renderInvitePane() {
 // yet is listening and has to read that way; a filter that excludes everything is
 // the reader's own doing and needs the way back, not reassurance.
 function renderEmpty(total, feed) {
-  if (!feed) {
-    return renderEmptyState({
-      icon: "ap-icon-antenna",
-      title: "Get Topics from your competitors and influencers",
-      body: "Create a Playbook and I'll read what its competitors and influencers post.",
-      actionHtml:
-        '<button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create a Playbook</span></button>',
-      wrapperClass: "topics-view__empty",
-    });
-  }
-  if (total === 0) {
-    return renderEmptyState({
-      icon: "ap-icon-antenna",
-      title: "No Topics yet",
-      body: `I'm listening to this Playbook's sources and I check them ${findCadence(feed.cadence)?.adverb || "weekly"}. Switch on more sources and there'll be more to read.`,
-      actionHtml:
-        '<button type="button" class="ap-button stroked grey" data-topic-settings><i class="ap-icon-cog"></i><span>Feed settings</span></button>',
-      wrapperClass: "topics-view__empty",
-    });
-  }
+  if (!feed || total === 0) return renderTopicsFirstRun(feed);
   return renderEmptyState({
     icon: "ap-icon-filter",
     title: "No Topics match these filters",
@@ -912,6 +899,159 @@ function renderEmpty(total, feed) {
     actionHtml: '<button type="button" class="ap-button stroked grey" data-topic-filters-reset>Reset filters</button>',
     wrapperClass: "topics-view__empty",
   });
+}
+
+// ── Nothing to read yet: the Playbooks' first run, told for the feed ───────
+// No Playbook, or a feed that has found nothing so far. Same stage as the
+// Playbooks and Chats tabs (.pb-first, contexts.css), so the three read as one
+// family: Bramble & Bean (Example) on the left, six posts from its neighbours
+// that I read one by one; my mark in the middle, where they converge; three
+// Topics out of them on the right. Then each Topic lights in turn with the two
+// posts behind it and their wires: many posts make one Topic. Decorative
+// (aria-hidden), the copy carries it all. Geometry in the wires box's own
+// pixels (176 × 360): post rows centred at 80 + 50k (topics.css fixes their
+// height), my mark centred at 88 / 180, the Topics at 57 / 180 / 303.
+const FIRST_RUN_POSTS = [
+  {
+    who: "Northside Coffee",
+    initials: "NC",
+    accent: "green",
+    network: "instagram",
+    text: "Bring your own cup this week, coffee's on us.",
+  },
+  {
+    who: "Maya Brews",
+    initials: "MB",
+    accent: "orange",
+    network: "instagram",
+    text: "Sound on. That's the first crack.",
+  },
+  {
+    who: "Crumb & Co",
+    initials: "CC",
+    accent: "purple",
+    network: "facebook",
+    text: "This weekend: sourdough, cinnamon knots, plum tarts.",
+  },
+  {
+    who: "Northside Coffee",
+    initials: "NC",
+    accent: "green",
+    network: "facebook",
+    text: "Day 3 of bring your own cup: 212 cups saved.",
+  },
+  {
+    who: "The Roast Report",
+    initials: "RR",
+    accent: "electric-blue",
+    network: "linkedin",
+    text: "Why every roaster is posting the first crack.",
+  },
+  {
+    who: "Crumb & Co",
+    initials: "CC",
+    accent: "purple",
+    network: "instagram",
+    text: "Friday night: the weekend menu is up.",
+  },
+];
+const FIRST_RUN_TOPICS = [
+  {
+    source: "competitor-posts",
+    age: "3h ago",
+    isTrending: true,
+    headline: "A 'bring your own cup' week beat every product post",
+  },
+  {
+    source: "influencer-posts",
+    age: "1d ago",
+    isUpdated: true,
+    headline: "Roasters post the first crack, and people save it",
+  },
+  { source: "competitor-posts", age: "2d ago", headline: "One Friday post fills the bakery next door" },
+];
+const FIRST_RUN_TOPIC_Y = [57, 180, 303];
+
+function renderTopicsFirstRun(feed) {
+  const brand = FIRST_RUN_BRAND.map((c, j) => `--b${j}:${c}`).join(";");
+  const wiresIn = FIRST_RUN_POSTS.map((_, k) => `M0 ${80 + 50 * k} C 36 ${80 + 50 * k}, 30 180, 64 180`);
+  // The middle Topic sits 16px further right (.pb-first__post:nth-child(2)).
+  const wiresOut = FIRST_RUN_TOPIC_Y.map((y) =>
+    y === 180 ? "M112 180 L192 180" : `M112 180 C 146 180, 142 ${y}, 176 ${y}`,
+  );
+  const posts = FIRST_RUN_POSTS.map(
+    (p, k) => `
+      <li class="topic-first__post" style="--k:${k};--i:${k % 3}">
+        <span class="ap-avatar size-24 social-post-card__avatar" data-accent="${p.accent}"><span class="ap-avatar-initials">${p.initials}</span></span>
+        <span class="topic-first__post-body">
+          <span class="topic-first__who">${escapeAttr(p.who)}<i class="ap-icon-${p.network}-official"></i></span>
+          <span class="topic-first__said">${escapeAttr(p.text)}</span>
+        </span>
+      </li>`,
+  ).join("");
+  const topics = FIRST_RUN_TOPICS.map((t, k) => {
+    const source = findTopicSource(t.source);
+    return `
+      <div class="pb-first__post topic-first__topic" style="--k:${k};--i:${k}">
+        <span class="topic-first__meta">
+          <span class="topic-badge topic-badge--${source.accent}"><i class="${source.icon}"></i></span>
+          <span>${source.name} · ${t.age}</span>
+          ${renderTopicStates({ status: "new", kind: "ready", isTrending: t.isTrending, isUpdated: t.isUpdated })}
+        </span>
+        <span class="topic-first__headline">${firstRunText(t.headline)}</span>
+        <span class="topic-first__from">From 2 posts</span>
+      </div>`;
+  }).join("");
+  const copy = feed
+    ? {
+        title: "Your first Topics are on their way",
+        body: `I'm reading what this Playbook's competitors and influencers post. I check them ${findCadence(feed.cadence)?.adverb || "weekly"}.`,
+        action:
+          '<button type="button" class="ap-button stroked grey" data-topic-settings><i class="ap-icon-cog"></i><span>Feed settings</span></button>',
+        hint: "Switch on more sources and there'll be more to read.",
+      }
+    : {
+        title: "See what's working around you",
+        body: "I read what your competitors and influencers post, and bring you the Topics worth a post.",
+        action:
+          '<button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create my Playbook</span></button>',
+        hint: "I listen for a Playbook, so create one first.",
+      };
+  return `
+    <div class="pb-first pb-first--topics" style="${brand}">
+      <div class="pb-first__stage" aria-hidden="true">
+        <div class="pb-first__sheet topic-first__sheet">
+          <div class="topic-first__head">
+            <span class="pb-first__logo">B</span>
+            <span class="topic-first__name">Bramble &amp; Bean</span>
+            <svg class="topic-first__live" viewBox="0 0 16 16"><circle class="topic-first__ring" cx="8" cy="8" r="6" /><circle cx="8" cy="8" r="3" /></svg>
+            <span class="chat-first__example">Example</span>
+          </div>
+          <ul class="topic-first__posts">${posts}</ul>
+        </div>
+        <div class="pb-first__wires topic-first__wires">
+          <svg class="pb-first__wire-lines" viewBox="0 0 176 360">
+            ${wiresIn.map((d, k) => `<path d="${d}" pathLength="1" style="--n:0;--i:${k % 3}" />`).join("")}
+            ${wiresOut.map((d, i) => `<path d="${d}" pathLength="1" style="--n:${i + 1};--i:${i}" />`).join("")}
+          </svg>
+          ${wiresIn.map((d, k) => `<span class="pb-first__spark topic-first__spark-in" style="offset-path:path('${d}');--k:${k}"></span>`).join("")}
+          ${wiresOut.flatMap((d, i) => [0, 1].map((h) => `<span class="pb-first__spark" style="offset-path:path('${d}');--n:${i + 1};--h:${h}"></span>`)).join("")}
+          <span class="pb-first__mark">
+            <svg class="pb-first__orbit" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" pathLength="24" /></svg>
+            <i class="ap-icon-archie-official"></i>
+          </span>
+        </div>
+        <div class="pb-first__posts">${topics}</div>
+      </div>
+      <div class="pb-first__copy">
+        <h2 class="ap-h1">${copy.title}</h2>
+        <p class="ap-subtitle">${copy.body}</p>
+      </div>
+      <div class="pb-first__action">
+        ${copy.action}
+        <p class="pb-first__hint">${copy.hint}</p>
+      </div>
+    </div>`;
 }
 
 // ── The reading pane ──────────────────────────────────────────────────────
