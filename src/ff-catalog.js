@@ -245,6 +245,21 @@ export const FLAGS = Object.freeze([
       "lights up its Draft post, since a click on the card drafts.",
   },
   {
+    id: "emptyStateGround",
+    group: "Playbook",
+    tip: "The Playbooks and Chats empty states sit on the Playbook creation's warm ground, lighter, instead of grey.",
+    label: "UI-Empty states: Archie ground",
+    // OFF: the scene on the page's grey-bg, its dot field in grey-20.
+    default: false,
+    hides:
+      "When ON, the first-run empty states of the home (Playbooks tab, the " +
+      "catalogue, and the Chats tab: the scene with its example) leave the " +
+      "grey canvas for the ground of the Playbook creation, toned down: " +
+      "white, butter rising from the bottom left, a faint orange corner, and " +
+      "the dot field behind the scene in Archie's orange pixels instead of " +
+      "grey dots. OFF keeps the grey page.",
+  },
+  {
     id: "newChatHero",
     group: "Chat & drafts",
     tip: "On a new chat, the three workflows become rows (title + description) instead of three big cards.",

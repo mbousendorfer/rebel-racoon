@@ -146,6 +146,30 @@
   animation: pb-first-in 800ms ease-out both;
 }
 
+/* Flag emptyStateGround: the Playbook creation's ground (welcome.css, the
+   run's .welcome-intro__stage), lighter — every stop at about a third of its
+   strength, so the scene's white cards still read without a lift. `local`
+   makes it span the scrolled height: the orange corner sits at the foot of
+   the content, not of the viewport. The dot field becomes the run's square
+   pixels, kept around the scene (its own radial fade). */
+body.empty-state-ground .contexts-view:has(.pb-first) {
+  background:
+    radial-gradient(55% 40% at 95% 100%, color-mix(in srgb, var(--app-archie-mark) 30%, transparent), transparent),
+    radial-gradient(80% 50% at 60% 100%, color-mix(in srgb, var(--ref-color-orange-80) 18%, transparent), transparent),
+    radial-gradient(85% 70% at 0% 100%, color-mix(in srgb, var(--app-butter) 70%, transparent), transparent),
+    radial-gradient(60% 45% at 100% 0%, color-mix(in srgb, var(--ref-color-orange-20) 30%, transparent), transparent),
+    var(--ref-color-white);
+  background-attachment: local;
+}
+body.empty-state-ground .pb-first__stage::before {
+  background: conic-gradient(
+      from 270deg at 4px 4px,
+      color-mix(in srgb, var(--ref-color-orange-100) 30%, transparent) 25%,
+      transparent 0
+    )
+    26px 26px / 28px 28px;
+}
+
 /* ── The Playbook: the catalogue card's anatomy, filled ── */
 .pb-first__sheet {
   background: var(--app-surface);
