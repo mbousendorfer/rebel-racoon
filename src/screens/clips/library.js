@@ -9,14 +9,14 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2919";
-import { isFlagOn } from "../../feature-flags.js?v=2919";
-import { renderTopbar } from "../../components/topbar.js?v=2919";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2919";
-import { isDemo } from "../../demo-mode.js?v=2919";
-import { getPosts } from "../../posts-store.js?v=2919";
-import { escapeHtml, plural } from "../../utils.js?v=2919";
-import { networkIcon } from "../../social-profiles.js?v=2919";
+import { navigate } from "../../router.js?v=2920";
+import { isFlagOn } from "../../feature-flags.js?v=2920";
+import { renderTopbar } from "../../components/topbar.js?v=2920";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2920";
+import { isDemo } from "../../demo-mode.js?v=2920";
+import { getPosts } from "../../posts-store.js?v=2920";
+import { escapeHtml, plural } from "../../utils.js?v=2920";
+import { renderAvatar } from "../../social-profiles.js?v=2920";
 import {
   getVideos,
   exampleVideo,
@@ -26,7 +26,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2919";
+} from "../../videos-store.js?v=2920";
 import {
   fmtMs,
   previewMarkup,
@@ -39,7 +39,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2919";
+} from "./shared.js?v=2920";
 
 let target = null;
 let disposeShowcase = null;
@@ -295,6 +295,8 @@ function renderShowcase(v) {
   const clips = showcasePicks(v);
   const pct = (ms) => (ms / v.durationMs) * 100;
   const brand = escapeHtml(scope()?.brandName || scope()?.name || "Your brand");
+  const logo =
+    (scope()?.brandLogos || []).find((l) => /icon/i.test(l.label || l.variant || ""))?.url || scope()?.brandLogo || "";
   const map = v.clips
     .map((c) => {
       const k = clips.indexOf(c);
@@ -345,7 +347,7 @@ function renderShowcase(v) {
                 (c, k) => `<div class="clips-showcase__post" data-k="${k}">
                   <div class="clips-showcase__post-media">${preview(c)}</div>
                   <div class="clips-showcase__post-body">
-                    <span class="clips-showcase__post-head"><i class="${networkIcon(c.network)}"></i><b>${brand}</b></span>
+                    <span class="clips-showcase__post-head">${renderAvatar({ photo: logo, initials: brand.charAt(0), network: c.network, square: true })}<b>${brand}</b></span>
                     <p class="clips-showcase__post-text">${words(c.summary || c.title)}</p>
                     <span class="clips-showcase__post-foot"><span class="ap-status grey">Draft</span></span>
                   </div>

@@ -545,9 +545,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.topic-first__who > i {
-  font-size: var(--sys-icon-css-sm);
-}
 
 /* ── One wire through my mark, 144 × 300 ── */
 :is(.pb-first--topics, .pb-first--insights) .pb-first__wires {

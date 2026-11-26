@@ -629,12 +629,6 @@
   color: var(--ref-color-grey-100);
 }
 
-.clips-showcase__post-head i {
-  flex: none;
-  width: 16px;
-  height: 16px;
-}
-
 .clips-showcase__post-head b {
   overflow: hidden;
   white-space: nowrap;

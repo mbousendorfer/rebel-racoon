@@ -7,9 +7,9 @@
 // as the muted caption, and a DS avatar carrying the brand photo plus a
 // corner network badge.
 
-import { socialAccounts, demoManyProfiles, DEMO_ACCOUNTS } from "./mocks.js?v=2919";
-import { escapeHtml } from "./utils.js?v=2919";
-import { createNotifier } from "./store-utils.js?v=2919";
+import { socialAccounts, demoManyProfiles, DEMO_ACCOUNTS } from "./mocks.js?v=2920";
+import { escapeHtml } from "./utils.js?v=2920";
+import { createNotifier } from "./store-utils.js?v=2920";
 
 // THE network table — every surface that names, badges, counts or colours a
 // network reads it, so a network is spelled one way everywhere. It replaced
@@ -138,6 +138,17 @@ export function renderProfileTag(account, { network } = {}) {
       <span class="profile-tag__name">${escapeHtml(name)}</span>
     </span>
   `;
+}
+
+// The DS avatar of whoever posted: their picture (initials under it, shown if
+// the picture does not load) and, bottom-right, the network they post on — the
+// `.ap-avatar-network` badge, never an icon set beside the name. Organisations
+// are square, people round (DS avatar.md). Decorative: the name sits beside it.
+export function renderAvatar({ photo, initials = BRAND_INITIALS, network, size = 24, square = false } = {}) {
+  const icon = network ? NETWORK_ICON_BY_PLATFORM[normalizeNetwork(network)] : "";
+  return `<span class="ap-avatar size-${size}${square ? " square" : ""}" aria-hidden="true"><span class="ap-avatar-initials">${escapeHtml(initials)}</span>${
+    photo ? `<img src="${escapeHtml(photo)}" alt="" />` : ""
+  }${icon ? `<span class="ap-avatar-network"><i class="${icon}"></i></span>` : ""}</span>`;
 }
 
 // Conversation echo card for a picked profile — matches the selection-echo

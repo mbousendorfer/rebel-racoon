@@ -1970,7 +1970,6 @@ body.has-modal {
   align-items: center;
   gap: var(--ref-spacing-xs);
 }
-.voice-intro__avatar,
 .voice-intro__mark {
   display: grid;
   place-items: center;
@@ -1983,7 +1982,6 @@ body.has-modal {
   font-weight: var(--ref-font-weight-bold);
   color: var(--ref-color-grey-100);
 }
-.voice-intro__avatar img,
 .voice-intro__mark img {
   width: 100%;
   height: 100%;
@@ -2002,9 +2000,6 @@ body.has-modal {
 .voice-intro__who-meta {
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
-}
-.voice-intro__post-net {
-  font-size: var(--sys-icon-css-md);
 }
 .voice-intro__post-text {
   margin: var(--ref-spacing-sm) 0 0;

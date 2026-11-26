@@ -8,9 +8,9 @@
 // What only the rosters use (the open detail modal, the scan, the add
 // dialog's draft) lives here.
 
-import { escapeHtml as esc, hostname } from "./utils.js?v=2919";
-import { discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2919";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2919";
+import { escapeHtml as esc, hostname } from "./utils.js?v=2920";
+import { discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2920";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2920";
 
 let rosterModal = null; // open competitor/influencer detail modal: { kind, index } or null
 let rosterScanning = null; // roster whose "Discover" scan is in flight ("competitors") or null — Influencers has no Discover

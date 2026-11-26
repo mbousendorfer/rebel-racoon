@@ -12,19 +12,19 @@ import {
   canDelete,
   canView,
   usableContexts,
-} from "../../playbook-access.js?v=2919";
-import { isFlagOn } from "../../feature-flags.js?v=2919";
-import { escapeAttr, escapeText } from "../../utils.js?v=2919";
-import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2919";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2919";
-import { getSessions } from "../../sessions-store.js?v=2919";
-import { renderEmptyState } from "../../components/empty-state.js?v=2919";
-import { getSources, getIdeas } from "../../library.js?v=2919";
-import { getPosts } from "../../posts-store.js?v=2919";
-import { getContextById } from "../../contexts-store.js?v=2919";
-import { voicesToFinish } from "../../voice-parts.js?v=2919";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2919";
-import { pageState } from "../home.js?v=2919";
+} from "../../playbook-access.js?v=2920";
+import { isFlagOn } from "../../feature-flags.js?v=2920";
+import { escapeAttr, escapeText } from "../../utils.js?v=2920";
+import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2920";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2920";
+import { getSessions } from "../../sessions-store.js?v=2920";
+import { renderEmptyState } from "../../components/empty-state.js?v=2920";
+import { getSources, getIdeas } from "../../library.js?v=2920";
+import { getPosts } from "../../posts-store.js?v=2920";
+import { getContextById } from "../../contexts-store.js?v=2920";
+import { voicesToFinish } from "../../voice-parts.js?v=2920";
+import { networkIcon, networkLabel, renderAvatar } from "../../social-profiles.js?v=2920";
+import { pageState } from "../home.js?v=2920";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -325,16 +325,16 @@ const FIRST_RUN_PARTS = [
 ];
 const FIRST_RUN_POSTS = [
   {
-    network: "ap-icon-linkedin-official",
+    network: "linkedin",
     text: "[Regulars]{audience}, this week's [guest roast]{business} is in: Ethiopia Guji. Bright, a little berry. [Come taste it before it's gone.]{voice}",
   },
   {
-    network: "ap-icon-instagram-official",
+    network: "instagram",
     image: true,
     text: "[Saturday brunch]{business}, flat white on the side. [See you at 10?]{voice}",
   },
   {
-    network: "ap-icon-facebook-official",
+    network: "facebook",
     text: "[Home brewers]{audience}: the [autumn blend]{business} is back in 250 g bags. [Grab one on your way out.]{voice}",
   },
 ];
@@ -362,7 +362,6 @@ export function firstRunText(text) {
 }
 
 function renderPlaybooksFirstRun() {
-  const logo = `<span class="pb-first__logo">B</span>`;
   const parts = FIRST_RUN_PARTS.map(
     (p, i) => `
       <li class="pb-first__part" style="--i:${i}">
@@ -381,7 +380,7 @@ function renderPlaybooksFirstRun() {
       <div class="pb-first__post${post.image ? " pb-first__post--image" : ""}" style="--k:${k}">
         ${post.image ? `<span class="pb-first__photo"><span class="pb-first__cup"></span></span>` : ""}
         <div class="pb-first__post-body">
-          <div class="pb-first__post-head">${logo}<span>Bramble &amp; Bean</span><i class="${post.network}"></i></div>
+          <div class="pb-first__post-head">${renderAvatar({ photo: "assets/avatars/bramble-bean.svg", initials: "B", network: post.network, square: true })}<span>Bramble &amp; Bean</span></div>
           <p class="pb-first__post-text">${firstRunText(post.text)}</p>
         </div>
       </div>`,

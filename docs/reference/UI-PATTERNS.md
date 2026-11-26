@@ -184,6 +184,10 @@ Trois écarts assumés à la recette, appris en construisant cette page :
 
 `.ap-filter-chip` piloté par `aria-pressed`, `-count` optionnel. Les slots `-icon` / `-avatar` ont été écrits puis jamais utilisés — ils sont partis avec la passe de CSS mort ; les remettre est un `git revert`, pas une réinvention. Partout : connectors-view, playbook-view, playbook-brand-kit, right-panel/ideas-view, feedback-control, objective-modal, bug-report-modal, schedule-modal (+ legacy), image-studio.
 
+### Qui a posté — l'avatar DS et son badge réseau
+
+L'auteur d'un post (vrai ou d'exemple) = **`.ap-avatar` avec son `.ap-avatar-network` en bas à droite**, puis le nom. **Jamais une icône de réseau posée à côté du nom.** `renderAvatar({ photo, initials, network, size, square })` dans [`social-profiles.js`](../../src/social-profiles.js) l'écrit (`renderProfileTag` / `renderProfileEchoCard` pour un compte connecté) : la photo, les initiales dessous si elle ne charge pas, le badge du réseau. Une organisation est carrée (`.square`), une personne ronde (DS `avatar.md`). Repris le 2026-11-26 dans les scènes d'état vide (Playbooks, Topic Feed, Insights, vitrine Clips) et le post de l'intro des voix ; une icône de réseau seule reste juste là où elle marque le réseau d'un draft (lignes de planning, Overview), pas un auteur.
+
 ### Status pills
 
 DS `.ap-status` + `blue|green|grey|orange|mermaid` (mermaid patché ; le DS a aussi `red` et `tagOrange`). Les états de travail in-conversation utilisent `mermaid` (butter + dot olive).

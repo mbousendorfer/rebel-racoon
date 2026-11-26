@@ -31,26 +31,27 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=2919";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2919";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=2919";
+import { html, raw } from "../../utils.js?v=2920";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2920";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=2920";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=2919";
-import { getPath, navigate } from "../../router.js?v=2919";
-import { isFlagOn } from "../../feature-flags.js?v=2919";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2919";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2919";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=2919";
-import { openNewPlaybookFlow } from "../../context-builder.js?v=2919";
-import { firstRunText, FIRST_RUN_BRAND } from "../home/lists.js?v=2919";
-import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=2919";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=2919";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=2919";
-import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=2919";
+} from "../../active-playbook.js?v=2920";
+import { getPath, navigate } from "../../router.js?v=2920";
+import { isFlagOn } from "../../feature-flags.js?v=2920";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2920";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2920";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=2920";
+import { openNewPlaybookFlow } from "../../context-builder.js?v=2920";
+import { renderAvatar } from "../../social-profiles.js?v=2920";
+import { firstRunText, FIRST_RUN_BRAND } from "../home/lists.js?v=2920";
+import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=2920";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=2920";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=2920";
+import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=2920";
 
 // ── Module state ──────────────────────────────────────────────────────────
 
@@ -123,7 +124,7 @@ function renderEmpty(ctx) {
     (p, k) => `
       <div class="topic-first__post" style="--k:${k}">
         <img class="topic-first__photo" src="${FIRST_RUN_PHOTO(p.photo)}" alt="" loading="lazy" />
-        <span class="topic-first__who"><span class="ap-avatar size-24"><img src="assets/avatars/bramble-bean.svg" alt="" /></span><span>Bramble &amp; Bean</span><i class="ap-icon-${p.network}-official"></i></span>
+        <span class="topic-first__who">${renderAvatar({ photo: "assets/avatars/bramble-bean.svg", initials: "B", network: p.network, square: true })}<span>Bramble &amp; Bean</span></span>
       </div>`,
   ).join("");
   const measures = FIRST_RUN_MEASURES.map(

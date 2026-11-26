@@ -26,11 +26,11 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2919";
-import { getContextById } from "../contexts-store.js?v=2919";
-import { playbookForNewWork } from "../active-playbook.js?v=2919";
-import { isNewUser } from "../user-mode.js?v=2919";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2919";
+} from "../modal-coordinator.js?v=2920";
+import { getContextById } from "../contexts-store.js?v=2920";
+import { playbookForNewWork } from "../active-playbook.js?v=2920";
+import { isNewUser } from "../user-mode.js?v=2920";
+import { networkLabel, networkIcon, renderAvatar } from "../social-profiles.js?v=2920";
 import {
   networkVoice,
   voiceNetworks,
@@ -39,7 +39,7 @@ import {
   baseValue,
   voiceItemsHtml,
   voiceNetTagHtml,
-} from "../voice-parts.js?v=2919";
+} from "../voice-parts.js?v=2920";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -48,11 +48,11 @@ import {
   voiceChoices,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2919";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2919";
-import "../archie-pixels.js?v=2919";
-import { navigate } from "../router.js?v=2919";
-import { escapeHtml } from "../utils.js?v=2919";
+} from "../network-voice-flow.js?v=2920";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2920";
+import "../archie-pixels.js?v=2920";
+import { navigate } from "../router.js?v=2920";
+import { escapeHtml } from "../utils.js?v=2920";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -122,8 +122,9 @@ const traitsHtml = (list) =>
 
 // The Brand's square mark — its icon logo; the wordmark would be a smudge at
 // avatar size. Else its initial.
+const brandIcon = (ctx) => (ctx?.brandLogos || []).find((l) => l.variant === "icon")?.url || "";
 const brandMark = (ctx) => {
-  const icon = (ctx?.brandLogos || []).find((l) => l.variant === "icon")?.url;
+  const icon = brandIcon(ctx);
   return icon
     ? `<img src="${escapeHtml(icon)}" alt="" />`
     : `<span>${escapeHtml(brandOf(ctx).charAt(0).toUpperCase())}</span>`;
@@ -136,12 +137,11 @@ function postCardHtml(ctx, net, meta = null) {
   return `
     <article class="voice-intro__post" aria-label="${escapeHtml(label)} post">
       <header class="voice-intro__post-head">
-        <span class="voice-intro__avatar">${brandMark(ctx)}</span>
+        ${renderAvatar({ photo: brandIcon(ctx), initials: brandOf(ctx).charAt(0).toUpperCase(), network: net === "brand" ? "" : net, size: 32, square: true })}
         <span class="voice-intro__who">
           <span class="voice-intro__who-name">${escapeHtml(brandOf(ctx))}</span>
           <span class="voice-intro__who-meta">${escapeHtml(meta || (isBase ? "Default voice · every network" : label))}</span>
         </span>
-        ${net === "brand" ? "" : `<i class="${networkIcon(net)} voice-intro__post-net" aria-hidden="true"></i>`}
       </header>
       <p class="voice-intro__post-text">${wordsHtml(fill(NETWORK_VOICE_SAMPLE[net] || NETWORK_VOICE_SAMPLE.brand, ctx))}</p>
       ${traitsHtml(traitsOf(ctx, net))}

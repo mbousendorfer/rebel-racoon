@@ -413,11 +413,8 @@ body.empty-state-ground .pb-first__stage::before {
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
 }
-.pb-first__post-head span:not(.pb-first__logo) {
+.pb-first__post-head > span:not(.ap-avatar) {
   flex: 1;
-}
-.pb-first__post-head i {
-  font-size: var(--sys-icon-css-sm);
 }
 .pb-first__post-text {
   margin: 0;
