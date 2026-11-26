@@ -1,0 +1,83 @@
+/* The Admin panel (⇧D, src/components/admin-panel.js): a sheet on the right,
+   over the app, hidden from testers. Its content is the admin menu
+   (.admin-menu__*, styled in sidebar.css where it was born) and the chat
+   catalogue (.chat-gallery__*, session.css). */
+.admin-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100; /* over the modals (1000): it can drive them */
+  display: flex;
+  flex-direction: column;
+  width: 380px;
+  max-width: 100vw;
+  border-left: 1px solid var(--ref-color-grey-20);
+  background: var(--ref-color-white);
+  box-shadow: var(--app-shadow-drawer-left);
+  animation: admin-panel-in var(--ref-animation-normal) var(--app-ease-standard);
+}
+
+.admin-panel[hidden] {
+  display: none;
+}
+
+@keyframes admin-panel-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+
+.admin-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-sm) var(--ref-spacing-xxs);
+}
+
+.admin-panel__title {
+  margin: 0;
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.admin-panel__hint {
+  margin: var(--ref-spacing-xxxs) 0 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.admin-panel__hint kbd {
+  font: inherit;
+}
+
+.admin-panel__tabs {
+  padding: 0 var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+
+.admin-panel__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  overflow-y: auto;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-md);
+}
+
+/* The catalogue's entries sit in the panel, not in a floating dropdown. */
+.chat-gallery__list {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-panel {
+    animation: none;
+  }
+}

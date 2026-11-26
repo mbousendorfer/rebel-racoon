@@ -1997,37 +1997,13 @@ archie-pixels.empty-chat__pixels {
   }
 }
 
-/* "ADMIN MODE: DISPLAY IN CHAT" — the prototype's catalogue of chat elements, a link in the
-   composer hint row whose DS action dropdown opens upward (chat-gallery.js). */
-.chat-gallery {
-  position: relative;
-  display: inline-flex;
-}
-
-.chat-gallery__toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  font-size: inherit;
-}
-
-.chat-gallery__menu {
-  position: absolute;
-  bottom: calc(100% + var(--ref-spacing-xxs));
-  right: 0;
-  z-index: 30;
-  width: 300px;
-  max-height: 60vh;
-  overflow-y: auto;
-  text-align: left;
-}
-
+/* The chat catalogue — a section of the Admin panel (⇧D, chat-gallery.js). */
 /* The search stays on top while the entries scroll under it. */
 .chat-gallery__search {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: inherit;
+  background: var(--ref-color-white);
 }
 
 .chat-gallery__empty {

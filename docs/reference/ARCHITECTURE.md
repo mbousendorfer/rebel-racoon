@@ -149,7 +149,7 @@ src/
   folders-store.js      — save-to-folder store; feedback-store.js — feedback submissions
   languages.js          — language catalog for multilingual Playbooks
   url-services.js       — recognises a service (Notion/Google Docs/…) from a pasted URL
-  admin-menu.js         — sidebar cog Admin popover (user mode + feature flags + docs)
+  admin-menu.js         — the Admin panel's Settings tab (user mode + feature flags + docs)
   caption-editor.js     — the clip caption editor (word marks, drag handles, presets)
   clip-captions.js      — caption preset catalog + the mock transcript they render
   clip-subtitles.js     — the subtitle-style picker's rendered samples
@@ -188,7 +188,7 @@ src/
       workflow-flow.js    — the "How it works" block both studios share
       wizard-keyboard.js  — keyboard nav (↑↓ / 1–9 / Enter / Esc) for the picker
       clip-draft-flow.js  — "draft from clips" picker (ratio → subtitles → accounts → generate) + clipContext; the only external caller (right-panel) imports THIS, not the whole session screen
-      chat-gallery.js     — « Admin: preview in chat » (flag `chatPreviewTool`): every element a chat can show, played on demand
+      chat-gallery.js     — the Admin panel's Preview in chat tab: every element a chat can show, played on demand
       home-directions.js  — a new chat's home, the directions under comparison (flags `home*`)
       drafts-asks.js      — what a typed ask does to the drafts (delete all, rewrite, translate, regenerate, first comment, review, image, schedule + the planner): routeTypedAsk, askSwitchPostPlan, openPlanInModal
 
@@ -222,6 +222,7 @@ src/
     shortcut-legend.js    ? key dialog
     # Modals (init → open → close, coordinated by modal-coordinator.js):
     add-source-modal.js   Upload / URL / Connectors tabs
+    admin-panel.js        the Admin panel, ⇧D only (Settings · Preview in chat)
     connectors-modal.js   connectors gallery + detail overlay (from composer Add / Sources panel / page)
     topic-picker-modal.js one dialog, two views — the picker's list, and the article
     topic-ignore-modal.js "Why did this Topic miss the mark?" — the reason, kept

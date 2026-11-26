@@ -1,4 +1,4 @@
-// "Admin: preview in chat" — a prototype shortcut under the composer that lists every
+// The chat catalogue — a section of the Admin panel (⇧D) that lists every
 // element a conversation can display and every trigger that produces one, and
 // plays any of them in the current chat.
 //
@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml, fold } from "../../utils.js?v=2860";
-import { isFlagOn } from "../../feature-flags.js?v=2860";
+import { escapeHtml, fold } from "../../utils.js?v=2862";
+import { isFlagOn } from "../../feature-flags.js?v=2862";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -35,25 +35,25 @@ import {
   getThread,
   refreshThread,
   postVoiceTurn,
-} from "../../assistant.js?v=2860";
-import { getSources, getIdeas } from "../../library.js?v=2860";
-import { getPosts } from "../../posts-store.js?v=2860";
-import { getTopPosts } from "../../top-posts-store.js?v=2860";
-import { getConnectedProfiles } from "../../social-profiles.js?v=2860";
-import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2860";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2860";
-import { detectUrlService } from "../../url-services.js?v=2860";
-import * as inlineQuestion from "../../inline-question.js?v=2860";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=2860";
-import { startTopicPickerInline } from "../../topic-flow.js?v=2860";
-import { askConnector } from "../../connector-ask.js?v=2860";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2860";
-import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2860";
-import { sessionPlaybookId } from "../../active-playbook.js?v=2860";
-import { getContextById } from "../../contexts-store.js?v=2860";
-import { voiceNetworks, networkVoice, adaptNetworkVoice } from "../../voice-parts.js?v=2860";
-import { requireNetworkVoices, giveNetworkVoice } from "../../network-voice-flow.js?v=2860";
-import { offerVoiceUpdate } from "../../components/feedback-control.js?v=2860";
+} from "../../assistant.js?v=2862";
+import { getSources, getIdeas } from "../../library.js?v=2862";
+import { getPosts } from "../../posts-store.js?v=2862";
+import { getTopPosts } from "../../top-posts-store.js?v=2862";
+import { getConnectedProfiles } from "../../social-profiles.js?v=2862";
+import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2862";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2862";
+import { detectUrlService } from "../../url-services.js?v=2862";
+import * as inlineQuestion from "../../inline-question.js?v=2862";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=2862";
+import { startTopicPickerInline } from "../../topic-flow.js?v=2862";
+import { askConnector } from "../../connector-ask.js?v=2862";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2862";
+import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2862";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2862";
+import { getContextById } from "../../contexts-store.js?v=2862";
+import { voiceNetworks, networkVoice, adaptNetworkVoice } from "../../voice-parts.js?v=2862";
+import { requireNetworkVoices, giveNetworkVoice } from "../../network-voice-flow.js?v=2862";
+import { offerVoiceUpdate } from "../../components/feedback-control.js?v=2862";
 
 // The intake sample plays the real lifecycle — loading, then ready — under a
 // sample id no source owns, so intake-lifecycle leaves it alone.
@@ -542,17 +542,36 @@ const GROUPS = [
 ];
 const ALL = GROUPS.flatMap((g) => g.items);
 
-// The link + an empty menu; the items are built on open, so their availability
-// reads the chat as it is at that moment.
-export function renderChatGallery() {
+// The chat the catalogue plays in: session.js registers it when it binds a
+// chat (with `send`, which submits a prompt through the composer). It is live
+// only while that chat is on screen.
+let host = null;
+export function setChatGalleryHost(h) {
+  host = h;
+}
+const liveHost = () => (host && window.location.hash.split("?")[0] === `#/session/${host.session.id}` ? host : null);
+
+// A section of the Admin panel (⇧D, components/admin-panel.js). It used to be
+// « Admin: preview in chat », a link under the composer. Built on open, so each
+// entry's availability reads the chat as it is at that moment.
+export function renderChatGalleryPanel() {
+  const h = liveHost();
+  const body = h
+    ? `
+      <div class="ap-select-search chat-gallery__search">
+        <i class="ap-icon-search ap-select-search-icon" aria-hidden="true"></i>
+        <input type="search" class="ap-select-search-input" placeholder="Search elements and triggers…" aria-label="Search elements and triggers" data-chat-gallery-search-input />
+      </div>
+      <div class="chat-gallery__list">
+        ${GROUPS.map(
+          (g, i) =>
+            `<div data-chat-gallery-section>${i ? `<div class="ap-action-dropdown-divider" role="separator"></div>` : ""}<div class="chat-gallery__group">${g.title}</div>${g.items.map((it) => renderItem(it, h.session, g.title)).join("")}</div>`,
+        ).join("")}
+        <p class="chat-gallery__empty" data-chat-gallery-empty hidden>No match. Try another word.</p>
+      </div>`
+    : `<span class="admin-menu__opt-hint">Open a chat to play its elements and triggers in it.</span>`;
   return `
-    <span class="chat-gallery">
-      <button type="button" class="ap-link chat-gallery__toggle" data-chat-gallery-toggle aria-haspopup="menu" aria-expanded="false">
-        <i class="ap-icon-illuminati" aria-hidden="true"></i> Admin: preview in chat <i class="ap-icon-chevron-down" aria-hidden="true"></i>
-      </button>
-      <div class="ap-action-dropdown chat-gallery__menu" data-chat-gallery-menu role="menu" hidden></div>
-    </span>
-  `;
+    <div class="admin-menu__section chat-gallery">${body}</div>`;
 }
 
 // `group`: its title, so searching a group's name finds all its entries.
@@ -560,7 +579,7 @@ function renderItem(item, session, group = "") {
   const reason = item.when?.(session.id, session) || null;
   const search = escapeHtml(fold(`${group} ${item.label} ${item.hint} ${item.prompt || ""}`));
   return `
-    <button type="button" class="ap-action-dropdown-item has-description" role="menuitem" data-chat-gallery-item="${item.id}" data-chat-gallery-search="${search}" ${reason ? "disabled" : ""}>
+    <button type="button" class="ap-action-dropdown-item has-description" data-chat-gallery-item="${item.id}" data-chat-gallery-search="${search}" ${reason ? "disabled" : ""}>
       <i class="${item.icon}" aria-hidden="true"></i>
       <div class="ap-action-dropdown-item-text">
         <div class="ap-action-dropdown-item-label-container">
@@ -572,50 +591,13 @@ function renderItem(item, session, group = "") {
   `;
 }
 
-export function closeChatGallery(root) {
-  const menu = root.querySelector("[data-chat-gallery-menu]");
-  if (!menu || menu.hidden) return;
-  menu.hidden = true;
-  root.querySelector("[data-chat-gallery-toggle]")?.setAttribute("aria-expanded", "false");
+// Plays one entry in the chat on screen.
+export function runChatGalleryItem(id) {
+  const h = liveHost();
+  if (h) ALL.find((i) => i.id === id)?.run(h.session.id, h.session, h.send);
 }
 
-// Click delegate for the link and its menu. Returns true when it took the click.
-// `send(text)` submits a prompt through the composer.
-export function onChatGalleryClick(event, root, session, send) {
-  const toggle = event.target.closest("[data-chat-gallery-toggle]");
-  if (toggle) {
-    const menu = root.querySelector("[data-chat-gallery-menu]");
-    const open = menu.hidden;
-    if (open) {
-      // The search filters the entries in place; a group with none left hides.
-      menu.innerHTML = `
-        <div class="ap-select-search chat-gallery__search">
-          <i class="ap-icon-search ap-select-search-icon" aria-hidden="true"></i>
-          <input type="search" class="ap-select-search-input" placeholder="Search elements and triggers…" aria-label="Search elements and triggers" data-chat-gallery-search-input />
-        </div>
-        ${GROUPS.map(
-          (g, i) =>
-            `<div data-chat-gallery-section>${i ? `<div class="ap-action-dropdown-divider" role="separator"></div>` : ""}<div class="chat-gallery__group">${g.title}</div>${g.items.map((it) => renderItem(it, session, g.title)).join("")}</div>`,
-        ).join("")}
-        <p class="chat-gallery__empty" data-chat-gallery-empty hidden>No match. Try another word.</p>`;
-      menu.oninput = (e) => filterChatGallery(menu, e.target.value);
-    }
-    menu.hidden = !open;
-    toggle.setAttribute("aria-expanded", String(open));
-    if (open) menu.querySelector("[data-chat-gallery-search-input]")?.focus();
-    return true;
-  }
-  const btn = event.target.closest("[data-chat-gallery-item]");
-  if (btn) {
-    closeChatGallery(root);
-    ALL.find((i) => i.id === btn.dataset.chatGalleryItem)?.run(session.id, session, send);
-    return true;
-  }
-  if (!event.target.closest("[data-chat-gallery-menu]")) closeChatGallery(root);
-  return false;
-}
-
-function filterChatGallery(menu, query) {
+export function filterChatGallery(menu, query) {
   const q = fold(query.trim());
   let shown = 0;
   menu.querySelectorAll("[data-chat-gallery-section]").forEach((section) => {

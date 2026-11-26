@@ -350,19 +350,6 @@ export const FLAGS = Object.freeze([
       "When ON, a new chat shows the wordmark, one line and the composer with a grey drawer tucked under its card: five flows as tabs (video clips, top posts, from a source, Topics, write a post), the chosen one's four example requests below, and a lip to hide or show it. Pointing at a request writes it in the box as a ghost; a click sends it and runs that flow, except « Write a post », whose requests only fill the box. Replaces the workflow rows and the Topics row.",
   },
   {
-    id: "chatPreviewTool",
-    group: "Chat & drafts",
-    tip: "Shows « Admin: preview in chat » under the composer: every chat element and trigger, played in the current chat.",
-    label: "Admin: preview in chat",
-    // ON again (2026-11-03, asked: « remets le mode admin sous le composer »);
-    // it was OFF from the UI polish of 2026-10-30 (CH-17). OFF hides the link.
-    default: true,
-    hides:
-      "When ON, the composer's hint row carries « Admin: preview in chat », the " +
-      "prototype's catalogue of chat elements and triggers (chat-gallery.js). " +
-      "ON by default (it was OFF from 2026-10-30 to 2026-11-03): turn it off to see the hero without it.",
-  },
-  {
     id: "demoMode",
     group: "Onboarding",
     tip: "From the first screen, try Archie on a made-up brand (Bramble & Bean) with pretend accounts — one wave of drafts, nothing can be scheduled.",

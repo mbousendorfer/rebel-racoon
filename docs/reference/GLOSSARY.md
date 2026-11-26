@@ -143,7 +143,7 @@ Une **source live MCP-queryable** (Notion, Slite, Google Drive, Slack, …) que 
 - Une requête déclenche un round-trip MCP simulé (reasoning chip « Searching X… » (then « Searched X ») + réponse citée)
 - Géré par [`connectors-store.js`](../../src/connectors-store.js), `status` `connected` / `disconnected`
 
-**Feature flag `connectors`** : default OFF. Activable dans le popover Admin (cog en pied de sidebar).
+**Feature flag `connectors`** : default OFF. Activable dans le panneau Admin (⇧D).
 
 ### Studio (⚠️ deux sens)
 
@@ -188,7 +188,7 @@ Le vocabulaire de l'appartenance d'un Playbook. **Trois portées**, et ce qui le
 - `"returning"` (default) — stores seedent depuis `mocks.js`, expérience d'un utilisateur établi
 - `"new-alt"` — stores vides, force le redirect `/` → `/welcome-alt` (onboarding)
 
-Switch UI : popover Admin (cog en pied de sidebar). Un reload est forcé pour que les stores re-seedent.
+Switch UI : panneau Admin (⇧D). Un reload est forcé pour que les stores re-seedent.
 
 ## Vocabulaire UI à éviter
 

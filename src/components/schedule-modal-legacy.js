@@ -1,15 +1,15 @@
-import { html, raw, escapeText } from "../utils.js?v=2860";
-import { showToast } from "./toast.js?v=2860";
-import { bindReorder } from "../drag-reorder.js?v=2860";
+import { html, raw, escapeText } from "../utils.js?v=2862";
+import { showToast } from "./toast.js?v=2862";
+import { bindReorder } from "../drag-reorder.js?v=2862";
 import {
   getQueueOn,
   busyCountsByDay,
   dayKey,
   addToQueue,
   subscribe as subscribeQueue,
-} from "../schedule-store.js?v=2860";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2860";
-import { renderProfileTag, profileForNetwork } from "../social-profiles.js?v=2860";
+} from "../schedule-store.js?v=2862";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2862";
+import { renderProfileTag, profileForNetwork } from "../social-profiles.js?v=2862";
 // The optimal-times map and the date helpers are the engine's; this file keeps
 // only what differs (its CADENCES wording, its NETWORK_ICON).
 import {
@@ -18,8 +18,8 @@ import {
   startOfDay,
   defaultStartFrom,
   pickHour,
-} from "../schedule-engine.js?v=2860";
-import { toDateInput, toLocalInput } from "./schedule-modal.js?v=2860";
+} from "../schedule-engine.js?v=2862";
+import { toDateInput, toLocalInput } from "./schedule-modal.js?v=2862";
 
 // ⚠️ LEGACY — the schedule modal as it was before the redesign, kept behind
 // the `newScheduleModal` flag ("New SM", default ON) so the two can be

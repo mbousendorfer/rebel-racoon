@@ -140,7 +140,7 @@ if (isFlagOn("connectors")) showConnectorsNav();
 - [`src/feature-flags.js`](../../src/feature-flags.js) — get/set, store dans localStorage
 - [`src/ff-catalog.js`](../../src/ff-catalog.js) — catalogue avec defaults
 
-Switch UI : le cog de la sidebar → **Admin** (un reload est forcé pour que les stores re-seedent).
+Switch UI : le panneau **Admin** (⇧D) (un reload est forcé pour que les stores re-seedent).
 
 ## Invariants
 

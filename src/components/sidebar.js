@@ -1,39 +1,29 @@
-import { html, newChatPath, raw } from "../utils.js?v=2860";
-import { navigate, getPath } from "../router.js?v=2860";
-import { open as openBugReportModal } from "./bug-report-modal.js?v=2860";
-import { open as openFeedbackModal } from "./feedback-modal.js?v=2860";
-import { open as openSearchModal } from "./search-modal.js?v=2860";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2860";
-import {
-  renderAdminMenu,
-  applyUserMode,
-  applyOrgRole,
-  toggleFlag,
-  toggleNetwork,
-  replayVoiceIntro,
-  resetNetworkVoices,
-  armClipsFailure,
-} from "../admin-menu.js?v=2860";
-import { subscribe as subscribeSessions } from "../sessions-store.js?v=2860";
-import { isFlagOn } from "../feature-flags.js?v=2860";
-import { subscribe as subscribeContexts } from "../contexts-store.js?v=2860";
+import { html, newChatPath, raw } from "../utils.js?v=2862";
+import { navigate, getPath } from "../router.js?v=2862";
+import { open as openBugReportModal } from "./bug-report-modal.js?v=2862";
+import { open as openFeedbackModal } from "./feedback-modal.js?v=2862";
+import { open as openSearchModal } from "./search-modal.js?v=2862";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2862";
+import { subscribe as subscribeSessions } from "../sessions-store.js?v=2862";
+import { isFlagOn } from "../feature-flags.js?v=2862";
+import { subscribe as subscribeContexts } from "../contexts-store.js?v=2862";
 import {
   getActivePlaybook,
   isWorkspaceMode,
   playbookForNewWork,
   catalogueRoute,
   subscribe as subscribeScope,
-} from "../active-playbook.js?v=2860";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2860";
+} from "../active-playbook.js?v=2862";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2862";
 // A Playbook nobody shared with me must not surface here either — the store
 // still holds it (see playbook-access.js), the sidebar just doesn't name it.
-import { visibleContexts } from "../playbook-access.js?v=2860";
-import { voicesToFinish } from "../voice-parts.js?v=2860";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2860";
-import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=2860";
-import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=2860";
-import { getVideos } from "../videos-store.js?v=2860";
-import { closePanel as closeRightPanel } from "./right-panel.js?v=2860";
+import { visibleContexts } from "../playbook-access.js?v=2862";
+import { voicesToFinish } from "../voice-parts.js?v=2862";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2862";
+import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=2862";
+import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=2862";
+import { getVideos } from "../videos-store.js?v=2862";
+import { closePanel as closeRightPanel } from "./right-panel.js?v=2862";
 import {
   deleteSidebarSession,
   matchSessionId,
@@ -41,9 +31,9 @@ import {
   renderRecentLists,
   startRenameSidebar,
   togglePinSidebar,
-} from "./sidebar/recent-chats.js?v=2860";
-import { renderPlaybookSwitcher, switchPlaybook } from "./sidebar/playbook-switcher.js?v=2860";
-import { renderDemoCard, confirmExitDemo } from "../demo-flow.js?v=2860";
+} from "./sidebar/recent-chats.js?v=2862";
+import { renderPlaybookSwitcher, switchPlaybook } from "./sidebar/playbook-switcher.js?v=2862";
+import { renderDemoCard, confirmExitDemo } from "../demo-flow.js?v=2862";
 
 // Global app sidebar — Brand / + New conversation / Recent chats / User footer.
 // Rendered once at boot into #sidebar; re-rendered on every route change so the
@@ -340,32 +330,6 @@ export function initSidebar() {
       toggleShortcutLegend();
       return;
     }
-    // Admin (cog popover) — feature-flag toggle. Reloads so stores re-read it.
-    const flagRow = event.target.closest("[data-admin-flag]");
-    if (flagRow) {
-      event.preventDefault();
-      toggleFlag(flagRow.dataset.adminFlag);
-    }
-    const networkRow = event.target.closest("[data-admin-network]");
-    if (networkRow) {
-      event.preventDefault();
-      toggleNetwork(networkRow.dataset.adminNetwork);
-    }
-    if (event.target.closest("[data-admin-voice-intro]")) replayVoiceIntro();
-    if (event.target.closest("[data-admin-voice-reset]")) resetNetworkVoices();
-    const fail = event.target.closest("[data-admin-clips-fail]");
-    if (fail) armClipsFailure(fail.dataset.adminClipsFail);
-  });
-
-  // Admin (cog popover) — user-mode and org-role radios both apply + reload.
-  el.addEventListener("change", (event) => {
-    const mode = event.target.closest('[name="sidebar-admin-user-mode"]');
-    if (mode) {
-      applyUserMode(mode.value);
-      return;
-    }
-    const role = event.target.closest('[name="sidebar-admin-org-role"]');
-    if (role) applyOrgRole(role.value);
   });
 
   // A <details> doesn't close itself on an outside click, and this one is the
@@ -586,8 +550,8 @@ function renderFootMenu({ collapsed }) {
         data-sidebar-foot-toggle
         aria-haspopup="menu"
         aria-expanded="false"
-        aria-label="Help, feedback, and prototype settings"
-        title="Help, feedback, and prototype settings"
+        aria-label="Help and feedback"
+        title="Help and feedback"
       >
         <i class="ap-icon-cog"></i>
       </button>
@@ -622,8 +586,6 @@ function renderFootMenu({ collapsed }) {
           </div>
           <kbd class="app-sidebar__foot-kbd">?</kbd>
         </button>
-        <div class="ap-action-dropdown-divider" role="separator"></div>
-        ${renderAdminMenu()}
       </div>
     </div>
   `;

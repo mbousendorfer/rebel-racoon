@@ -649,7 +649,7 @@
   bottom: auto;
 }
 
-/* ── Admin controls inside the cog popover (was the /settings page) ───────── */
+/* ── Admin controls, in the Admin panel (⇧D; was the cog popover, before it the /settings page) */
 .admin-menu {
   display: flex;
   flex-direction: column;

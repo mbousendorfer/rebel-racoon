@@ -1,21 +1,21 @@
 // Admin menu — the prototype-only controls (user mode, feature flags, dev docs)
-// that used to live on the /settings page. Now rendered inside the sidebar
-// foot popmenu (the cog button), so there's no dedicated settings route.
+// that used to live on the /settings page, then in the sidebar cog. Now rendered
+// in the Admin panel (⇧D, components/admin-panel.js), which wires it.
 //
 // Pure-ish: renderAdminMenu() returns the markup; applyUserMode / toggleFlag are
-// the side-effecting actions wired by the sidebar's delegated listeners. Every
+// the side-effecting actions wired by the panel's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2860";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2860";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2860";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2860";
-import { getRole, setRole, ORG } from "./org.js?v=2860";
-import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2860";
-import { resetIntro } from "./components/voice-intro-modal.js?v=2860";
-import { getContexts, updateContext } from "./contexts-store.js?v=2860";
-import { showToast } from "./components/toast.js?v=2860";
-import { failNextAnalysis } from "./videos-store.js?v=2860";
+import { html, raw, escapeHtml } from "./utils.js?v=2862";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2862";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2862";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2862";
+import { getRole, setRole, ORG } from "./org.js?v=2862";
+import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2862";
+import { resetIntro } from "./components/voice-intro-modal.js?v=2862";
+import { getContexts, updateContext } from "./contexts-store.js?v=2862";
+import { showToast } from "./components/toast.js?v=2862";
+import { failNextAnalysis } from "./videos-store.js?v=2862";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
@@ -198,7 +198,7 @@ export function renderAdminMenu() {
           <i class="ap-icon-refresh" aria-hidden="true"></i>
         </button>
         <span class="admin-menu__opt-hint"
-          >In a chat, « Admin: preview in chat › Voice » plays the voice step, a voice change and feedback.</span
+          >In a chat, Preview in chat › Voice (above) plays the voice step, a voice change and feedback.</span
         >
       </div>
       ${raw(
