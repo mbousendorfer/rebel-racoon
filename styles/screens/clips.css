@@ -333,19 +333,17 @@
   display: flex;
 }
 
-/* The showcase, played like the Playbooks' first run, laid out flat
-   (2026-11-26, « trop haut »): the podcast left, its three clips right, the
-   wires arcing over from each moment to its clip (nested: the first moment
-   to the farthest clip). The intro (ms): source 100 · playhead 300 → 1900,
-   each moment as it passes · « N moments found » 1900 · wires 2100 + 140
-   each · clips 2400 + 200 each. Then library.js loops a beat per clip
-   (.is-lit on everything with its data-k): the moment, its wire with a spark
-   running it, the clip ringed in butter, the source and the clip playing.
-   The stage is in fixed pixels (--show-*, set by library.js with the wires'
-   geometry). Reduced motion → the end state at once, no loop. */
+/* The showcase: your video → its clips → their posts, laid flat
+   (2026-11-26). The intro (ms): source 100 · playhead 300 → 1900, each
+   moment as it passes · « N moments found » 1900 · step arrows 2100 · clips
+   2300 + 200 each · Posts 3000. Then library.js loops a beat per clip
+   (.is-lit on everything with its data-k, .is-beat on the stage to replay the
+   arrows): the moment, the clip ringed in butter, its post sliding in and
+   writing itself word by word, the source, the clip and the post playing.
+   Reduced motion → the end state, the first post shown, no loop. */
 .clips-showcase {
   margin: 0;
-  padding: var(--ref-spacing-md) var(--ref-spacing-lg);
+  padding: var(--ref-spacing-lg);
   border-radius: var(--app-radius-lg);
   background: var(--ref-color-grey-05);
   min-width: 0;
@@ -355,31 +353,72 @@
 .clips-showcase__stage {
   position: relative;
   isolation: isolate;
-  display: grid;
-  grid-template-columns: var(--show-w) minmax(0, 1fr);
-  column-gap: var(--show-gap);
-  align-items: start;
-  width: var(--show-total);
-  margin: 0 auto;
-  padding-top: var(--show-arc-h);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--ref-spacing-sm);
 }
 /* A dot field behind the scene, fading out at the edges (the Playbooks' one). */
 .clips-showcase__stage::before {
   content: "";
   position: absolute;
-  inset: -24px -160px;
+  inset: -24px -40px;
   z-index: -1;
   background-image: radial-gradient(var(--ref-color-grey-20) 1.2px, transparent 1.6px);
   background-size: 16px 16px;
   mask-image: radial-gradient(ellipse at center, #000 30%, transparent 70%);
 }
 
+.clips-showcase__col {
+  display: grid;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+}
+
+.clips-showcase__labels {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-showcase__found {
+  font-weight: var(--sys-text-style-caption-weight);
+  color: var(--ref-color-grey-80);
+  animation: clips-show-in 300ms ease-out 1900ms both;
+}
+
+/* Between the steps, an arrow; each beat flashes it, the first then the second. */
+.clips-showcase__step {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 96px; /* level with the frames */
+  color: var(--ref-color-grey-80);
+  animation: clips-show-in 300ms ease-out 2100ms both;
+}
+
+.clips-showcase__stage.is-beat .clips-showcase__step {
+  animation: clips-show-step 700ms ease-in-out 200ms both;
+}
+
+.clips-showcase__stage.is-beat .clips-showcase__step:nth-of-type(2) {
+  animation-delay: 700ms;
+}
+
 /* ── Your video, and me watching it ── */
 .clips-showcase__in {
+  width: 256px;
+  animation: clips-rise var(--ref-animation-long) var(--app-ease-out) 100ms both;
+}
+
+.clips-showcase__track {
   position: relative;
   display: grid;
   gap: var(--ref-spacing-xs);
-  animation: clips-rise var(--ref-animation-long) var(--app-ease-out) 100ms both;
 }
 
 .clips-showcase__source {
@@ -396,13 +435,6 @@
   height: 100%;
   object-fit: cover;
   display: block;
-}
-
-/* The timeline over the video, the playhead's track. */
-.clips-showcase__track {
-  position: relative;
-  display: grid;
-  gap: var(--ref-spacing-xs);
 }
 
 /* The video's length, and every moment in it: the three that become clips
@@ -435,7 +467,7 @@
   box-shadow: 0 0 0 3px var(--app-butter);
 }
 
-/* The playhead: a butter line from the timeline down the video, my mark on
+/* The playhead: a butter line down the video to the timeline, my mark on
    the timeline. It runs once, then the loop moves it from moment to moment. */
 .clips-showcase__head-line {
   position: absolute;
@@ -451,7 +483,7 @@
 
 .clips-showcase__mark {
   position: absolute;
-  top: -9px;
+  bottom: -9px;
   left: -11px;
   display: grid;
   place-items: center;
@@ -466,21 +498,6 @@
 .clips-showcase__mark i {
   width: 14px;
   height: 11px;
-}
-
-.clips-showcase__labels {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
-}
-
-.clips-showcase__found {
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-100);
-  animation: clips-show-in 300ms ease-out 1900ms both;
 }
 
 .clips-showcase__badge,
@@ -502,64 +519,10 @@
   bottom: auto;
 }
 
-/* ── The cut: from each moment, a wire over to its clip ── */
-.clips-showcase__wires {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: var(--show-arc-h);
-}
-
-.clips-showcase__wires svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.clips-showcase__wires path {
-  fill: none;
-  stroke: var(--app-butter-accent);
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-opacity: 0.45;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  transition:
-    stroke-opacity 0.3s ease,
-    stroke-width 0.3s ease;
-  animation: clips-show-stroke 520ms var(--app-ease-out) calc(2100ms + var(--k) * 140ms) forwards;
-}
-
-.clips-showcase__wires path.is-lit {
-  stroke-opacity: 1;
-  stroke-width: 2;
-}
-
-.clips-showcase__spark {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 6px;
-  height: 6px;
-  border-radius: var(--app-radius-circle);
-  background: var(--app-butter-accent);
-  box-shadow: 0 0 0 3px var(--app-butter);
-  offset-rotate: 0deg;
-  offset-anchor: center;
-  opacity: 0;
-}
-
-.clips-showcase__spark.is-lit {
-  animation: clips-show-run 900ms cubic-bezier(0.45, 0, 0.55, 1) 200ms both;
-}
-
-/* ── What comes out: three clips, reframed and subtitled ── */
+/* ── Three clips, reframed and subtitled ── */
 .clips-showcase__clips {
   display: flex;
-  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
   align-items: flex-start;
 }
 
@@ -567,8 +530,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
-  width: var(--show-clip);
-  animation: clips-rise var(--ref-animation-long) var(--app-ease-out) calc(2400ms + var(--s) * 200ms) both;
+  width: 88px;
+  animation: clips-rise var(--ref-animation-long) var(--app-ease-out) calc(2300ms + var(--k) * 200ms) both;
 }
 
 .clips-showcase__frame {
@@ -587,12 +550,12 @@
     0 0 0 6px var(--app-butter);
 }
 
-.clips-showcase__frame .clips-preview {
+.clips-showcase .clips-preview {
   width: 100%;
   height: 100%;
 }
 
-.clips-showcase__frame .clips-preview__caption {
+.clips-showcase .clips-preview__caption {
   font-size: 9px;
 }
 
@@ -607,24 +570,110 @@
   color: var(--ref-color-grey-100);
 }
 
-/* Narrow: the clips alone, at the page's width. */
-@container (max-width: 760px) {
-  .clips-showcase__stage {
-    grid-template-columns: minmax(0, 1fr);
-    width: auto;
-    max-width: 400px;
-    padding-top: 0;
-  }
+/* ── Their posts: the lit clip's, writing itself, the clip inside ── */
+.clips-showcase__out {
+  width: 264px;
+  animation: clips-show-in 400ms ease-out 3000ms both;
+}
+
+.clips-showcase__posts {
+  display: grid;
+}
+
+.clips-showcase__post {
+  grid-area: 1 / 1;
+  display: flex;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+  background: var(--ref-color-white);
+  box-shadow: var(--app-shadow-card);
+  opacity: 0;
+  translate: 0 12px;
+  transition:
+    opacity 0.35s ease,
+    translate 0.35s var(--app-ease-out);
+}
+
+.clips-showcase__post.is-lit {
+  opacity: 1;
+  translate: 0 0;
+  transition-delay: 0.5s;
+}
+
+.clips-showcase__post-media {
+  flex: none;
+  width: 84px;
+  aspect-ratio: 9 / 16;
+  border-radius: var(--app-radius-md);
+  overflow: hidden;
+  background: #000;
+}
+
+.clips-showcase__post-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+  padding-top: var(--ref-spacing-xxs);
+}
+
+.clips-showcase__post-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-showcase__post-head i {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.clips-showcase__post-head b {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.clips-showcase__post-text {
+  flex: 1;
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-100);
+}
+
+/* The words come one by one once the card is in. */
+.clips-showcase__post-text span {
+  opacity: 0;
+}
+
+.clips-showcase__post.is-lit .clips-showcase__post-text span {
+  opacity: 1;
+  animation: clips-show-in 200ms ease-out calc(900ms + var(--i) * 70ms) both;
+}
+
+.clips-showcase__post-foot {
+  display: flex;
+}
+
+/* Narrower: the clips and their posts, without the source. Narrowest: the clips. */
+@container (max-width: 860px) {
   .clips-showcase__in,
-  .clips-showcase__wires {
+  .clips-showcase__step:first-of-type {
     display: none;
   }
-  .clips-showcase__clips {
-    gap: var(--ref-spacing-xs);
-  }
-  .clips-showcase__clip {
-    flex: 1;
-    width: auto;
+}
+
+@container (max-width: 560px) {
+  .clips-showcase__out,
+  .clips-showcase__step {
+    display: none;
   }
 }
 
@@ -652,25 +701,14 @@
     opacity: 0;
   }
 }
-@keyframes clips-show-stroke {
-  to {
-    stroke-dashoffset: 0;
+/* A step arrow, lit as the beat passes it. */
+@keyframes clips-show-step {
+  40% {
+    color: var(--app-butter-accent);
+    translate: 3px 0;
   }
 }
-@keyframes clips-show-run {
-  0% {
-    offset-distance: 0%;
-    opacity: 0;
-  }
-  15%,
-  80% {
-    opacity: 1;
-  }
-  100% {
-    offset-distance: 100%;
-    opacity: 0;
-  }
-}
+
 @keyframes clips-rise {
   from {
     opacity: 0;

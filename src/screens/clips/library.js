@@ -9,13 +9,14 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2892";
-import { isFlagOn } from "../../feature-flags.js?v=2892";
-import { renderTopbar } from "../../components/topbar.js?v=2892";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2892";
-import { isDemo } from "../../demo-mode.js?v=2892";
-import { getPosts } from "../../posts-store.js?v=2892";
-import { escapeHtml, plural } from "../../utils.js?v=2892";
+import { navigate } from "../../router.js?v=2895";
+import { isFlagOn } from "../../feature-flags.js?v=2895";
+import { renderTopbar } from "../../components/topbar.js?v=2895";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2895";
+import { isDemo } from "../../demo-mode.js?v=2895";
+import { getPosts } from "../../posts-store.js?v=2895";
+import { escapeHtml, plural } from "../../utils.js?v=2895";
+import { networkIcon } from "../../social-profiles.js?v=2895";
 import {
   getVideos,
   exampleVideo,
@@ -25,7 +26,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2892";
+} from "../../videos-store.js?v=2895";
 import {
   fmtMs,
   previewMarkup,
@@ -38,7 +39,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2892";
+} from "./shared.js?v=2895";
 
 let target = null;
 let disposeShowcase = null;
@@ -255,24 +256,18 @@ function start() {
   return undefined;
 }
 
-// The showcase, played like the Playbooks' first run (2026-11-26), laid out
-// flat the same day (« trop haut »): the podcast on the left, its three clips
-// on the right, wires arcing over from each moment to its clip. A playhead
-// with my mark runs through the video and its moments land on its timeline as
-// it passes; the wires draw, the clips rise. Then the loop: one clip at a time,
-// the playhead glides to its moment, the video plays it, a spark runs the
-// wire, and the clip plays, all three in butter, so « cut from your video » is
-// something you watch. Decorative: the box above and the caption say it all.
-//
-// The wires live in the stage's own pixels. The arcs nest (the first moment
-// goes to the farthest clip), so they never cross: the clips read right to left.
-const SHOW_W = 296; // the source, 16:9
-const SHOW_CLIP = 100; // a clip, 9:16
-const SHOW_CLIP_GAP = 12;
-const SHOW_GAP = 48; // between the source and the clips
-const SHOW_ARC_H = 64;
-const SHOW_LOOP_START = 3600; // ms, once the intro has played
-const SHOW_BEAT = 2800; // ms per clip
+// The showcase, played like the Playbooks' first run (2026-11-26): the whole
+// way, laid flat in three steps, your video → its clips → their posts. A
+// playhead with my mark runs through the podcast and its moments land on its
+// timeline as it passes; three of them rise as clips, reframed for real. Then
+// the loop, one clip a beat: the playhead glides to its moment and the video
+// plays it, the clip lights in butter and plays, and its post writes itself
+// beside it, the clip inside, so « cut from your video, posted for you » is
+// something you watch. No wires (arcs over the stage were dropped the same
+// day): the beat lights the three steps together. Decorative: the box above
+// and the caption say it all.
+const SHOW_BEAT = 3600; // ms per clip
+const SHOW_LOOP_START = 3400; // ms, once the intro has played
 
 function showcasePicks(v) {
   const n = v.clips.length;
@@ -281,74 +276,86 @@ function showcasePicks(v) {
 
 function renderShowcase(v) {
   const clips = showcasePicks(v);
-  const K = clips.length;
   const pct = (ms) => (ms / v.durationMs) * 100;
-  const clipsW = K * SHOW_CLIP + (K - 1) * SHOW_CLIP_GAP;
-  const total = SHOW_W + SHOW_GAP + clipsW;
-  const slotX = (s) => SHOW_W + SHOW_GAP + s * (SHOW_CLIP + SHOW_CLIP_GAP) + SHOW_CLIP / 2;
-  // Moment k goes to slot K-1-k: the wider the span, the higher the arc.
-  const wires = clips.map((c, k) => {
-    const sx = (pct((c.startMs + c.endMs) / 2) / 100) * SHOW_W;
-    const cx = slotX(K - 1 - k);
-    const h = Math.min((SHOW_ARC_H - 4) / 0.75, Math.max(24, (cx - sx) * 0.16));
-    const y = SHOW_ARC_H;
-    return `M${sx.toFixed(1)} ${y} C ${sx.toFixed(1)} ${(y - h).toFixed(1)}, ${cx.toFixed(1)} ${(y - h).toFixed(1)}, ${cx.toFixed(1)} ${y}`;
-  });
+  const brand = escapeHtml(scope()?.brandName || scope()?.name || "Your brand");
   const map = v.clips
     .map((c) => {
       const k = clips.indexOf(c);
       return `<span class="${k >= 0 ? "is-shown" : ""}" ${k >= 0 ? `data-k="${k}"` : ""} style="--at:${pct(c.startMs).toFixed(1)};left:${pct(c.startMs)}%;width:max(3px, ${pct(c.endMs - c.startMs)}%)"></span>`;
     })
     .join("");
-  const slots = clips
-    .map((_, s) => {
-      const k = K - 1 - s;
-      const c = clips[k];
-      return `<div class="clips-showcase__clip" data-k="${k}" style="--s:${s}">
-        <div class="clips-showcase__frame">
-          ${previewMarkup(v, { ...c, ratio: "9:16" })}
-          <span class="clips-showcase__dur">${fmtMs(c.endMs - c.startMs)}</span>
-        </div>
-        <span class="clips-showcase__title">${escapeHtml(c.title)}</span>
-      </div>`;
-    })
-    .join("");
+  const preview = (c) => previewMarkup(v, { ...c, ratio: "9:16" });
+  const words = (text) =>
+    escapeHtml(text)
+      .split(/\s+/)
+      .map((w, i) => `<span style="--i:${i}">${w}</span>`)
+      .join(" ");
+  const step = '<i class="ap-icon-arrow-right clips-showcase__step"></i>';
   return `
     <div class="clips-showcase">
-      <div class="clips-showcase__stage" style="--show-w:${SHOW_W}px;--show-total:${total}px;--show-gap:${SHOW_GAP}px;--show-clip:${SHOW_CLIP}px;--show-arc-h:${SHOW_ARC_H}px" aria-hidden="true">
-        <div class="clips-showcase__wires">
-          <svg viewBox="0 0 ${total} ${SHOW_ARC_H}">
-            ${wires.map((d, k) => `<path d="${d}" pathLength="1" data-k="${k}" style="--k:${k}" />`).join("")}
-          </svg>
-          ${wires.map((d, k) => `<span class="clips-showcase__spark" data-k="${k}" style="offset-path:path('${d}')"></span>`).join("")}
-        </div>
-        <div class="clips-showcase__in">
+      <div class="clips-showcase__stage" aria-hidden="true">
+        <div class="clips-showcase__col clips-showcase__in">
+          <span class="clips-showcase__labels"><span>Your video</span><span class="clips-showcase__found">${v.clips.length} moments found</span></span>
           <div class="clips-showcase__track">
-            <span class="clips-showcase__map">${map}</span>
             <div class="clips-showcase__source">
               <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline tabindex="-1"></video>
               <span class="clips-showcase__badge">${fmtMs(v.durationMs)}</span>
             </div>
+            <span class="clips-showcase__map">${map}</span>
             <span class="clips-showcase__head-line"><span class="clips-showcase__mark"><i class="ap-icon-archie-official"></i></span></span>
           </div>
-          <span class="clips-showcase__labels">
-            <span>Your video</span>
-            <span class="clips-showcase__found">${v.clips.length} moments found</span>
-          </span>
         </div>
-        <div class="clips-showcase__clips">${slots}</div>
+        ${step}
+        <div class="clips-showcase__col clips-showcase__cut">
+          <span class="clips-showcase__labels"><span>Clips</span></span>
+          <div class="clips-showcase__clips">
+            ${clips
+              .map(
+                (c, k) => `<div class="clips-showcase__clip" data-k="${k}" style="--k:${k}">
+                  <div class="clips-showcase__frame">${preview(c)}<span class="clips-showcase__dur">${fmtMs(c.endMs - c.startMs)}</span></div>
+                  <span class="clips-showcase__title">${escapeHtml(c.title)}</span>
+                </div>`,
+              )
+              .join("")}
+          </div>
+        </div>
+        ${step}
+        <div class="clips-showcase__col clips-showcase__out">
+          <span class="clips-showcase__labels"><span>Posts</span></span>
+          <div class="clips-showcase__posts">
+            ${clips
+              .map(
+                (c, k) => `<div class="clips-showcase__post" data-k="${k}">
+                  <div class="clips-showcase__post-media">${preview(c)}</div>
+                  <div class="clips-showcase__post-body">
+                    <span class="clips-showcase__post-head"><i class="${networkIcon(c.network)}"></i><b>${brand}</b></span>
+                    <p class="clips-showcase__post-text">${words(c.summary || c.title)}</p>
+                    <span class="clips-showcase__post-foot"><span class="ap-status grey">Draft</span></span>
+                  </div>
+                </div>`,
+              )
+              .join("")}
+          </div>
+        </div>
       </div>
     </div>`;
 }
 
-// The loop: every beat lights the next clip with its moment and wire, plays
-// the moment in the source and the clip itself. The previews play on
-// pointerenter (shared.js): the loop sends them that, and lets go of one only
-// when the pointer isn't on it.
+// The loop: every beat lights the next clip, its moment and its post, plays
+// the moment in the source, the clip, and the clip inside its post. The
+// previews play on pointerenter (shared.js): the loop sends them that, and
+// lets go of one only when the pointer isn't on it. Reduced motion: the first
+// post shown, written, nothing plays.
 function playShowcase(root, v) {
-  if (!root || matchMedia("(prefers-reduced-motion: reduce)").matches) return () => {};
+  if (!root) return () => {};
   const clips = showcasePicks(v);
   const stage = root.querySelector(".clips-showcase__stage");
+  const light = (k) =>
+    stage.querySelectorAll("[data-k]").forEach((n) => n.classList.toggle("is-lit", Number(n.dataset.k) === k));
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    light(0);
+    return () => {};
+  }
   const src = root.querySelector(".clips-showcase__source video");
   const head = root.querySelector(".clips-showcase__head-line");
   let k = -1;
@@ -357,11 +364,13 @@ function playShowcase(root, v) {
   const beat = () => {
     k = (k + 1) % clips.length;
     const c = clips[k];
-    stage.querySelectorAll("[data-k]").forEach((n) => n.classList.toggle("is-lit", Number(n.dataset.k) === k));
-    stage.querySelectorAll(".clips-showcase__clip").forEach((slot) => {
-      const p = slot.querySelector("[data-clip-preview]");
-      if (Number(slot.dataset.k) === k) p?.dispatchEvent(new Event("pointerenter"));
-      else if (!p?.matches(":hover")) p?.dispatchEvent(new Event("pointerleave"));
+    light(k);
+    stage.classList.remove("is-beat");
+    void stage.offsetWidth; // restart the step arrows' flash
+    stage.classList.add("is-beat");
+    stage.querySelectorAll("[data-k] [data-clip-preview]").forEach((p) => {
+      if (Number(p.closest("[data-k]").dataset.k) === k) p.dispatchEvent(new Event("pointerenter"));
+      else if (!p.matches(":hover")) p.dispatchEvent(new Event("pointerleave"));
     });
     src.currentTime = c.startMs / 1000 + 0.4;
     src.play().catch(() => {});
