@@ -94,6 +94,264 @@
   padding: var(--ref-spacing-xl) var(--ref-spacing-md);
 }
 
+/* ── First run: no Playbook yet ───────────────────────────────────
+   An example plays once: the Playbook's four parts fill in, Archie reads
+   them, a LinkedIn post types itself from them. Anatomy and gaps from the
+   DS empty-state recipe (illustration ↔ text lg, title ↔ description xxxs,
+   text ↔ actions md, text capped at 420px... widened to 520 here: the
+   sentence defines the object, two lines read better than four). Route tier:
+   .ap-h1 + .ap-subtitle. The stage is wider than the recipe's 345 because it
+   shows two objects side by side; under 560px of room it stacks. Every
+   delay is one timeline (ms): parts 500→2150, link 2700, post 3100,
+   words 3500 + 70 each, « Sounds like » 5400. Reduced motion → the end
+   state at once (base.css). */
+.pb-first {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--ref-spacing-xl) var(--ref-spacing-md);
+  min-height: 60vh;
+  justify-content: center;
+}
+
+.pb-first__stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: left;
+  margin-bottom: var(--ref-spacing-lg);
+}
+
+.pb-first__card {
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  padding: var(--ref-spacing-sm);
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  animation: app-rise 400ms var(--app-ease-out) both;
+}
+.pb-first__playbook {
+  width: 272px;
+}
+.pb-first__post {
+  width: 252px;
+  min-height: 196px;
+  animation-delay: 3100ms;
+}
+
+.pb-first__card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin-bottom: var(--ref-spacing-xs);
+}
+.pb-first__logo {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--app-radius-circle);
+  /* Bramble & Bean's own primary: brand data, not a DS colour. */
+  background: #6b3a22;
+  color: var(--ref-color-white);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  font-size: 12px;
+}
+.pb-first__card-title {
+  flex: 1;
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+.pb-first__example {
+  padding: 0 var(--ref-spacing-xxs);
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-80);
+  font-size: 12px;
+}
+.pb-first__network {
+  font-size: var(--sys-icon-css-sm);
+}
+
+.pb-first__parts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--ref-spacing-xxs);
+}
+.pb-first__part {
+  display: grid;
+  grid-template-columns: 16px 68px 1fr 16px;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxs);
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-80);
+  animation: app-rise 360ms var(--app-ease-out) both;
+  animation-delay: calc(500ms + var(--i) * 550ms);
+}
+.pb-first__part-label {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+.pb-first__part-value {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+}
+.pb-first__part-check {
+  color: var(--ref-color-green-100);
+  animation: pb-first-pop 280ms var(--app-ease-out) both;
+  animation-delay: calc(800ms + var(--i) * 550ms);
+}
+.pb-first__swatches {
+  display: flex;
+  gap: 4px;
+}
+.pb-first__swatches span {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--app-radius-circle);
+  box-shadow: inset 0 0 0 1px var(--ref-color-grey-20);
+  animation: pb-first-pop 240ms var(--app-ease-out) both;
+  animation-delay: 2300ms;
+}
+.pb-first__swatches span:nth-child(2) {
+  animation-delay: 2360ms;
+}
+.pb-first__swatches span:nth-child(3) {
+  animation-delay: 2420ms;
+}
+.pb-first__swatches span:nth-child(4) {
+  animation-delay: 2480ms;
+}
+
+/* The link: two lines drawn toward the post, Archie's mark between them. */
+.pb-first__link {
+  display: flex;
+  align-items: center;
+  width: 88px;
+}
+.pb-first__line {
+  flex: 1;
+  height: 0;
+  border-top: 2px dashed var(--ref-color-grey-20);
+  transform-origin: left center;
+  animation: pb-first-grow-x 300ms var(--app-ease-out) both;
+  animation-delay: 2700ms;
+}
+.pb-first__line:last-child {
+  animation-delay: 2950ms;
+}
+.pb-first__mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--app-radius-circle);
+  background: var(--app-butter);
+  color: var(--app-archie-mark);
+  animation: pb-first-pop 320ms var(--app-ease-out) both;
+  animation-delay: 2800ms;
+}
+.pb-first__mark i {
+  width: 18px;
+  height: 14px;
+}
+
+.pb-first__words {
+  margin: 0 0 var(--ref-spacing-xs);
+}
+.pb-first__words span {
+  animation: pb-first-in 160ms linear both;
+  animation-delay: calc(3500ms + var(--w) * 70ms);
+}
+
+.pb-first__sounds {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  padding: 0 var(--ref-spacing-xxs);
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--app-butter);
+  color: var(--ref-color-grey-100);
+  font-size: 12px;
+  animation: app-rise 320ms var(--app-ease-out) both;
+  animation-delay: 5400ms;
+}
+.pb-first__sounds i {
+  color: var(--app-butter-accent);
+}
+
+.pb-first__copy {
+  display: grid;
+  gap: var(--ref-spacing-xxxs);
+  max-width: 520px;
+  color: var(--ref-color-grey-100);
+}
+.pb-first__copy h2,
+.pb-first__copy p {
+  margin: 0;
+  text-wrap: pretty;
+}
+.pb-first__copy .ap-subtitle {
+  color: var(--ref-color-grey-80);
+}
+
+.pb-first__action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  margin-top: var(--ref-spacing-md);
+}
+.pb-first__hint {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+@container (max-width: 560px) {
+  .pb-first__stage {
+    flex-direction: column;
+  }
+  .pb-first__link {
+    width: auto;
+    height: 56px;
+    flex-direction: column;
+  }
+  .pb-first__line {
+    width: 0;
+    height: auto;
+    border-top: 0;
+    border-left: 2px dashed var(--ref-color-grey-20);
+    transform-origin: center top;
+    animation-name: app-grow-y;
+  }
+}
+
+@keyframes pb-first-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@keyframes pb-first-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes pb-first-in {
+  from {
+    opacity: 0;
+  }
+}
+
 /* ── Ghost card ────────────────────────────────────────────────────
    The trailing « Create a Playbook » cell: the card's anatomy, empty. A
    transparent body (an empty slot), the neutral grey-05 cover (a butter one

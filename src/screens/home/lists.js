@@ -11,19 +11,19 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=2870";
-import { isFlagOn } from "../../feature-flags.js?v=2870";
-import { escapeAttr, escapeText } from "../../utils.js?v=2870";
-import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2870";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2870";
-import { getSessions } from "../../sessions-store.js?v=2870";
-import { renderEmptyState } from "../../components/empty-state.js?v=2870";
-import { getSources, getIdeas } from "../../library.js?v=2870";
-import { getPosts } from "../../posts-store.js?v=2870";
-import { getContextById } from "../../contexts-store.js?v=2870";
-import { voicesToFinish } from "../../voice-parts.js?v=2870";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2870";
-import { pageState } from "../home.js?v=2870";
+} from "../../playbook-access.js?v=2873";
+import { isFlagOn } from "../../feature-flags.js?v=2873";
+import { escapeAttr, escapeText } from "../../utils.js?v=2873";
+import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2873";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2873";
+import { getSessions } from "../../sessions-store.js?v=2873";
+import { renderEmptyState } from "../../components/empty-state.js?v=2873";
+import { getSources, getIdeas } from "../../library.js?v=2873";
+import { getPosts } from "../../posts-store.js?v=2873";
+import { getContextById } from "../../contexts-store.js?v=2873";
+import { voicesToFinish } from "../../voice-parts.js?v=2873";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2873";
+import { pageState } from "../home.js?v=2873";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -312,21 +312,83 @@ export function chatPlaybook(session) {
   return ctx && canView(ctx) ? ctx : null;
 }
 
+// No Playbook at all: the page has to say what one IS before asking for one.
+// An example plays once, in order — a Playbook's four parts fill in, then a
+// post is written from them — so "what it is" and "what it's for" are the same
+// picture. The brand is the made-up café of the demo (Bramble & Bean), labelled
+// as an example so nobody reads it as their own. The illustration is decorative
+// (aria-hidden): the title and the sentence carry everything it shows.
+const FIRST_RUN_PARTS = [
+  { icon: "ap-icon-buildings", label: "Business", value: "Café and roaster" },
+  { icon: "ap-icon-multiple-users", label: "Audience", value: "Coffee regulars" },
+  { icon: "ap-icon-megaphone", label: "Voice", value: "Warm and plain" },
+  { icon: "ap-icon-image", label: "Look", swatches: ["#6B3A22", "#C8874E", "#7A8F4E", "#F7EFE5"] },
+];
+const FIRST_RUN_POST =
+  "This week's guest roast is in: Ethiopia Guji. Bright, a little berry, very good with Saturday's brunch. Come taste it before it's gone ☕";
+
+function renderPlaybooksFirstRun() {
+  const parts = FIRST_RUN_PARTS.map(
+    (p, i) => `
+      <li class="pb-first__part" style="--i:${i}">
+        <i class="${p.icon}" aria-hidden="true"></i>
+        <span class="pb-first__part-label">${p.label}</span>
+        ${
+          p.swatches
+            ? `<span class="pb-first__swatches">${p.swatches.map((c) => `<span style="background:${c}"></span>`).join("")}</span>`
+            : `<span class="pb-first__part-value">${p.value}</span>`
+        }
+        <i class="ap-icon-check pb-first__part-check" aria-hidden="true"></i>
+      </li>`,
+  ).join("");
+  const words = FIRST_RUN_POST.split(" ")
+    .map((w, i) => `<span style="--w:${i}">${escapeText(w)}</span>`)
+    .join(" ");
+  return `
+    <div class="pb-first">
+      <div class="pb-first__stage" aria-hidden="true">
+        <div class="pb-first__card pb-first__playbook">
+          <div class="pb-first__card-head">
+            <span class="pb-first__logo">B</span>
+            <span class="pb-first__card-title">Bramble &amp; Bean</span>
+            <span class="pb-first__example">Example</span>
+          </div>
+          <ul class="pb-first__parts">${parts}</ul>
+        </div>
+        <div class="pb-first__link">
+          <span class="pb-first__line"></span>
+          <span class="pb-first__mark"><i class="ap-icon-archie-official"></i></span>
+          <span class="pb-first__line"></span>
+        </div>
+        <div class="pb-first__card pb-first__post">
+          <div class="pb-first__card-head">
+            <span class="pb-first__logo">B</span>
+            <span class="pb-first__card-title">Bramble &amp; Bean</span>
+            <i class="ap-icon-linkedin-official pb-first__network"></i>
+          </div>
+          <p class="pb-first__words">${words}</p>
+          <span class="pb-first__sounds"><i class="ap-icon-check"></i>Sounds like Bramble &amp; Bean</span>
+        </div>
+      </div>
+      <div class="pb-first__copy">
+        <h2 class="ap-h1">Teach me your Brand once</h2>
+        <p class="ap-subtitle">A Playbook is what I know about one Brand: what it does, who it talks to, how it sounds, and how it looks. I write every draft from it, so you never explain your Brand twice.</p>
+      </div>
+      <div class="pb-first__action">
+        <button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create your first Playbook</span></button>
+        <p class="pb-first__hint">Start from your website, your files, or a few questions.</p>
+      </div>
+    </div>
+  `;
+}
+
 // FIND-B4: rich empty state — separates "no contexts at all" (first-run)
 // from "search active with no match". Returning user with everything
 // deleted hits the same first-run path, which is fine — both want a
 // "Create your first context" CTA.
 export function renderContextsEmpty(allContexts, pageState) {
   const hasQuery = (pageState.query || "").trim().length > 0;
-  if (allContexts.length === 0) {
-    return renderEmptyState({
-      icon: "ap-icon-target",
-      title: "Teach me your Brand once",
-      body: "A Playbook holds your Brand's voice, audience, and look. I write every draft from it.",
-      actionHtml: `<button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create your first Playbook</span></button>`,
-      wrapperClass: "contexts-view__empty contexts-view__empty--rich",
-    });
-  }
+  if (allContexts.length === 0) return renderPlaybooksFirstRun();
   if (hasQuery) {
     return renderEmptyState({
       icon: "ap-icon-search",

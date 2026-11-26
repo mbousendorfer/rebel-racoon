@@ -1,27 +1,27 @@
-import { escapeAttr, html, newChatPath, raw } from "../utils.js?v=2870";
-import { conceptText } from "../concepts.js?v=2870";
-import { renderTopbar, setTopbarActions } from "../components/topbar.js?v=2870";
+import { escapeAttr, html, newChatPath, raw } from "../utils.js?v=2873";
+import { conceptText } from "../concepts.js?v=2873";
+import { renderTopbar, setTopbarActions } from "../components/topbar.js?v=2873";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=2870";
-import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=2870";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2870";
-import { closePanel as closeRightPanel } from "../components/right-panel.js?v=2870";
-import { navigate, getPath } from "../router.js?v=2870";
-import { isFlagOn } from "../feature-flags.js?v=2870";
-import { setHandoff } from "../handoff.js?v=2870";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2870";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2870";
-import { visibleContexts, usableContexts, isMine } from "../playbook-access.js?v=2870";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2870";
-import { voicesToFinish } from "../voice-parts.js?v=2870";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2870";
-import { installMoreMenu } from "../components/more-menu.js?v=2870";
-import { showToast } from "../components/toast.js?v=2870";
-import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=2870";
+} from "../contexts-store.js?v=2873";
+import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=2873";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2873";
+import { closePanel as closeRightPanel } from "../components/right-panel.js?v=2873";
+import { navigate, getPath } from "../router.js?v=2873";
+import { isFlagOn } from "../feature-flags.js?v=2873";
+import { setHandoff } from "../handoff.js?v=2873";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2873";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2873";
+import { visibleContexts, usableContexts, isMine } from "../playbook-access.js?v=2873";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2873";
+import { voicesToFinish } from "../voice-parts.js?v=2873";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2873";
+import { installMoreMenu } from "../components/more-menu.js?v=2873";
+import { showToast } from "../components/toast.js?v=2873";
+import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=2873";
 import {
   chatPlaybook,
   renderChatsTab,
@@ -29,7 +29,7 @@ import {
   renderContextsEmpty,
   renderGhostCard,
   renderPlaybooksTable,
-} from "./home/lists.js?v=2870";
+} from "./home/lists.js?v=2873";
 
 // The account HOME — and the Playbooks catalogue it merged with.
 //
@@ -217,7 +217,10 @@ function renderPage() {
              Connectors already work this way. The concept sentence leads the
              page, then the owner tabs (P4), then the toolbar, search first on
              the left (P3). -->
-        <p class="concept-lead contexts-view__lead">${conceptText("playbook")}</p>
+        <!-- With no Playbook, the empty state explains it, so the sentence would say it twice. -->
+        ${all.length
+          ? raw(`<p class="concept-lead contexts-view__lead">${escapeAttr(conceptText("playbook"))}</p>`)
+          : ""}
         ${raw(renderOwnerTabs(all))}
         ${raw(all.length ? `<div class="contexts-view__toolbar">${renderSearchField()}</div>` : "")}
         ${raw(voicesWarning(all))}
@@ -326,9 +329,12 @@ function renderHomeTabs(playbookCount, chatCount, tab) {
 // Under the tabs rather than beside them: the DS nav owns its full-width rule,
 // and hanging a search field inside a [role=tablist] would put a non-tab in it.
 function renderHomeToolbar(tab, totalChats) {
+  // No Playbook yet: the empty state below explains it, so no hint here.
   const hint =
     tab === "playbooks"
-      ? `<p class="home-toolbar__hint concept-lead">${escapeAttr(conceptText("playbook"))}</p>`
+      ? visibleContexts().length
+        ? `<p class="home-toolbar__hint concept-lead">${escapeAttr(conceptText("playbook"))}</p>`
+        : ""
       : `<p class="home-toolbar__hint concept-lead">${escapeAttr(conceptText("chat"))}</p>`;
   return `
     <div class="home-toolbar">
