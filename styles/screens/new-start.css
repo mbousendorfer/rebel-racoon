@@ -363,7 +363,10 @@
   --ns-loop: 9s;
 }
 
-/* ── Door 1 · a generic post, then the same news in a brand's voice ───────── */
+/* ── Door 1 · a generic post, then the same news in a brand's voice ─────────
+   One 9s loop: the generic post holds; a butter band reads it top to bottom
+   and it blurs away; the brand's post is written line by line, its specific
+   lights up, three sparks pop; it holds, then the loop starts over. */
 .ns-voice {
   background: var(--ref-color-grey-05);
 }
@@ -375,6 +378,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--ref-spacing-xxs);
+  overflow: hidden;
   padding: var(--ref-spacing-xs);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-lg);
@@ -392,50 +396,163 @@
   color: var(--ref-color-grey-100);
 }
 
-/* What only the brand could say: the specific is what a Playbook buys. */
+/* The band that reads the generic post. */
+.ns-voice__sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -40%;
+  height: 40%;
+  background: linear-gradient(to bottom, transparent, var(--app-butter) 70%, transparent);
+  opacity: 0;
+  animation: ns-sweep var(--ns-loop) var(--app-ease-standard) infinite;
+}
+
+/* The brand's post is written top to bottom. */
+.ns-voice__write {
+  animation: ns-write var(--ns-loop) var(--app-ease-out) infinite;
+}
+
+/* What only the brand could say: the specific is what a Playbook buys. Its
+   highlight is drawn left to right once the line is written. */
 .ns-voice__text mark {
   padding: 0 2px;
   border-radius: 2px;
-  background: var(--app-butter);
+  background: linear-gradient(var(--app-butter), var(--app-butter)) left / 0% 100% no-repeat;
   color: inherit;
+  animation: ns-mark var(--ns-loop) var(--app-ease-out) infinite;
+}
+
+.ns-voice__sparks {
+  position: absolute;
+  top: 4px;
+  right: var(--ref-spacing-sm);
+  width: 60px;
+  height: 30px;
+  overflow: visible;
+}
+
+.ns-spark {
+  fill: var(--app-butter-accent);
+  transform: scale(0);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ns-spark var(--ns-loop) var(--app-ease-out) infinite;
+}
+
+g:nth-child(2) > .ns-spark {
+  animation-delay: 0.12s;
+}
+
+g:nth-child(3) > .ns-spark {
+  animation-delay: 0.24s;
 }
 
 @keyframes ns-before {
   0%,
-  38% {
+  40% {
     opacity: 1;
+    filter: none;
     transform: none;
   }
-  46%,
-  92% {
+  47%,
+  94% {
     opacity: 0;
+    filter: blur(3px);
     transform: translateY(-6px);
   }
   100% {
     opacity: 1;
+    filter: none;
     transform: none;
+  }
+}
+
+@keyframes ns-sweep {
+  0%,
+  24% {
+    top: -40%;
+    opacity: 0;
+  }
+  27% {
+    opacity: 1;
+  }
+  40% {
+    top: 100%;
+    opacity: 1;
+  }
+  41%,
+  100% {
+    top: 100%;
+    opacity: 0;
   }
 }
 
 @keyframes ns-after {
   0%,
-  40% {
+  43% {
     opacity: 0;
     transform: translateY(6px);
   }
-  50%,
-  90% {
+  48%,
+  91% {
     opacity: 1;
     transform: none;
   }
-  98%,
+  97%,
   100% {
     opacity: 0;
     transform: translateY(6px);
   }
 }
 
-/* ── Door 2 · the wide shot, cut into three vertical clips ──────────────── */
+@keyframes ns-write {
+  0%,
+  46% {
+    clip-path: inset(0 0 100% 0);
+  }
+  58%,
+  100% {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes ns-mark {
+  0%,
+  57% {
+    background-size: 0% 100%;
+  }
+  64%,
+  100% {
+    background-size: 100% 100%;
+  }
+}
+
+@keyframes ns-spark {
+  0%,
+  60% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  64% {
+    transform: scale(1.2) rotate(45deg);
+    opacity: 1;
+  }
+  72% {
+    transform: scale(0.9) rotate(90deg);
+    opacity: 1;
+  }
+  80%,
+  100% {
+    transform: scale(0) rotate(135deg);
+    opacity: 0;
+  }
+}
+
+/* ── Door 2 · the wide shot, cut into three vertical clips ───────────────────
+   One 9s loop: the wide shot holds; a line scans it (the analysis); three
+   9:16 frames are drawn where the moments are; the wide shot goes, the clips
+   fill the frames, their captions are typed; they play a little; over. */
 .ns-cut {
   background: #000; /* the footage's well, as everywhere in Clips */
 }
@@ -453,7 +570,22 @@
   animation: ns-wide var(--ns-loop) var(--app-ease-standard) infinite;
 }
 
-.ns-cut__clips {
+/* The analysis: a white line crosses the footage, a soft trail behind it. */
+.ns-cut__scan {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 48px;
+  background: linear-gradient(to right, transparent, rgb(255 255 255 / 0.22));
+  border-right: 2px solid var(--ref-color-white);
+  opacity: 0;
+  animation: ns-scan var(--ns-loop) var(--app-ease-standard) infinite;
+}
+
+/* Frames and clips share one layout, so each clip lands in its frame. */
+.ns-cut__clips,
+.ns-cut__frames {
   position: absolute;
   inset: var(--ref-spacing-xs) 0;
   display: flex;
@@ -461,27 +593,51 @@
   gap: var(--ref-spacing-xs);
 }
 
-.ns-cut__clip {
+.ns-cut__clip,
+.ns-cut__frame {
   position: relative;
   height: 100%;
   aspect-ratio: 9 / 16;
+}
+
+.ns-cut__frame svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ns-cut__frame rect {
+  fill: none;
+  stroke: var(--ref-color-white);
+  stroke-width: 1.6;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: ns-frame var(--ns-loop) var(--app-ease-out) infinite;
+}
+
+.ns-cut__frame:nth-child(2) rect,
+.ns-cut__clip:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.ns-cut__frame:nth-child(3) rect,
+.ns-cut__clip:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.ns-cut__clip {
   overflow: hidden;
   border-radius: 6px;
   opacity: 0;
   animation: ns-clip var(--ns-loop) var(--app-ease-standard) infinite;
 }
 
-.ns-cut__clip:nth-child(2) {
-  animation-delay: 0.15s;
-}
-
-.ns-cut__clip:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-/* The call's tiles sit on black bands: zoom in so the speaker fills the clip. */
+/* The call's tiles sit on black bands: zoom in so the speaker fills the clip,
+   then a slow push while it "plays". */
 .ns-cut__clip video {
   transform: scale(1.7);
+  animation: ns-push var(--ns-loop) linear infinite;
 }
 
 .ns-cut__caption {
@@ -499,16 +655,21 @@
   transform: translateX(-50%);
 }
 
+.ns-cut__clip .ns-cut__caption {
+  animation: ns-caption var(--ns-loop) var(--app-ease-out) infinite;
+  animation-delay: inherit;
+}
+
 @keyframes ns-wide {
   0%,
-  36% {
+  38% {
     opacity: 1;
     transform: none;
   }
   46%,
-  90% {
+  92% {
     opacity: 0;
-    transform: scale(0.94);
+    transform: scale(0.96);
   }
   100% {
     opacity: 1;
@@ -516,21 +677,81 @@
   }
 }
 
+@keyframes ns-scan {
+  0%,
+  6% {
+    left: -48px;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  24% {
+    left: 100%;
+    opacity: 1;
+  }
+  25%,
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes ns-frame {
+  0%,
+  24% {
+    stroke-dashoffset: 100;
+    opacity: 1;
+  }
+  36%,
+  44% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  50%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
 @keyframes ns-clip {
   0%,
-  38% {
+  40% {
     opacity: 0;
-    transform: translateY(10px) scale(0.92);
+    transform: scale(0.96);
   }
-  48%,
-  88% {
+  47%,
+  90% {
     opacity: 1;
     transform: none;
   }
   96%,
   100% {
     opacity: 0;
-    transform: translateY(10px) scale(0.92);
+    transform: scale(0.96);
+  }
+}
+
+@keyframes ns-push {
+  0%,
+  46% {
+    transform: scale(1.7);
+  }
+  92%,
+  100% {
+    transform: scale(1.82);
+  }
+}
+
+@keyframes ns-caption {
+  0%,
+  50% {
+    clip-path: inset(0 100% 0 0);
+  }
+  57%,
+  100% {
+    clip-path: inset(0);
   }
 }
 
@@ -592,6 +813,52 @@
   font-weight: var(--sys-text-style-body-bold-weight);
 }
 
+/* The chat's « thinking » sheen (chat.css, e-sheen), much lighter: a blue
+   light — blue, they are things to click — crosses each request once every
+   6s, one line after the other, then rests (asked: « en bleu peut-être, ou
+   avec l'animation qu'on a du thinking … très léger »). Pointed at, the
+   sheen stops and the request is plain ink, underlined. */
+.ns-suggest__text {
+  /* One box, so a request on two lines gets one band, not one per line. */
+  display: inline-block;
+  color: transparent;
+  background-image: linear-gradient(
+    100deg,
+    var(--ref-color-grey-100) 42%,
+    var(--ref-color-electric-blue-100) 50%,
+    var(--ref-color-grey-100) 58%
+  );
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: ns-sheen 6s linear infinite;
+}
+
+.ns-suggests__set li:nth-child(2) .ns-suggest__text {
+  animation-delay: 0.35s;
+}
+
+.ns-suggests__set li:nth-child(3) .ns-suggest__text {
+  animation-delay: 0.7s;
+}
+
+.ns-suggest:is(:hover, :focus-visible) .ns-suggest__text {
+  animation: none;
+  color: var(--ref-color-grey-100);
+  background-image: none;
+}
+
+@keyframes ns-sheen {
+  0% {
+    background-position: 100% 0;
+  }
+  25%,
+  100% {
+    background-position: 0 0;
+  }
+}
+
 .ns-suggest__go {
   flex: none;
   width: 16px;
@@ -627,16 +894,28 @@
 @media (prefers-reduced-motion: reduce) {
   .ns-wall__track,
   .ns-voice__post,
+  .ns-voice__write,
+  .ns-voice__text mark,
   .ns-cut__wide,
   .ns-cut__clip,
+  .ns-cut__clip video,
+  .ns-cut__clip .ns-cut__caption,
   .ns-asks__set,
   .ns-asks__set li,
-  .ns-suggests__set li {
+  .ns-suggests__set li,
+  .ns-suggest__text {
     animation: none;
   }
   .ns-voice__post--before,
-  .ns-cut__wide {
-    opacity: 0;
+  .ns-cut__wide,
+  .ns-voice__sweep,
+  .ns-voice__sparks,
+  .ns-cut__scan,
+  .ns-cut__frames {
+    display: none;
+  }
+  .ns-voice__text mark {
+    background-size: 100% 100%;
   }
   .ns-cut__clip {
     opacity: 1;

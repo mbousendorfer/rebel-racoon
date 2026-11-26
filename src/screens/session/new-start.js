@@ -24,9 +24,9 @@
 // video door is the clips starter. What is local (the rotation, #3's typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2879";
-import { escapeHtml } from "../../utils.js?v=2879";
-import { networkIcon } from "../../social-profiles.js?v=2879";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2882";
+import { escapeHtml } from "../../utils.js?v=2882";
+import { networkIcon } from "../../social-profiles.js?v=2882";
 
 const esc = escapeHtml;
 
@@ -86,6 +86,19 @@ const frame = (cls, sec, pos = "50%", caption = "") => `
     ${caption ? `<span class="ns-cut__caption">${esc(caption)}</span>` : ""}
   </span>`;
 
+// The doors' SVG pieces (2026-11-26, asked: « pousser un peu plus loin le côté
+// animé »), choreographed in new-start.css on the doors' 9s loop:
+//   · three four-point sparks that pop when the brand's post is written;
+//   · a 9:16 frame drawn by its stroke (pathLength 100) where each clip lands.
+const STAR = "M0,-6 C1,-1 1,-1 6,0 C1,1 1,1 0,6 C-1,1 -1,1 -6,0 C-1,-1 -1,-1 0,-6Z";
+const SPARKS = `
+            <svg class="ns-voice__sparks" viewBox="0 0 60 30" aria-hidden="true">
+              <g transform="translate(12 18)"><path class="ns-spark" d="${STAR}" /></g>
+              <g transform="translate(32 8) scale(0.7)"><path class="ns-spark" d="${STAR}" /></g>
+              <g transform="translate(48 20) scale(0.5)"><path class="ns-spark" d="${STAR}" /></g>
+            </svg>`;
+const FRAME = `<span class="ns-cut__frame"><svg viewBox="0 0 90 160" preserveAspectRatio="none" aria-hidden="true"><rect x="1.5" y="1.5" width="87" height="157" rx="9" pathLength="100" /></svg></span>`;
+
 // The doors and the requests are the same under both tops.
 function doors() {
   return `
@@ -95,11 +108,13 @@ function doors() {
             <span class="ns-voice__post ns-voice__post--before">
               <span class="ap-status grey no-dot">Without a Playbook</span>
               <span class="ns-voice__text">Exciting news! We're thrilled to announce our brand new feature. Check it out today! #innovation #growth</span>
+              <span class="ns-voice__sweep"></span>
             </span>
             <span class="ns-voice__post ns-voice__post--after">
               <span class="ap-status green no-dot">With your Playbook</span>
-              <span class="ns-voice__text">You asked for it <mark>three times in October</mark>. Bulk scheduling is live: pick 40 posts, one click, done.</span>
+              <span class="ns-voice__text ns-voice__write">You asked for it <mark>three times in October</mark>. Bulk scheduling is live: pick 40 posts, one click, done.</span>
             </span>
+            ${SPARKS}
           </span>
           <span class="ns-door__title">Sound like your brand</span>
           <span class="ns-door__desc">Without a Playbook, my posts stay generic. Give me your website and I'll learn your voice, your audience and your look.</span>
@@ -109,6 +124,8 @@ function doors() {
         <button type="button" class="ns-door" ${starterAttrs("open-video-clips")} data-ns-reveal style="--i: 2">
           <span class="ns-door__stage ns-cut" aria-hidden="true">
             ${frame("ns-cut__wide", 500)}
+            <span class="ns-cut__scan"></span>
+            <span class="ns-cut__frames">${FRAME}${FRAME}${FRAME}</span>
             <span class="ns-cut__clips">
               ${frame("ns-cut__clip", 512, "13%", "We tried it")}
               ${frame("ns-cut__clip", 640, "87%", "It worked")}
