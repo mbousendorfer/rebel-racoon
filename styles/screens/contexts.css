@@ -114,6 +114,8 @@
 .pb-first {
   --pb-loop: 8s;
   --pb-loop-start: 4600ms;
+  position: relative;
+  isolation: isolate;
   container-type: inline-size;
   flex: 1 0 auto;
   display: flex;
@@ -134,15 +136,16 @@
   margin-bottom: var(--ref-spacing-xl);
   color: var(--ref-color-grey-100);
 }
-/* A dot field behind the scene, fading out at the edges. */
-.pb-first__stage::before {
+/* A dot field across the whole empty state, fading out at its edges: the
+   Clips hero's one (clips.css, .clips-hero-example), 2026-11-26. */
+.pb-first::before {
   content: "";
   position: absolute;
-  inset: -48px -96px;
+  inset: 0;
   z-index: -1;
-  background-image: radial-gradient(var(--ref-color-grey-20) 1.2px, transparent 1.6px);
-  background-size: 16px 16px;
-  mask-image: radial-gradient(ellipse at center, #000 35%, transparent 72%);
+  /* Square pixels: a 2px square in the corner of each 16px tile. */
+  background: conic-gradient(from 270deg at 2px 2px, var(--ref-color-grey-20) 25%, transparent 0) 7px 7px / 16px 16px;
+  mask-image: radial-gradient(ellipse 60% 70% at center, #000 45%, transparent 100%);
   animation: pb-first-in 800ms ease-out both;
 }
 
@@ -161,7 +164,7 @@ body.empty-state-ground .contexts-view:has(.pb-first) {
     var(--ref-color-white);
   background-attachment: local;
 }
-body.empty-state-ground .pb-first__stage::before {
+body.empty-state-ground .pb-first::before {
   background: conic-gradient(
       from 270deg at 4px 4px,
       color-mix(in srgb, var(--ref-color-orange-100) 30%, transparent) 25%,

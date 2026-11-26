@@ -9,11 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import { html, raw } from "../utils.js?v=2896";
-import { getPath, navigate } from "../router.js?v=2896";
-import { parseHashParams } from "../url-state.js?v=2896";
-import { altSteps, createAltDraft, getDraft, restoreDraft, subscribeDraft } from "../context-builder.js?v=2896";
-import { getConnectedProfiles } from "../social-profiles.js?v=2896";
+import { html, raw } from "../utils.js?v=2898";
+import { getPath, navigate } from "../router.js?v=2898";
+import { parseHashParams } from "../url-state.js?v=2898";
+import { altSteps, createAltDraft, getDraft, restoreDraft, subscribeDraft } from "../context-builder.js?v=2898";
+import { getConnectedProfiles } from "../social-profiles.js?v=2898";
 import {
   readSessionId,
   isIntegrated,
@@ -23,9 +23,9 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2896";
-import { paintExplainer } from "./welcome-alt-explainer.js?v=2896";
-import { setTopbarActions } from "../components/topbar.js?v=2896";
+} from "./welcome-alt-recap.js?v=2898";
+import { paintExplainer } from "./welcome-alt-explainer.js?v=2898";
+import { setTopbarActions } from "../components/topbar.js?v=2898";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";

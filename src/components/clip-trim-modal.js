@@ -24,9 +24,9 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2896";
-import { escapeHtml } from "../utils.js?v=2896";
-import { fmtMs } from "../screens/clips/shared.js?v=2896";
+} from "../modal-coordinator.js?v=2898";
+import { escapeHtml } from "../utils.js?v=2898";
+import { fmtMs } from "../screens/clips/shared.js?v=2898";
 
 const MODAL_ID = "clip-trim";
 const PAD = 120000;
