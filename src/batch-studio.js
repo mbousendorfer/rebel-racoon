@@ -15,9 +15,9 @@
 // in-memory `pendingBatch` slot — the SPA never reloads between the two
 // navigations, so a module-level variable is the safe bridge.
 
-import { prettyUrl } from "./utils.js?v=2885";
-import { pastedTextName } from "./sources-stream.js?v=2885";
-import { createSessionNotifier } from "./store-utils.js?v=2885";
+import { prettyUrl } from "./utils.js?v=2886";
+import { pastedTextName } from "./sources-stream.js?v=2886";
+import { createSessionNotifier } from "./store-utils.js?v=2886";
 
 const states = new Map(); // sessionId → state
 const notifier = createSessionNotifier("batch-studio");
