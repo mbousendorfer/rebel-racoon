@@ -22,14 +22,23 @@
 // Every door is an existing hook: a request row is a `data-starter` with only a
 // prompt (session.js puts it in the box and focuses it, nothing is sent), the
 // video door is the clips starter. What is local (the rotation, #3's typing)
-// lives in <archie-new-start>, which wires itself like <archie-home>.
+// lives in <archie-new-start>, which wires itself.
 
-import { seedVideos } from "../../mocks.js?v=2862";
-import { escapeHtml } from "../../utils.js?v=2862";
-import { starterAttrs } from "./home-directions.js?v=2862";
-import { networkIcon } from "../../social-profiles.js?v=2862";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2863";
+import { escapeHtml } from "../../utils.js?v=2863";
+import { networkIcon } from "../../social-profiles.js?v=2863";
 
 const esc = escapeHtml;
+
+// The hooks session.js reads to run a workflow starter, by its action.
+function starterAttrs(action) {
+  const s = chatStarters.find((x) => x.action === action);
+  if (!s) return "";
+  const prompt = (s.prompt || "")
+    .replace(/\{\{source\}\}/g, "your source")
+    .replace(/\{\{video-source\}\}/g, "your video");
+  return `data-starter="${s.id}" data-starter-action="${action}" data-starter-prompt="${esc(prompt)}"`;
+}
 
 // Three sets of three. Each set holds one video request, so the clips are
 // never more than one glance away.
@@ -60,16 +69,16 @@ const KIND = {
 
 const row = ([k, text]) => `
   <li>
-    <button type="button" class="nch-ask" data-starter="new-start" data-starter-prompt="${esc(text)}"
+    <button type="button" class="ns-ask" data-starter="new-start" data-starter-prompt="${esc(text)}"
       title="Put it in the box to edit">
-      <span class="nch-tile nch-tile--sm nch-tone--${KIND[k].tone}" aria-hidden="true"><i class="${KIND[k].icon}"></i></span>
-      <span class="nch-ask__text">${esc(text)}</span>
-      <i class="ap-icon-pen nch-ask__go" aria-hidden="true"></i>
+      <span class="ns-tile ns-tile--sm ns-tone--${KIND[k].tone}" aria-hidden="true"><i class="${KIND[k].icon}"></i></span>
+      <span class="ns-ask__text">${esc(text)}</span>
+      <i class="ap-icon-pen ns-ask__go" aria-hidden="true"></i>
     </button>
   </li>`;
 
 // The podcast's wide shot, then three moments cropped to 9:16 on a speaker, the
-// way Clips frames it (13% / 87%: each speaker's centre, as in home-directions).
+// way Clips frames it (13% / 87%: each speaker's centre).
 const video = seedVideos[0];
 const frame = (cls, sec, pos = "50%", caption = "") => `
   <span class="${cls}">
@@ -115,7 +124,7 @@ function doors() {
 
 const asks = () => `
       <div class="ns-asks" aria-label="Things you can ask me">
-        ${SETS.map((s, i) => `<ul class="nch-asks ns-asks__set" data-ns-set="${i}"${i ? " hidden" : ""}>${s.map(row).join("")}</ul>`).join("")}
+        ${SETS.map((s, i) => `<ul class="ns-asks__set" data-ns-set="${i}"${i ? " hidden" : ""}>${s.map(row).join("")}</ul>`).join("")}
       </div>`;
 
 // No halo, no wordmark: the composer on the page's own ground.

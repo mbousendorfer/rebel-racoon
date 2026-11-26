@@ -189,7 +189,7 @@ src/
       wizard-keyboard.js  — keyboard nav (↑↓ / 1–9 / Enter / Esc) for the picker
       clip-draft-flow.js  — "draft from clips" picker (ratio → subtitles → accounts → generate) + clipContext; the only external caller (right-panel) imports THIS, not the whole session screen
       chat-gallery.js     — the Admin panel's Preview in chat tab: every element a chat can show, played on demand
-      home-directions.js  — a new chat's home, the directions under comparison (flags `home*`)
+      new-start.js        — New Start: the first chat with no Playbook (flags `newStart2` / `newStart3`)
       drafts-asks.js      — what a typed ask does to the drafts (delete all, rewrite, translate, regenerate, first comment, review, image, schedule + the planner): routeTypedAsk, askSwitchPostPlan, openPlanInModal
 
   components/             — each exports init() (injects DOM once) + render/open()

@@ -1,0 +1,546 @@
+/* New Start (flags newStart2 · newStart3, src/screens/session/new-start.js).
+   The request rows and their tone tiles came from the new-chat homes
+   (HOME-1…8, deleted 2026-11-26) and are the page's own now. */
+.ns-tone--src {
+  --ns-tone-bg: var(--ref-color-purple-10);
+  --ns-tone: var(--ref-color-purple-100);
+}
+.ns-tone--clip {
+  --ns-tone-bg: var(--ref-color-yellow-10);
+  --ns-tone: var(--ref-color-yellow-150);
+}
+.ns-tone--free {
+  --ns-tone-bg: var(--ref-color-grey-05);
+  --ns-tone: var(--ref-color-grey-100);
+}
+
+.ns-tile {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--ns-tone-bg);
+  color: var(--ns-tone);
+}
+
+.ns-tile i {
+  background-color: currentColor;
+}
+
+.ns-tile--sm {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+}
+
+.ns-asks__set {
+  position: relative;
+  width: 100%;
+  margin: var(--ref-spacing-sm) 0 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: 16px;
+  background: var(--ref-color-white);
+}
+
+.ns-ask {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  width: 100%;
+  min-height: 44px;
+  padding: 10px var(--ref-spacing-sm);
+  border: 0;
+  border-radius: var(--app-radius-md);
+  background: transparent;
+  color: var(--ref-color-grey-100);
+  font-family: inherit;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.ns-ask__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.ns-ask__go {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  background-color: var(--ref-color-electric-blue-100);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity var(--ref-animation-short) var(--app-ease-standard),
+    transform var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.ns-ask:is(:hover, :focus-visible) {
+  outline: none;
+  background: var(--ref-color-grey-05);
+}
+
+.ns-ask:focus-visible {
+  box-shadow: 0 0 0 2px var(--ref-color-electric-blue-100);
+}
+
+.ns-ask:is(:hover, :focus-visible) .ns-ask__go {
+  opacity: 1;
+  transform: none;
+}
+
+/* ══ New Start (flags newStart2 · newStart3) — the first chat with no Playbook ═════════
+   Two tops over the same body: the composer, three example requests that
+   change, then two doors that each play what they do
+   (src/screens/session/new-start.js). No pixel halo, no wordmark, no wash:
+   the page is redrawn from nothing (asked 2026-11-26). The rows are the
+   .ns-ask rows above. */
+.session__assistant:has(.empty-chat.ns) {
+  background: var(--app-bg);
+}
+
+.empty-chat.ns::before {
+  display: none;
+}
+
+.empty-chat.ns {
+  gap: var(--ref-spacing-sm);
+  text-align: left;
+}
+
+.ns > *,
+.ns__lead {
+  width: 100%;
+  max-width: 740px;
+}
+
+.ns-title {
+  margin: 0;
+  font-size: var(--sys-text-style-marketing-size);
+  line-height: var(--sys-text-style-marketing-line-height);
+  font-weight: var(--sys-text-style-marketing-weight);
+  color: var(--ref-color-grey-100);
+}
+
+/* #2 · the wall of posts: a band of formats drifting under the headline's
+   line, faded into the page on both sides. */
+/* Never wider than the thread, so the fade is always on screen. */
+.session__assistant-thread:has(.ns--wall) {
+  container-type: inline-size;
+}
+
+.ns > .ns-wall {
+  width: min(calc(100% + 360px), 100cqi);
+  max-width: none;
+  height: 120px;
+  overflow: hidden;
+  -webkit-mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+  mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+}
+
+.ns-wall__track {
+  display: flex;
+  gap: var(--ref-spacing-xs);
+  width: max-content;
+  height: 100%;
+  animation: ns-drift 70s linear infinite;
+}
+
+@keyframes ns-drift {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.ns-wall__card {
+  position: relative;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  width: 200px;
+  height: 100%;
+  padding: var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: 12px;
+  background: var(--ref-color-white);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-100);
+}
+
+.ns-wall__card > i {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.ns-wall__card--clip {
+  width: 68px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  border-color: #000;
+  background: #000; /* the footage's well */
+}
+
+.ns-wall__card--clip > i {
+  background-color: var(--ref-color-white);
+}
+
+.ns-wall__card--carousel {
+  width: 120px;
+  justify-content: space-between;
+  background: var(--ref-color-grey-05);
+}
+
+.ns-wall__slide {
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.ns-wall__count {
+  align-self: flex-end;
+}
+
+.ns--wall .ns-title {
+  margin-top: var(--ref-spacing-xs);
+  text-align: center;
+}
+
+/* #3 · Archie opens: two turns of the thread, Archie's mark in the gutter. */
+.ns-turn {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  column-gap: var(--ref-spacing-xs);
+  align-items: start;
+}
+
+.ns-say {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-100);
+}
+
+[data-ns-hello] {
+  min-height: calc(2 * var(--sys-text-style-subtitle-line-height));
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+}
+
+.ns--thread [data-ns-next] {
+  transition:
+    opacity var(--ref-animation-normal) var(--app-ease-standard),
+    transform var(--ref-animation-normal) var(--app-ease-standard);
+}
+
+.ns--thread.is-typing [data-ns-next] {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.ns--thread .ns-doors {
+  margin-top: var(--ref-spacing-xs);
+}
+
+.ns--thread .ns__lead {
+  margin-top: var(--ref-spacing-sm);
+}
+
+.ns-asks,
+.ns-doors {
+  width: 100%;
+  max-width: 740px;
+}
+
+.ns-asks {
+  margin-top: calc(-1 * var(--ref-spacing-xs));
+}
+
+.ns-asks__set:not([hidden]) {
+  animation: ns-deal var(--ref-animation-normal) var(--app-ease-standard);
+}
+
+.ns-asks__set:not([hidden]) li {
+  animation: ns-deal var(--ref-animation-normal) var(--app-ease-standard) both;
+}
+
+.ns-asks__set li:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.ns-asks__set li:nth-child(3) {
+  animation-delay: 120ms;
+}
+
+@keyframes ns-deal {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.ns-doors {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--ref-spacing-sm);
+  margin-top: var(--ref-spacing-md);
+}
+
+/* A door is the whole card: hover = blue border, nothing else moves. */
+.ns-door {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: 16px;
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-100);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.ns-door:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.ns-door:focus-visible {
+  outline: none;
+  border-color: var(--ref-color-electric-blue-100);
+  box-shadow: 0 0 0 2px var(--ref-color-electric-blue-100);
+}
+
+.ns-door__stage {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 168px;
+  margin-bottom: var(--ref-spacing-xs);
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.ns-door__title {
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  padding: 0 var(--ref-spacing-xxs);
+}
+
+.ns-door__desc {
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+  padding: 0 var(--ref-spacing-xxs);
+}
+
+.ns-door__go {
+  margin: var(--ref-spacing-xxs) var(--ref-spacing-xxs) 0;
+}
+
+/* Both stages run on one 9s loop, so the two doors breathe together. */
+.ns-door {
+  --ns-loop: 9s;
+}
+
+/* ── Door 1 · a generic post, then the same news in a brand's voice ───────── */
+.ns-voice {
+  background: var(--ref-color-grey-05);
+}
+
+.ns-voice__post {
+  position: absolute;
+  inset: var(--ref-spacing-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+  background: var(--ref-color-white);
+  animation: ns-before var(--ns-loop) var(--app-ease-standard) infinite;
+}
+
+.ns-voice__post--after {
+  animation-name: ns-after;
+}
+
+.ns-voice__text {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-100);
+}
+
+/* What only the brand could say: the specific is what a Playbook buys. */
+.ns-voice__text mark {
+  padding: 0 2px;
+  border-radius: 2px;
+  background: var(--app-butter);
+  color: inherit;
+}
+
+@keyframes ns-before {
+  0%,
+  38% {
+    opacity: 1;
+    transform: none;
+  }
+  46%,
+  92% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ns-after {
+  0%,
+  40% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  50%,
+  90% {
+    opacity: 1;
+    transform: none;
+  }
+  98%,
+  100% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ── Door 2 · the wide shot, cut into three vertical clips ──────────────── */
+.ns-cut {
+  background: #000; /* the footage's well, as everywhere in Clips */
+}
+
+.ns-cut video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ns-cut__wide {
+  position: absolute;
+  inset: 0;
+  animation: ns-wide var(--ns-loop) var(--app-ease-standard) infinite;
+}
+
+.ns-cut__clips {
+  position: absolute;
+  inset: var(--ref-spacing-xs) 0;
+  display: flex;
+  justify-content: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.ns-cut__clip {
+  position: relative;
+  height: 100%;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: 6px;
+  opacity: 0;
+  animation: ns-clip var(--ns-loop) var(--app-ease-standard) infinite;
+}
+
+.ns-cut__clip:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.ns-cut__clip:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* The call's tiles sit on black bands: zoom in so the speaker fills the clip. */
+.ns-cut__clip video {
+  transform: scale(1.7);
+}
+
+.ns-cut__caption {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-100);
+  font-size: 10px;
+  line-height: 14px;
+  font-weight: var(--sys-text-style-body-bold-weight);
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+@keyframes ns-wide {
+  0%,
+  36% {
+    opacity: 1;
+    transform: none;
+  }
+  46%,
+  90% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ns-clip {
+  0%,
+  38% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+  48%,
+  88% {
+    opacity: 1;
+    transform: none;
+  }
+  96%,
+  100% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+}
+
+/* Reduced motion: no loop, the doors show their result. */
+@media (prefers-reduced-motion: reduce) {
+  .ns-wall__track,
+  .ns-voice__post,
+  .ns-cut__wide,
+  .ns-cut__clip,
+  .ns-asks__set,
+  .ns-asks__set li {
+    animation: none;
+  }
+  .ns-voice__post--before,
+  .ns-cut__wide {
+    opacity: 0;
+  }
+  .ns-cut__clip {
+    opacity: 1;
+  }
+}
