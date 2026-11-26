@@ -94,6 +94,487 @@
   padding: var(--ref-spacing-xl) var(--ref-spacing-md);
 }
 
+/* ── First run: no Playbook yet ───────────────────────────────────
+   An example: a Playbook fills in, I read it, three posts on three networks
+   come out of it; then each part lights in turn (butter, Archie's colour) with
+   the words or the image it shaped. Centred in the whole page: the page and
+   its body grow to the scroller's height when this is all they hold.
+   One timeline (ms): sheet 100 · parts 500 + 350 each · mark 2000 · wires
+   2150 + 140 each, sparks from 2500 · posts 2500 + 250 each, their words 45 apart · loop from 4600, 8 s,
+   2 s per part. The Bramble & Bean palette comes in as --b0…--b3 (brand
+   data, not DS colours). Reduced motion → the end state at once (base.css),
+   the loop frozen on its first frame, nothing lit. */
+.contexts-view__page:has(.pb-first),
+.contexts-view__body:has(.pb-first) {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.pb-first {
+  --pb-loop: 8s;
+  --pb-loop-start: 4600ms;
+  container-type: inline-size;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--ref-spacing-lg) var(--ref-spacing-md) var(--ref-spacing-xxl);
+}
+
+/* ── The stage ── */
+.pb-first__stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 296px 144px 264px;
+  align-items: center;
+  text-align: left;
+  margin-bottom: var(--ref-spacing-xl);
+  color: var(--ref-color-grey-100);
+}
+/* A dot field behind the scene, fading out at the edges. */
+.pb-first__stage::before {
+  content: "";
+  position: absolute;
+  inset: -48px -96px;
+  z-index: -1;
+  background-image: radial-gradient(var(--ref-color-grey-20) 1.2px, transparent 1.6px);
+  background-size: 16px 16px;
+  mask-image: radial-gradient(ellipse at center, #000 35%, transparent 72%);
+  animation: pb-first-in 800ms ease-out both;
+}
+
+/* ── The Playbook: the catalogue card's anatomy, filled ── */
+.pb-first__sheet {
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
+  animation: app-rise 500ms var(--app-ease-out) 100ms both;
+}
+.pb-first__cover {
+  position: relative;
+  display: flex;
+  height: 56px;
+}
+.pb-first__cover > span:not(.pb-first__example) {
+  flex: 1;
+  transform-origin: left center;
+  animation: pb-first-grow-x 500ms var(--app-ease-out) both;
+  animation-delay: calc(200ms + var(--j, 0) * 80ms);
+}
+.pb-first__cover span:nth-child(2) {
+  --j: 1;
+}
+.pb-first__cover span:nth-child(3) {
+  --j: 2;
+}
+.pb-first__cover span:nth-child(4) {
+  --j: 3;
+}
+
+.pb-first__sheet-head {
+  display: grid;
+  justify-items: start;
+  margin: -24px var(--ref-spacing-sm) var(--ref-spacing-sm);
+}
+.pb-first__sheet-head .pb-first__logo {
+  margin-bottom: var(--ref-spacing-xxs);
+}
+.pb-first__sheet-kind {
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+.pb-first__sheet-name {
+  white-space: nowrap;
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+}
+.pb-first__example {
+  position: absolute;
+  top: var(--ref-spacing-xxs);
+  right: var(--ref-spacing-xxs);
+  padding: 0 var(--ref-spacing-xxs);
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--app-surface);
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
+.pb-first__logo {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--app-radius-circle);
+  background: var(--b0);
+  color: var(--ref-color-white);
+  font-size: 11px;
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+.pb-first__logo--lg {
+  /* Above the cover's flats, whose grow animation makes them layers. */
+  position: relative;
+  z-index: 1;
+  width: 48px;
+  height: 48px;
+  font-size: var(--sys-text-style-h2-size);
+  box-shadow: 0 0 0 3px var(--app-surface);
+}
+
+.pb-first__parts {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--ref-spacing-sm) var(--ref-spacing-sm);
+  display: grid;
+  gap: var(--ref-spacing-xxs);
+}
+.pb-first__part {
+  display: grid;
+  grid-template-columns: 16px 72px 1fr 16px;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs);
+  border-radius: var(--ref-border-radius-sm);
+  --pb-rest: var(--ref-color-grey-05);
+  background: var(--pb-rest);
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  animation:
+    app-rise 360ms var(--app-ease-out) calc(500ms + var(--i) * 350ms) both,
+    pb-first-spot var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--i) * 2s) infinite;
+}
+.pb-first__part-label {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+.pb-first__part-value {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--sys-text-style-caption-size);
+}
+.pb-first__part-check {
+  color: var(--ref-color-green-100);
+  animation: pb-first-pop 280ms var(--app-ease-out) calc(750ms + var(--i) * 350ms) both;
+}
+.pb-first__swatches {
+  display: flex;
+  gap: var(--ref-spacing-xxxs);
+}
+.pb-first__swatches span {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--app-radius-circle);
+  box-shadow: inset 0 0 0 1px var(--ref-color-grey-20);
+  animation: pb-first-pop 240ms var(--app-ease-out) calc(1650ms + var(--j) * 70ms) both;
+}
+
+/* ── Me, reading it ──
+   An SVG scene in the wires box's own pixels (144 × 360, the paths in
+   FIRST_RUN_WIRES): each wire draws itself in (pathLength 1, dashoffset 1 → 0),
+   then sparks run along it, from the card into my mark and from my mark out to
+   each post, two per wire, half a run apart (CSS offset-path, so the sparks
+   keep the page's one timeline and its reduced-motion rule). A dashed orbit
+   turns around the mark while I work. */
+.pb-first__wires {
+  position: relative;
+  width: 144px;
+  height: 360px;
+}
+.pb-first__wire-lines {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+.pb-first__wire-lines path {
+  fill: none;
+  stroke: var(--app-butter-accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-opacity: 0.45;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: pb-first-stroke 520ms var(--app-ease-out) calc(2150ms + var(--n) * 140ms) forwards;
+}
+.pb-first__spark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: var(--app-radius-circle);
+  background: var(--app-butter-accent);
+  box-shadow: 0 0 0 3px var(--app-butter);
+  offset-rotate: 0deg;
+  offset-anchor: center;
+  opacity: 0;
+  animation: pb-first-run 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  animation-delay: calc(2700ms + var(--n) * 150ms + var(--h) * 900ms);
+}
+/* Into my mark the wire is short: a quicker run. */
+.pb-first__spark--in {
+  animation-duration: 0.9s;
+  animation-delay: calc(2500ms + var(--h) * 450ms);
+}
+.pb-first__mark {
+  position: absolute;
+  left: 24px;
+  top: 156px;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--app-radius-circle);
+  background: var(--app-butter);
+  color: var(--app-archie-mark);
+  animation: pb-first-pop 360ms var(--app-ease-out) 2000ms both;
+}
+.pb-first__mark i {
+  width: 24px;
+  height: 18px;
+}
+.pb-first__orbit {
+  position: absolute;
+  inset: -8px;
+  width: 64px;
+  height: 64px;
+  overflow: visible;
+  animation: pb-first-spin 9s linear 2400ms infinite;
+}
+.pb-first__orbit circle {
+  fill: none;
+  stroke: var(--app-butter-accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 0.5 1.5;
+  stroke-opacity: 0.6;
+  animation: pb-first-in 400ms ease-out 2300ms both;
+}
+
+/* ── What comes out: three posts, three networks ── */
+.pb-first__posts {
+  display: grid;
+  grid-auto-rows: 1fr;
+  height: 360px;
+  gap: var(--ref-spacing-xs);
+}
+.pb-first__post {
+  display: flex;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs);
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  animation: app-rise 420ms var(--app-ease-out) calc(2500ms + var(--k) * 250ms) both;
+}
+.pb-first__post:nth-child(2) {
+  transform: translateX(16px);
+  --app-rise-from: 8px;
+}
+.pb-first__post-body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: var(--ref-spacing-xxxs);
+  align-content: start;
+}
+.pb-first__post-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+}
+.pb-first__post-head span:not(.pb-first__logo) {
+  flex: 1;
+}
+.pb-first__post-head i {
+  font-size: var(--sys-icon-css-sm);
+}
+.pb-first__post-text {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-100);
+}
+.pb-first__word {
+  animation: pb-first-in 160ms linear both;
+  animation-delay: calc(2750ms + var(--k) * 250ms + var(--w) * 45ms);
+}
+.pb-first__trace {
+  border-radius: var(--ref-border-radius-sm);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0 2px;
+  margin: 0 -2px;
+  animation: pb-first-spot var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--i) * 2s) infinite;
+}
+
+/* The Instagram photo, drawn in the brand's palette: a latte from above. */
+.pb-first__photo {
+  --i: 3;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  align-self: stretch;
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--b1);
+  animation: pb-first-photo var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + 3 * 2s) infinite;
+}
+.pb-first__cup {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--app-radius-circle);
+  background: radial-gradient(circle, var(--b3) 0 22%, var(--b1) 23% 48%, var(--b0) 49%);
+  box-shadow: 0 0 0 5px var(--ref-color-white);
+  animation: pb-first-pop 400ms var(--app-ease-out) 2900ms both;
+}
+.pb-first__cup::after {
+  content: "";
+  position: absolute;
+  right: -14px;
+  top: -6px;
+  width: 16px;
+  height: 9px;
+  border-radius: 0 100% 0 100%;
+  background: var(--b2);
+}
+
+/* ── The words ── */
+.pb-first__copy {
+  display: grid;
+  gap: var(--ref-spacing-xxs);
+  max-width: 540px;
+  color: var(--ref-color-grey-100);
+  animation: app-rise 500ms var(--app-ease-out) 300ms both;
+}
+.pb-first__copy h2,
+.pb-first__copy p {
+  margin: 0;
+  text-wrap: pretty;
+}
+.pb-first__copy h2 {
+  text-wrap: balance;
+}
+.pb-first__copy .ap-subtitle {
+  color: var(--ref-color-grey-80);
+}
+.pb-first__action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  margin-top: var(--ref-spacing-md);
+  animation: app-rise 500ms var(--app-ease-out) 450ms both;
+}
+.pb-first__hint {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+/* Narrow: the Playbook, then me, then the posts, one under the other. */
+@container (max-width: 720px) {
+  .pb-first__stage {
+    grid-template-columns: minmax(0, 300px);
+    justify-content: center;
+  }
+  .pb-first__wires {
+    width: auto;
+    height: 96px;
+  }
+  .pb-first__wire-lines,
+  .pb-first__spark {
+    display: none;
+  }
+  .pb-first__mark {
+    left: calc(50% - 24px);
+    top: 24px;
+  }
+  .pb-first__posts {
+    height: auto;
+  }
+  .pb-first__post:nth-child(2) {
+    transform: none;
+  }
+}
+
+@keyframes pb-first-stroke {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes pb-first-run {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  15%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+@keyframes pb-first-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes pb-first-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@keyframes pb-first-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes pb-first-in {
+  from {
+    opacity: 0;
+  }
+}
+/* A part and its traces, lit for a quarter of the loop. */
+@keyframes pb-first-spot {
+  0%,
+  28%,
+  100% {
+    background-color: var(--pb-rest, transparent);
+  }
+  5%,
+  22% {
+    background-color: var(--app-butter);
+  }
+}
+@keyframes pb-first-photo {
+  0%,
+  28%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  5%,
+  22% {
+    box-shadow: 0 0 0 3px var(--app-butter-accent);
+  }
+}
+
 /* ── Ghost card ────────────────────────────────────────────────────
    The trailing « Create a Playbook » cell: the card's anatomy, empty. A
    transparent body (an empty slot), the neutral grey-05 cover (a butter one
