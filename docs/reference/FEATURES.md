@@ -1185,8 +1185,11 @@ Deux verbes par objectif, auto-width : la porte chat (`secondary orange` dans le
 
 ### États vides
 
-- Aucun Playbook → « No Playbook yet ».
-- Playbook sans objectif → « No objectives on <marque> yet » + **New objective** ; la bande de marque (le switcher) reste au-dessus quand le flag workspace est OFF, sinon une marque sans objectifs serait une impasse.
+Les deux prennent **le premier run des Playbooks, des Clips et du Topic Feed** (`.pb-first--insights`, `renderEmpty` dans [`shell.js`](../../src/screens/insights/shell.js), 2026-11-26), la main de cartes et le fil du Topic Feed : trois posts que j'ai draftés pour Bramble & Bean (une photo, la marque, le réseau, sans texte), ma marque (le disque orange), **un seul objectif**, « Brand awareness » et ses deux mesures couplées (Reach, Brand mentions) dont les barres se remplissent, la pill On track, « 3 posts moved it » et Example. Puis la boucle (6 s, 2 s par post) soulève chaque post : le premier allume Reach, le second Brand mentions, le troisième la pill On track. Titre « Know if your posts are working ».
+
+- Aucun Playbook → « Give your Brand a goal, like more reach or more sign-ups. I'll measure it and tell you which posts moved it. » + **Create my Playbook** (« Objectives live on a Playbook, so create one first. »).
+- Playbook sans objectif → la même phrase au nom de la marque + **New objective** ; la bande de marque (le switcher) reste au-dessus quand le flag workspace est OFF, sinon une marque sans objectifs serait une impasse.
+- Tant que la scène est là, le **New objective de la topbar** est masqué : l'état porte la seule action de la page (sans Playbook, il ne menait nulle part).
 - Objectif sans post lié → « No post I drafted has moved this objective yet. Start a chat about it to draft some. »
 
 ### Le seed

@@ -31,25 +31,26 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=2914";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2914";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=2914";
+import { html, raw } from "../../utils.js?v=2917";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2917";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=2917";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=2914";
-import { getPath, navigate } from "../../router.js?v=2914";
-import { isFlagOn } from "../../feature-flags.js?v=2914";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2914";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2914";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=2914";
-import { renderEmptyState } from "../../components/empty-state.js?v=2914";
-import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=2914";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=2914";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=2914";
-import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=2914";
+} from "../../active-playbook.js?v=2917";
+import { getPath, navigate } from "../../router.js?v=2917";
+import { isFlagOn } from "../../feature-flags.js?v=2917";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2917";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2917";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=2917";
+import { openNewPlaybookFlow } from "../../context-builder.js?v=2917";
+import { firstRunText, FIRST_RUN_BRAND } from "../home/lists.js?v=2917";
+import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=2917";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=2917";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=2917";
+import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=2917";
 
 // ── Module state ──────────────────────────────────────────────────────────
 
@@ -97,24 +98,86 @@ function renderEmptyPage(ctx) {
   return head + renderEmpty(ctx);
 }
 
+// No Playbook, or one with no objective yet: the first run of the Playbooks,
+// Clips and Topic Feed, told for Insights (.pb-first, contexts.css; the hand of
+// cards and the wire are the Topic Feed's, topics.css). Three posts I drafted
+// for Bramble & Bean (Example), one wire through my mark, ONE objective: Brand
+// awareness and the two measures it couples to (Reach, Brand mentions), whose
+// bars fill. Then the loop lifts each post in turn: the first lights Reach, the
+// second Brand mentions, the third the On track pill. Posts move objectives.
+// Decorative (aria-hidden), the copy carries it all.
+const FIRST_RUN_PHOTO = (id) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=400&h=300&q=70`;
+const FIRST_RUN_POSTS = [
+  { network: "instagram", photo: "photo-1501339847302-ac426a4a7cbb" },
+  { network: "linkedin", photo: "photo-1447933601403-0c6688de566e" },
+  { network: "facebook", photo: "photo-1511920170033-f8396924c348" },
+];
+const FIRST_RUN_MEASURES = [
+  { name: "Reach", pct: 86 },
+  { name: "Brand mentions", pct: 72 },
+];
+
 function renderEmpty(ctx) {
-  if (!ctx) {
-    return renderEmptyState({
-      icon: "ap-icon-target ap-icon-lg",
-      level: 1,
-      title: "No Playbook yet",
-      body: "Insights reads the objectives of the active Playbook. Build one and its objectives show up here.",
-      wrapperClass: "insights__empty",
-    });
-  }
-  return renderEmptyState({
-    icon: "ap-icon-target ap-icon-lg",
-    level: 1,
-    title: `No objectives on ${ctx.brandName || ctx.name} yet`,
-    body: "An objective is a goal I track for you — pick a metric and a target, and I'll tell you whether your posts are on track.",
-    actionHtml: `<button type="button" class="ap-button primary blue" data-ins-new><i class="ap-icon-plus" aria-hidden="true"></i><span>New objective</span></button>`,
-    wrapperClass: "insights__empty",
-  });
+  const brand = FIRST_RUN_BRAND.map((c, j) => `--b${j}:${c}`).join(";");
+  const posts = FIRST_RUN_POSTS.map(
+    (p, k) => `
+      <div class="topic-first__post" style="--k:${k}">
+        <img class="topic-first__photo" src="${FIRST_RUN_PHOTO(p.photo)}" alt="" loading="lazy" />
+        <span class="topic-first__who"><span class="pb-first__logo">B</span><span>Bramble &amp; Bean</span><i class="ap-icon-${p.network}-official"></i></span>
+      </div>`,
+  ).join("");
+  const measures = FIRST_RUN_MEASURES.map(
+    (m, i) => `
+      <span class="ins-first__measure" style="--i:${i}">
+        <span class="ins-first__metric">${m.name}</span>
+        <span class="app-bar app-bar--on-track"><span class="app-bar__fill" style="width:${m.pct}%"></span></span>
+      </span>`,
+  ).join("");
+  const name = ctx ? ctx.brandName || ctx.name : "";
+  const copy = ctx
+    ? {
+        title: "Know if your posts are working",
+        body: `Give ${name} a goal, like more reach or more sign-ups. I'll measure it and tell you which posts moved it.`,
+        action: `<button type="button" class="ap-button primary blue" data-ins-new><i class="ap-icon-plus" aria-hidden="true"></i><span>New objective</span></button>`,
+        hint: "",
+      }
+    : {
+        title: "Know if your posts are working",
+        body: "Give your Brand a goal, like more reach or more sign-ups. I'll measure it and tell you which posts moved it.",
+        action: `<button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus" aria-hidden="true"></i><span>Create my Playbook</span></button>`,
+        hint: `<p class="pb-first__hint">Objectives live on a Playbook, so create one first.</p>`,
+      };
+  return `
+    <div class="pb-first pb-first--insights" style="${brand}">
+      <div class="pb-first__stage" aria-hidden="true">
+        <div class="topic-first__deck">${posts}</div>
+        <div class="pb-first__wires topic-first__wires">
+          <svg class="pb-first__wire-lines" viewBox="0 0 144 300">
+            <path d="M0 150 L32 150" pathLength="1" style="--n:0" />
+            <path d="M64 150 L144 150" pathLength="1" style="--n:1" />
+          </svg>
+          <span class="pb-first__spark topic-first__spark topic-first__spark--in" style="offset-path:path('M0 150 L32 150')"></span>
+          <span class="pb-first__spark topic-first__spark" style="offset-path:path('M64 150 L144 150')"></span>
+          <span class="pb-first__mark topic-first__mark"><i class="ap-icon-archie-official"></i></span>
+        </div>
+        <div class="pb-first__post ins-first__objective" style="--k:0">
+          <span class="ins-first__head">
+            <span class="ins-first__name">${firstRunText("Brand awareness")}</span>
+            <span class="ap-status green">On track</span>
+          </span>
+          ${measures}
+          <span class="ins-first__foot"><span>3 posts moved it</span><span class="chat-first__example">Example</span></span>
+        </div>
+      </div>
+      <div class="pb-first__copy">
+        <h1 class="ap-h1">${copy.title}</h1>
+        <p class="ap-subtitle">${copy.body}</p>
+      </div>
+      <div class="pb-first__action">
+        ${copy.action}
+        ${copy.hint}
+      </div>
+    </div>`;
 }
 
 // ── Painting ──────────────────────────────────────────────────────────────
@@ -204,6 +267,11 @@ function onClick(event) {
       if (!d.contains(event.target)) d.removeAttribute("open");
     }),
   );
+
+  if (event.target.closest("[data-contexts-new]")) {
+    openNewPlaybookFlow("/insights");
+    return;
+  }
 
   const t = event.target.closest(
     "[data-ins-new],[data-ins-adjust],[data-ins-chat],[data-ins-select],[data-ins-unselect],[data-ins-measure-tab],[data-ins-jump],[data-ins-scope-pick],[data-ins-repurpose],[data-ins-view]",

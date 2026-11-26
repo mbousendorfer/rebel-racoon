@@ -130,46 +130,79 @@
   flex-direction: column;
 }
 
-/* ── Empty ──────────────────────────────────────────────────────────────── */
+/* ── Empty: the first run ─────────────────────────────────────────────────
+   No Playbook, or no objective on it: the Playbooks / Topic Feed stage
+   (.pb-first, contexts.css; the hand of cards, the wire and my mark are the
+   Topic Feed's, topics.css). On the right ONE objective whose two measures
+   fill (2800 + 150 each), then the loop (from 3600, 6 s, 2 s per post) lights
+   Reach, then Brand mentions, then the On track pill. The page keeps its head
+   band (the Playbook switcher) above. The topbar's New objective goes while
+   this is shown: the state carries the page's one action. */
 
-/* No objectives means no layout — but the page still opens with its head, so
-   the band is there with the Playbook switcher in it and nothing else. Without
-   it a brand with an empty Insights was a dead end AND a page with no top. */
-
-.insights__empty {
+.insights__host:has(.pb-first--insights) {
   display: flex;
   flex-direction: column;
+}
+body:has(.pb-first--insights) #topbar [data-ins-new] {
+  display: none;
+}
+
+.ins-first__objective {
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm);
+  animation: app-rise 420ms var(--app-ease-out) 2500ms both;
+}
+.ins-first__head {
+  display: flex;
   align-items: center;
-  text-align: center;
   gap: var(--ref-spacing-xs);
-  max-width: 460px;
-  margin: 12vh auto 0;
-  padding: var(--ref-spacing-xl);
 }
-
-/* The glyph carries its own size (.ap-icon-lg on the element); this is just the
-   round well it sits in. */
-.insights__empty .session__empty-icon {
+.ins-first__name {
+  flex: 1;
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+}
+.ins-first__head .ap-status {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  animation:
+    pb-first-pop 280ms var(--app-ease-out) 3300ms both,
+    topic-first-ring var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + 2 * 2s + 600ms) infinite;
+}
+.ins-first__measure {
+  --pb-rest: transparent;
   display: grid;
-  place-items: center;
-  width: var(--sys-icon-css-xxl);
-  height: var(--sys-icon-css-xxl);
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-grey-05);
-  color: var(--sys-text-color-light);
+  gap: var(--ref-spacing-xxs);
+  margin: 0 calc(-1 * var(--ref-spacing-xxs));
+  padding: var(--ref-spacing-xxs);
+  border-radius: var(--ref-border-radius-sm);
+  animation: pb-first-spot var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--i) * 2s + 600ms) infinite;
+}
+.ins-first__metric {
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+}
+.ins-first__measure .app-bar__fill {
+  animation: ins-first-fill 900ms var(--app-ease-out) calc(2800ms + var(--i) * 150ms) both;
+}
+.ins-first__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
 }
 
-.insights__empty :is(h1, h2, h3) {
-  margin: var(--ref-spacing-xxs) 0 0;
-  font-size: var(--sys-text-style-h2-size);
-  line-height: var(--sys-text-style-h2-line-height);
-  font-weight: var(--sys-text-style-h2-weight);
-  color: var(--sys-text-color-default);
-}
-
-.insights__empty p {
-  margin: 0;
-  color: var(--sys-text-color-light);
+@keyframes ins-first-fill {
+  from {
+    width: 0;
+  }
 }
 
 /* ── The view switch — Insights' control, worn by the topbar ────────────────

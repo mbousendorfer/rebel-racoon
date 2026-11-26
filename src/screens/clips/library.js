@@ -9,14 +9,14 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2914";
-import { isFlagOn } from "../../feature-flags.js?v=2914";
-import { renderTopbar } from "../../components/topbar.js?v=2914";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2914";
-import { isDemo } from "../../demo-mode.js?v=2914";
-import { getPosts } from "../../posts-store.js?v=2914";
-import { escapeHtml, plural } from "../../utils.js?v=2914";
-import { networkIcon } from "../../social-profiles.js?v=2914";
+import { navigate } from "../../router.js?v=2917";
+import { isFlagOn } from "../../feature-flags.js?v=2917";
+import { renderTopbar } from "../../components/topbar.js?v=2917";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2917";
+import { isDemo } from "../../demo-mode.js?v=2917";
+import { getPosts } from "../../posts-store.js?v=2917";
+import { escapeHtml, plural } from "../../utils.js?v=2917";
+import { networkIcon } from "../../social-profiles.js?v=2917";
 import {
   getVideos,
   exampleVideo,
@@ -26,7 +26,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2914";
+} from "../../videos-store.js?v=2917";
 import {
   fmtMs,
   previewMarkup,
@@ -39,7 +39,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2914";
+} from "./shared.js?v=2917";
 
 let target = null;
 let disposeShowcase = null;

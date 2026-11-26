@@ -462,7 +462,9 @@
    2000 · wires 2150 · Topic 2500, its words 45 apart, its authors 3000 + 120
    each · loop from 3600, 6 s, 2 s per post: the post lifts, a spark carries it
    through my mark, its author lights in the Topic. Reduced motion: dealt and
-   still. The concept line above goes while this is shown: it says the same. */
+   still. The concept line above goes while this is shown: it says the same.
+   Insights' first run (.pb-first--insights, insights.css) deals the same hand
+   on the same wire, so the shared rules below name both. */
 .topics-view:has(.pb-first--topics) .topics-view__lead {
   display: none;
 }
@@ -473,11 +475,11 @@
   min-height: 100%;
   overflow-x: clip;
 }
-.pb-first--topics {
+:is(.pb-first--topics, .pb-first--insights) {
   --pb-loop: 6s;
   --pb-loop-start: 3600ms;
 }
-.pb-first--topics .pb-first__stage {
+:is(.pb-first--topics, .pb-first--insights) .pb-first__stage {
   grid-template-columns: 264px 144px 300px;
 }
 
@@ -536,7 +538,7 @@
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
 }
-.topic-first__who > span:not(.ap-avatar) {
+.topic-first__who > span:not(.ap-avatar, .pb-first__logo) {
   flex: 1;
   min-width: 0;
   white-space: nowrap;
@@ -548,11 +550,11 @@
 }
 
 /* ── One wire through my mark, 144 × 300 ── */
-.pb-first--topics .pb-first__wires {
+:is(.pb-first--topics, .pb-first--insights) .pb-first__wires {
   height: 300px;
 }
 /* My mark, the shared disc (contexts.css), centred on the wire at 150. */
-.pb-first--topics .topic-first__mark {
+:is(.pb-first--topics, .pb-first--insights) .topic-first__mark {
   top: 134px;
 }
 
@@ -608,15 +610,18 @@
 }
 
 @container (max-width: 720px) {
-  .pb-first--topics .pb-first__stage {
+  :is(.pb-first--topics, .pb-first--insights) .pb-first__stage {
     grid-template-columns: minmax(0, 300px);
   }
   .topic-first__deck {
     width: 264px;
     justify-self: center;
   }
-  .pb-first--topics .pb-first__wires {
+  :is(.pb-first--topics, .pb-first--insights) .pb-first__wires {
     height: 96px;
+  }
+  :is(.pb-first--topics, .pb-first--insights) .topic-first__mark {
+    top: 32px;
   }
 }
 
