@@ -556,7 +556,9 @@
     pb-first-spot var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--i) * 2s) infinite;
 }
 .topic-first__post-body {
+  flex: 1;
   display: grid;
+  gap: var(--ref-spacing-xxxs);
   min-width: 0;
 }
 .topic-first__who {
@@ -570,13 +572,11 @@
 .topic-first__who i {
   font-size: var(--sys-icon-css-sm);
 }
-.topic-first__said {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--ref-color-grey-80);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
+/* The post's text as a grey line: the scene says "a post", not what it says. */
+.topic-first__bar {
+  height: 6px;
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-grey-10);
 }
 
 /* My mark sits mid-box: the posts converge from the left. */
@@ -598,7 +598,7 @@
   animation-delay: calc(2400ms + var(--k) * 400ms);
 }
 
-/* The Topic: the feed card's meta run, its headline, what it came from. */
+/* The Topic: the source badge and its signal, then a few words. */
 .topic-first__topic {
   --pb-rest: var(--app-surface);
   flex-direction: column;
@@ -631,11 +631,6 @@
   line-height: var(--sys-text-style-body-bold-line-height);
   font-weight: var(--sys-text-style-body-bold-weight);
   text-wrap: pretty;
-}
-.topic-first__from {
-  color: var(--ref-color-grey-80);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
 }
 
 @container (max-width: 720px) {

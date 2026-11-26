@@ -32,17 +32,17 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=2907";
-import { conceptText } from "../concepts.js?v=2907";
-import { navigate, getPath } from "../router.js?v=2907";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2907";
-import { renderTopbar } from "../components/topbar.js?v=2907";
-import { showToast } from "../components/toast.js?v=2907";
-import { renderEmptyState } from "../components/empty-state.js?v=2907";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2907";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2907";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2907";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2907";
+import { html, raw, escapeAttr } from "../utils.js?v=2908";
+import { conceptText } from "../concepts.js?v=2908";
+import { navigate, getPath } from "../router.js?v=2908";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2908";
+import { renderTopbar } from "../components/topbar.js?v=2908";
+import { showToast } from "../components/toast.js?v=2908";
+import { renderEmptyState } from "../components/empty-state.js?v=2908";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2908";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2908";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2908";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2908";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -53,7 +53,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=2907";
+} from "../topics-store.js?v=2908";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -62,19 +62,19 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=2907";
-import { renderTopicCard } from "../components/topic-card.js?v=2907";
+} from "../topics-catalog.js?v=2908";
+import { renderTopicCard } from "../components/topic-card.js?v=2908";
 import {
   renderTopicArticle,
   renderTopicHeader,
   renderTopicActions,
   renderTopicStates,
-} from "../topic-article.js?v=2907";
-import { firstRunText, FIRST_RUN_BRAND } from "./home/lists.js?v=2907";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2907";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=2907";
-import { useTopicInChat } from "../topic-flow.js?v=2907";
-import { canEdit } from "../playbook-access.js?v=2907";
+} from "../topic-article.js?v=2908";
+import { firstRunText, FIRST_RUN_BRAND } from "./home/lists.js?v=2908";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2908";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=2908";
+import { useTopicInChat } from "../topic-flow.js?v=2908";
+import { canEdit } from "../playbook-access.js?v=2908";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -911,64 +911,20 @@ function renderEmpty(total, feed) {
 // (aria-hidden), the copy carries it all. Geometry in the wires box's own
 // pixels (176 × 360): post rows centred at 80 + 50k (topics.css fixes their
 // height), my mark centred at 88 / 180, the Topics at 57 / 180 / 303.
+// Posts are a name and a grey line, Topics a badge and a few words: the scene
+// shows the gesture (many posts make one Topic), the copy below says it.
 const FIRST_RUN_POSTS = [
-  {
-    who: "Northside Coffee",
-    initials: "NC",
-    accent: "green",
-    network: "instagram",
-    text: "Bring your own cup this week, coffee's on us.",
-  },
-  {
-    who: "Maya Brews",
-    initials: "MB",
-    accent: "orange",
-    network: "instagram",
-    text: "Sound on. That's the first crack.",
-  },
-  {
-    who: "Crumb & Co",
-    initials: "CC",
-    accent: "purple",
-    network: "facebook",
-    text: "This weekend: sourdough, cinnamon knots, plum tarts.",
-  },
-  {
-    who: "Northside Coffee",
-    initials: "NC",
-    accent: "green",
-    network: "facebook",
-    text: "Day 3 of bring your own cup: 212 cups saved.",
-  },
-  {
-    who: "The Roast Report",
-    initials: "RR",
-    accent: "electric-blue",
-    network: "linkedin",
-    text: "Why every roaster is posting the first crack.",
-  },
-  {
-    who: "Crumb & Co",
-    initials: "CC",
-    accent: "purple",
-    network: "instagram",
-    text: "Friday night: the weekend menu is up.",
-  },
+  { who: "Northside Coffee", initials: "NC", accent: "green", network: "instagram", bar: 88 },
+  { who: "Maya Brews", initials: "MB", accent: "orange", network: "instagram", bar: 64 },
+  { who: "Crumb & Co", initials: "CC", accent: "purple", network: "facebook", bar: 96 },
+  { who: "Northside Coffee", initials: "NC", accent: "green", network: "facebook", bar: 72 },
+  { who: "The Roast Report", initials: "RR", accent: "electric-blue", network: "linkedin", bar: 84 },
+  { who: "Crumb & Co", initials: "CC", accent: "purple", network: "instagram", bar: 60 },
 ];
 const FIRST_RUN_TOPICS = [
-  {
-    source: "competitor-posts",
-    age: "3h ago",
-    isTrending: true,
-    headline: "A 'bring your own cup' week beat every product post",
-  },
-  {
-    source: "influencer-posts",
-    age: "1d ago",
-    isUpdated: true,
-    headline: "Roasters post the first crack, and people save it",
-  },
-  { source: "competitor-posts", age: "2d ago", headline: "One Friday post fills the bakery next door" },
+  { source: "competitor-posts", isTrending: true, headline: "Bring-your-own-cup week" },
+  { source: "influencer-posts", isUpdated: true, headline: "The first crack, on video" },
+  { source: "competitor-posts", headline: "A Friday weekend menu" },
 ];
 const FIRST_RUN_TOPIC_Y = [57, 180, 303];
 
@@ -985,7 +941,7 @@ function renderTopicsFirstRun(feed) {
         <span class="ap-avatar size-24 social-post-card__avatar" data-accent="${p.accent}"><span class="ap-avatar-initials">${p.initials}</span></span>
         <span class="topic-first__post-body">
           <span class="topic-first__who">${escapeAttr(p.who)}<i class="ap-icon-${p.network}-official"></i></span>
-          <span class="topic-first__said">${escapeAttr(p.text)}</span>
+          <span class="topic-first__bar" style="width:${p.bar}%"></span>
         </span>
       </li>`,
   ).join("");
@@ -995,11 +951,9 @@ function renderTopicsFirstRun(feed) {
       <div class="pb-first__post topic-first__topic" style="--k:${k};--i:${k}">
         <span class="topic-first__meta">
           <span class="topic-badge topic-badge--${source.accent}"><i class="${source.icon}"></i></span>
-          <span>${source.name} · ${t.age}</span>
           ${renderTopicStates({ status: "new", kind: "ready", isTrending: t.isTrending, isUpdated: t.isUpdated })}
         </span>
         <span class="topic-first__headline">${firstRunText(t.headline)}</span>
-        <span class="topic-first__from">From 2 posts</span>
       </div>`;
   }).join("");
   const copy = feed
