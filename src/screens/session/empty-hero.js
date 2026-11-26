@@ -1,22 +1,22 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2908";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2908";
-import { getContextById, getContexts } from "../../contexts-store.js?v=2908";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2908";
-import { renderTopicCard } from "../../components/topic-card.js?v=2908";
-import { findTopicSource } from "../../topics-catalog.js?v=2908";
-import { html, raw } from "../../utils.js?v=2908";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2908";
-import { renderStarterCards } from "../../components/starter-card.js?v=2908";
-import { isFlagOn, newStartVariant } from "../../feature-flags.js?v=2908";
-import { isDemo } from "../../demo-mode.js?v=2908";
-import { voicesToFinish } from "../../voice-parts.js?v=2908";
-import { networkLabel } from "../../social-profiles.js?v=2908";
-import { parseHashParams } from "../../url-state.js?v=2908";
-import "../../archie-pixels.js?v=2908";
-import { renderNewStart } from "./new-start.js?v=2908";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2910";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2910";
+import { getContextById, getContexts } from "../../contexts-store.js?v=2910";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2910";
+import { renderTopicCard } from "../../components/topic-card.js?v=2910";
+import { findTopicSource } from "../../topics-catalog.js?v=2910";
+import { html, raw } from "../../utils.js?v=2910";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2910";
+import { renderStarterCards } from "../../components/starter-card.js?v=2910";
+import { isFlagOn, newStartVariant } from "../../feature-flags.js?v=2910";
+import { isDemo } from "../../demo-mode.js?v=2910";
+import { voicesToFinish } from "../../voice-parts.js?v=2910";
+import { networkLabel } from "../../social-profiles.js?v=2910";
+import { parseHashParams } from "../../url-state.js?v=2910";
+import "../../archie-pixels.js?v=2910";
+import { renderNewStart } from "./new-start.js?v=2910";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the

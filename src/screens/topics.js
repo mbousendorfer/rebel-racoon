@@ -32,17 +32,17 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=2908";
-import { conceptText } from "../concepts.js?v=2908";
-import { navigate, getPath } from "../router.js?v=2908";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2908";
-import { renderTopbar } from "../components/topbar.js?v=2908";
-import { showToast } from "../components/toast.js?v=2908";
-import { renderEmptyState } from "../components/empty-state.js?v=2908";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2908";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2908";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2908";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2908";
+import { html, raw, escapeAttr } from "../utils.js?v=2910";
+import { conceptText } from "../concepts.js?v=2910";
+import { navigate, getPath } from "../router.js?v=2910";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2910";
+import { renderTopbar } from "../components/topbar.js?v=2910";
+import { showToast } from "../components/toast.js?v=2910";
+import { renderEmptyState } from "../components/empty-state.js?v=2910";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2910";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2910";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2910";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2910";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -53,7 +53,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=2908";
+} from "../topics-store.js?v=2910";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -62,19 +62,19 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=2908";
-import { renderTopicCard } from "../components/topic-card.js?v=2908";
+} from "../topics-catalog.js?v=2910";
+import { renderTopicCard } from "../components/topic-card.js?v=2910";
 import {
   renderTopicArticle,
   renderTopicHeader,
   renderTopicActions,
   renderTopicStates,
-} from "../topic-article.js?v=2908";
-import { firstRunText, FIRST_RUN_BRAND } from "./home/lists.js?v=2908";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2908";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=2908";
-import { useTopicInChat } from "../topic-flow.js?v=2908";
-import { canEdit } from "../playbook-access.js?v=2908";
+} from "../topic-article.js?v=2910";
+import { firstRunText, FIRST_RUN_BRAND } from "./home/lists.js?v=2910";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2910";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=2910";
+import { useTopicInChat } from "../topic-flow.js?v=2910";
+import { canEdit } from "../playbook-access.js?v=2910";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -902,60 +902,53 @@ function renderEmpty(total, feed) {
 }
 
 // ── Nothing to read yet: the Playbooks' first run, told for the feed ───────
-// No Playbook, or a feed that has found nothing so far. Same stage as the
-// Playbooks and Chats tabs (.pb-first, contexts.css), so the three read as one
-// family: Bramble & Bean (Example) on the left, six posts from its neighbours
-// that I read one by one; my mark in the middle, where they converge; three
-// Topics out of them on the right. Then each Topic lights in turn with the two
-// posts behind it and their wires: many posts make one Topic. Decorative
-// (aria-hidden), the copy carries it all. Geometry in the wires box's own
-// pixels (176 × 360): post rows centred at 80 + 50k (topics.css fixes their
-// height), my mark centred at 88 / 180, the Topics at 57 / 180 / 303.
-// Posts are a name and a grey line, Topics a badge and a few words: the scene
-// shows the gesture (many posts make one Topic), the copy below says it.
+// No Playbook, or a feed that has found nothing so far. Same family as the
+// Playbooks and Clips first runs (.pb-first, contexts.css): few objects, real
+// ones, and the gesture played rather than written. Three posts from Bramble &
+// Bean's neighbours, fanned like a hand of cards (photos, the author, the
+// network: no text), one wire through my mark, and ONE Topic, the feed card's
+// own anatomy, whose avatars are those three authors. Then the loop lifts each
+// post in turn and lights its author in the Topic: three posts, one Topic.
+// Decorative (aria-hidden), the copy carries it all.
+// ⚠️ Replaces six text rows → six wires → three Topics (2026-11-26): too much
+// text, then too many objects. Keep it to one Topic.
+const FIRST_RUN_PHOTO = (id) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=400&h=300&q=70`;
 const FIRST_RUN_POSTS = [
-  { who: "Northside Coffee", initials: "NC", accent: "green", network: "instagram", bar: 88 },
-  { who: "Maya Brews", initials: "MB", accent: "orange", network: "instagram", bar: 64 },
-  { who: "Crumb & Co", initials: "CC", accent: "purple", network: "facebook", bar: 96 },
-  { who: "Northside Coffee", initials: "NC", accent: "green", network: "facebook", bar: 72 },
-  { who: "The Roast Report", initials: "RR", accent: "electric-blue", network: "linkedin", bar: 84 },
-  { who: "Crumb & Co", initials: "CC", accent: "purple", network: "instagram", bar: 60 },
+  {
+    who: "Northside Coffee",
+    initials: "NC",
+    accent: "green",
+    network: "instagram",
+    photo: "photo-1509042239860-f550ce710b93",
+  },
+  {
+    who: "Maya Brews",
+    initials: "MB",
+    accent: "orange",
+    network: "instagram",
+    photo: "photo-1495474472287-4d71bcdd2085",
+  },
+  {
+    who: "Mill Lane Café",
+    initials: "ML",
+    accent: "purple",
+    network: "facebook",
+    photo: "photo-1442512595331-e89e73853f31",
+  },
 ];
-const FIRST_RUN_TOPICS = [
-  { source: "competitor-posts", isTrending: true, headline: "Bring-your-own-cup week" },
-  { source: "influencer-posts", isUpdated: true, headline: "The first crack, on video" },
-  { source: "competitor-posts", headline: "A Friday weekend menu" },
-];
-const FIRST_RUN_TOPIC_Y = [57, 180, 303];
 
 function renderTopicsFirstRun(feed) {
   const brand = FIRST_RUN_BRAND.map((c, j) => `--b${j}:${c}`).join(";");
-  const wiresIn = FIRST_RUN_POSTS.map((_, k) => `M0 ${80 + 50 * k} C 36 ${80 + 50 * k}, 30 180, 64 180`);
-  // The middle Topic sits 16px further right (.pb-first__post:nth-child(2)).
-  const wiresOut = FIRST_RUN_TOPIC_Y.map((y) =>
-    y === 180 ? "M112 180 L192 180" : `M112 180 C 146 180, 142 ${y}, 176 ${y}`,
-  );
+  const source = findTopicSource("competitor-posts");
+  const avatar = (p, k) =>
+    `<span class="ap-avatar size-24 social-post-card__avatar" data-accent="${p.accent}" style="--k:${k}"><span class="ap-avatar-initials">${p.initials}</span></span>`;
   const posts = FIRST_RUN_POSTS.map(
     (p, k) => `
-      <li class="topic-first__post" style="--k:${k};--i:${k % 3}">
-        <span class="ap-avatar size-24 social-post-card__avatar" data-accent="${p.accent}"><span class="ap-avatar-initials">${p.initials}</span></span>
-        <span class="topic-first__post-body">
-          <span class="topic-first__who">${escapeAttr(p.who)}<i class="ap-icon-${p.network}-official"></i></span>
-          <span class="topic-first__bar" style="width:${p.bar}%"></span>
-        </span>
-      </li>`,
+      <div class="topic-first__post" style="--k:${k}">
+        <img class="topic-first__photo" src="${FIRST_RUN_PHOTO(p.photo)}" alt="" loading="lazy" />
+        <span class="topic-first__who">${avatar(p, k)}<span>${escapeAttr(p.who)}</span><i class="ap-icon-${p.network}-official"></i></span>
+      </div>`,
   ).join("");
-  const topics = FIRST_RUN_TOPICS.map((t, k) => {
-    const source = findTopicSource(t.source);
-    return `
-      <div class="pb-first__post topic-first__topic" style="--k:${k};--i:${k}">
-        <span class="topic-first__meta">
-          <span class="topic-badge topic-badge--${source.accent}"><i class="${source.icon}"></i></span>
-          ${renderTopicStates({ status: "new", kind: "ready", isTrending: t.isTrending, isUpdated: t.isUpdated })}
-        </span>
-        <span class="topic-first__headline">${firstRunText(t.headline)}</span>
-      </div>`;
-  }).join("");
   const copy = feed
     ? {
         title: "Your first Topics are on their way",
@@ -974,28 +967,32 @@ function renderTopicsFirstRun(feed) {
   return `
     <div class="pb-first pb-first--topics" style="${brand}">
       <div class="pb-first__stage" aria-hidden="true">
-        <div class="pb-first__sheet topic-first__sheet">
-          <div class="topic-first__head">
-            <span class="pb-first__logo">B</span>
-            <span class="topic-first__name">Bramble &amp; Bean</span>
-            <svg class="topic-first__live" viewBox="0 0 16 16"><circle class="topic-first__ring" cx="8" cy="8" r="6" /><circle cx="8" cy="8" r="3" /></svg>
-            <span class="chat-first__example">Example</span>
-          </div>
-          <ul class="topic-first__posts">${posts}</ul>
-        </div>
+        <div class="topic-first__deck">${posts}</div>
         <div class="pb-first__wires topic-first__wires">
-          <svg class="pb-first__wire-lines" viewBox="0 0 176 360">
-            ${wiresIn.map((d, k) => `<path d="${d}" pathLength="1" style="--n:0;--i:${k % 3}" />`).join("")}
-            ${wiresOut.map((d, i) => `<path d="${d}" pathLength="1" style="--n:${i + 1};--i:${i}" />`).join("")}
+          <svg class="pb-first__wire-lines" viewBox="0 0 144 300">
+            <path d="M0 150 L24 150" pathLength="1" style="--n:0" />
+            <path d="M72 150 L144 150" pathLength="1" style="--n:1" />
           </svg>
-          ${wiresIn.map((d, k) => `<span class="pb-first__spark topic-first__spark-in" style="offset-path:path('${d}');--k:${k}"></span>`).join("")}
-          ${wiresOut.flatMap((d, i) => [0, 1].map((h) => `<span class="pb-first__spark" style="offset-path:path('${d}');--n:${i + 1};--h:${h}"></span>`)).join("")}
+          <span class="pb-first__spark topic-first__spark topic-first__spark--in" style="offset-path:path('M0 150 L24 150')"></span>
+          <span class="pb-first__spark topic-first__spark" style="offset-path:path('M72 150 L144 150')"></span>
           <span class="pb-first__mark">
             <svg class="pb-first__orbit" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" pathLength="24" /></svg>
             <i class="ap-icon-archie-official"></i>
           </span>
         </div>
-        <div class="pb-first__posts">${topics}</div>
+        <div class="pb-first__post topic-first__topic" style="--k:0">
+          <span class="topic-first__meta">
+            <span class="topic-badge topic-badge--${source.accent}"><i class="${source.icon}"></i></span>
+            <span>${source.name}</span>
+            ${renderTopicStates({ status: "new", kind: "ready", isTrending: true })}
+          </span>
+          <span class="topic-first__headline">${firstRunText("Bring-your-own-cup weeks beat every product post")}</span>
+          <span class="topic-first__from">
+            <span class="ap-avatar-group">${FIRST_RUN_POSTS.map(avatar).join("")}</span>
+            <span>3 posts</span>
+            <span class="chat-first__example">Example</span>
+          </span>
+        </div>
       </div>
       <div class="pb-first__copy">
         <h2 class="ap-h1">${copy.title}</h2>

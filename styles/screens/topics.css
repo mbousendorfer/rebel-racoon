@@ -456,13 +456,13 @@
 }
 
 /* ── Nothing to read yet: the first run ──────────────────────────────────────
-   The Playbooks' stage (.pb-first, contexts.css), told for the feed: six posts
-   from Bramble & Bean's neighbours, read one by one under a butter scan; they
-   converge on my mark; three Topics come out. Then each Topic lights with its
-   two posts and their wires (6 s loop, 2 s per Topic). Timeline (ms): sheet
-   100 · posts 400 + 120 each · scan 1000 → 2000 · mark 2000 · wires 2150 ·
-   sparks from 2500 · Topics 2500 + 250 each, their words 45 apart · loop from
-   4600. The concept line above goes while this is shown: it says the same. */
+   The Playbooks' stage (.pb-first, contexts.css), told for the feed with few,
+   real objects: three neighbours' posts fanned like a hand of cards, one wire
+   through my mark, one Topic. Timeline (ms): cards dealt 100 + 120 each · mark
+   2000 · wires 2150 · Topic 2500, its words 45 apart, its authors 3000 + 120
+   each · loop from 3600, 6 s, 2 s per post: the post lifts, a spark carries it
+   through my mark, its author lights in the Topic. Reduced motion: dealt and
+   still. The concept line above goes while this is shown: it says the same. */
 .topics-view:has(.pb-first--topics) .topics-view__lead {
   display: none;
 }
@@ -475,141 +475,99 @@
 }
 .pb-first--topics {
   --pb-loop: 6s;
-  --pb-loop-start: 4600ms;
+  --pb-loop-start: 3600ms;
 }
 .pb-first--topics .pb-first__stage {
-  grid-template-columns: 280px 176px 280px;
+  grid-template-columns: 264px 144px 300px;
 }
 
-/* The sheet is exactly the wires box's height, its rows a fixed 50px, so
-   each post's centre sits on its wire (80 + 50k in the SVG: the border, the
-   6px padding, then 25px into its row). */
-.topic-first__sheet {
-  display: grid;
-  grid-template-rows: 48px 1fr;
-  height: 360px;
-}
-.topic-first__head {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  padding: 0 var(--ref-spacing-sm);
-  border-bottom: 1px solid var(--ref-color-grey-20);
-}
-.topic-first__name {
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-}
-/* Listening: a dot and a ring that keeps leaving it. */
-.topic-first__live {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  overflow: visible;
-  fill: var(--app-butter-accent);
-}
-.topic-first__ring {
-  fill: none;
-  stroke: var(--app-butter-accent);
-  stroke-width: 1.5;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: topic-first-ping 2s var(--app-ease-out) 600ms infinite both;
-}
-
-.topic-first__posts {
+/* ── The hand: three posts, fanned from a point below them ── */
+.topic-first__deck {
   position: relative;
-  list-style: none;
-  margin: 0;
-  padding: 6px 0;
-  display: grid;
-  grid-auto-rows: 50px;
-  overflow: hidden;
-}
-/* The scan: one butter band down the posts while I read them. */
-.topic-first__posts::after {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 56px;
-  background: linear-gradient(transparent, color-mix(in srgb, var(--app-butter) 85%, transparent), transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--app-butter-accent) 40%, transparent);
-  opacity: 0;
-  pointer-events: none;
-  animation: topic-first-scan 1000ms ease-in-out 1000ms both;
+  height: 300px;
 }
 .topic-first__post {
-  --pb-rest: transparent;
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  min-width: 0;
-  padding: 0 var(--ref-spacing-sm);
-  animation:
-    app-rise 360ms var(--app-ease-out) calc(400ms + var(--k) * 120ms) both,
-    pb-first-spot var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--i) * 2s) infinite;
-}
-.topic-first__post-body {
-  flex: 1;
+  /* Two cards tilted behind, the third straight in front. */
+  --r: -6deg;
+  --x: -34px;
+  position: absolute;
+  top: 40px;
+  left: 44px;
+  z-index: 1;
+  width: 176px;
   display: grid;
-  gap: var(--ref-spacing-xxxs);
-  min-width: 0;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxs);
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  box-shadow: var(--app-shadow-card);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transform: translateX(var(--x)) rotate(var(--r));
+  transform-origin: 50% 100%;
+  animation:
+    topic-first-deal 600ms var(--app-ease-out) calc(100ms + var(--k) * 120ms) both,
+    topic-first-lift var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--k) * 2s) infinite;
+}
+.topic-first__post:nth-child(2) {
+  --r: 6deg;
+  --x: 34px;
+}
+.topic-first__post:nth-child(3) {
+  --r: 0deg;
+  --x: 0px;
+  z-index: 2;
+}
+.topic-first__photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--b1);
 }
 .topic-first__who {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
+  padding: 0 var(--ref-spacing-xxxs) var(--ref-spacing-xxxs);
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
 }
-.topic-first__who i {
+.topic-first__who > span:not(.ap-avatar) {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topic-first__who > i {
   font-size: var(--sys-icon-css-sm);
 }
-/* The post's text as a grey line: the scene says "a post", not what it says. */
-.topic-first__bar {
-  height: 6px;
-  border-radius: var(--app-radius-sm);
-  background: var(--ref-color-grey-10);
-}
 
-/* My mark sits mid-box: the posts converge from the left. */
+/* ── One wire through my mark, 144 × 300 ── */
 .pb-first--topics .pb-first__wires {
-  width: 176px;
+  height: 300px;
 }
 .pb-first--topics .pb-first__mark {
-  left: 64px;
+  top: 126px;
 }
-/* A wire lights with its Topic, in the same beat as the posts. */
-.pb-first--topics .pb-first__wire-lines path {
-  animation:
-    pb-first-stroke 520ms var(--app-ease-out) calc(2150ms + var(--n) * 140ms) forwards,
-    topic-first-wire var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--i) * 2s) infinite;
+/* One spark per post, in step with the lift: in, then out to the Topic. */
+.topic-first__spark {
+  animation: topic-first-hop 2s ease-in-out calc(var(--pb-loop-start) + 500ms) infinite;
 }
-/* Into my mark: one spark per post, a slow trickle. */
-.topic-first__spark-in {
-  animation-duration: 2.4s;
-  animation-delay: calc(2400ms + var(--k) * 400ms);
+.topic-first__spark--in {
+  animation-delay: calc(var(--pb-loop-start) + 150ms);
 }
 
-/* The Topic: the source badge and its signal, then a few words. */
+/* ── The Topic: the feed card's anatomy, its authors as avatars ── */
 .topic-first__topic {
-  --pb-rest: var(--app-surface);
   flex-direction: column;
-  justify-content: center;
-  /* Tight enough to fit a third of the 360px column, so the rows stay equal
-     and each centre sits on its wire (57 / 180 / 303). */
-  gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
-  animation:
-    app-rise 420ms var(--app-ease-out) calc(2500ms + var(--k) * 250ms) both,
-    pb-first-spot var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--i) * 2s) infinite;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm);
+  animation: app-rise 420ms var(--app-ease-out) 2500ms both;
 }
 .topic-first__meta {
   display: flex;
@@ -619,67 +577,98 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
 }
-.topic-first__meta .topic-badge {
-  width: 20px;
-  height: 20px;
-}
 .topic-first__meta .topic-states {
   margin-left: auto;
 }
 .topic-first__headline {
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  text-wrap: pretty;
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  text-wrap: balance;
+}
+.topic-first__from {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+.topic-first__from .chat-first__example {
+  margin-left: auto;
+}
+.topic-first__from .ap-avatar {
+  outline: 2px solid transparent;
+  outline-offset: 1px;
+  animation:
+    pb-first-pop 280ms var(--app-ease-out) calc(3000ms + var(--k) * 120ms) both,
+    topic-first-ring var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--k) * 2s + 600ms) infinite;
 }
 
 @container (max-width: 720px) {
   .pb-first--topics .pb-first__stage {
     grid-template-columns: minmax(0, 300px);
   }
+  .topic-first__deck {
+    width: 264px;
+    justify-self: center;
+  }
   .pb-first--topics .pb-first__wires {
-    width: auto;
+    height: 96px;
   }
   .pb-first--topics .pb-first__mark {
-    left: calc(50% - 24px);
+    top: 24px;
   }
 }
 
-@keyframes topic-first-ping {
+@keyframes topic-first-deal {
   from {
-    opacity: 0.8;
-    transform: scale(0.5);
-  }
-  to {
     opacity: 0;
-    transform: scale(1.4);
+    transform: translateY(16px);
   }
 }
-@keyframes topic-first-scan {
-  0% {
-    opacity: 0;
-    transform: translateY(-56px);
-  }
-  15%,
-  85% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(312px);
-  }
-}
-@keyframes topic-first-wire {
+/* A post read: lifted, ringed in butter, on top of the hand. */
+@keyframes topic-first-lift {
   0%,
   28%,
   100% {
-    stroke-opacity: 0.45;
-    stroke-width: 1.5;
+    translate: 0 0;
+    outline-color: transparent;
   }
-  5%,
+  6%,
   22% {
-    stroke-opacity: 1;
-    stroke-width: 2.5;
+    translate: 0 -14px;
+    outline-color: var(--app-butter-accent);
+    z-index: 3;
+  }
+}
+@keyframes topic-first-ring {
+  0%,
+  28%,
+  100% {
+    outline-color: transparent;
+  }
+  6%,
+  22% {
+    outline-color: var(--app-butter-accent);
+  }
+}
+@keyframes topic-first-hop {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  40% {
+    offset-distance: 100%;
+    opacity: 1;
+  }
+  45%,
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
   }
 }
 
