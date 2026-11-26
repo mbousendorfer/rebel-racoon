@@ -1,8 +1,8 @@
-import { getSessions } from "../sessions-store.js?v=2922";
-import { scopeSessions } from "../active-playbook.js?v=2922";
-import { getContexts } from "../contexts-store.js?v=2922";
-import { isNewUser } from "../user-mode.js?v=2922";
-import { newStartVariant } from "../feature-flags.js?v=2922";
+import { getSessions } from "../sessions-store.js?v=2923";
+import { scopeSessions } from "../active-playbook.js?v=2923";
+import { getContexts } from "../contexts-store.js?v=2923";
+import { isNewUser } from "../user-mode.js?v=2923";
+import { isNewStartOn } from "../feature-flags.js?v=2923";
 
 // Dashboard route — pure redirect surface.
 //
@@ -30,7 +30,7 @@ export function renderDashboard(_params, _target) {
   // ALT mode lands on /welcome-alt (visual profile picker → conversational
   // Playbook builder).
   // Flag newStart: no run first — the new chat introduces Archie and offers it.
-  if (isNewUser() && getContexts().length === 0 && !newStartVariant()) {
+  if (isNewUser() && getContexts().length === 0 && !isNewStartOn()) {
     window.location.replace(window.location.href.split("#")[0] + "#/welcome-alt");
     return;
   }

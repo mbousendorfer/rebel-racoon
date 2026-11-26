@@ -6,16 +6,16 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { newId } from "./utils.js?v=2922";
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2922";
-import { findConnector } from "./connectors-store.js?v=2922";
-import { createSessionNotifier } from "./store-utils.js?v=2922";
-import { addPostDraft } from "./posts-store.js?v=2922";
-import { showToast } from "./components/toast.js?v=2922";
-import { isFlagOn, newStartVariant } from "./feature-flags.js?v=2922";
-import { getContexts } from "./contexts-store.js?v=2922";
-import { offerMentions } from "./mention-flow.js?v=2922";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2922";
+import { newId } from "./utils.js?v=2923";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2923";
+import { findConnector } from "./connectors-store.js?v=2923";
+import { createSessionNotifier } from "./store-utils.js?v=2923";
+import { addPostDraft } from "./posts-store.js?v=2923";
+import { showToast } from "./components/toast.js?v=2923";
+import { isFlagOn, isNewStartOn } from "./feature-flags.js?v=2923";
+import { getContexts } from "./contexts-store.js?v=2923";
+import { offerMentions } from "./mention-flow.js?v=2923";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2923";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -958,7 +958,7 @@ function seedThread(sessionId) {
   // Except with no Playbook at all (flag newStart): « your Brand's voice »
   // would promise what a first-time chat can't keep.
   const greeting =
-    newStartVariant() && !getContexts().length
+    isNewStartOn() && !getContexts().length
       ? "Hi. Drop a source or tell me what to post, and I'll draft from it. No Playbook yet, so my drafts will be generic."
       : "Hi. Drop a source or tell me what to post, and I'll draft from it in your Brand's voice.";
 

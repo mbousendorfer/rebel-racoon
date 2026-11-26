@@ -1,6 +1,6 @@
-/* New Start (flags newStart2 · newStart3, src/screens/session/new-start.js).
-   The request rows and their tone tiles came from the new-chat homes
-   (HOME-1…8, deleted 2026-11-26) and are the page's own now. */
+/* New Start (flag newStart4, src/screens/session/new-start.js).
+   The tone tiles came from the new-chat homes (HOME-1…8, deleted 2026-11-26)
+   and are the page's own now. */
 .ns-tone--src {
   --ns-tone-bg: var(--ref-color-purple-10);
   --ns-tone: var(--ref-color-purple-100);
@@ -35,73 +35,11 @@
   border-radius: 7px;
 }
 
-.ns-asks__set {
-  position: relative;
-  width: 100%;
-  margin: var(--ref-spacing-sm) 0 0;
-  padding: 6px;
-  list-style: none;
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: 16px;
-  background: var(--ref-color-white);
-}
-
-.ns-ask {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
-  width: 100%;
-  min-height: 44px;
-  padding: 10px var(--ref-spacing-sm);
-  border: 0;
-  border-radius: var(--app-radius-md);
-  background: transparent;
-  color: var(--ref-color-grey-100);
-  font-family: inherit;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  text-align: left;
-  cursor: pointer;
-  transition: background-color var(--ref-animation-short) var(--app-ease-standard);
-}
-
-.ns-ask__text {
-  flex: 1;
-  min-width: 0;
-}
-
-.ns-ask__go {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  background-color: var(--ref-color-electric-blue-100);
-  opacity: 0;
-  transform: translateX(-4px);
-  transition:
-    opacity var(--ref-animation-short) var(--app-ease-standard),
-    transform var(--ref-animation-short) var(--app-ease-standard);
-}
-
-.ns-ask:is(:hover, :focus-visible) {
-  outline: none;
-  background: var(--ref-color-grey-05);
-}
-
-.ns-ask:focus-visible {
-  box-shadow: 0 0 0 2px var(--ref-color-electric-blue-100);
-}
-
-.ns-ask:is(:hover, :focus-visible) .ns-ask__go {
-  opacity: 1;
-  transform: none;
-}
-
-/* ══ New Start (flags newStart2 · newStart3) — the first chat with no Playbook ═════════
-   Two tops over the same body: the composer, three example requests that
-   change, then two doors that each play what they do
+/* ══ New Start (flag newStart4) — the first chat with no Playbook ═════════
+   Archie opens the thread: hello, two doors that each play what they do,
+   then three example requests that change; the composer at the foot
    (src/screens/session/new-start.js). No pixel halo, no wordmark, no wash:
-   the page is redrawn from nothing (asked 2026-11-26). The rows are the
-   .ns-ask rows above. */
+   the page is redrawn from nothing (asked 2026-11-26). */
 .session__assistant:has(.empty-chat.ns) {
   background: var(--app-bg);
 }
@@ -115,106 +53,12 @@
   text-align: left;
 }
 
-.ns > *,
-.ns__lead {
+.ns > * {
   width: 100%;
   max-width: 740px;
 }
 
-.ns-title {
-  margin: 0;
-  font-size: var(--sys-text-style-marketing-size);
-  line-height: var(--sys-text-style-marketing-line-height);
-  font-weight: var(--sys-text-style-marketing-weight);
-  color: var(--ref-color-grey-100);
-}
-
-/* #2 · the wall of posts: a band of formats drifting under the headline's
-   line, faded into the page on both sides. */
-/* Never wider than the thread, so the fade is always on screen. */
-.session__assistant-thread:has(.ns--wall) {
-  container-type: inline-size;
-}
-
-.ns > .ns-wall {
-  width: min(calc(100% + 360px), 100cqi);
-  max-width: none;
-  height: 120px;
-  overflow: hidden;
-  -webkit-mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
-  mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
-}
-
-.ns-wall__track {
-  display: flex;
-  gap: var(--ref-spacing-xs);
-  width: max-content;
-  height: 100%;
-  animation: ns-drift 70s linear infinite;
-}
-
-@keyframes ns-drift {
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-.ns-wall__card {
-  position: relative;
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  width: 200px;
-  height: 100%;
-  padding: var(--ref-spacing-xs);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: 12px;
-  background: var(--ref-color-white);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-100);
-}
-
-.ns-wall__card > i {
-  flex: none;
-  width: 16px;
-  height: 16px;
-}
-
-.ns-wall__card--clip {
-  width: 68px;
-  padding: 0;
-  align-items: center;
-  justify-content: center;
-  border-color: #000;
-  background: #000; /* the footage's well */
-}
-
-.ns-wall__card--clip > i {
-  background-color: var(--ref-color-white);
-}
-
-.ns-wall__card--carousel {
-  width: 120px;
-  justify-content: space-between;
-  background: var(--ref-color-grey-05);
-}
-
-.ns-wall__slide {
-  font-weight: var(--sys-text-style-body-bold-weight);
-}
-
-.ns-wall__count {
-  align-self: flex-end;
-}
-
-.ns--wall .ns-title {
-  margin-top: var(--ref-spacing-xs);
-  text-align: center;
-}
-
-/* #3 · Archie opens: two turns of the thread, Archie's mark in the gutter. */
+/* Archie opens: the turns of the thread, Archie's mark in the gutter. */
 .ns-turn {
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr);
@@ -403,32 +247,9 @@
   margin-top: var(--ref-spacing-xs);
 }
 
-.ns--thread .ns__lead {
-  margin-top: var(--ref-spacing-sm);
-}
-
-.ns-asks,
 .ns-doors {
   width: 100%;
   max-width: 740px;
-}
-
-.ns-asks {
-  margin-top: calc(-1 * var(--ref-spacing-xs));
-}
-
-.ns-asks__set:not([hidden]) {
-  animation: ns-deal var(--ref-animation-normal) var(--app-ease-standard);
-}
-
-@keyframes ns-deal {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-}
-
-.ns-doors {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: var(--ref-spacing-sm);
@@ -888,7 +709,7 @@ g:nth-child(3) > .ns-spark {
   }
 }
 
-/* #4 · the composer at the foot (session.js renders it there, as in a started
+/* The composer at the foot (session.js renders it there, as in a started
    chat); the turns sit centred above it, and the requests are my third turn:
    text, each led by its tone tile, no box. */
 .ns--foot .ns-turn + .ns-turn {
@@ -1012,7 +833,6 @@ g:nth-child(3) > .ns-spark {
 
 /* Reduced motion: no loop, the doors show their result. */
 @media (prefers-reduced-motion: reduce) {
-  .ns-wall__track,
   .ns-voice__post,
   .ns-voice__write,
   .ns-voice__text mark,
@@ -1020,8 +840,6 @@ g:nth-child(3) > .ns-spark {
   .ns-cut__clip,
   .ns-cut__clip video,
   .ns-cut__clip .ns-cut__caption,
-  .ns-asks__set,
-  .ns-asks__set li,
   .ns-suggests__set li,
   .ns-suggest__text {
     animation: none;

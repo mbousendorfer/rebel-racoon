@@ -1,4 +1,4 @@
-import { FLAGS } from "./ff-catalog.js?v=2922";
+import { FLAGS } from "./ff-catalog.js?v=2923";
 
 const KEY = "archie-feature-flags";
 
@@ -27,10 +27,10 @@ export function isFlagOn(id) {
   return Object.prototype.hasOwnProperty.call(stored, id) ? stored[id] === true : flag.default === true;
 }
 
-// The New Start page (flags newStart2 · 3 · 4): the variant that wins, 0 when
-// all are OFF. (#1 was deleted; the numbers stay the ones the user knows.)
-export function newStartVariant() {
-  return [2, 3, 4].find((n) => isFlagOn(`newStart${n}`)) || 0;
+// The New Start page (flag newStart4; #1 · #2 · #3 were deleted, the number
+// stays the one the user knows).
+export function isNewStartOn() {
+  return isFlagOn("newStart4");
 }
 
 export function getFlags() {

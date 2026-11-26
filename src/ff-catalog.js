@@ -291,54 +291,20 @@ export const FLAGS = Object.freeze([
       "demo in the topbar wipes it all and goes back to the real setup.",
   },
   {
-    id: "newStart2",
-    group: "Onboarding",
-    tip: "Behind the headline, a band of post formats (LinkedIn, Instagram, a vertical clip, a carousel) drifts slowly: the page's mood is what Archie makes.",
-    label: "UP-New Start #2: wall of posts",
-    default: false,
-    hides:
-      "#2: the wall of posts. A band of the formats Archie writes drifts slowly behind the headline and fades into the page. " +
-      "Shared by the three: a first-time user (mode new-alt) with no Playbook " +
-      "lands on a new chat instead of the setup run. Under the top: the " +
-      "composer, three example requests that change every few seconds (one " +
-      "is always a video), and two doors that play what they do: Sound like " +
-      "your brand (opens the Playbook setup) and Turn a video into clips. " +
-      "Sending right away is fine: without a Playbook the drafts are generic. " +
-      "Turning it on switches to First-time user. If several are ON, the lowest number wins. All OFF: the run is the " +
-      "first screen, as before.",
-  },
-  {
-    id: "newStart3",
-    group: "Onboarding",
-    tip: "No hero: the page is already a thread. Archie says hello in a turn typed live, then offers the two doors as his second turn.",
-    label: "UP-New Start #3: Archie opens",
-    default: false,
-    hides:
-      "#3: Archie opens the conversation. No hero, the page is a thread: Archie's first turn is typed live, his second offers the two doors. " +
-      "Shared by the three: a first-time user (mode new-alt) with no Playbook " +
-      "lands on a new chat instead of the setup run. Under the top: the " +
-      "composer, three example requests that change every few seconds (one " +
-      "is always a video), and two doors that play what they do: Sound like " +
-      "your brand (opens the Playbook setup) and Turn a video into clips. " +
-      "Sending right away is fine: without a Playbook the drafts are generic. " +
-      "Turning it on switches to First-time user. If several are ON, the lowest number wins. All OFF: the run is the " +
-      "first screen, as before.",
-  },
-  {
     id: "newStart4",
     group: "Onboarding",
-    tip: "#3 with the composer at the foot of the screen, as in a started chat: Archie's turns centred, the example requests as his third turn.",
+    tip: "No hero: the page is already a thread. Archie says hello in a turn typed live, offers the two doors, then example requests; the composer at the foot.",
     label: "UP-New Start #4: Archie opens, composer at the foot",
     default: false,
     hides:
-      "#4: #3 with the composer at the foot of the screen, as in a started chat. Archie's turns sit centred; the example requests are his third turn, « Or ask me something like: », three text links. " +
-      "Shared by the three: a first-time user (mode new-alt) with no Playbook " +
-      "lands on a new chat instead of the setup run. Under the top: the " +
-      "composer, three example requests that change every few seconds (one " +
-      "is always a video), and two doors that play what they do: Sound like " +
-      "your brand (opens the Playbook setup) and Turn a video into clips. " +
-      "Sending right away is fine: without a Playbook the drafts are generic. " +
-      "Turning it on switches to First-time user. If several are ON, the lowest number wins. All OFF: the run is the " +
-      "first screen, as before.",
+      "A first-time user (mode new-alt) with no Playbook lands on a new chat " +
+      "instead of the setup run. Archie opens the thread: his hello is typed " +
+      "live, his second turn offers two doors that play what they do (Sound " +
+      "like your brand opens the Playbook setup, Turn a video into clips), his " +
+      "third, « Or ask me something like: », three example requests that change " +
+      "every few seconds (one is always a video). The composer sits at the " +
+      "foot, as in a started chat. Sending right away is fine: without a " +
+      "Playbook the drafts are generic. Turning it on switches to First-time " +
+      "user. OFF: the run is the first screen, as before.",
   },
 ]);
