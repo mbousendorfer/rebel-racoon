@@ -9,13 +9,13 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2888";
-import { isFlagOn } from "../../feature-flags.js?v=2888";
-import { renderTopbar } from "../../components/topbar.js?v=2888";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2888";
-import { isDemo } from "../../demo-mode.js?v=2888";
-import { getPosts } from "../../posts-store.js?v=2888";
-import { escapeHtml, plural } from "../../utils.js?v=2888";
+import { navigate } from "../../router.js?v=2889";
+import { isFlagOn } from "../../feature-flags.js?v=2889";
+import { renderTopbar } from "../../components/topbar.js?v=2889";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2889";
+import { isDemo } from "../../demo-mode.js?v=2889";
+import { getPosts } from "../../posts-store.js?v=2889";
+import { escapeHtml, plural } from "../../utils.js?v=2889";
 import {
   getVideos,
   exampleVideo,
@@ -25,7 +25,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2888";
+} from "../../videos-store.js?v=2889";
 import {
   fmtMs,
   previewMarkup,
@@ -38,7 +38,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2888";
+} from "./shared.js?v=2889";
 
 let target = null;
 let disposeShowcase = null;
@@ -244,39 +244,71 @@ function start() {
   return undefined;
 }
 
-// The hero shows what the space makes, with the space's own work: a real
-// podcast on the left, where its clips sit in it, and three of them on the
-// right, reframed for real. The middle one plays on its own; the others on hover.
+// The showcase, played once like the Playbooks' first run (2026-11-26): the
+// space's own work, an example said as such. A real podcast on top; a playhead
+// with my mark runs through it and its moments land on its timeline as it
+// passes; then three of them fall, along wires, into their clips, reframed for
+// real, each with the title I gave it. Then a 6 s loop lights each clip in
+// turn WITH the moment it came from (moment, wire, clip in butter), so « cut
+// from your video » is something you watch. The middle clip plays on its own;
+// the others on hover. Decorative: the box above and the caption say it all.
+//
+// The wires live in the stage's own pixels (SHOW_W wide): the three clips are
+// spread across the video (first, middle, last) so the wires fan out.
+const SHOW_W = 360;
+const SHOW_CLIP = 104;
+const SHOW_WIRE_H = 72;
+
 function renderShowcase(v) {
-  const clips = v.clips.slice(0, 3);
+  const n = v.clips.length;
+  const picks = [0, Math.round((n - 1) / 2), n - 1].filter((x, k, a) => a.indexOf(x) === k);
+  const clips = picks.map((i) => v.clips[i]);
+  const pct = (ms) => (ms / v.durationMs) * 100;
+  const gap = (SHOW_W - SHOW_CLIP * clips.length) / Math.max(1, clips.length - 1);
+  const wires = clips.map((c, k) => {
+    const sx = ((pct((c.startMs + c.endMs) / 2) / 100) * SHOW_W).toFixed(1);
+    const cx = (k * (SHOW_CLIP + gap) + SHOW_CLIP / 2).toFixed(1);
+    return `M${sx} 0 C ${sx} 40, ${cx} 32, ${cx} ${SHOW_WIRE_H}`;
+  });
   const map = v.clips
-    .map(
-      (c, i) =>
-        `<span class="${i < 3 ? "is-shown" : ""}" style="--i:${i};left:${(c.startMs / v.durationMs) * 100}%;width:max(3px, ${((c.endMs - c.startMs) / v.durationMs) * 100}%)"></span>`,
-    )
+    .map((c, i) => {
+      const k = picks.indexOf(i);
+      return `<span class="${k >= 0 ? "is-shown" : ""}" style="--at:${pct(c.startMs).toFixed(1)};--k:${k};left:${pct(c.startMs)}%;width:max(3px, ${pct(c.endMs - c.startMs)}%)"></span>`;
+    })
     .join("");
   return `
     <figure class="clips-showcase">
       <figcaption class="clips-showcase__head">
         <span class="ap-tag grey mini">Example</span>
-        <span>A ${Math.round(v.durationMs / 60000)}-minute podcast, cut into ${v.clips.length} clips</span>
+        <span>A ${Math.round(v.durationMs / 60000)}-minute podcast, cut into ${n} clips</span>
       </figcaption>
-      <div class="clips-showcase__stage" aria-hidden="true">
+      <div class="clips-showcase__stage" style="--show-w:${SHOW_W}px;--show-clip:${SHOW_CLIP}px;--show-wire-h:${SHOW_WIRE_H}px" aria-hidden="true">
         <div class="clips-showcase__in">
-          <div class="clips-showcase__source">
-            <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline tabindex="-1"></video>
-            <span class="clips-showcase__badge">${fmtMs(v.durationMs)}</span>
+          <span class="clips-showcase__labels">
+            <span>Your video</span>
+            <span class="clips-showcase__found">${n} moments found</span>
+          </span>
+          <div class="clips-showcase__track">
+            <div class="clips-showcase__source">
+              <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline tabindex="-1"></video>
+              <span class="clips-showcase__badge">${fmtMs(v.durationMs)}</span>
+            </div>
+            <span class="clips-showcase__map">${map}</span>
+            <span class="clips-showcase__head-line"><span class="clips-showcase__mark"><i class="ap-icon-archie-official"></i></span></span>
           </div>
-          <span class="clips-showcase__map">${map}</span>
-          <span class="clips-showcase__label">Your video</span>
         </div>
-        <span class="clips-showcase__arrow"><i class="ap-icon-arrow-right"></i></span>
+        <div class="clips-showcase__wires">
+          <svg viewBox="0 0 ${SHOW_W} ${SHOW_WIRE_H}">
+            ${wires.map((d, k) => `<path d="${d}" pathLength="1" style="--k:${k}" />`).join("")}
+          </svg>
+          ${wires.map((d, k) => `<span class="clips-showcase__spark" style="offset-path:path('${d}');--k:${k}"></span>`).join("")}
+        </div>
         <div class="clips-showcase__clips">
           ${clips
             .map(
-              (c, i) => `<div class="clips-showcase__clip" style="--i:${i}">
+              (c, k) => `<div class="clips-showcase__clip" style="--k:${k}">
                 <div class="clips-showcase__frame">
-                  ${previewMarkup(v, { ...c, ratio: "9:16" }).replace("data-clip-preview", i === 1 ? "data-autoplay data-clip-preview" : "data-clip-preview")}
+                  ${previewMarkup(v, { ...c, ratio: "9:16" }).replace("data-clip-preview", k === 1 ? "data-autoplay data-clip-preview" : "data-clip-preview")}
                   <span class="clips-showcase__dur">${fmtMs(c.endMs - c.startMs)}</span>
                 </div>
                 <span class="clips-showcase__title">${escapeHtml(c.title)}</span>

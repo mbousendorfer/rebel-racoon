@@ -327,18 +327,28 @@
   display: flex;
 }
 
-/* The showcase: the space's own work, an example said as such. A real podcast
-   on the left with where its clips sit in it, three of them on the right,
-   reframed for real, each with the title I gave it. */
+/* The showcase, played once like the Playbooks' first run: the space's own
+   work, an example said as such. The podcast on top; a playhead with my mark
+   runs through it and its moments land on the timeline as it passes; three
+   of them fall along wires into their clips (first, middle, last), reframed
+   for real. Then a loop lights each clip with the moment it came from.
+   One timeline (ms): source 100 · playhead 300 → 1900, each moment as it
+   passes · « N moments found » 1900 · wires 2100 + 140 each, sparks from 2500
+   · clips 2400 + 200 each · loop from 4600, 6 s, 2 s per clip. The stage is
+   in fixed pixels (--show-w, set by library.js with the wires' geometry).
+   Reduced motion → the end state at once (base.css), nothing lit. */
 .clips-showcase {
+  --show-loop: 6s;
+  --show-loop-start: 4600ms;
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-md);
   margin: 0;
-  padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-lg);
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-xl);
   border-radius: var(--app-radius-lg);
   background: var(--ref-color-grey-05);
   min-width: 0;
+  overflow: hidden;
 }
 
 .clips-showcase__head {
@@ -350,19 +360,29 @@
 }
 
 .clips-showcase__stage {
-  display: flex;
-  align-items: center;
+  position: relative;
+  isolation: isolate;
+  display: grid;
   justify-content: center;
-  gap: var(--ref-spacing-md);
+  grid-template-columns: var(--show-w);
+}
+/* A dot field behind the scene, fading out at the edges (the Playbooks' one). */
+.clips-showcase__stage::before {
+  content: "";
+  position: absolute;
+  inset: -24px -160px;
+  z-index: -1;
+  background-image: radial-gradient(var(--ref-color-grey-20) 1.2px, transparent 1.6px);
+  background-size: 16px 16px;
+  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 70%);
 }
 
+/* ── Your video, and me watching it ── */
 .clips-showcase__in {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  flex: 1 1 140px;
-  min-width: 96px;
-  max-width: 220px;
+  position: relative;
+  display: grid;
+  gap: var(--ref-spacing-xs);
+  animation: clips-rise var(--ref-animation-long) var(--app-ease-out) 100ms both;
 }
 
 .clips-showcase__source {
@@ -381,8 +401,15 @@
   display: block;
 }
 
-/* The video's length, and where every clip sits in it: the three shown are
-   ink, the rest a grey fill. They draw in from the left, one after the other. */
+/* The video and its timeline, the playhead's track. */
+.clips-showcase__track {
+  position: relative;
+  display: grid;
+  gap: var(--ref-spacing-xs);
+}
+
+/* The video's length, and every moment in it: the three that become clips
+   are ink, the rest grey. Each lands as the playhead passes it. */
 .clips-showcase__map {
   position: relative;
   height: 6px;
@@ -396,18 +423,62 @@
   bottom: 0;
   border-radius: var(--app-radius-pill);
   background: var(--ref-color-grey-40);
-  transform-origin: left;
-  animation: clips-draw var(--ref-animation-long) var(--app-ease-out) both;
-  animation-delay: calc(var(--i) * 40ms + 200ms);
+  animation: clips-show-land 300ms var(--app-ease-out) calc(300ms + var(--at) * 16ms) both;
 }
 
 .clips-showcase__map span.is-shown {
   background: var(--ref-color-grey-100);
+  animation:
+    clips-show-land 300ms var(--app-ease-out) calc(300ms + var(--at) * 16ms) both,
+    clips-show-spot var(--show-loop) ease-in-out calc(var(--show-loop-start) + var(--k) * 2s) infinite;
 }
 
-.clips-showcase__label {
+/* The playhead: a butter line down the video to the timeline, my mark on it.
+   It runs once, then leaves. */
+.clips-showcase__head-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  bottom: 0;
+  margin-left: -1px;
+  background: var(--app-butter-accent);
+  opacity: 0;
+  animation: clips-show-scan 1600ms linear 300ms both;
+}
+
+.clips-showcase__mark {
+  position: absolute;
+  bottom: -9px;
+  left: -11px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--app-radius-circle);
+  background: var(--app-butter);
+  box-shadow: 0 0 0 1px var(--app-butter-accent);
+  color: var(--app-archie-mark);
+}
+
+.clips-showcase__mark i {
+  width: 14px;
+  height: 11px;
+}
+
+.clips-showcase__labels {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
   font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
+}
+
+.clips-showcase__found {
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+  animation: clips-show-in 300ms ease-out 1900ms both;
 }
 
 .clips-showcase__badge,
@@ -429,31 +500,61 @@
   bottom: auto;
 }
 
-.clips-showcase__arrow {
-  color: var(--ref-color-grey-80);
-  font-size: 20px;
+/* ── The cut: from each moment, a wire down to its clip ── */
+.clips-showcase__wires {
+  position: relative;
+  height: var(--show-wire-h);
 }
 
+.clips-showcase__wires svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.clips-showcase__wires path {
+  fill: none;
+  stroke: var(--app-butter-accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-opacity: 0.45;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation:
+    clips-show-stroke 520ms var(--app-ease-out) calc(2100ms + var(--k) * 140ms) forwards,
+    clips-show-wire var(--show-loop) ease-in-out calc(var(--show-loop-start) + var(--k) * 2s) infinite;
+}
+
+.clips-showcase__spark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--app-radius-circle);
+  background: var(--app-butter-accent);
+  box-shadow: 0 0 0 3px var(--app-butter);
+  offset-rotate: 0deg;
+  offset-anchor: center;
+  opacity: 0;
+  animation: clips-show-run 1.6s cubic-bezier(0.45, 0, 0.55, 1) calc(2500ms + var(--k) * 300ms) infinite;
+}
+
+/* ── What comes out: three clips, reframed and subtitled ── */
 .clips-showcase__clips {
-  flex: none;
-  /* The three clips keep their size; the source thumbnail is what gives way. */
   display: flex;
+  justify-content: space-between;
   align-items: flex-start;
-  gap: var(--ref-spacing-xs);
 }
 
 .clips-showcase__clip {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
-  width: clamp(76px, 8.5cqi, 112px); /* the page's width (.clips-library-page is the container) */
-  animation: clips-rise var(--ref-animation-long) var(--app-ease-out) both;
-  animation-delay: calc(var(--i) * 90ms + 420ms);
-}
-
-/* The middle clip, the one playing, stands a step forward. */
-.clips-showcase__clip:nth-child(2) {
-  margin-top: calc(-1 * var(--ref-spacing-md));
+  width: var(--show-clip);
+  animation: clips-rise var(--ref-animation-long) var(--app-ease-out) calc(2400ms + var(--k) * 200ms) both;
 }
 
 .clips-showcase__frame {
@@ -463,6 +564,7 @@
   overflow: hidden;
   background: #000;
   box-shadow: 0 0 0 1px var(--ref-color-grey-20);
+  animation: clips-show-ring var(--show-loop) ease-in-out calc(var(--show-loop-start) + var(--k) * 2s) infinite;
 }
 
 .clips-showcase__frame .clips-preview {
@@ -485,23 +587,105 @@
   color: var(--ref-color-grey-100);
 }
 
-@keyframes clips-draw {
-  from {
-    transform: scaleX(0);
+/* Narrow: the clips alone, at the page's width. */
+@container (max-width: 480px) {
+  .clips-showcase__stage {
+    grid-template-columns: minmax(0, var(--show-w));
   }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .clips-showcase__map span,
-  .clips-showcase__clip {
-    animation: none;
-  }
-}
-
-@container (max-width: 520px) {
   .clips-showcase__in,
-  .clips-showcase__arrow {
+  .clips-showcase__wires {
     display: none;
+  }
+  .clips-showcase__clips {
+    gap: var(--ref-spacing-xs);
+  }
+  .clips-showcase__clip {
+    flex: 1;
+    width: auto;
+  }
+}
+
+@keyframes clips-show-land {
+  from {
+    opacity: 0;
+    transform: scaleY(0.2);
+  }
+}
+@keyframes clips-show-scan {
+  0% {
+    left: 0;
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+@keyframes clips-show-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes clips-show-stroke {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes clips-show-run {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  15%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+/* A clip, its wire and its moment, lit for a third of the loop. */
+@keyframes clips-show-spot {
+  0%,
+  30%,
+  100% {
+    background-color: var(--ref-color-grey-100);
+    box-shadow: none;
+  }
+  5%,
+  25% {
+    background-color: var(--app-butter-accent);
+    box-shadow: 0 0 0 3px var(--app-butter);
+  }
+}
+@keyframes clips-show-wire {
+  0%,
+  30%,
+  100% {
+    stroke-opacity: 0.45;
+    stroke-width: 1.5;
+  }
+  5%,
+  25% {
+    stroke-opacity: 1;
+    stroke-width: 2;
+  }
+}
+@keyframes clips-show-ring {
+  0%,
+  30%,
+  100% {
+    box-shadow: 0 0 0 1px var(--ref-color-grey-20);
+  }
+  5%,
+  25% {
+    box-shadow:
+      0 0 0 2px var(--app-butter-accent),
+      0 0 0 6px var(--app-butter);
   }
 }
 
