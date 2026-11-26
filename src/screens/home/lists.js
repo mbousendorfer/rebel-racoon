@@ -11,19 +11,19 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=2876";
-import { isFlagOn } from "../../feature-flags.js?v=2876";
-import { escapeAttr, escapeText } from "../../utils.js?v=2876";
-import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2876";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2876";
-import { getSessions } from "../../sessions-store.js?v=2876";
-import { renderEmptyState } from "../../components/empty-state.js?v=2876";
-import { getSources, getIdeas } from "../../library.js?v=2876";
-import { getPosts } from "../../posts-store.js?v=2876";
-import { getContextById } from "../../contexts-store.js?v=2876";
-import { voicesToFinish } from "../../voice-parts.js?v=2876";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2876";
-import { pageState } from "../home.js?v=2876";
+} from "../../playbook-access.js?v=2878";
+import { isFlagOn } from "../../feature-flags.js?v=2878";
+import { escapeAttr, escapeText } from "../../utils.js?v=2878";
+import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2878";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2878";
+import { getSessions } from "../../sessions-store.js?v=2878";
+import { renderEmptyState } from "../../components/empty-state.js?v=2878";
+import { getSources, getIdeas } from "../../library.js?v=2878";
+import { getPosts } from "../../posts-store.js?v=2878";
+import { getContextById } from "../../contexts-store.js?v=2878";
+import { voicesToFinish } from "../../voice-parts.js?v=2878";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2878";
+import { pageState } from "../home.js?v=2878";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -343,6 +343,14 @@ const FIRST_RUN_POSTS = [
     text: "[Home brewers]{audience}: the [autumn blend]{business} is back in 250 g bags. [Grab one on your way out.]{voice}",
   },
 ];
+// The wires, in the wires box's own pixels (144 × 360): the card into my mark,
+// then my mark out to the three posts, whose centres sit at 56 / 180 / 304.
+const FIRST_RUN_WIRES = [
+  "M0 180 L24 180",
+  "M72 180 C 110 180, 106 56, 144 56",
+  "M72 180 L160 180", // the Instagram post sits 16px further right
+  "M72 180 C 110 180, 106 304, 144 304",
+];
 const FIRST_RUN_INDEX = Object.fromEntries(FIRST_RUN_PARTS.map((p, i) => [p.id, i]));
 
 // Word by word (each word its own --w for the typing), traces wrapped.
@@ -394,16 +402,19 @@ function renderPlaybooksFirstRun() {
           <div class="pb-first__sheet-head">
             <span class="pb-first__logo pb-first__logo--lg">B</span>
             <span class="pb-first__sheet-name">Bramble &amp; Bean</span>
+            <span class="pb-first__sheet-kind">Playbook</span>
           </div>
           <ul class="pb-first__parts">${parts}</ul>
         </div>
         <div class="pb-first__wires">
-          <svg viewBox="0 0 120 300" preserveAspectRatio="none">
-            <path d="M0 150 C 60 150, 60 50, 120 50" />
-            <path d="M0 150 L 120 150" />
-            <path d="M0 150 C 60 150, 60 250, 120 250" />
+          <svg class="pb-first__wire-lines" viewBox="0 0 144 360">
+            ${FIRST_RUN_WIRES.map((d, n) => `<path d="${d}" pathLength="1" style="--n:${n}" />`).join("")}
           </svg>
-          <span class="pb-first__mark"><i class="ap-icon-archie-official"></i></span>
+          ${FIRST_RUN_WIRES.flatMap((d, n) => [0, 1].map((h) => `<span class="pb-first__spark${n ? "" : " pb-first__spark--in"}" style="offset-path:path('${d}');--n:${n};--h:${h}"></span>`)).join("")}
+          <span class="pb-first__mark">
+            <svg class="pb-first__orbit" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" pathLength="24" /></svg>
+            <i class="ap-icon-archie-official"></i>
+          </span>
         </div>
         <div class="pb-first__posts">${posts}</div>
       </div>
