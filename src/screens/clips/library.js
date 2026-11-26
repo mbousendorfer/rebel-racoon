@@ -9,14 +9,14 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2899";
-import { isFlagOn } from "../../feature-flags.js?v=2899";
-import { renderTopbar } from "../../components/topbar.js?v=2899";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2899";
-import { isDemo } from "../../demo-mode.js?v=2899";
-import { getPosts } from "../../posts-store.js?v=2899";
-import { escapeHtml, plural } from "../../utils.js?v=2899";
-import { networkIcon } from "../../social-profiles.js?v=2899";
+import { navigate } from "../../router.js?v=2900";
+import { isFlagOn } from "../../feature-flags.js?v=2900";
+import { renderTopbar } from "../../components/topbar.js?v=2900";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2900";
+import { isDemo } from "../../demo-mode.js?v=2900";
+import { getPosts } from "../../posts-store.js?v=2900";
+import { escapeHtml, plural } from "../../utils.js?v=2900";
+import { networkIcon } from "../../social-profiles.js?v=2900";
 import {
   getVideos,
   exampleVideo,
@@ -26,7 +26,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2899";
+} from "../../videos-store.js?v=2900";
 import {
   fmtMs,
   previewMarkup,
@@ -39,7 +39,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2899";
+} from "./shared.js?v=2900";
 
 let target = null;
 let disposeShowcase = null;
@@ -137,10 +137,11 @@ const add = { file: null, url: "", specific: false, focus: "" };
 const ready = () => !!add.file || !!add.url.trim();
 const ctaLabel = () => (add.specific && add.focus.trim() ? "Find these moments" : "Find the best moments");
 
-// The box, rebuilt 2026-11-20 (« pauvre et mal foutu »): two ways in side by
-// side, the file first and wider — a real dropzone (icon, « Drop your video
-// here », Upload a video, prod's rules) — then « or » and the YouTube field,
-// always there. A staged file takes the whole width as a card (its frame, name,
+// The box, rebuilt 2026-11-20 (« pauvre et mal foutu »), tightened 2026-11-26:
+// two ways in side by side, the file first and wider — a real dropzone (icon,
+// « Drop your video here », Upload a video, prod's rules) — then « or » and the
+// YouTube field, always there, with no label of its own (its icon and
+// placeholder say it; a « From YouTube » heading competed with the title). A staged file takes the whole width as a card (its frame, name,
 // length, Remove). A footer like a dialog's: the request on the left, the CTA
 // grouped right with what it will do. The CTA is never a pale disabled button:
 // clicked with nothing added, it says so under the box.
@@ -165,9 +166,8 @@ function renderAddBox() {
         </div>
         <div class="clips-box__or" aria-hidden="true"><span>or</span></div>
         <div class="clips-box__yt">
-          <label class="clips-box__label" for="clipsUrl">From YouTube</label>
           <div class="ap-input-group clips-box__link"><i class="ap-icon-youtube-official" aria-hidden="true"></i>
-            <input id="clipsUrl" type="url" data-clips-url placeholder="Paste a youtube.com or youtu.be link" value="${escapeHtml(add.url)}" ${off} /></div>
+            <input id="clipsUrl" type="url" data-clips-url aria-label="YouTube link" placeholder="Paste a YouTube link" value="${escapeHtml(add.url)}" ${off} /></div>
           <p class="clips-box__rules" data-clips-rights ${add.url.trim() ? "" : "hidden"}>Using a video you don't own may violate copyright laws. By continuing, you confirm this is your own content.</p>
         </div>
       </div>`;
