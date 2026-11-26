@@ -14,13 +14,13 @@
 // always the case with the flag off, so this module is a no-op there. That
 // single short-circuit is why callers can wrap unconditionally.
 
-import { sessionPlaybookId } from "./active-playbook.js?v=2865";
-import * as inlineQuestion from "./inline-question.js?v=2865";
-import { postAssistantMessage, postUserProfilesTurn } from "./assistant.js?v=2865";
-import { getConnectedProfiles, getConnectableNetworks, normalizeNetwork } from "./social-profiles.js?v=2865";
-import { getContextById } from "./contexts-store.js?v=2865";
-import { playbookNetworks } from "./voice-parts.js?v=2865";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2865";
+import { sessionPlaybookId } from "./active-playbook.js?v=2869";
+import * as inlineQuestion from "./inline-question.js?v=2869";
+import { postAssistantMessage, postUserProfilesTurn } from "./assistant.js?v=2869";
+import { getConnectedProfiles, getConnectableNetworks, normalizeNetwork } from "./social-profiles.js?v=2869";
+import { getContextById } from "./contexts-store.js?v=2869";
+import { playbookNetworks } from "./voice-parts.js?v=2869";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2869";
 
 // The connect step's cards — one per NETWORK, laid out like Agorapulse's own
 // "Add new social profiles" grid: the network's full-colour glyph, its name,

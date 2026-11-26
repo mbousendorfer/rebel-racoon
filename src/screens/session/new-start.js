@@ -24,9 +24,9 @@
 // video door is the clips starter. What is local (the rotation, #3's typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2865";
-import { escapeHtml } from "../../utils.js?v=2865";
-import { networkIcon } from "../../social-profiles.js?v=2865";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2869";
+import { escapeHtml } from "../../utils.js?v=2869";
+import { networkIcon } from "../../social-profiles.js?v=2869";
 
 const esc = escapeHtml;
 
@@ -90,7 +90,7 @@ const frame = (cls, sec, pos = "50%", caption = "") => `
 function doors() {
   return `
       <div class="ns-doors">
-        <a class="ns-door" href="#/welcome-alt">
+        <a class="ns-door" href="#/welcome-alt" data-ns-reveal style="--i: 1">
           <span class="ns-door__stage ns-voice" aria-hidden="true">
             <span class="ns-voice__post ns-voice__post--before">
               <span class="ap-status grey no-dot">Without a Playbook</span>
@@ -106,7 +106,7 @@ function doors() {
           <span class="ap-link standalone ns-door__go">Create my Playbook<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
         </a>
 
-        <button type="button" class="ns-door" ${starterAttrs("open-video-clips")}>
+        <button type="button" class="ns-door" ${starterAttrs("open-video-clips")} data-ns-reveal style="--i: 2">
           <span class="ns-door__stage ns-cut" aria-hidden="true">
             ${frame("ns-cut__wide", 500)}
             <span class="ns-cut__clips">
@@ -152,9 +152,9 @@ const wallCard = ([kind, net, text]) => {
   return `<span class="ns-wall__card"><i class="${networkIcon(net)}"></i><span>${esc(text)}</span></span>`;
 };
 
-// #4's third turn: the same requests as text links, no box around them.
-const suggestion = ([k, text]) => `
-  <li>
+// #4's third turn: the same requests as text, each led by its tone tile, no box.
+const suggestion = ([k, text], n) => `
+  <li data-ns-reveal style="--i: ${5 + n}">
     <button type="button" class="ns-suggest" data-starter="new-start" data-starter-prompt="${esc(text)}"
       title="Put it in the box to edit">
       <span class="ns-tile ns-tile--sm ns-tone--${KIND[k].tone}" aria-hidden="true"><i class="${KIND[k].icon}"></i></span>
@@ -184,15 +184,15 @@ export function renderNewStart({ composer, variant = 2 }) {
       <div class="ns-turn ns-turn--next" data-ns-next>
         <span class="ns-turn__gutter" aria-hidden="true"></span>
         <div class="ns-turn__body">
-          <p class="ns-say">Here's where I'm best. Pick one, or just tell me what you need.</p>
+          <p class="ns-say" data-ns-reveal style="--i: 0">Here's where I'm best. Pick one, or just tell me what you need.</p>
           ${doors()}
         </div>
       </div>
       <div class="ns-turn ns-turn--next" data-ns-next>
         <span class="ns-turn__gutter" aria-hidden="true"></span>
         <div class="ns-turn__body ns-suggests" data-ns-rotor>
-          <p class="ns-say">Or ask me something like:</p>
-          ${SETS.map((s, i) => `<ul class="ns-suggests__set" data-ns-set="${i}"${i ? " hidden" : ""} aria-label="Things you can ask me">${s.map(suggestion).join("")}</ul>`).join("")}
+          <p class="ns-say" data-ns-reveal style="--i: 4">Or ask me something like:</p>
+          ${SETS.map((s, i) => `<ul class="ns-suggests__set" data-ns-set="${i}"${i ? " hidden" : ""} aria-label="Things you can ask me">${s.map((x, n) => suggestion(x, n)).join("")}</ul>`).join("")}
         </div>
       </div>
     </archie-new-start>`;
@@ -204,7 +204,7 @@ export function renderNewStart({ composer, variant = 2 }) {
       <div class="ns-turn ns-turn--next" data-ns-next>
         <span class="ns-turn__gutter" aria-hidden="true"></span>
         <div class="ns-turn__body">
-          <p class="ns-say">Here's where I'm best. Pick one, or just tell me what you need.</p>
+          <p class="ns-say" data-ns-reveal style="--i: 0">Here's where I'm best. Pick one, or just tell me what you need.</p>
           ${doors()}
         </div>
       </div>
@@ -238,7 +238,7 @@ class ArchieNewStart extends HTMLElement {
     this.timer = setInterval(() => {
       const rotor = this.querySelector("[data-ns-rotor]");
       if (reduced() || document.hidden || rotor?.matches(":hover, :focus-within")) return;
-      this.show((shown + 1) % SETS.length);
+      this.show((shown + 1) % SETS.length, true);
     }, 6000);
   }
 
@@ -247,8 +247,9 @@ class ArchieNewStart extends HTMLElement {
     clearTimeout(this.typing);
   }
 
-  // #3: the first turn types itself, once per page load; the next turn (the
-  // doors) comes in when it is done. A re-render shows both at once.
+  // #3 / #4: the first turn types itself, once per page load; when it is done
+  // the rest comes in one piece after the other ([data-ns-reveal], --i sets
+  // the order), like a reply being written. A re-render shows it all at once.
   hello() {
     const p = this.querySelector("[data-ns-hello]");
     if (!p || greeted || reduced()) return;
@@ -266,9 +267,14 @@ class ArchieNewStart extends HTMLElement {
     this.typing = setTimeout(step, 350);
   }
 
-  show(i) {
+  // `deal`: a new set comes in row after row (a rotation, not the first paint,
+  // which #3 / #4 reveal on their own).
+  show(i, deal = false) {
     shown = i;
-    this.querySelectorAll("[data-ns-set]").forEach((ul) => (ul.hidden = Number(ul.dataset.nsSet) !== i));
+    this.querySelectorAll("[data-ns-set]").forEach((ul) => {
+      ul.hidden = Number(ul.dataset.nsSet) !== i;
+      ul.classList.toggle("is-dealt", deal && !ul.hidden);
+    });
   }
 }
 

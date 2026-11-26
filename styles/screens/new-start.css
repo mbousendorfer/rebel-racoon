@@ -235,15 +235,23 @@
   line-height: var(--sys-text-style-subtitle-line-height);
 }
 
-.ns--thread [data-ns-next] {
+/* After the hello is typed, the rest comes in one piece after the other —
+   the line, each door, the next line, each request — not as one block
+   (asked: « les autres éléments apparaissent en 1 bloc très abruptement »).
+   --i is each piece's place in that order, set in the markup. */
+.ns--thread [data-ns-reveal] {
+  --ns-at: calc(200ms + var(--i, 0) * 140ms);
+  /* The doors' hover border keeps its own, undelayed transition. */
   transition:
-    opacity var(--ref-animation-normal) var(--app-ease-standard),
-    transform var(--ref-animation-normal) var(--app-ease-standard);
+    opacity var(--ref-animation-long) var(--app-ease-out) var(--ns-at),
+    transform var(--ref-animation-long) var(--app-ease-out) var(--ns-at),
+    border-color var(--ref-animation-short) var(--app-ease-standard);
 }
 
-.ns--thread.is-typing [data-ns-next] {
+.ns--thread.is-typing [data-ns-reveal] {
   opacity: 0;
-  transform: translateY(6px);
+  transform: translateY(8px);
+  transition: none;
 }
 
 .ns--thread .ns-doors {
@@ -528,22 +536,29 @@
 
 /* #4 · the composer at the foot (session.js renders it there, as in a started
    chat); the turns sit centred above it, and the requests are my third turn:
-   text links, each led by its tone tile, no box. */
+   text, each led by its tone tile, no box. */
 .ns--foot .ns-turn + .ns-turn {
   margin-top: var(--ref-spacing-xs);
+}
+
+/* Air between the doors and « Or ask me something like: » (asked: « plus
+   d'espace entre les blocs et les liens, et entre les liens »). */
+.ns--foot .ns-turn + .ns-turn:has(.ns-suggests) {
+  margin-top: var(--ref-spacing-lg);
 }
 
 .ns-suggests__set {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--ref-spacing-xxs);
-  margin: var(--ref-spacing-xxs) 0 0;
+  gap: var(--ref-spacing-xs);
+  margin: var(--ref-spacing-xs) 0 0;
   padding: 0;
   list-style: none;
 }
 
-.ns-suggests__set:not([hidden]) li {
+/* Only a rotation deals the rows: the first paint is the reveal's. */
+.ns-suggests__set.is-dealt li {
   animation: ns-deal var(--ref-animation-normal) var(--app-ease-standard) both;
 }
 
