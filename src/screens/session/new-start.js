@@ -1,12 +1,19 @@
-// New Start (flag newStart, 2026-11-26): the new chat a first-time user lands
-// on while they have no Playbook. Asked: « un utilisateur arrive sur cette page,
-// et découvre Archie … il faut lui indiquer qu'il est possible de créer un
+// New Start (flags newStart1…3, 2026-11-26): the new chat a first-time user
+// lands on while they have no Playbook. Asked: « un utilisateur arrive sur cette
+// page, et découvre Archie … il faut lui indiquer qu'il est possible de créer un
 // Playbook … sous le textarea, des requêtes … qui tournent … une entrée pour le
-// vidéo clipping », then, of three hybrids, « 1 · Portes vivantes ».
+// vidéo clipping », then « 1 · Portes vivantes » for the body, then « pas fan
+// que tu aies réutilisé le nuage de points … redesign cet écran de rien » and
+// « les 3 sous 3 FS » for the top. So: three tops, one per flag, no pixel halo,
+// no wordmark —
+//   #1 the blank page: Archie's mark and a large headline, nothing else;
+//   #2 the wall of posts: the formats I write drift behind the headline;
+//   #3 Archie opens: no hero, two turns of a thread — hello (typed live), then
+//      the doors as my offer — and the composer under them.
 //
-// Top to bottom: the wordmark, one line, the real composer on the pixel halo,
-// three example requests (a new set every few seconds, one is always a video),
-// then two doors, each playing what it does:
+// The body, the same under all three: the real composer, three example
+// requests (a new set every few seconds, one is always a video), then two
+// doors, each playing what it does:
 //   · Sound like your brand — a generic post rewritten in a brand's voice → the
 //     setup run (/welcome-alt), the one way a Playbook is made;
 //   · Turn a video into clips — the seeded podcast, wide, cut into three
@@ -14,13 +21,13 @@
 //
 // Every door is an existing hook: a request row is a `data-starter` with only a
 // prompt (session.js puts it in the box and focuses it, nothing is sent), the
-// video door is the clips starter. What is local, the rotation, lives in
-// <archie-new-start>, which wires itself like <archie-home>.
+// video door is the clips starter. What is local (the rotation, #3's typing)
+// lives in <archie-new-start>, which wires itself like <archie-home>.
 
-import { seedVideos } from "../../mocks.js?v=2857";
-import { escapeHtml } from "../../utils.js?v=2857";
-import { starterAttrs } from "./home-directions.js?v=2857";
-import "../../archie-pixels.js?v=2857";
+import { seedVideos } from "../../mocks.js?v=2859";
+import { escapeHtml } from "../../utils.js?v=2859";
+import { starterAttrs } from "./home-directions.js?v=2859";
+import { networkIcon } from "../../social-profiles.js?v=2859";
 
 const esc = escapeHtml;
 
@@ -70,24 +77,9 @@ const frame = (cls, sec, pos = "50%", caption = "") => `
     ${caption ? `<span class="ns-cut__caption">${esc(caption)}</span>` : ""}
   </span>`;
 
-export function renderNewStart({ composer }) {
+// The doors and the requests are the same under the three tops.
+function doors() {
   return `
-    <archie-new-start class="empty-chat empty-chat--rows ns" data-empty-chat>
-      <span class="empty-chat__logo" role="img" aria-label="Archie">
-        <img class="empty-chat__logo-word empty-chat__logo-word--a" src="assets/logos/archie-wordmark.svg" alt="" />
-        <img class="empty-chat__logo-mono" src="assets/logos/archie-mono.svg" alt="" />
-        <img class="empty-chat__logo-word empty-chat__logo-word--b" src="assets/logos/archie-alt-wordmark.svg" alt="" />
-      </span>
-      <div class="empty-chat__sub">Give me a link, a file, a video or just an idea. I'll turn it into posts.</div>
-      <div class="empty-chat__lead">
-        <archie-pixels class="empty-chat__pixels" data-quiet data-ripple aria-hidden="true"></archie-pixels>
-        ${composer}
-      </div>
-
-      <div class="ns-asks" aria-label="Things you can ask me">
-        ${SETS.map((s, i) => `<ul class="nch-asks ns-asks__set" data-ns-set="${i}"${i ? " hidden" : ""}>${s.map(row).join("")}</ul>`).join("")}
-      </div>
-
       <div class="ns-doors">
         <a class="ns-door" href="#/welcome-alt">
           <span class="ns-door__stage ns-voice" aria-hidden="true">
@@ -118,7 +110,82 @@ export function renderNewStart({ composer }) {
           <span class="ns-door__desc">Drop a video or a YouTube link. I'll find the best moments, frame them vertical and caption them.</span>
           <span class="ap-link standalone ns-door__go">Try it with a video<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
         </button>
+      </div>`;
+}
+
+const asks = () => `
+      <div class="ns-asks" aria-label="Things you can ask me">
+        ${SETS.map((s, i) => `<ul class="nch-asks ns-asks__set" data-ns-set="${i}"${i ? " hidden" : ""}>${s.map(row).join("")}</ul>`).join("")}
+      </div>`;
+
+// No halo, no wordmark: the composer on the page's own ground.
+const lead = (composer) => `<div class="empty-chat__lead ns__lead">${composer}</div>`;
+
+const MARK = `<span class="e-turn__mark ns-mark" aria-hidden="true"><i class="ap-icon-archie-official"></i></span>`;
+
+// #2's band: the formats I write, drifting. Twice the same run, so the loop
+// has no seam (the track moves by half its width).
+const WALL = [
+  ["post", "linkedin", "Three things we learned shipping bulk scheduling in 11 weeks."],
+  ["clip", "", "We tried it"],
+  ["post", "instagram", "Behind the scenes of launch week. Swipe for the whiteboard."],
+  ["carousel", "", "5 mistakes we made with our first newsletter"],
+  ["post", "x", "We almost cut this feature. Here's why we didn't."],
+  ["clip", "", "Here's why"],
+  ["post", "facebook", "Our support team answered 1,200 messages last month. One lesson stood out."],
+  ["carousel", "", "How we plan a month of posts in an hour"],
+];
+const wallCard = ([kind, net, text]) => {
+  if (kind === "clip")
+    return `<span class="ns-wall__card ns-wall__card--clip"><i class="ap-icon-play"></i><span class="ns-cut__caption">${esc(text)}</span></span>`;
+  if (kind === "carousel")
+    return `<span class="ns-wall__card ns-wall__card--carousel"><span class="ns-wall__slide">${esc(text)}</span><span class="ns-wall__count">1/5</span></span>`;
+  return `<span class="ns-wall__card"><i class="${networkIcon(net)}"></i><span>${esc(text)}</span></span>`;
+};
+
+// #3's first turn, typed once per page load.
+const HELLO =
+  "Hi, I'm Archie. Give me a link, a file, a video or just an idea, and I'll turn it into posts ready to schedule.";
+
+export function renderNewStart({ composer, variant = 1 }) {
+  if (variant === 3) {
+    return `
+    <archie-new-start class="empty-chat empty-chat--rows ns ns--thread" data-empty-chat>
+      <div class="ns-turn">
+        ${MARK}
+        <div class="ns-turn__body">
+          <p class="ns-say" data-ns-hello aria-label="${esc(HELLO)}">${esc(HELLO)}</p>
+        </div>
       </div>
+      <div class="ns-turn ns-turn--next" data-ns-next>
+        <span class="ns-turn__gutter" aria-hidden="true"></span>
+        <div class="ns-turn__body">
+          <p class="ns-say">Here's where I'm best. Pick one, or just tell me what you need.</p>
+          ${doors()}
+        </div>
+      </div>
+      ${lead(composer)}
+      ${asks()}
+    </archie-new-start>`;
+  }
+  const top =
+    variant === 2
+      ? `
+      <div class="ns-wall" aria-hidden="true">
+        <div class="ns-wall__track">${[...WALL, ...WALL].map(wallCard).join("")}</div>
+      </div>
+      <h1 class="ns-title">What should we post this week?</h1>`
+      : `
+      <header class="ns-top">
+        ${MARK}
+        <h1 class="ns-title">What can I write for you today?</h1>
+      </header>`;
+  return `
+    <archie-new-start class="empty-chat empty-chat--rows ns ns--${variant === 2 ? "wall" : "blank"}" data-empty-chat>
+      ${top}
+      ${lead(composer)}
+      ${asks()}
+      ${doors()}
     </archie-new-start>`;
 }
 
@@ -128,9 +195,11 @@ const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 // focus), the page is hidden, or motion is reduced. The set stays where it was
 // across a re-render of the hero.
 let shown = 0;
+let greeted = false;
 class ArchieNewStart extends HTMLElement {
   connectedCallback() {
     this.show(shown);
+    this.hello();
     this.timer = setInterval(() => {
       const asks = this.querySelector(".ns-asks");
       if (reduced() || document.hidden || asks?.matches(":hover, :focus-within")) return;
@@ -140,6 +209,26 @@ class ArchieNewStart extends HTMLElement {
 
   disconnectedCallback() {
     clearInterval(this.timer);
+    clearTimeout(this.typing);
+  }
+
+  // #3: the first turn types itself, once per page load; the next turn (the
+  // doors) comes in when it is done. A re-render shows both at once.
+  hello() {
+    const p = this.querySelector("[data-ns-hello]");
+    if (!p || greeted || reduced()) return;
+    greeted = true;
+    const text = p.textContent;
+    let n = 0;
+    this.classList.add("is-typing");
+    p.textContent = "";
+    const step = () => {
+      n += 2;
+      p.textContent = text.slice(0, n);
+      if (n < text.length) this.typing = setTimeout(step, 22);
+      else this.classList.remove("is-typing");
+    };
+    this.typing = setTimeout(step, 350);
   }
 
   show(i) {

@@ -377,20 +377,54 @@ export const FLAGS = Object.freeze([
       "demo in the topbar wipes it all and goes back to the real setup.",
   },
   {
-    id: "newStart",
+    id: "newStart1",
     group: "Onboarding",
-    tip: "A first-time user with no Playbook lands on a new chat that introduces Archie, instead of being sent into the setup run.",
-    label: "UP-New Start",
+    tip: "No decor: a small Archie mark and a large headline, left-aligned on the composer's column. All the motion is in the doors.",
+    label: "UP-New Start #1: blank page",
     default: false,
     hides:
-      "When ON, a first-time user (mode new-alt) with no Playbook lands on a " +
-      "new chat instead of the setup run: the composer, three example " +
-      "requests that change every few seconds (one is always a video), and " +
-      "two doors, each playing what it does: Sound like your brand (a " +
-      "generic post rewritten in a brand's voice, opens the Playbook setup) " +
-      "and Turn a video into clips (a wide video cut into three vertical " +
-      "clips, starts the clips flow). The user can also send right away: " +
-      "without a Playbook the drafts are generic. OFF: the run is the first " +
-      "screen, as before.",
+      "#1: the editorial blank page. No background effect at all, a small Archie mark and a large left-aligned headline over the composer. " +
+      "Shared by the three: a first-time user (mode new-alt) with no Playbook " +
+      "lands on a new chat instead of the setup run. Under the top: the " +
+      "composer, three example requests that change every few seconds (one " +
+      "is always a video), and two doors that play what they do: Sound like " +
+      "your brand (opens the Playbook setup) and Turn a video into clips. " +
+      "Sending right away is fine: without a Playbook the drafts are generic. " +
+      "If several are ON, the lowest number wins. All OFF: the run is the " +
+      "first screen, as before.",
+  },
+  {
+    id: "newStart2",
+    group: "Onboarding",
+    tip: "Behind the headline, a band of post formats (LinkedIn, Instagram, a vertical clip, a carousel) drifts slowly: the page's mood is what Archie makes.",
+    label: "UP-New Start #2: wall of posts",
+    default: false,
+    hides:
+      "#2: the wall of posts. A band of the formats Archie writes drifts slowly behind the headline and fades into the page. " +
+      "Shared by the three: a first-time user (mode new-alt) with no Playbook " +
+      "lands on a new chat instead of the setup run. Under the top: the " +
+      "composer, three example requests that change every few seconds (one " +
+      "is always a video), and two doors that play what they do: Sound like " +
+      "your brand (opens the Playbook setup) and Turn a video into clips. " +
+      "Sending right away is fine: without a Playbook the drafts are generic. " +
+      "If several are ON, the lowest number wins. All OFF: the run is the " +
+      "first screen, as before.",
+  },
+  {
+    id: "newStart3",
+    group: "Onboarding",
+    tip: "No hero: the page is already a thread. Archie says hello in a turn typed live, then offers the two doors as his second turn.",
+    label: "UP-New Start #3: Archie opens",
+    default: false,
+    hides:
+      "#3: Archie opens the conversation. No hero, the page is a thread: Archie's first turn is typed live, his second offers the two doors. " +
+      "Shared by the three: a first-time user (mode new-alt) with no Playbook " +
+      "lands on a new chat instead of the setup run. Under the top: the " +
+      "composer, three example requests that change every few seconds (one " +
+      "is always a video), and two doors that play what they do: Sound like " +
+      "your brand (opens the Playbook setup) and Turn a video into clips. " +
+      "Sending right away is fine: without a Playbook the drafts are generic. " +
+      "If several are ON, the lowest number wins. All OFF: the run is the " +
+      "first screen, as before.",
   },
 ]);

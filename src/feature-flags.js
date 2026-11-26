@@ -1,4 +1,4 @@
-import { FLAGS } from "./ff-catalog.js?v=2857";
+import { FLAGS } from "./ff-catalog.js?v=2859";
 
 const KEY = "archie-feature-flags";
 
@@ -25,6 +25,11 @@ export function isFlagOn(id) {
   if (!flag) return false;
   const stored = readStoredFlags();
   return Object.prototype.hasOwnProperty.call(stored, id) ? stored[id] === true : flag.default === true;
+}
+
+// The New Start page (flags newStart1…3): the top that wins, 0 when all OFF.
+export function newStartVariant() {
+  return [1, 2, 3].find((n) => isFlagOn(`newStart${n}`)) || 0;
 }
 
 export function getFlags() {
