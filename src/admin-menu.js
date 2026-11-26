@@ -6,16 +6,16 @@
 // the side-effecting actions wired by the panel's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2863";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2863";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2863";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2863";
-import { getRole, setRole, ORG } from "./org.js?v=2863";
-import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2863";
-import { resetIntro } from "./components/voice-intro-modal.js?v=2863";
-import { getContexts, updateContext } from "./contexts-store.js?v=2863";
-import { showToast } from "./components/toast.js?v=2863";
-import { failNextAnalysis } from "./videos-store.js?v=2863";
+import { html, raw, escapeHtml } from "./utils.js?v=2864";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2864";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2864";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2864";
+import { getRole, setRole, ORG } from "./org.js?v=2864";
+import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2864";
+import { resetIntro } from "./components/voice-intro-modal.js?v=2864";
+import { getContexts, updateContext } from "./contexts-store.js?v=2864";
+import { showToast } from "./components/toast.js?v=2864";
+import { failNextAnalysis } from "./videos-store.js?v=2864";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
@@ -66,8 +66,20 @@ export function toggleNetwork(network) {
 }
 
 // Flip a feature flag, then reload so every store / surface re-reads it.
+// New Start only shows to a first-time user with no Playbook: turning one on
+// also switches to that mode, or the flag would do nothing visible.
 export function toggleFlag(id) {
-  setFlag(id, !getFlags()[id]);
+  const on = !getFlags()[id];
+  setFlag(id, on);
+  if (on && id.startsWith("newStart") && getUserMode() !== "new-alt") {
+    try {
+      window.sessionStorage.clear();
+    } catch {
+      /* storage may be unavailable in private browsing */
+    }
+    setUserMode("new-alt");
+    window.location.hash = "#/";
+  }
   window.location.reload();
 }
 

@@ -289,7 +289,7 @@ export const FLAGS = Object.freeze([
       "is always a video), and two doors that play what they do: Sound like " +
       "your brand (opens the Playbook setup) and Turn a video into clips. " +
       "Sending right away is fine: without a Playbook the drafts are generic. " +
-      "If both are ON, #2 wins. Both OFF: the run is the " +
+      "Turning it on switches to First-time user. If both are ON, #2 wins. Both OFF: the run is the " +
       "first screen, as before.",
   },
   {
@@ -306,7 +306,7 @@ export const FLAGS = Object.freeze([
       "is always a video), and two doors that play what they do: Sound like " +
       "your brand (opens the Playbook setup) and Turn a video into clips. " +
       "Sending right away is fine: without a Playbook the drafts are generic. " +
-      "If both are ON, #2 wins. Both OFF: the run is the " +
+      "Turning it on switches to First-time user. If both are ON, #2 wins. Both OFF: the run is the " +
       "first screen, as before.",
   },
 ]);
