@@ -21,12 +21,12 @@ import {
   postDraftResult,
   reportDraftFailure,
   GENERATION_TOOLS,
-} from "./assistant.js?v=2882";
-import { getIdeas } from "./library.js?v=2882";
-import { anglesByIdea } from "./mocks.js?v=2882";
-import { addPostDraft } from "./posts-store.js?v=2882";
-import { networkLabel, networkMeta } from "./social-profiles.js?v=2882";
-import { requireNetworkVoices } from "./network-voice-flow.js?v=2882";
+} from "./assistant.js?v=2883";
+import { getIdeas } from "./library.js?v=2883";
+import { anglesByIdea } from "./mocks.js?v=2883";
+import { addPostDraft } from "./posts-store.js?v=2883";
+import { networkLabel, networkMeta } from "./social-profiles.js?v=2883";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2883";
 
 // The set-up pass before a draft (reading the brief and the voice) — logged as
 // its own tools, so the generation that follows isn't counted twice.

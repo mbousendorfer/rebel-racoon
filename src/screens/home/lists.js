@@ -11,19 +11,19 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=2882";
-import { isFlagOn } from "../../feature-flags.js?v=2882";
-import { escapeAttr, escapeText } from "../../utils.js?v=2882";
-import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2882";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2882";
-import { getSessions } from "../../sessions-store.js?v=2882";
-import { renderEmptyState } from "../../components/empty-state.js?v=2882";
-import { getSources, getIdeas } from "../../library.js?v=2882";
-import { getPosts } from "../../posts-store.js?v=2882";
-import { getContextById } from "../../contexts-store.js?v=2882";
-import { voicesToFinish } from "../../voice-parts.js?v=2882";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2882";
-import { pageState } from "../home.js?v=2882";
+} from "../../playbook-access.js?v=2883";
+import { isFlagOn } from "../../feature-flags.js?v=2883";
+import { escapeAttr, escapeText } from "../../utils.js?v=2883";
+import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2883";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=2883";
+import { getSessions } from "../../sessions-store.js?v=2883";
+import { renderEmptyState } from "../../components/empty-state.js?v=2883";
+import { getSources, getIdeas } from "../../library.js?v=2883";
+import { getPosts } from "../../posts-store.js?v=2883";
+import { getContextById } from "../../contexts-store.js?v=2883";
+import { voicesToFinish } from "../../voice-parts.js?v=2883";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2883";
+import { pageState } from "../home.js?v=2883";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -420,7 +420,7 @@ function renderPlaybooksFirstRun() {
       </div>
       <div class="pb-first__copy">
         <h2 class="ap-h1">Teach me your Brand once</h2>
-        <p class="ap-subtitle">A Playbook is what I know about one Brand: what it does, who it talks to, how it sounds, and how it looks. I write every draft from it, on every network, so you never explain your Brand twice.</p>
+        <p class="ap-subtitle">A Playbook is what I know about your Brand. I write every draft from it.</p>
       </div>
       <div class="pb-first__action">
         <button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create your first Playbook</span></button>
