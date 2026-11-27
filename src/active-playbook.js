@@ -23,10 +23,10 @@
 //   playbookForNewWork()   → the Playbook new work is born under
 //   sessionPlaybookId(id)  → the Playbook a chat writes for
 
-import { getContexts, getContextById, getDefaultContext } from "./contexts-store.js?v=2975";
-import { createNotifier } from "./store-utils.js?v=2975";
-import { getSessionById } from "./sessions-store.js?v=2975";
-import { parseHashParams } from "./url-state.js?v=2975";
+import { getContexts, getContextById, getDefaultContext } from "./contexts-store.js?v=2976";
+import { createNotifier } from "./store-utils.js?v=2976";
+import { getSessionById } from "./sessions-store.js?v=2976";
+import { parseHashParams } from "./url-state.js?v=2976";
 
 const KEY = "archie-active-playbook";
 
