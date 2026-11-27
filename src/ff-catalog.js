@@ -161,19 +161,19 @@ export const FLAGS = Object.freeze([
   {
     id: "newChatHero",
     group: "Chat & drafts",
-    tip: "On a new chat, the three workflows become rows (title + description) under the composer, in a halo of Archie's pixels, instead of three big cards.",
-    label: "UP-New chat: workflow rows",
-    // OFF: the three big starter cards and six Topics. Same three workflows,
-    // same handlers either way. Deleted 2026-11-27 morning, restored the same
-    // day behind this flag, OFF by default.
+    tip: "On a new chat, the composer in a halo of Archie's pixels with example requests under it, instead of three big workflow cards.",
+    label: "UP-New chat: pixel halo + example requests",
+    // OFF: the three big starter cards and six Topics. Deleted 2026-11-27
+    // morning, restored the same day behind this flag, OFF by default; its
+    // workflow rows removed that evening (ON shows no workflows).
     default: false,
     hides:
-      "When ON, a new chat keeps its wordmark, sub-line and composer, and the " +
-      "three workflows (batch from a source, clip a video, repurpose a top " +
-      "post) become a short list of rows (title + its description) aligned " +
-      "on the composer, instead of three big cards. A soft halo of Archie's " +
-      "pixels frames the composer; a click sends a ripple through it. Below, one row of " +
-      "three Topics to review instead of six.",
+      "When ON, a new chat keeps its wordmark, sub-line and composer, without " +
+      "the three big workflow cards. A soft halo of Archie's pixels frames the " +
+      "composer; a click sends a ripple through it. Under it, New Start's " +
+      "example requests, three at a time. With no Playbook yet, an infobox on " +
+      "top offers to create one. Below, one row of three Topics to review " +
+      "instead of six.",
   },
   {
     id: "newStart4",

@@ -826,22 +826,9 @@ body.playbook-revoked .session__composer-card {
   }
 }
 
-/* ── Flag newChatHero — workflow rows ────────────────────────────────────
-   The usual wordmark + sub-line and composer, then the three workflows as rows
-   in the composer's 740px column (instead of the 1040px card grid). The
-   Topics row below takes the same 740px column (2026-10-30). */
-.starter-rows {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 740px;
-  /* Pulls the rows up under the composer: they read as its suggestions. */
-  margin-top: calc(-1 * var(--ref-spacing-xs));
-}
-
 /* Flag newChatHero — New Start's example requests under the composer
-   (renderAsks), in its 740px column; inset like the rows so every tile starts
-   on the Add button's vertical. */
+   (renderAsks), in its 740px column; inset so every tile starts on the Add
+   button's vertical. The workflow rows that sat here went on 2026-11-27. */
 .empty-chat__asks {
   width: 100%;
   max-width: 740px;
@@ -866,100 +853,6 @@ body.playbook-revoked .session__composer-card {
   max-width: 740px;
   margin-bottom: var(--ref-spacing-lg);
   text-align: left;
-}
-
-.starter-row {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  width: 100%;
-  /* Inline = the composer card's border + its 8px inset, so each icon tile
-     starts on the same vertical as the Add button above it. */
-  padding: var(--ref-spacing-xs) calc(var(--ref-spacing-xxs) + 1px);
-  border: 0;
-  border-radius: var(--app-radius-md);
-  background: transparent;
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: background-color var(--ref-animation-short) var(--app-ease-standard);
-}
-
-.starter-row:hover,
-.starter-row:focus-visible {
-  outline: none;
-  background: var(--ref-color-grey-05);
-}
-
-.starter-row:focus-visible {
-  box-shadow: 0 0 0 2px var(--ref-color-electric-blue-100);
-}
-
-/* The tile reuses the card's tone class for its two custom props. */
-.starter-row__icon {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--app-radius-sm);
-  background: var(--card-tint);
-  color: var(--card-accent);
-  transition:
-    background-color var(--ref-animation-short) var(--app-ease-standard),
-    color var(--ref-animation-short) var(--app-ease-standard);
-}
-
-/* Hover: the tile lights up in its own tone, the glyph turns white. */
-.starter-row:hover .starter-row__icon,
-.starter-row:focus-visible .starter-row__icon {
-  background: var(--card-accent);
-  color: var(--ref-color-white);
-}
-
-.starter-row__icon i {
-  font-size: var(--sys-icon-css-sm);
-}
-
-/* Title over its one-line description: weight carries the hierarchy, both
-   inks stay in grey-80…100. */
-.starter-row__text {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.starter-row__label {
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.starter-row__desc {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-80);
-}
-
-.starter-row__arrow {
-  font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-electric-blue-100);
-  opacity: 0;
-  transform: translateX(-4px);
-  transition:
-    opacity var(--ref-animation-short) var(--app-ease-standard),
-    transform var(--ref-animation-short) var(--app-ease-out);
-}
-
-/* …and the arrow slides in 4px toward where the row leads. */
-.starter-row:hover .starter-row__arrow,
-.starter-row:focus-visible .starter-row__arrow {
-  opacity: 1;
-  transform: none;
 }
 
 /* The pixel halo (flag newChatHero) — the FUX's <archie-pixels> field with no

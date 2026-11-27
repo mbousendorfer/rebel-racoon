@@ -1,19 +1,19 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2935";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2935";
-import { getContextById, getContexts } from "../../contexts-store.js?v=2935";
-import { renderTopicCard } from "../../components/topic-card.js?v=2935";
-import { findTopicSource } from "../../topics-catalog.js?v=2935";
-import { html, raw } from "../../utils.js?v=2935";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2935";
-import { renderStarterCards } from "../../components/starter-card.js?v=2935";
-import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2935";
-import { voicesToFinish } from "../../voice-parts.js?v=2935";
-import { networkLabel } from "../../social-profiles.js?v=2935";
-import { parseHashParams } from "../../url-state.js?v=2935";
-import { renderAsks, renderNewStart } from "./new-start.js?v=2935";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2936";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2936";
+import { getContextById, getContexts } from "../../contexts-store.js?v=2936";
+import { renderTopicCard } from "../../components/topic-card.js?v=2936";
+import { findTopicSource } from "../../topics-catalog.js?v=2936";
+import { html, raw } from "../../utils.js?v=2936";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2936";
+import { renderStarterCards } from "../../components/starter-card.js?v=2936";
+import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2936";
+import { voicesToFinish } from "../../voice-parts.js?v=2936";
+import { networkLabel } from "../../social-profiles.js?v=2936";
+import { parseHashParams } from "../../url-state.js?v=2936";
+import { renderAsks, renderNewStart } from "./new-start.js?v=2936";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -150,8 +150,8 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
   );
   const videoLabel = firstVideo ? `"${firstVideo.filename}"` : "your video";
   // Flag newChatHero: the same wordmark + sub-line, the composer in a halo of
-  // Archie's pixels, then the three workflows as rows under it (they share the
-  // composer's 740px column).
+  // Archie's pixels, New Start's example requests under it. No workflows: the
+  // rows went on 2026-11-27 (asked: « supprimes ça »).
   if (isFlagOn("newChatHero")) {
     return html`
       <div class="empty-chat empty-chat--rows" data-empty-chat>
@@ -172,11 +172,8 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
           <archie-pixels class="empty-chat__pixels" data-quiet data-ripple aria-hidden="true"></archie-pixels>
           ${raw(composerMarkup)}
         </div>
-        ${raw(renderAsks("empty-chat__asks"))}
-        <div class="starter-rows" role="group" aria-label="Start from a workflow">
-          ${raw(renderStarterCards({ sourceLabel, videoLabel, rows: true }))}
-        </div>
-        ${raw(finishVoicesRow(session))} ${raw(renderFreshTopics(session, { staged: true }))}
+        ${raw(renderAsks("empty-chat__asks"))} ${raw(finishVoicesRow(session))}
+        ${raw(renderFreshTopics(session, { staged: true }))}
       </div>
     `;
   }
