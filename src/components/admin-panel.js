@@ -17,14 +17,14 @@ import {
   toggleNetwork,
   applyNetworks,
   networksSummary,
-} from "../admin-menu.js?v=2945";
-import { getFlagsShareUrl } from "../feature-flags.js?v=2945";
-import { showToast } from "./toast.js?v=2945";
+} from "../admin-menu.js?v=2946";
+import { getFlagsShareUrl } from "../feature-flags.js?v=2946";
+import { showToast } from "./toast.js?v=2946";
 import {
   renderChatGalleryPanel,
   runChatGalleryItem,
   filterChatGallery,
-} from "../screens/session/chat-gallery.js?v=2945";
+} from "../screens/session/chat-gallery.js?v=2946";
 
 let root = null;
 

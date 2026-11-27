@@ -928,7 +928,8 @@ body.playbook-revoked .session__composer-card {
 
 /* A flat ellipse 720px wider than the composer, its core under the white
    card, so what shows is two wings of pixels on either side. It opens out
-   from the composer once. Reduced motion (base.css): no sweep. */
+   from the composer once, then holds still: a wave that crossed it every 6s
+   was too much (2026-11-27, « retire l'animation du fond, c'est too much »). */
 .empty-chat__dots {
   position: absolute;
   z-index: 0;
@@ -945,38 +946,10 @@ body.playbook-revoked .session__composer-card {
   animation: empty-chat-dots-in 1200ms var(--app-ease-out) both;
 }
 
-/* The motion: the same pixels darker (grey-60, a fill), shown only
-   under a soft band that crosses the field left to right every 6s, then
-   rests: the chat's « thinking » sheen (new-start.css, ns-sheen) on the
-   ground. A slow drift and an opacity breath were tried first: nobody saw
-   them (2026-11-27, « l'animation est imperceptible »). */
-.empty-chat__dots::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: conic-gradient(from 270deg at 2px 2px, var(--ref-color-grey-60) 25%, transparent 0) 7px 7px / 16px 16px;
-  -webkit-mask: linear-gradient(100deg, transparent 30%, #000 45%, #000 55%, transparent 70%) 100% 0 / 300% 100%
-    no-repeat;
-  mask: linear-gradient(100deg, transparent 30%, #000 45%, #000 55%, transparent 70%) 100% 0 / 300% 100% no-repeat;
-  animation: empty-chat-dots-sweep 6s var(--app-ease-standard) 1200ms infinite;
-}
-
 @keyframes empty-chat-dots-in {
   from {
     -webkit-mask-size: 40% 40%;
     mask-size: 40% 40%;
-  }
-}
-
-@keyframes empty-chat-dots-sweep {
-  0% {
-    -webkit-mask-position: 100% 0;
-    mask-position: 100% 0;
-  }
-  55%,
-  100% {
-    -webkit-mask-position: 0 0;
-    mask-position: 0 0;
   }
 }
 

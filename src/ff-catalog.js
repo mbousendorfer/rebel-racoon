@@ -171,8 +171,8 @@ export const FLAGS = Object.freeze([
       "A first-time user (mode new-alt): turning it on switches to that mode, " +
       "so everything is empty. The new chat keeps its wordmark, sub-line and " +
       "composer, without the three big workflow cards nor Topics, on the grey " +
-      "page and the grey square-pixel field of the other empty states, which " +
-      "a wave crosses every 6s. Under it, New Start's example requests, three " +
+      "page and the grey square-pixel field of the other empty states, still. " +
+      "Under it, New Start's example requests, three " +
       "at a time, then its two doors: Sound like your Brand (only while there " +
       "is no Playbook) and Turn a video into clips. / no longer sends " +
       "a user with no Playbook into the setup run. New Start #4, if on, wins.",

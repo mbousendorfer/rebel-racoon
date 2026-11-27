@@ -21,8 +21,8 @@
 // video door is the clips starter. What is local (the rotation, the typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2945";
-import { escapeHtml } from "../../utils.js?v=2945";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2946";
+import { escapeHtml } from "../../utils.js?v=2946";
 
 const esc = escapeHtml;
 
