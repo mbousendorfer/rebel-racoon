@@ -161,8 +161,8 @@ export const FLAGS = Object.freeze([
   {
     id: "newChatHero",
     group: "Onboarding",
-    tip: "A first-time user's new chat: the composer in a halo of Archie's pixels, example requests under it, and an infobox to create a Playbook. Turning it on switches to First-time user.",
-    label: "UP-New chat: pixel halo + example requests",
+    tip: "A first-time user's new chat: the composer on the grey pixel field of the other empty states, example requests under it, and an infobox to create a Playbook. Turning it on switches to First-time user.",
+    label: "UP-New chat: pixel field + example requests",
     // OFF: the three big starter cards and six Topics. Deleted 2026-11-27
     // morning, restored the same day behind this flag, OFF by default; its
     // workflow rows and Topics removed that evening.
@@ -170,9 +170,9 @@ export const FLAGS = Object.freeze([
     hides:
       "A first-time user (mode new-alt): turning it on switches to that mode, " +
       "so everything is empty. The new chat keeps its wordmark, sub-line and " +
-      "composer, without the three big workflow cards nor Topics. A soft halo " +
-      "of Archie's pixels frames the composer; a click sends a ripple through " +
-      "it. Under it, New Start's example requests, three at a time. With no " +
+      "composer, without the three big workflow cards nor Topics, on the grey " +
+      "page and the grey square-pixel field of the other empty states, which " +
+      "drifts and breathes slowly. Under it, New Start's example requests, three at a time. With no " +
       "Playbook yet, an infobox on top offers to create one; / no longer sends " +
       "a user with no Playbook into the setup run. New Start #4, if on, wins.",
   },

@@ -855,14 +855,17 @@ body.playbook-revoked .session__composer-card {
   text-align: left;
 }
 
-/* The pixel halo (flag newChatHero) — the FUX's <archie-pixels> field with no
-   panel around it: pale clouds on the conversation's own ground, the white
-   pixel matrix twinkling over them, and a radial mask that dissolves it into
-   the page, so there is no edge anywhere. It replaces the orange orb. On load it
-   blooms out from behind the wordmark once; then it only answers you — it
-   wakes when the composer has focus and when a file is dragged over. */
+/* The ground (flag newChatHero): the grey page and the square-pixel field of
+   the other empty states (contexts.css .pb-first__stage, clips.css
+   .clips-hero-example) instead of the orange <archie-pixels> halo and the
+   chat's warm wash (2026-11-27, asked: « le background gris avec les pixels
+   gris comme dans les autres empty states, et l'animer légèrement »). */
 .empty-chat--rows::before {
   display: none;
+}
+
+.session__assistant:has(.empty-chat--rows) {
+  background-image: none;
 }
 
 /* The halo hangs on the composer (its wrapper), so it follows the composer
@@ -903,46 +906,49 @@ body.playbook-revoked .session__composer-card {
   overflow-x: hidden;
 }
 
-.empty-chat__pixels {
-  --archie-pixels-base: var(--app-bg);
-  --archie-pixels-cloud-1: var(--ref-color-orange-10);
-  --archie-pixels-cloud-2: var(--ref-color-yellow-10);
-  --archie-pixels-cloud-3: var(--ref-color-orange-20);
-  --archie-pixels-ink: var(--ref-color-orange-40);
-  --archie-pixels-glow: var(--ref-color-orange-100);
-}
-
-archie-pixels.empty-chat__pixels {
+/* A flat ellipse 720px wider than the composer, its core under the white
+   card, so what shows is two wings of pixels on either side. It opens out
+   from the composer once, then drifts one tile diagonally every 16s and
+   breathes: motion you feel more than see. Reduced motion (base.css): still. */
+.empty-chat__dots {
   position: absolute;
   z-index: 0;
-  inset: auto;
   top: 50%;
   left: 50%;
   width: calc(100% + 720px);
   height: 560px;
   translate: -50% -50%;
-  border-radius: 0;
   pointer-events: none;
-  opacity: 0.8;
-  -webkit-mask: radial-gradient(closest-side, #000 20%, transparent) center / 100% 100% no-repeat;
-  mask: radial-gradient(closest-side, #000 20%, transparent) center / 100% 100% no-repeat;
-  /* backwards, not both: a held end state would pin the opacity and kill the
-     focus / drop / ripple lifts below. */
-  animation: empty-chat-bloom 1600ms var(--app-ease-out) backwards;
-  transition: opacity var(--ref-animation-long) var(--app-ease-out);
+  /* Square pixels: a 2px square in the corner of each 16px tile. */
+  background: conic-gradient(from 270deg at 2px 2px, var(--ref-color-grey-20) 25%, transparent 0) 7px 7px / 16px 16px;
+  -webkit-mask: radial-gradient(closest-side, #000 30%, transparent) center / 100% 100% no-repeat;
+  mask: radial-gradient(closest-side, #000 30%, transparent) center / 100% 100% no-repeat;
+  animation:
+    empty-chat-dots-in 1200ms var(--app-ease-out) both,
+    empty-chat-dots-drift 16s linear infinite,
+    empty-chat-dots-breathe 7s ease-in-out 1200ms infinite alternate;
 }
 
-.empty-chat__lead:has(.session__composer-card:focus-within) > .empty-chat__pixels,
-.empty-chat__pixels[data-rippling],
-.session__assistant.is-drop-target .empty-chat__pixels {
-  opacity: 1;
-}
-
-@keyframes empty-chat-bloom {
+@keyframes empty-chat-dots-in {
   from {
-    opacity: 0;
-    -webkit-mask-size: 30% 30%;
-    mask-size: 30% 30%;
+    -webkit-mask-size: 40% 40%;
+    mask-size: 40% 40%;
+  }
+}
+
+/* One tile exactly, so the loop has no seam. */
+@keyframes empty-chat-dots-drift {
+  to {
+    background-position: 23px 23px;
+  }
+}
+
+@keyframes empty-chat-dots-breathe {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.55;
   }
 }
 
