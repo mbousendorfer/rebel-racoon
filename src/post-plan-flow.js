@@ -21,16 +21,16 @@ import {
   postActivity,
   postDraftResult,
   GENERATION_TOOLS,
-} from "./assistant.js?v=2984";
-import * as inlineQuestion from "./inline-question.js?v=2984";
-import { addPostDraft } from "./posts-store.js?v=2984";
-import { getSessionById } from "./sessions-store.js?v=2984";
-import { getContextById } from "./contexts-store.js?v=2984";
-import { playbookForNewWork } from "./active-playbook.js?v=2984";
-import { getConnectedProfiles, buildConnectedProfileItems } from "./social-profiles.js?v=2984";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2984";
-import { requireNetworkVoices } from "./network-voice-flow.js?v=2984";
-import { createPlan, updatePlan, getPlans } from "./post-plan-store.js?v=2984";
+} from "./assistant.js?v=2989";
+import * as inlineQuestion from "./inline-question.js?v=2989";
+import { addPostDraft } from "./posts-store.js?v=2989";
+import { getSessionById } from "./sessions-store.js?v=2989";
+import { getContextById } from "./contexts-store.js?v=2989";
+import { playbookForNewWork } from "./active-playbook.js?v=2989";
+import { getConnectedProfiles, buildConnectedProfileItems } from "./social-profiles.js?v=2989";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2989";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2989";
+import { createPlan, updatePlan, getPlans } from "./post-plan-store.js?v=2989";
 
 // "write / draft / create a post about X" — the ask this flow answers. The
 // topic is everything after "about".
@@ -82,7 +82,6 @@ function askAudience(sessionId, planId) {
     value: label,
     label,
   }));
-  postAssistantMessage(sessionId, "Who is it for?");
   const answer = (audience) => {
     const a = String(audience || "").trim();
     if (!a) return;
@@ -91,7 +90,7 @@ function askAudience(sessionId, planId) {
     askFact(sessionId, planId);
   };
   inlineQuestion.ask(sessionId, {
-    title: null,
+    title: "Who is it for?",
     stepLabel: "Post plan · Audience",
     items,
     customPlaceholder: "Or say who, in your words",
@@ -104,12 +103,9 @@ function askAudience(sessionId, planId) {
 }
 
 function askFact(sessionId, planId) {
-  postAssistantMessage(
-    sessionId,
-    "What's one fact I should build it on? A number, a date, a name, a price: anything real.",
-  );
   inlineQuestion.ask(sessionId, {
-    title: null,
+    title: "What's one fact I should build it on?",
+    subtitle: "A number, a date, a name, a price: anything real.",
     stepLabel: "Post plan · Fact",
     items: [],
     customPlaceholder: "e.g. Plans start at $29 a month from Monday",
@@ -180,9 +176,8 @@ function showPlan(sessionId, planId) {
 function askAccounts(sessionId, planId) {
   const connected = getConnectedProfiles();
   if (connected.length === 1) return writeFromPlan(sessionId, planId, connected);
-  postAssistantMessage(sessionId, "Which accounts should I write for?");
   inlineQuestion.ask(sessionId, {
-    title: null,
+    title: "Which accounts should I write for?",
     stepLabel: "Accounts",
     multi: true,
     items: buildConnectedProfileItems({ requirePosts: false }),

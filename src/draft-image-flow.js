@@ -23,20 +23,20 @@
 // message: the image appearing in the slot is the feedback; a failure says so
 // in a toast.
 
-import { sessionPlaybookId } from "./active-playbook.js?v=2984";
-import { showToast } from "./components/toast.js?v=2984";
-import { setHandoff } from "./handoff.js?v=2984";
-import { navigate } from "./router.js?v=2984";
-import * as inlineQuestion from "./inline-question.js?v=2984";
+import { sessionPlaybookId } from "./active-playbook.js?v=2989";
+import { showToast } from "./components/toast.js?v=2989";
+import { setHandoff } from "./handoff.js?v=2989";
+import { navigate } from "./router.js?v=2989";
+import * as inlineQuestion from "./inline-question.js?v=2989";
 import {
   finishPending,
   postAssistantMessage,
   postImageLookSet,
   postSelectionEcho,
   startPending,
-} from "./assistant.js?v=2984";
-import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=2984";
-import { escapeHtml, newChatPath } from "./utils.js?v=2984";
+} from "./assistant.js?v=2989";
+import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=2989";
+import { escapeHtml, newChatPath } from "./utils.js?v=2989";
 import {
   defaultQuickLook,
   generateQuickImage,
@@ -45,7 +45,7 @@ import {
   setImageLook,
   styleFromImages,
   suggestImageSubject,
-} from "./modules/image-studio/index.js?v=2984";
+} from "./modules/image-studio/index.js?v=2989";
 
 const FALLBACK_SUBJECT = "One simple object that stands for the idea, on a plain background. No text in the image.";
 
@@ -152,10 +152,10 @@ export function requireImageLook(sessionId, { brandId, onReady, intro = null }) 
     if (announce)
       postAssistantMessage(
         sessionId,
-        intro?.(brand) ||
-          `First image for ${brand}. How should its images look? I'll start every draft's image from your answer.`,
+        intro?.(brand) || `First image for ${brand}. I'll start every draft's image from your answer.`,
       );
     inlineQuestion.ask(sessionId, {
+      title: `How should ${choices.brandName}'s images look?`,
       stepLabel: "1 of 2",
       skipLabel: "Not now",
       items: [
@@ -173,15 +173,12 @@ export function requireImageLook(sessionId, { brandId, onReady, intro = null }) 
   }
 
   // 2a — the styles, as pictures (the Playbook's own first).
-  function askStyle({ announce = true } = {}) {
-    if (announce)
-      postAssistantMessage(
-        sessionId,
-        own.length
-          ? `Which of ${brand}'s styles should every image start from?`
-          : `Pick the one that fits ${brand} best. You can change it any time in the Playbook.`,
-      );
+  function askStyle() {
     inlineQuestion.ask(sessionId, {
+      title: own.length
+        ? `Which of ${choices.brandName}'s styles should every image start from?`
+        : `Which style fits ${choices.brandName} best?`,
+      subtitle: own.length ? "" : "You can change it any time in the Playbook.",
       stepLabel: own.length ? "" : "2 of 2",
       variant: "cards",
       items: choices.styles.map((s) => ({
@@ -201,13 +198,10 @@ export function requireImageLook(sessionId, { brandId, onReady, intro = null }) 
 
   // 2b — the user's images: I learn a brand style from them (the style
   // creator's save), named after the brand.
-  function askImages({ announce = true } = {}) {
-    if (announce)
-      postAssistantMessage(
-        sessionId,
-        `Add 2 to 6 images that already look like ${brand}: past posts, photos, or visuals. I'll learn the look they share.`,
-      );
+  function askImages() {
     inlineQuestion.ask(sessionId, {
+      title: `Which images already look like ${choices.brandName}?`,
+      subtitle: "Add 2 to 6: past posts, photos, or visuals. I'll learn the look they share.",
       stepLabel: "2 of 2",
       customFile: true,
       customFileMultiple: true,
@@ -229,7 +223,7 @@ export function requireImageLook(sessionId, { brandId, onReady, intro = null }) 
         } catch {
           finishPending(sessionId, pending);
           postAssistantMessage(sessionId, "I couldn't read those. Try a few PNG or JPG images.");
-          askImages({ announce: false });
+          askImages();
         }
       },
       onBack: () => askSource({ announce: false }),

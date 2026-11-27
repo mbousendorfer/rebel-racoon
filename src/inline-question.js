@@ -87,14 +87,80 @@
 //   skipDisabled      bool    — Skip shown disabled (its label says when it unlocks); Esc → Back
 //   onBack()          fn      — called when ← Back is clicked; if omitted, no back btn
 
-import { chatTurn } from "./screens/_analyse-common.js?v=2984";
-import { createSessionNotifier } from "./store-utils.js?v=2984";
+import { chatTurn } from "./screens/_analyse-common.js?v=2989";
+import { createSessionNotifier } from "./store-utils.js?v=2989";
+import { getThread, postVoiceTurn, refreshThread } from "./assistant.js?v=2989";
 
 const states = new Map(); // sessionId → opts
 const sessionNotifier = createSessionNotifier("inline-question");
 
 function notify(sessionId) {
   sessionNotifier.notify(sessionId);
+}
+
+// ── Answered, the card folds into the thread ──────────────────────────────
+// The open card lives at the end of the thread (session.js); once answered it
+// leaves a folded card in its place — the question, then a check and the
+// answer — drawn like the Playbook conversation's (thread turn « pb-ask »,
+// resolved). So no bubble has to repeat the question for the history
+// (copy-principles §8.4). When the flow echoes the answer itself (a « You »
+// turn or a selection card right after), the fold keeps the question alone.
+const foldsBySession = new Map();
+
+const plain = (v) =>
+  String(v ?? "")
+    .replace(/<[^>]*>/g, "")
+    .trim();
+
+function labelOf(s, value) {
+  const hit =
+    (s.items || []).find((it) => it.value === value) ||
+    (s.actions || []).find((a) => a.value === value) ||
+    (s.footerAction && s.footerAction.value === value ? s.footerAction : null);
+  return plain(hit ? hit.label || hit.title : value);
+}
+
+function settle(sessionId, s, answer, run) {
+  states.delete(sessionId);
+  const title = plain(s.title);
+  const id = title
+    ? postVoiceTurn(sessionId, "pb-ask", {
+        contextId: null,
+        network: null,
+        ask: { title, step: plain(s.stepLabel) },
+        resolved: true,
+        answer: plain(answer),
+      })
+    : null;
+  if (id) {
+    const list = foldsBySession.get(sessionId) || [];
+    list.push(id);
+    foldsBySession.set(sessionId, list);
+  }
+  notify(sessionId);
+  run?.();
+  if (!id) return;
+  const thread = getThread(sessionId);
+  const i = thread.findIndex((m) => m.id === id);
+  if (i >= 0 && thread[i + 1]?.role === "user" && thread[i].answer) {
+    thread[i].answer = "";
+    refreshThread(sessionId);
+  }
+}
+
+// Back: the previous step's folded card, and what followed it, leave the
+// thread before that step is asked again.
+// ponytail: only when that fold is among the last few turns, so a Back on a
+// flow's first step never wipes an older flow's history.
+function unfoldLast(sessionId) {
+  const list = foldsBySession.get(sessionId) || [];
+  const id = list.pop();
+  if (!id) return;
+  const thread = getThread(sessionId);
+  const i = thread.findIndex((m) => m.id === id);
+  if (i < 0 || thread.length - i > 8) return;
+  thread.splice(i);
+  refreshThread(sessionId);
 }
 
 export function ask(sessionId, opts) {
@@ -159,9 +225,7 @@ export function submitSingle(sessionId) {
   const s = states.get(sessionId);
   if (!s || !s.single || !s._selected) return;
   const value = s._selected;
-  states.delete(sessionId);
-  notify(sessionId);
-  s.onPick?.(value);
+  settle(sessionId, s, labelOf(s, value), () => s.onPick?.(value));
 }
 
 // Bump a row's count by ±delta, clamped. Works for full stepper pickers and
@@ -190,9 +254,8 @@ export function stepSubmit(sessionId) {
     .filter((p) => p.count > 0);
   const total = picks.reduce((sum, p) => sum + p.count, 0);
   if (total <= 0) return;
-  states.delete(sessionId);
-  notify(sessionId);
-  s.onPick?.({ picks, total });
+  const answer = picks.map((p) => `${labelOf(s, p.value)} · ${p.count}`).join(", ");
+  settle(sessionId, s, answer, () => s.onPick?.({ picks, total }));
 }
 
 export function pick(sessionId, value) {
@@ -201,26 +264,23 @@ export function pick(sessionId, value) {
   // A row may carry an inline counter (single-select); hand its current count
   // to onPick as a second arg (ignored by handlers that don't take a count).
   const count = s._counts?.[value];
-  states.delete(sessionId);
-  notify(sessionId);
-  s.onPick?.(value, count);
+  settle(sessionId, s, labelOf(s, value), () => s.onPick?.(value, count));
 }
 
 export function submitMulti(sessionId, values) {
   const s = states.get(sessionId);
   if (!s) return;
-  states.delete(sessionId);
-  notify(sessionId);
-  s.onPick?.(values);
+  const answer = (values || []).map((v) => labelOf(s, v)).join(", ");
+  settle(sessionId, s, answer, () => s.onPick?.(values));
 }
 
 export function submitCustom(sessionId, value) {
   const s = states.get(sessionId);
   if (!s) return;
-  states.delete(sessionId);
-  notify(sessionId);
-  if (s.onCustom) s.onCustom(value);
-  else s.onPick?.(value);
+  settle(sessionId, s, value, () => {
+    if (s.onCustom) s.onCustom(value);
+    else s.onPick?.(value);
+  });
 }
 
 // File-upload variant — wired by session.js when the dropzone row's
@@ -229,9 +289,7 @@ export function submitCustom(sessionId, value) {
 export function submitFile(sessionId, file) {
   const s = states.get(sessionId);
   if (!s) return;
-  states.delete(sessionId);
-  notify(sessionId);
-  s.onFile?.(file);
+  settle(sessionId, s, file?.name || "", () => s.onFile?.(file));
 }
 
 export function skip(sessionId) {
@@ -241,10 +299,14 @@ export function skip(sessionId) {
   // skip (e.g. the URL / file / profile input steps that need *something*
   // from the user — Back returns to the previous step rather than
   // leaving the wizard in a dangling state).
-  const cb = (!s.skipDisabled && s.onSkip) || s.onBack;
+  if (!s.skipDisabled && s.onSkip) {
+    settle(sessionId, s, "Skipped", s.onSkip);
+    return;
+  }
   states.delete(sessionId);
+  unfoldLast(sessionId);
   notify(sessionId);
-  cb?.();
+  s.onBack?.();
 }
 
 // Back — same lifecycle as skip but for the multi-step wizard's
@@ -255,6 +317,7 @@ export function back(sessionId) {
   if (!s) return;
   const cb = s.onBack;
   states.delete(sessionId);
+  unfoldLast(sessionId);
   notify(sessionId);
   cb?.();
 }

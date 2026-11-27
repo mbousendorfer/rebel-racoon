@@ -4,7 +4,7 @@ Demandé : « review la copy et la microcopy de toute l'app, audite tout ça, et
 
 ## Arbitrages
 
-- **La question en double** (bulle d'Archie + titre de la carte) : l'utilisateur garde la carte. Dans le chat, le picker vit sous le fil et disparaît une fois répondu, donc la bulle reste la seule trace de la question : elle reste. Voir §8.4 ; déplacer le picker dans le fil est ce qui la ferait partir.
+- **La question en double** (bulle d'Archie + titre de la carte) : l'utilisateur garde la carte. Le picker du chat vivait sous le fil et disparaissait une fois répondu ; il est passé dans le fil, où il se replie sur la question et la réponse, et les bulles qui répétaient la question sont parties (second commit, même jour). Voir §8.4.
 - **Les échos « You »** : §8.3 appliqué. Plus d'écho pour un choix procédural (Not now, Adjust, période, tri) ; un écho reformulé pour un choix qui compte (« Yes, delete them. », « Make it 3. »).
 - **Un libellé pour produire des drafts** : **Write N drafts** (chat et Clips).
 - **Source** reste ce qu'on attache à un chat : le Topic Feed écoute des **Listening sources**, l'éditeur de clips montre l'**Original** face à l'Output.

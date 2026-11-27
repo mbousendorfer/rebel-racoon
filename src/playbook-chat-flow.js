@@ -22,7 +22,7 @@
 // exists only under newChatHero, opened from its « No Playbook created yet »
 // card; everywhere else the run's screens make the Playbook.
 
-import { getThread, refreshThread, postAssistantMessage, postUserTurn, postVoiceTurn } from "./assistant.js?v=2984";
+import { getThread, refreshThread, postAssistantMessage, postUserTurn, postVoiceTurn } from "./assistant.js?v=2989";
 import {
   createAltDraft,
   readAltWebsite,
@@ -35,12 +35,12 @@ import {
   getDraft,
   patchDraft,
   save,
-} from "./context-builder.js?v=2984";
-import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2984";
-import { LANGUAGE_OPTIONS } from "./languages.js?v=2984";
-import { connectors as connectorMocks } from "./mocks.js?v=2984";
-import { buildConnectedProfileItems } from "./social-profiles.js?v=2984";
-import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2984";
+} from "./context-builder.js?v=2989";
+import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2989";
+import { LANGUAGE_OPTIONS } from "./languages.js?v=2989";
+import { connectors as connectorMocks } from "./mocks.js?v=2989";
+import { buildConnectedProfileItems } from "./social-profiles.js?v=2989";
+import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2989";
 import {
   OTHER_WAYS,
   VOICE_WAYS,
@@ -48,8 +48,8 @@ import {
   DOC_READS,
   normalizeUrl,
   fallbackFor,
-} from "./screens/welcome-alt-steps.js?v=2984";
-import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2984";
+} from "./screens/welcome-alt-steps.js?v=2989";
+import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2989";
 
 // « 2 of 5 », counted on the run's own steps.
 function stepLabel(step) {

@@ -130,7 +130,7 @@
    wizard step (source picker, URL input, dropzone) lines up with the
    regular composer textarea — same visual rhythm whether the user is
    chatting or going through the playbook-builder. */
-.session__assistant-wizard-bar .analyse__sticky-bar-inner {
+.session__picker-scope .analyse__sticky-bar-inner {
   max-width: 740px;
   margin: 0 auto;
   padding: 0;
@@ -140,7 +140,7 @@
    pill can inset cleanly. Border at grey-20 for clear definition, plus
    the DS Shadow/Low elevation so the picker lifts off the conversation
    surface and reads as the primary action. */
-.session__assistant-wizard-bar .analyse__options {
+.session__picker-scope .analyse__options {
   border-radius: var(--ref-border-radius-md);
   border-color: var(--ref-color-grey-20);
   padding: var(--ref-spacing-xxs);
@@ -151,7 +151,7 @@
 /* Header title — bigger and clearly the question, plus more breathing
    room. No bottom divider; spacing alone separates the title from the
    rows. */
-.session__assistant-wizard-bar .analyse__picker-header {
+.session__picker-scope .analyse__picker-header {
   border-bottom: 0;
   /* Equal top + bottom padding around the header block. */
   padding: var(--ref-spacing-sm);
@@ -165,14 +165,14 @@
 /* The header is a column (title row + optional subtitle) — stretch its
    children to full width and keep everything left-aligned. (Vertical
    centering of the title row's items lives on .analyse__picker-header-row.) */
-.session__assistant-wizard-bar .analyse__picker-header {
+.session__picker-scope .analyse__picker-header {
   align-items: stretch;
   text-align: left;
   /* Tight gap between the title row and the subtitle. */
   gap: var(--app-spacing-micro);
 }
 
-.session__assistant-wizard-bar .analyse__picker-title {
+.session__picker-scope .analyse__picker-title {
   font-size: var(--sys-text-style-h3-size);
   line-height: var(--sys-text-style-h3-line-height);
   font-weight: var(--sys-text-style-h3-weight);
@@ -183,7 +183,7 @@
    for scannability. The separator is a pseudo-element so the row's own
    border-radius (used by the focus pill) stays clean and so the line
    sits inside the picker's padding without bleeding to the frame edge. */
-.session__assistant-wizard-bar .analyse__option {
+.session__picker-scope .analyse__option {
   position: relative;
   padding: var(--ref-spacing-sm);
   gap: var(--ref-spacing-sm);
@@ -192,7 +192,7 @@
   transition: background-color var(--ref-animation-short) var(--app-ease-out);
 }
 
-.session__assistant-wizard-bar .analyse__option:not(:last-of-type)::before {
+.session__picker-scope .analyse__option:not(:last-of-type)::before {
   content: "";
   position: absolute;
   left: var(--ref-spacing-sm);
@@ -205,15 +205,15 @@
 
 /* A row with a link (analyse.css .analyse__option-row): the same inset
    separator as its siblings, drawn above it, and no full-width rule. */
-.session__assistant-wizard-bar .analyse__option-row + .analyse__option-row {
+.session__picker-scope .analyse__option-row + .analyse__option-row {
   border-top: 0;
 }
 
-.session__assistant-wizard-bar .analyse__option-row > .analyse__option::before {
+.session__picker-scope .analyse__option-row > .analyse__option::before {
   display: none;
 }
 
-.session__assistant-wizard-bar .analyse__option-row + .analyse__option-row > .analyse__option::after {
+.session__picker-scope .analyse__option-row + .analyse__option-row > .analyse__option::after {
   content: "";
   position: absolute;
   left: var(--ref-spacing-sm);
@@ -224,10 +224,10 @@
   pointer-events: none;
 }
 
-.session__assistant-wizard-bar .analyse__option-row:hover > .analyse__option::after,
-.session__assistant-wizard-bar .analyse__option-row:has(> .analyse__option.is-selected) > .analyse__option::after,
-.session__assistant-wizard-bar .analyse__option-row:hover + .analyse__option-row > .analyse__option::after,
-.session__assistant-wizard-bar
+.session__picker-scope .analyse__option-row:hover > .analyse__option::after,
+.session__picker-scope .analyse__option-row:has(> .analyse__option.is-selected) > .analyse__option::after,
+.session__picker-scope .analyse__option-row:hover + .analyse__option-row > .analyse__option::after,
+.session__picker-scope
   .analyse__option-row:has(> .analyse__option.is-selected)
   + .analyse__option-row
   > .analyse__option::after {
@@ -236,19 +236,19 @@
 
 /* Hide the separator on the focused row (and the row immediately above
    it) so the pill reads as a clean filled card, no line cutting it. */
-.session__assistant-wizard-bar .analyse__option:focus-visible::before,
-.session__assistant-wizard-bar .analyse__option:has(+ :focus-visible)::before {
+.session__picker-scope .analyse__option:focus-visible::before,
+.session__picker-scope .analyse__option:has(+ :focus-visible)::before {
   display: none;
 }
 
 /* Quick-picker rows use the electric-blue interactive tint on hover and
    keyboard focus (not the neutral grey of the analyse wizards) so every
    row reads as actionable while the picker is up. */
-.session__assistant-wizard-bar .analyse__option:hover {
+.session__picker-scope .analyse__option:hover {
   background: var(--ref-color-electric-blue-10);
 }
 
-.session__assistant-wizard-bar .analyse__option:focus-visible {
+.session__picker-scope .analyse__option:focus-visible {
   outline: none;
   background: var(--ref-color-electric-blue-10);
 }
@@ -257,13 +257,13 @@
    the blue-10 tint rather than the lighter blue-05 base. The persistent
    check icon + blue number badge (from analyse.css) mark it as a sticky
    selection, distinct from a transient hover. */
-.session__assistant-wizard-bar .analyse__option.is-selected {
+.session__picker-scope .analyse__option.is-selected {
   background: var(--ref-color-electric-blue-10);
 }
 
 /* Disabled rows never pick up the interactive blue tint, even under the
    pointer — they read as unavailable in every state. */
-.session__assistant-wizard-bar .analyse__option--disabled:hover {
+.session__picker-scope .analyse__option--disabled:hover {
   background: transparent;
 }
 
@@ -276,7 +276,7 @@
    .analyse__option-icon rule) does the actual centering. We don't
    re-declare `display: inline-flex` here because that would drop the
    centering and offset the glyph to the top-left of the container. */
-.session__assistant-wizard-bar .analyse__option-shortcut {
+.session__picker-scope .analyse__option-shortcut {
   flex-shrink: 0;
   width: 28px;
   height: 28px;
@@ -287,7 +287,7 @@
 /* Lead icon container — the DS Quickpicker "Option" lead: a 32px grey-05
    rounded square (radius-md) holding a small glyph, distinct from (and larger
    than) the 28px shortcut badge. Matches the Figma component. */
-.session__assistant-wizard-bar .analyse__option-icon {
+.session__picker-scope .analyse__option-icon {
   width: 32px;
   height: 32px;
   min-width: 32px;
@@ -296,19 +296,19 @@
   color: var(--ref-color-grey-100);
 }
 
-.session__assistant-wizard-bar .analyse__option-icon > i {
+.session__picker-scope .analyse__option-icon > i {
   font-size: var(--sys-icon-css-sm);
   line-height: 1;
 }
 
 /* Drop the trailing chevron entirely — replaced by the focus ↵ glyph. */
-.session__assistant-wizard-bar .analyse__option-chevron {
+.session__picker-scope .analyse__option-chevron {
   display: none;
 }
 
 /* Return-key glyph on the focused row — bigger, with consistent
    right-edge offset matching the row's internal padding. */
-.session__assistant-wizard-bar .analyse__option:focus-visible::after {
+.session__picker-scope .analyse__option:focus-visible::after {
   content: "↵";
   position: absolute;
   right: var(--ref-spacing-sm);
@@ -323,19 +323,19 @@
 
 /* Multi-select: Enter submits the whole pick and the row carries its check on
    the right, so no ↵ on a row (it landed on the check). */
-.session__assistant-wizard-bar [data-multi] .analyse__option:focus-visible::after {
+.session__picker-scope [data-multi] .analyse__option:focus-visible::after {
   content: none;
 }
 
 /* Skip footer — tight compact row inside the picker frame. Just enough
    top padding to separate the button from the last option row; the
    picker frame's own bottom padding handles the gap below. */
-.session__assistant-wizard-bar .analyse__options-submit {
+.session__picker-scope .analyse__options-submit {
   margin-top: 0;
   padding: var(--ref-spacing-sm) 0 0;
 }
 
-.session__assistant-wizard-bar .analyse__hints {
+.session__picker-scope .analyse__hints {
   margin-top: var(--ref-spacing-xs);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
@@ -2210,4 +2210,29 @@ body.playbook-revoked .session__composer-card {
 .session__assistant-thread.is-arriving > * {
   --app-rise-from: 16px;
   animation: app-rise 560ms var(--app-ease-out) calc(1150ms + var(--arrive-i, 0) * 240ms) both;
+}
+
+/* The open question card in the thread (inline-question, renderAssistantPanelQuestion):
+   the last turn of the conversation, the keyboard hints under it. Answered,
+   it folds into a « pb-ask » turn in its place (inline-question.js). */
+.session__ask {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+/* Right after Archie's own turn the card joins his run: no second avatar,
+   the same column (past the avatar and the turn's gap, .chat-turn--ai). */
+.session__ask-indent {
+  padding-left: calc(var(--sys-icon-css-sm) + var(--ref-spacing-xs));
+}
+
+/* The turn takes the column's width (an AI turn otherwise hugs its text). */
+.chat-turn--ai:has(.session__ask) {
+  align-self: stretch;
+}
+
+.chat-bubble--ai:has(> .session__ask) {
+  flex: 1;
+  min-width: 0;
 }

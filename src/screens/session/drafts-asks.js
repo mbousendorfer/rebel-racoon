@@ -5,8 +5,8 @@
 // the thread. Plus the post-plan switch and the schedule plan's "Adjust dates".
 // Moved out of session.js, unchanged; it touches none of the screen's state.
 
-import { escapeHtml, formatDayLabel, formatTimeOfDay } from "../../utils.js?v=2984";
-import { networkLabel, networkIcon } from "../../social-profiles.js?v=2984";
+import { escapeHtml, formatDayLabel, formatTimeOfDay } from "../../utils.js?v=2989";
+import { networkLabel, networkIcon } from "../../social-profiles.js?v=2989";
 import {
   getThread,
   postAssistantMessage,
@@ -19,38 +19,38 @@ import {
   startPending,
   finishPending,
   postActivity,
-} from "../../assistant.js?v=2984";
-import { startRewrite, languageOf, TRANSLATE_LANGUAGES } from "../../draft-rewrite.js?v=2984";
-import { startPostPlan } from "../../post-plan-flow.js?v=2984";
+} from "../../assistant.js?v=2989";
+import { startRewrite, languageOf, TRANSLATE_LANGUAGES } from "../../draft-rewrite.js?v=2989";
+import { startPostPlan } from "../../post-plan-flow.js?v=2989";
 import {
   MENTION_ASK,
   UNMENTION_ASK,
   mentionNamesIn,
   mentionInDrafts,
   unmentionInDrafts,
-} from "../../mention-flow.js?v=2984";
+} from "../../mention-flow.js?v=2989";
 import {
   getPlans as getPostPlans,
   getActivePlan as getActivePostPlan,
   setActivePlan as setActivePostPlan,
-} from "../../post-plan-store.js?v=2984";
-import { getSources } from "../../library.js?v=2984";
-import { getPosts, removePost, addPostDraft, updatePostContent } from "../../posts-store.js?v=2984";
-import * as inlineQuestion from "../../inline-question.js?v=2984";
-import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../../schedule-engine.js?v=2984";
-import { addToQueue } from "../../schedule-store.js?v=2984";
-import { refLabel } from "../../chat-refs.js?v=2984";
+} from "../../post-plan-store.js?v=2989";
+import { getSources } from "../../library.js?v=2989";
+import { getPosts, removePost, addPostDraft, updatePostContent } from "../../posts-store.js?v=2989";
+import * as inlineQuestion from "../../inline-question.js?v=2989";
+import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../../schedule-engine.js?v=2989";
+import { addToQueue } from "../../schedule-store.js?v=2989";
+import { refLabel } from "../../chat-refs.js?v=2989";
 import {
   openScheduleForPosts,
   onPostImage,
   openAssignForPosts,
   commitAssigned,
-} from "../../components/right-panel/drafts-view.js?v=2984";
-import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER } from "../../org.js?v=2984";
-import { isPostValid } from "../../post-validation.js?v=2984";
-import { reviewBlock } from "../../components/assign-modal.js?v=2984";
-import { isFlagOn } from "../../feature-flags.js?v=2984";
-import { focusInPanel } from "../../components/right-panel.js?v=2984";
+} from "../../components/right-panel/drafts-view.js?v=2989";
+import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER } from "../../org.js?v=2989";
+import { isPostValid } from "../../post-validation.js?v=2989";
+import { reviewBlock } from "../../components/assign-modal.js?v=2989";
+import { isFlagOn } from "../../feature-flags.js?v=2989";
+import { focusInPanel } from "../../components/right-panel.js?v=2989";
 
 // "Delete all the drafts" — a destructive, irreversible ask, so I confirm it in
 // the chat (Quickpicker) instead of acting on the sentence. Same set the Drafts
@@ -258,9 +258,9 @@ function firstCommentFor(sessionId, draft) {
   };
   const generic = "What would you add? I read every reply.";
   if (!draft.cta) return write(generic);
-  postAssistantMessage(sessionId, `[[post:${draft.id}]] has a call to action. Where should it go?`);
+  postAssistantMessage(sessionId, `[[post:${draft.id}]] has a call to action.`);
   inlineQuestion.ask(sessionId, {
-    title: null,
+    title: "Where should the call to action go?",
     stepLabel: "First comment",
     skipLabel: "No thanks",
     items: [
@@ -297,9 +297,8 @@ export function routeTypedAsk(session, text) {
 export function askSwitchPostPlan(sessionId) {
   const plans = getPostPlans(sessionId);
   const active = getActivePostPlan(sessionId);
-  postAssistantMessage(sessionId, "Which post plan should I work from?");
   inlineQuestion.ask(sessionId, {
-    title: null,
+    title: "Which post plan should I work from?",
     stepLabel: "Post plan",
     items: plans.map((p) => ({
       value: p.id,
@@ -351,9 +350,8 @@ function reviewFromChat(sessionId, picked, text) {
   const eligible = [...MEMBERS.filter((m) => m.id !== CURRENT_USER.id), ...EXTERNAL_REVIEWERS].filter(
     (r) => !reviewBlock(r, ready),
   );
-  postAssistantMessage(sessionId, `Who should review ${them}?`);
   inlineQuestion.ask(sessionId, {
-    title: null,
+    title: `Who should review ${them}?`,
     stepLabel: "Reviewer",
     searchable: eligible.length > 6,
     searchPlaceholder: "Search people…",
@@ -507,7 +505,6 @@ function askWhichDrafts(sessionId, drafts, { verb, onPick }) {
     mention: { q: "Which drafts should I add the mention to?", cta: "Add mention" },
     unmention: { q: "Which drafts should I take the mention out of?", cta: "Remove mention" },
   }[verb];
-  postAssistantMessage(sessionId, copy.q);
   inlineQuestion.ask(sessionId, {
     title: copy.q,
     subtitle: multi ? "Pick one or more." : null,

@@ -6,14 +6,14 @@
 //   renderPostEchoRow / renderTopPostEcho → one quoted post
 //   renderTopPostsWidget({ … }) → the single-select winners widget
 
-import { compactNumber, html, raw } from "../utils.js?v=2984";
+import { compactNumber, html, raw } from "../utils.js?v=2989";
 import {
   profileForNetwork,
   NETWORK_ICON_BY_PLATFORM,
   BRAND_INITIALS,
   networkLabel,
   networkMeta,
-} from "../social-profiles.js?v=2984";
+} from "../social-profiles.js?v=2989";
 
 // Ranking criteria the flow asks for (askRankCriterion). `compare` sorts descending by the decision-useful value (recent sorts
 // ascending by age). Always sorted so the strongest option for that lens is

@@ -1,7 +1,7 @@
-import { getSessions } from "../sessions-store.js?v=2984";
-import { getContexts } from "../contexts-store.js?v=2984";
-import { isNewUser } from "../user-mode.js?v=2984";
-import { isFlagOn, isNewStartOn } from "../feature-flags.js?v=2984";
+import { getSessions } from "../sessions-store.js?v=2989";
+import { getContexts } from "../contexts-store.js?v=2989";
+import { isNewUser } from "../user-mode.js?v=2989";
+import { isFlagOn, isNewStartOn } from "../feature-flags.js?v=2989";
 
 // Dashboard route — pure redirect surface.
 //

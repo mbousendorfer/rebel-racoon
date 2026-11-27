@@ -483,7 +483,7 @@ When the user clicks a chip in a picker, the current code echoes the chip label 
 
 ### 8.4 Title duplication in pickers
 
-The user's pick (2026-11-27): the question belongs to its **question card**, no bubble repeating it. That holds where the card stays in the thread and folds onto its answer (the Playbook conversation of `newChatHero`). In the regular chat the inline picker sits in the bar under the thread and disappears once answered, so the AI bubble is the only trace of the question in the history: there the bubble stays, worded as the question, and the card title repeats it while the card is open. Moving the chat picker into the thread is what lets the bubble go.
+A question asked in the chat lives in its **question card** (the Quickpicker: the question, its step, the options, Back / Skip). The card is the last turn of the thread and, once answered, folds in place to the question and the answer. Its `title` carries the question; **no AI bubble repeats it** above. A bubble before the card only adds context the card doesn't say, and names an object through a `[[kind:id]]` reference when it needs one (a card title is plain text). Decided 2026-11-27.
 
 ### 8.5 Quotation in dynamic strings
 

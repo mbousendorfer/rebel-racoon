@@ -29,10 +29,10 @@ import {
   postUserTurn,
   postUserProfilesTurn,
   reportDraftFailure,
-} from "./assistant.js?v=2984";
-import { getTopPosts, getTopPost } from "./top-posts-store.js?v=2984";
-import { addPostDraft } from "./posts-store.js?v=2984";
-import { addReadySource } from "./sources-stream.js?v=2984";
+} from "./assistant.js?v=2989";
+import { getTopPosts, getTopPost } from "./top-posts-store.js?v=2989";
+import { addPostDraft } from "./posts-store.js?v=2989";
+import { addReadySource } from "./sources-stream.js?v=2989";
 import {
   getConnectedProfiles,
   BRAND_INITIALS,
@@ -42,13 +42,13 @@ import {
   networkMeta,
   normalizeNetwork,
   getConnectedProfileById,
-} from "./social-profiles.js?v=2984";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2984";
-import { requireNetworkVoices } from "./network-voice-flow.js?v=2984";
-import { withPendingChip } from "./draft-flow.js?v=2984";
-import { SORTS, PERIODS } from "./components/top-post-card.js?v=2984";
-import * as inlineQuestion from "./inline-question.js?v=2984";
-import { playbookForNewWork } from "./active-playbook.js?v=2984";
+} from "./social-profiles.js?v=2989";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2989";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2989";
+import { withPendingChip } from "./draft-flow.js?v=2989";
+import { SORTS, PERIODS } from "./components/top-post-card.js?v=2989";
+import * as inlineQuestion from "./inline-question.js?v=2989";
+import { playbookForNewWork } from "./active-playbook.js?v=2989";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;
@@ -198,12 +198,10 @@ export function startTopPostsInline(sessionId) {
   }
   // The drafts' voice: the Playbook new work goes to, kept implicit to stay short.
   repurposeContexts.set(sessionId, playbookForNewWork()?.id || null);
-  postAssistantMessage(sessionId, "Which account should I load your top posts from?");
   inlineQuestion.ask(
     sessionId,
     accountPickerOpts({
-      title: "Pick an account",
-      subtitle: "I'll load its top posts next.",
+      title: "Which account should I load your top posts from?",
       onAccount: (account, network) => {
         echoAccount(sessionId, account, network);
         askPeriod(sessionId, network);
@@ -226,11 +224,10 @@ const PERIOD_CHOICES = PERIODS.map((p) => ({ value: p.key, label: p.label, icon:
 
 // Account chosen → ask which time window to pull winners from before ranking.
 function askPeriod(sessionId, network) {
-  postAssistantMessage(sessionId, "How far back should I look?");
   inlineQuestion.ask(sessionId, {
     items: PERIOD_CHOICES,
-    title: "Time period",
-    subtitle: "I'll only rank posts published in that window.",
+    title: "How far back should I look?",
+    subtitle: "I'll only rank posts from that period.",
     onPick: (periodKey) => {
       askRankCriterion(sessionId, network, periodKey);
     },
@@ -239,8 +236,7 @@ function askPeriod(sessionId, network) {
       inlineQuestion.ask(
         sessionId,
         accountPickerOpts({
-          title: "Pick an account",
-          subtitle: "I'll load its top posts next.",
+          title: "Which account should I load your top posts from?",
           onAccount: (account, net) => {
             echoAccount(sessionId, account, net);
             askPeriod(sessionId, net);
@@ -261,10 +257,9 @@ const RANK_CHOICES = [
 
 // Window chosen → ask which metric to rank by before surfacing the winners.
 function askRankCriterion(sessionId, network, period = "1m") {
-  postAssistantMessage(sessionId, "How should I rank them?");
   inlineQuestion.ask(sessionId, {
     items: RANK_CHOICES,
-    title: "Rank by",
+    title: "How should I rank them?",
     subtitle: "I'll put the strongest posts for that metric first.",
     onPick: (sortKey) => {
       presentWinners(sessionId, network, sortKey, period);
@@ -273,8 +268,8 @@ function askRankCriterion(sessionId, network, period = "1m") {
     onBack: () =>
       inlineQuestion.ask(sessionId, {
         items: PERIOD_CHOICES,
-        title: "Time period",
-        subtitle: "I'll only rank posts published in that window.",
+        title: "How far back should I look?",
+        subtitle: "I'll only rank posts from that period.",
         onPick: (periodKey) => {
           askRankCriterion(sessionId, network, periodKey);
         },

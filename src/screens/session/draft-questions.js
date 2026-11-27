@@ -4,10 +4,10 @@
 // Moved out of session.js, unchanged; askAngleQuestion is also the right
 // panel's entry point (it imports this module, not the whole screen).
 
-import { getSessionById } from "../../sessions-store.js?v=2984";
-import { getContextById } from "../../contexts-store.js?v=2984";
-import { playbookForNewWork } from "../../active-playbook.js?v=2984";
-import { isFlagOn } from "../../feature-flags.js?v=2984";
+import { getSessionById } from "../../sessions-store.js?v=2989";
+import { getContextById } from "../../contexts-store.js?v=2989";
+import { playbookForNewWork } from "../../active-playbook.js?v=2989";
+import { isFlagOn } from "../../feature-flags.js?v=2989";
 import {
   postAssistantMessage,
   postSelectionEcho,
@@ -18,25 +18,25 @@ import {
   postActivity,
   postExtractionResult,
   postClipExtractionTurn,
-} from "../../assistant.js?v=2984";
-import * as inlineQuestion from "../../inline-question.js?v=2984";
-import { getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../../library.js?v=2984";
+} from "../../assistant.js?v=2989";
+import * as inlineQuestion from "../../inline-question.js?v=2989";
+import { getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../../library.js?v=2989";
 import {
   getSources as getStreamSources,
   setSourceIdeaCount,
   setSourceUse,
   extractClipsForSource,
-} from "../../sources-stream.js?v=2984";
+} from "../../sources-stream.js?v=2989";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
   getConnectedProfileById,
   normalizeNetwork,
-} from "../../social-profiles.js?v=2984";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2984";
-import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=2984";
-import * as topPostsFlow from "../../top-posts-flow.js?v=2984";
+} from "../../social-profiles.js?v=2989";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2989";
+import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=2989";
+import * as topPostsFlow from "../../top-posts-flow.js?v=2989";
 
 // Build + show the "Which profile?" question, reached from every Draft Post
 // entry point. The chosen profile's platform becomes the draft's network so
@@ -68,9 +68,8 @@ function askLanguageQuestion(sessionId, ideaId, proceed) {
     proceed(primary);
     return;
   }
-  postAssistantMessage(sessionId, "Which language should I write in?");
   inlineQuestion.ask(sessionId, {
-    title: "Choose a language",
+    title: "Which language should I write in?",
     stepLabel: "Language",
     items: languages.map((l) => ({
       value: l,
@@ -124,12 +123,11 @@ function askProfileQuestion(
   // accounts (brand handle + avatar with network badge) as the Playbook
   // onboarding profile step.
   const connected = getConnectedProfiles();
-  postAssistantMessage(sessionId, "Which account should I draft this for?");
   // The account is where the draft will go, not posts to analyse: every
   // connected account is a valid pick, history or not.
   const profileItems = buildConnectedProfileItems({ requirePosts: false });
   inlineQuestion.ask(sessionId, {
-    title: "Pick a connected account",
+    title: "Which account should I draft this for?",
     stepLabel: "Account",
     items: profileItems,
     // With a lot of connected accounts, a flat list is slow to scan — add a
@@ -176,9 +174,8 @@ export function askRepurposeProfiles(sessionId, postIds) {
     });
     return;
   }
-  postAssistantMessage(sessionId, "Where should I repurpose these?");
   inlineQuestion.ask(sessionId, {
-    title: "Pick the accounts to repurpose to",
+    title: "Where should I repurpose these?",
     subtitle: "Set how many drafts I'll write for each account. Leave one at 0 to skip it.",
     stepLabel: "Drafts per account",
     // Per-profile version counter, capped so a single run stays scannable.
@@ -297,7 +294,6 @@ export function askAngleQuestion(sessionId, ideaId, { language = null } = {}) {
 // profile picker. When reached from the angle step (`onBack` set) the
 // picker shows a Back affordance; entered directly it shows Cancel.
 function askDraftCountQuestion(sessionId, ideaId, { angle = null, onBack = null, language = null } = {}) {
-  postAssistantMessage(sessionId, "How many drafts should I write?");
   const advance = (count) => {
     // Clamp to a reasonable range — single-digit + custom typed numbers
     // can land outside it (0, negative, NaN). 1 floors any nonsense.
@@ -352,9 +348,7 @@ export function askSourceUse(sessionId, sourceIds, { onAsk = null, answer = null
   if (!answer)
     postAssistantMessage(
       sessionId,
-      single
-        ? `[[source:${single.id}]] is in. What should I do with it?`
-        : `${srcs.map((s) => `[[source:${s.id}]]`).join(", ")} are in. What should I do with them?`,
+      single ? `[[source:${single.id}]] is in.` : `${srcs.map((s) => `[[source:${s.id}]]`).join(", ")} are in.`,
     );
 
   const items = single
@@ -420,7 +414,7 @@ export function askSourceUse(sessionId, sourceIds, { onAsk = null, answer = null
   }
 
   inlineQuestion.ask(sessionId, {
-    title: single ? "Use this source" : `Use these ${srcs.length} sources`,
+    title: single ? "What should I do with it?" : "What should I do with them?",
     stepLabel: single ? single.kind || "Source" : "Sources",
     skipLabel: "Not now",
     items,
@@ -536,13 +530,12 @@ const SOURCE_TREATMENTS = [
 // drafts, the language (when the Playbook has several) and the account — the
 // same tail as an angle pick, the treatment riding in as the angle.
 export function askTreatment(sessionId, ideaId, { onBack = null } = {}) {
-  postAssistantMessage(sessionId, "How should I use this source?");
   const advance = (treatment) => {
     postUserTurn(sessionId, treatment.label);
     askTreatmentCount(sessionId, ideaId, treatment, () => askTreatment(sessionId, ideaId, { onBack }));
   };
   inlineQuestion.ask(sessionId, {
-    title: null,
+    title: "How should I use this source?",
     stepLabel: "Approach",
     skipLabel: "Not now",
     items: SOURCE_TREATMENTS.map(({ value, label, caption }) => ({ value, label, caption })),
@@ -558,7 +551,6 @@ export function askTreatment(sessionId, ideaId, { onBack = null } = {}) {
 }
 
 function askTreatmentCount(sessionId, ideaId, treatment, onBack) {
-  postAssistantMessage(sessionId, "How many drafts should I write?");
   const advance = (count) => {
     const n = Math.max(1, Math.min(10, Math.floor(Number(count) || 1)));
     postUserTurn(sessionId, n === 1 ? "One is enough." : `Make it ${n}.`);
@@ -577,7 +569,7 @@ function askTreatmentCount(sessionId, ideaId, treatment, onBack) {
     );
   };
   inlineQuestion.ask(sessionId, {
-    title: null,
+    title: "How many drafts should I write?",
     stepLabel: "Drafts",
     items: [
       { value: 1, label: "1 draft" },
