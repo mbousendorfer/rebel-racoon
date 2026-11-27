@@ -1106,7 +1106,7 @@ Une Entry porte : `key`, verdict + palier (+ `collecting` / `parked`), `origin` 
 
 - **Série par mesure, déterministe** : aucun `Math.random`. Extrémités = les vrais chiffres de la mesure (courant, trend, cible), intérieur = une table de bruit fixe indexée par un hash FNV-1a de la clé, fenêtre de 30 jours ancrée sur `TOP_POST_TODAY`. Deux paints d'un objectif tracent la même ligne. Une fenêtre fixe prolonge l'axe jusqu'à l'échéance (60 jours max) et trace la **Required pace** en pointillé ; la cible est une ligne pointillée.
 - **Posts liés** : seuls les posts **draftés avec Archie** et publiés comptent. Authored dans `objectivePosts` (6 objectifs), sinon générés de façon déterministe depuis `objectivePostPool` (2 à 4 posts). Chaque post porte sa **contribution** (« +3,300 reach · 1.9× median ») et sa part de la mesure ; il apparaît sur la courbe comme un marqueur « Posts I drafted ». **Pas de retrait** : un post est là parce qu'Archie a mesuré qu'il a fait bouger l'objectif, le lecteur ne peut pas le « dé-observer » (l'ensemble de posts retirés et son notifier ont été supprimés).
-- Rendu : la carte du board des winners (`renderTopPostCard`) en variante `--neutral` (le multiple en encre, pas en vert — le vert veut dire « on track » ici), stat strip contribution + « of the measure », CTA **Repurpose**.
+- Rendu : la carte de post (`renderTopPostCard`, dont Insights est le seul hôte) en variante `--neutral` (le multiple en encre, pas en vert — le vert veut dire « on track » ici), stat strip contribution + « of the measure », CTA **Repurpose**.
 
 ### Les layouts — le View switch
 

@@ -140,7 +140,7 @@ src/
 
   # Studios (full-panel takeovers) + newer surfaces (not exhaustive — see docs/reference/FEATURES.md)
   batch-studio.js       — batch-of-posts studio (upload/analyse → review)
-  top-posts-flow.js / top-posts-store.js — published-posts "winners" board + repurpose entry
+  top-posts-flow.js / top-posts-store.js — "Repurpose a top post": asked in the thread, winners widget, repurpose
   folders-store.js      — save-to-folder store; feedback-store.js — feedback submissions
   languages.js          — language catalog for multilingual Playbooks
   url-services.js       — recognises a service (Notion/Google Docs/…) from a pasted URL
@@ -202,7 +202,7 @@ src/
     topic-card.js         one Topic: the feed's card, the picker's card, the in-chat row
     starter-card.js       the workflow starters of the new chat's hero
     social-post-card.js   someone ELSE's published post, as evidence (not top-post-card)
-    top-post-card.js      MY published post that performed — the Repurpose board's card
+    top-post-card.js      MY published post that performed — the winners widget, its echo, Insights' card
     more-menu.js          installMoreMenu(): the shared ⋯ popover on source / idea / clip cards
     dropzone.js           bindDropzone(): a dashed target that really accepts a drop
     tooltip.js            document-delegated [data-tooltip] — no per-screen wiring
