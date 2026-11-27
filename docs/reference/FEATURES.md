@@ -65,10 +65,10 @@ Le fil en « deux côtés » (Figma « Conversation styles » § E) : Archie à 
 
 Markup : [`session/composer.js`](../../src/screens/session/composer.js).
 
-- **Champ** : textarea auto-size 2 lignes, placeholder _« Ask a follow-up, or refine a draft… »_ — sur un chat vide, _« Paste a link, drop a file, or tell me what to post… »_ ; Playbook qui ne m'est plus partagé → lecture seule, _« This Playbook isn't shared with you anymore. … »_. Toolbar : **Add** · **Reference (@)** (absent d'un chat neuf qui n'a rien à référencer, désactivé tant qu'il n'y a ni source prête ni idée) · **Playbook** · **Send** (orange). Hint _« Enter to send · Shift+Enter for new line · Drop a file to attach a source »_.
+- **Champ** : textarea auto-size 2 lignes, placeholder _« Ask a follow-up, or refine a draft… »_ — sur un chat vide, _« Paste a link, drop a file, or tell me what to post… »_ ; Playbook qui ne m'est plus partagé → lecture seule, _« This Playbook isn't shared with you anymore. … »_. Toolbar : **Add** · **Reference (@)** (absent d'un chat neuf qui n'a rien à référencer, désactivé tant qu'il n'y a ni source prête ni idée) · **Send** (orange). Hint _« Enter to send · Shift+Enter for new line · Drop a file to attach a source »_.
 - **Envoi** : Send, **Enter**, ou **Cmd/Ctrl+Enter** ; **Shift+Enter** = newline.
 - **Menu Add** : _Add PDF · Add video · Add URL · Paste text_ — puis _Repurpose a top post_ · _Pick from the Topic Feed_ — puis (flag `connectors`) le sous-menu **Connectors** (les connectés + « Browse connectors »).
-- **Contrôle Playbook** : sur chat neuf = `.ap-select` sélectionnable (+ « Create a Playbook ») ; sur chat actif = indicateur statique. Send est en `margin-left: auto`.
+- **Pas de contrôle Playbook** (retiré le 2026-11-27) : on peut utiliser n'importe quel Playbook dans une conversation, le composer ne le choisit ni ne l'affiche plus ([`CONCEPTS.md`](CONCEPTS.md) §2). Send est en `margin-left: auto`.
 - **@ Reference (mentions)** : picker flottant listant sources prêtes + idées ; pick → pill (tag du kind). Nav clavier ↑/↓/Enter/Esc. Chips gérés par [`composer-mentions.js`](../../src/composer-mentions.js).
 - **« / » commande (connecteurs)** : liste les connecteurs connectés en action-dropdown ; pick → attache au composer.
 - **Chip connecteur** : demander un connecteur attache un chip removable + swap placeholder _« Ask {name} anything… »_. ([`composer-connector.js`](../../src/composer-connector.js))

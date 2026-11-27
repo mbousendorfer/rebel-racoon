@@ -4,18 +4,18 @@
 // session.js, unchanged; the mention picker stays there, since bindSession
 // writes its highlight state.
 
-import { isFlagOn } from "../../feature-flags.js?v=2973";
-import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2973";
-import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2973";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2973";
-import { getSources, getIdeas } from "../../library.js?v=2973";
-import { getThread } from "../../assistant.js?v=2973";
-import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2973";
-import { revokedContextFor } from "../../playbook-access.js?v=2973";
-import { getSessionById } from "../../sessions-store.js?v=2973";
-import { getActiveConnector } from "../../composer-connector.js?v=2973";
-import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=2973";
-import { renderTopicPickerRow } from "./empty-hero.js?v=2973";
+import { isFlagOn } from "../../feature-flags.js?v=2974";
+import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2974";
+import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2974";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2974";
+import { getSources, getIdeas } from "../../library.js?v=2974";
+import { getThread } from "../../assistant.js?v=2974";
+import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2974";
+import { revokedContextFor } from "../../playbook-access.js?v=2974";
+import { getSessionById } from "../../sessions-store.js?v=2974";
+import { getActiveConnector } from "../../composer-connector.js?v=2974";
+import { COMPOSER_DEFAULT_PLACEHOLDER } from "../session.js?v=2974";
+import { renderTopicPickerRow } from "./empty-hero.js?v=2974";
 
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the
@@ -428,7 +428,6 @@ export function renderComposer(attachedContext, session, selectable) {
               <span>Reference</span>
             </button>`
             }
-            ${renderPlaybookControl(attachedContext, selectable)}
             <button
               type="button"
               class="ap-button primary orange session__composer-send"

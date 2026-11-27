@@ -116,11 +116,11 @@ Une **session** (= chat = conversation) est un **fil continu avec Archie**. Pas 
 Deux conséquences de conception :
 
 - **Rien n'y « expire ».** Ce qui est produit dans un chat reste dans ce chat. Une session ne se clôture pas, elle se retrouve — d'où le pin, le rename, le regroupement dans la sidebar.
-- **Son Playbook est fixé à l'ouverture.** Un chat naît avec un Playbook et n'en change plus : le contrôle est un dropdown sur un chat neuf, un indicateur statique dès qu'il est actif ([`FEATURES.md`](FEATURES.md) §1). La cohérence de ce qu'on y produit est ainsi vraie **par construction** — pas besoin de se demander sous quelle marque tel draft a été écrit. Changer d'avis, c'est ouvrir un chat.
+- **Son Playbook n'est plus verrouillé.** Un chat naît rattaché au Playbook par défaut (`session.contextId`, ce que lisent les flows qui produisent un draft), mais on peut y utiliser n'importe quel Playbook : le composer n'a plus de contrôle Playbook, ni select sur un chat neuf ni indicateur statique sur un chat actif (retiré le 2026-11-27, demandé : « dans une conversation maintenant on peut utiliser n'importe quel playbook »). Avant, le Playbook était fixé à l'ouverture et changer d'avis voulait dire ouvrir un chat.
 
   Le flag `playbookWorkspace`, où un Playbook actif choisi dans la rail scopait tout et où un chat neuf en héritait, a été **supprimé le 2026-11-27** ([`DECISIONS.md` § The Playbook scope](DECISIONS.md#the-playbook-scope--pb-and-a-per-chat-playbook)).
 
-Un chat **peut** vivre sans Playbook (Archie travaille alors sans cadrage), mais il ne peut pas en avoir deux.
+Un chat **peut** vivre sans Playbook (Archie travaille alors sans cadrage).
 
 ---
 
