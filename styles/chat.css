@@ -27,6 +27,53 @@
   gap: var(--ref-spacing-xxxs);
 }
 
+/* What the Playbook conversation learned (renderPlaybookLearnedTurn, flag
+   newChatHero): a card in Archie's turn, white on grey-20, the title by weight,
+   the facts as label over value. No uppercase labels, inks grey-80 … 100. */
+.pb-learned {
+  display: grid;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card, 12px);
+  background: var(--ref-color-white);
+}
+
+.pb-learned__title {
+  font-size: var(--sys-text-style-h4-size);
+  line-height: var(--sys-text-style-h4-line-height);
+  font-weight: var(--sys-text-style-h4-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.pb-learned__text {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.pb-learned__facts {
+  display: grid;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+}
+
+.pb-learned__fact dt {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.pb-learned__fact dd {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.pb-learned__fact ul {
+  margin: 0;
+  padding-left: var(--ref-spacing-sm);
+  list-style: disc;
+}
+
 /* Generic object-selection echo — icon + title + meta chip shown when the user
    picks a dynamic object (source / idea / clip / …). Right-aligned like the
    other user-turn echoes (renderSelectionEchoTurn in screens/session.js). */

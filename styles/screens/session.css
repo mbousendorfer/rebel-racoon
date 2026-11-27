@@ -1893,3 +1893,39 @@ body.playbook-revoked .session__composer-card {
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--sys-text-color-default);
 }
+
+/* ── Flag newChatHero — from the hero to the conversation ───────────────
+   The first message (or the Playbook card) swaps the hero for the thread
+   inside a View Transition (refreshAssistantAside in session.js): the
+   composer card in the hero and what stands at the foot afterwards — the
+   composer, or the question card that takes its place — share one name, so
+   the browser glides one into the other while the hero cross-fades out
+   (asked 2026-11-27: « une petite animation sympa de transition pour faire
+   passer le composer en bas de l'écran et passer en mode conversation »).
+   Only that swap runs a transition, so the name is inert anywhere else. */
+.empty-chat--rows .session__composer-card,
+.session__assistant > .session__composer .session__composer-card,
+.session__assistant-wizard-bar .analyse__sticky-bar-inner {
+  view-transition-name: archie-composer;
+}
+
+::view-transition-group(archie-composer) {
+  animation-duration: 600ms;
+  animation-timing-function: var(--app-ease-out);
+}
+
+/* The composer becomes the card: the two cross-fade inside the moving box. */
+::view-transition-old(archie-composer),
+::view-transition-new(archie-composer) {
+  height: 100%;
+  animation-duration: 400ms;
+}
+
+::view-transition-old(root) {
+  animation-duration: 250ms;
+}
+
+::view-transition-new(root) {
+  animation-duration: 350ms;
+  animation-delay: 150ms;
+}

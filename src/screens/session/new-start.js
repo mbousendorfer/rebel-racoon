@@ -21,8 +21,8 @@
 // video door is the clips starter. What is local (the rotation, the typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2946";
-import { escapeHtml } from "../../utils.js?v=2946";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2951";
+import { escapeHtml } from "../../utils.js?v=2951";
 
 const esc = escapeHtml;
 
@@ -107,7 +107,9 @@ export function renderDoors({ brand = true, hero = false } = {}) {
 ${
   brand
     ? `
-        <a class="ns-door ns-door--missing" href="#/welcome-alt" data-ns-reveal style="--i: 1">
+        <!-- In the hero the door starts the Playbook conversation in this chat
+             (playbook-chat-flow.js); in New Start it opens the run. -->
+        ${hero ? `<button type="button" class="ns-door ns-door--missing" data-starter="create-playbook" data-starter-action="create-playbook" data-starter-prompt="Help me create my Playbook" data-ns-reveal style="--i: 1">` : `<a class="ns-door ns-door--missing" href="#/welcome-alt" data-ns-reveal style="--i: 1">`}
           ${SKEL.door}
           <!-- The DS status card glued on top (2026-11-27, asked: « une status bar
                au dessus de l'invite à créer un playbook, pour
@@ -133,7 +135,7 @@ ${
           <span class="ns-door__title">${hero ? "No Playbook created yet" : "Sound like your Brand"}</span>
           <span class="ns-door__desc">Show me your website or a few files, and I'll learn your voice, your audience, and your look.</span>
           <span class="ap-link standalone ns-door__go">Create my Playbook<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
-        </a>
+        ${hero ? "</button>" : "</a>"}
 `
     : ""
 }

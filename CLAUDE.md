@@ -116,20 +116,20 @@ Never hand-edit a `?v=`. ⚠️ A cached entry point pins the whole old import g
 
 User mode (`user-mode.js`): `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding, `isNewUser()`). Flags: `ff-catalog.js`, read with `isFlagOn()`. Each change reloads so stores re-seed. **What each flag gates, in full: [`FEATURES.md`](docs/reference/FEATURES.md) §14.**
 
-| Flag                     | Default | Gates                                                                                                                                            |
-| ------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `insightsHub`            | OFF     | the whole `/insights` section                                                                                                                    |
-| `connectors`             | OFF     | the connectors feature, onboarding's documents step included                                                                                     |
-| `conversationStatusCard` | OFF     | the floating status card; with it, the panel has no Overview tab (`hasOverview()`)                                                               |
-| `contentPanel`           | **ON**  | the pills become the side panel's tabs (Overview │ Sources › Ideas, Clips › Drafts); results in the thread open the panel, it never opens itself |
-| `multilingualPlaybook`   | OFF     | languages per Playbook, voice per language                                                                                                       |
-| `playbookSharing`        | OFF     | ownership, three scopes, governance, the profile gate; its demo data seeds only under the flag                                                   |
-| `newScheduleModal`       | **ON**  | the redesigned schedule modal; OFF = `schedule-modal-legacy.js`, deleted once the comparison ends                                                |
-| `draftMentions`          | OFF     | « mention Notion in the LinkedIn post » from the chat (`mention-flow.js`)                                                                        |
-| `uiIdeaCard`             | OFF     | the clearer compact idea card (`renderClearIdeaCard`)                                                                                            |
-| `interactivePlaybook`    | OFF     | a first-time user with no Playbook lands on the setup run (`/welcome-alt`); OFF, on a new chat                                                   |
-| `newStart4`              | OFF     | a first-time user with no Playbook lands on a chat that introduces Archie (`session/new-start.js`)                                               |
-| `newChatHero`            | OFF     | a first-time user's new chat (turning it on switches to new-alt): grey pixel field, example requests, New Start's two doors                      |
+| Flag                     | Default | Gates                                                                                                                                                    |
+| ------------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `insightsHub`            | OFF     | the whole `/insights` section                                                                                                                            |
+| `connectors`             | OFF     | the connectors feature, onboarding's documents step included                                                                                             |
+| `conversationStatusCard` | OFF     | the floating status card; with it, the panel has no Overview tab (`hasOverview()`)                                                                       |
+| `contentPanel`           | **ON**  | the pills become the side panel's tabs (Overview │ Sources › Ideas, Clips › Drafts); results in the thread open the panel, it never opens itself         |
+| `multilingualPlaybook`   | OFF     | languages per Playbook, voice per language                                                                                                               |
+| `playbookSharing`        | OFF     | ownership, three scopes, governance, the profile gate; its demo data seeds only under the flag                                                           |
+| `newScheduleModal`       | **ON**  | the redesigned schedule modal; OFF = `schedule-modal-legacy.js`, deleted once the comparison ends                                                        |
+| `draftMentions`          | OFF     | « mention Notion in the LinkedIn post » from the chat (`mention-flow.js`)                                                                                |
+| `uiIdeaCard`             | OFF     | the clearer compact idea card (`renderClearIdeaCard`)                                                                                                    |
+| `interactivePlaybook`    | OFF     | a first-time user with no Playbook lands on the setup run (`/welcome-alt`); OFF, on a new chat                                                           |
+| `newStart4`              | OFF     | a first-time user with no Playbook lands on a chat that introduces Archie (`session/new-start.js`)                                                       |
+| `newChatHero`            | OFF     | a first-time user's new chat (switches to new-alt): pixel field, example requests, New Start's doors; the Playbook card asks the run's steps in the chat |
 
 ## Design System — read first before UI/CSS work
 

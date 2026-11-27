@@ -22,8 +22,8 @@
 // chart the headline measure and leave the others as 96px sparklines in the
 // table, which meant an objective's second measure had no curve anywhere.
 
-import { readingFor } from "../model.js?v=2946";
-import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=2946";
+import { readingFor } from "../model.js?v=2951";
+import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=2951";
 import {
   tierCounts,
   statusPill,
@@ -39,7 +39,7 @@ import {
   figure,
   playbookTitle,
   esc,
-} from "../pieces.js?v=2946";
+} from "../pieces.js?v=2951";
 
 export const id = "cockpit";
 export const label = "Cockpit";

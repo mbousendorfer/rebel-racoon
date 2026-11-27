@@ -4,7 +4,7 @@
 // prompt) render here. The pure, dependency-free turns stay in thread-turns.js.
 // Moved out of session.js, unchanged.
 
-import { sessionPlaybookId } from "../../active-playbook.js?v=2946";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2951";
 import {
   renderExtractingNotice,
   renderSourceIntakeTurn,
@@ -14,26 +14,26 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2946";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2946";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2946";
-import { getTopPost } from "../../top-posts-store.js?v=2946";
-import { getTopicById } from "../../topics-store.js?v=2946";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2946";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2946";
-import { escapeHtml, formatDayLabel, formatTimeOfDay, plural } from "../../utils.js?v=2946";
-import { getIdeas } from "../../library.js?v=2946";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2946";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2946";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2946";
-import { getPlans } from "../../post-plan-store.js?v=2946";
-import { isFlagOn } from "../../feature-flags.js?v=2946";
-import { CURRENT_USER } from "../../org.js?v=2946";
-import { getContextById } from "../../contexts-store.js?v=2946";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2946";
-import { getFocusKey } from "../../components/right-panel.js?v=2946";
-import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2946";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2946";
+} from "./thread-turns.js?v=2951";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2951";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2951";
+import { getTopPost } from "../../top-posts-store.js?v=2951";
+import { getTopicById } from "../../topics-store.js?v=2951";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2951";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2951";
+import { escapeHtml, formatDayLabel, formatTimeOfDay, plural } from "../../utils.js?v=2951";
+import { getIdeas } from "../../library.js?v=2951";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2951";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2951";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2951";
+import { getPlans } from "../../post-plan-store.js?v=2951";
+import { isFlagOn } from "../../feature-flags.js?v=2951";
+import { CURRENT_USER } from "../../org.js?v=2951";
+import { getContextById } from "../../contexts-store.js?v=2951";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2951";
+import { getFocusKey } from "../../components/right-panel.js?v=2951";
+import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2951";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2951";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -227,6 +227,9 @@ function renderTurn(message, sessionId) {
   }
   if (message.role === "assistant" && message.variant === "voice-learned") {
     return renderVoiceLearnedTurn(message);
+  }
+  if (message.role === "assistant" && message.variant === "playbook-learned") {
+    return renderPlaybookLearnedTurn(message);
   }
 
   // Clip extraction — pending spinner pill that flips to a ready card with
@@ -475,6 +478,31 @@ function renderVoiceLearnedTurn(message) {
     text: `Here's what I'd add to your Voice profile for ${label}.
       ${learnedVoiceHtml(ctx, message.network, message.voice, { pending: !message.resolved })}
       ${ask}`,
+  });
+}
+
+// What the Playbook conversation learned (playbook-chat-flow.js, flag
+// newChatHero): the Brand, then the voice, each as a card in Archie's turn —
+// a title, a paragraph, and a few labelled facts (a line, or a short list).
+function renderPlaybookLearnedTurn(message) {
+  const facts = (message.facts || [])
+    .map(
+      (f) => `<div class="pb-learned__fact">
+        <dt>${escapeHtml(f.label)}</dt>
+        <dd>${
+          f.list ? `<ul>${f.list.map((t) => `<li>${escapeHtml(t)}</li>`).join("")}</ul>` : escapeHtml(f.text || "")
+        }</dd>
+      </div>`,
+    )
+    .join("");
+  return renderMessageBubble({
+    role: "assistant",
+    text: `${escapeHtml(message.intro || "")}
+      <div class="pb-learned">
+        <span class="pb-learned__title">${escapeHtml(message.title || "")}</span>
+        ${message.text ? `<p class="pb-learned__text">${escapeHtml(message.text)}</p>` : ""}
+        ${facts ? `<dl class="pb-learned__facts">${facts}</dl>` : ""}
+      </div>`,
   });
 }
 

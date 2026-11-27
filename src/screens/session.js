@@ -1,16 +1,16 @@
-import { escapeAttr as escapeHtmlAttr, escapeHtml, html, raw } from "../utils.js?v=2946";
-import { conceptHint } from "../concepts.js?v=2946";
-import { navigate } from "../router.js?v=2946";
-import { setImageLook } from "../modules/image-studio/index.js?v=2946";
-import { IMAGE_LOOK_CHAT_HANDOFF, startImageLookChat } from "../draft-image-flow.js?v=2946";
-import { answerLearnedVoice, answerVoiceAsk } from "../network-voice-flow.js?v=2946";
-import { renderTopbar } from "../components/topbar.js?v=2946";
-import { connectorDocs } from "../mocks.js?v=2946";
-import { getSessionById, getSessions } from "../sessions-store.js?v=2946";
-import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=2946";
-import { playbookForNewWork } from "../active-playbook.js?v=2946";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=2946";
-import { isNewUser } from "../user-mode.js?v=2946";
+import { escapeAttr as escapeHtmlAttr, escapeHtml, html, raw } from "../utils.js?v=2951";
+import { conceptHint } from "../concepts.js?v=2951";
+import { navigate } from "../router.js?v=2951";
+import { setImageLook } from "../modules/image-studio/index.js?v=2951";
+import { IMAGE_LOOK_CHAT_HANDOFF, startImageLookChat } from "../draft-image-flow.js?v=2951";
+import { answerLearnedVoice, answerVoiceAsk } from "../network-voice-flow.js?v=2951";
+import { renderTopbar } from "../components/topbar.js?v=2951";
+import { connectorDocs } from "../mocks.js?v=2951";
+import { getSessionById, getSessions } from "../sessions-store.js?v=2951";
+import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=2951";
+import { playbookForNewWork } from "../active-playbook.js?v=2951";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=2951";
+import { isNewUser } from "../user-mode.js?v=2951";
 import {
   getThread,
   sendMessage,
@@ -27,41 +27,42 @@ import {
   answerTopPostsWidget,
   toggleTopicsWidgetPick,
   answerTopicsWidget,
-} from "../assistant.js?v=2946";
-import { subscribe as subscribePostPlans } from "../post-plan-store.js?v=2946";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=2946";
-import { getSources, getIdeas } from "../library.js?v=2946";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=2946";
+} from "../assistant.js?v=2951";
+import { subscribe as subscribePostPlans } from "../post-plan-store.js?v=2951";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=2951";
+import { getSources, getIdeas } from "../library.js?v=2951";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=2951";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=2946";
-import { setSubtitleStyle, subscribe as subscribePosts } from "../posts-store.js?v=2946";
-import { executeDraft } from "../draft-flow.js?v=2946";
-import * as topPostsFlow from "../top-posts-flow.js?v=2946";
-import { renderTopPostsBoard } from "../components/top-post-card.js?v=2946";
-import * as sidebarWizard from "../sidebar-wizard.js?v=2946";
-import * as inlineQuestion from "../inline-question.js?v=2946";
-import { onPostImage } from "../components/right-panel/drafts-view.js?v=2946";
-import * as batchStudio from "../batch-studio.js?v=2946";
-import { askConnector } from "../connector-ask.js?v=2946";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=2946";
-import { renderConnectorLogo } from "../connectors-view.js?v=2946";
+} from "../composer-mentions.js?v=2951";
+import { setSubtitleStyle, subscribe as subscribePosts } from "../posts-store.js?v=2951";
+import { executeDraft } from "../draft-flow.js?v=2951";
+import * as topPostsFlow from "../top-posts-flow.js?v=2951";
+import { startPlaybookChat } from "../playbook-chat-flow.js?v=2951";
+import { renderTopPostsBoard } from "../components/top-post-card.js?v=2951";
+import * as sidebarWizard from "../sidebar-wizard.js?v=2951";
+import * as inlineQuestion from "../inline-question.js?v=2951";
+import { onPostImage } from "../components/right-panel/drafts-view.js?v=2951";
+import * as batchStudio from "../batch-studio.js?v=2951";
+import { askConnector } from "../connector-ask.js?v=2951";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=2951";
+import { renderConnectorLogo } from "../connectors-view.js?v=2951";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=2946";
-import { isFlagOn } from "../feature-flags.js?v=2946";
-import { setChatGalleryHost } from "./session/chat-gallery.js?v=2946";
-import * as contextBuilder from "../context-builder.js?v=2946";
-import { renderPicker } from "./_analyse-common.js?v=2946";
-import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=2946";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=2946";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=2946";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=2946";
+} from "../composer-connector.js?v=2951";
+import { isFlagOn } from "../feature-flags.js?v=2951";
+import { setChatGalleryHost } from "./session/chat-gallery.js?v=2951";
+import * as contextBuilder from "../context-builder.js?v=2951";
+import { renderPicker } from "./_analyse-common.js?v=2951";
+import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=2951";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=2951";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=2951";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=2951";
 import {
   classifyFile,
   startFileUpload,
@@ -70,9 +71,9 @@ import {
   subscribeUploads,
   pushScriptedSource,
   completeScriptedSource,
-} from "../sources-stream.js?v=2946";
-import { onFeedbackClick } from "../components/feedback-control.js?v=2946";
-import { showToast } from "../components/toast.js?v=2946";
+} from "../sources-stream.js?v=2951";
+import { onFeedbackClick } from "../components/feedback-control.js?v=2951";
+import { showToast } from "../components/toast.js?v=2951";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -81,31 +82,31 @@ import {
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=2946";
-import { setHandoff, consumeHandoff } from "../handoff.js?v=2946";
-import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=2946";
-import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=2946";
-import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=2946";
-import { openTopicArticle } from "../components/topic-picker-modal.js?v=2946";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2946";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=2946";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=2946";
-import { attachClipsToChat } from "../clips-chat.js?v=2946";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=2946";
-import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=2946";
+} from "../components/right-panel.js?v=2951";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=2951";
+import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=2951";
+import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=2951";
+import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=2951";
+import { openTopicArticle } from "../components/topic-picker-modal.js?v=2951";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2951";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=2951";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=2951";
+import { attachClipsToChat } from "../clips-chat.js?v=2951";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=2951";
+import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=2951";
 import {
   handleBatchFiles,
   renderBatchStudio,
   repaintBatchRest,
   replayBatchSources,
   startBatchChat,
-} from "./session/batch-studio-view.js?v=2946";
+} from "./session/batch-studio-view.js?v=2951";
 import {
   askRepurposeProfiles,
   askSourceUse,
   startIdeaDraft,
   startRepurposeFlow,
-} from "./session/draft-questions.js?v=2946";
+} from "./session/draft-questions.js?v=2951";
 import {
   extractionVerdict,
   extractionWhyOpen,
@@ -113,7 +114,7 @@ import {
   renderThread,
   repaintExtractionCard,
   watchTurnAvatars,
-} from "./session/thread-render.js?v=2946";
+} from "./session/thread-render.js?v=2951";
 import {
   animateBannerIn,
   animateBannerOut,
@@ -125,10 +126,10 @@ import {
   renderComposer,
   renderComposerConnector,
   renderComposerStatus,
-} from "./session/composer.js?v=2946";
-import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=2946";
-import { renderEmptyHero } from "./session/empty-hero.js?v=2946";
-import { routeTypedAsk, askSwitchPostPlan, openPlanInModal } from "./session/drafts-asks.js?v=2946";
+} from "./session/composer.js?v=2951";
+import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=2951";
+import { renderEmptyHero } from "./session/empty-hero.js?v=2951";
+import { routeTypedAsk, askSwitchPostPlan, openPlanInModal } from "./session/drafts-asks.js?v=2951";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
@@ -1077,6 +1078,10 @@ function wireAssistantPanel(root, session, attachedContext) {
   // in place (which would drop the composer). Covers a first user message AND a
   // source landing (Batch-from-a-source / Add-source on a fresh chat).
   let threadStartedSeen = isThreadStarted(getThread(session.id));
+  // A hero → conversation View Transition waiting for its swap (see
+  // refreshAssistantAside): until then the hero stays as it is, so the browser
+  // snapshots it, and the swap renders whatever the chat holds by then.
+  let heroExit = null;
   // Reconcile the single composer status slot (grey in-progress / green ready /
   // none) against the live state, reusing the enter/exit animations. The
   // data-status-key makes per-tick updates cheap and jank-free: same key → no-op
@@ -1132,7 +1137,11 @@ function wireAssistantPanel(root, session, attachedContext) {
   };
   const offThread = subscribe(session.id, (messages) => {
     const thread = getThreadEl();
-    if (thread) {
+    // The thread's first real turn rebuilds the whole aside below (hero →
+    // conversation); repainting the thread first would wipe the hero before the
+    // rebuild could transition from it.
+    const startsNow = !threadStartedSeen && isThreadStarted(messages);
+    if (thread && !startsNow && !heroExit) {
       thread.innerHTML = renderThread(messages, session.id);
       thread.scrollTop = thread.scrollHeight;
     }
@@ -1221,27 +1230,7 @@ function wireAssistantPanel(root, session, attachedContext) {
   const rebindWizardKeyboardIfActive = () => {
     rebindWizardKeyboard(root.querySelector(".session__assistant"), session.id);
   };
-  const refreshAssistantAside = () => {
-    const aside = root.querySelector(".session__assistant");
-    const screen = aside?.parentElement;
-    if (screen) {
-      // Recompute the attached playbook from the live state so a pill the
-      // user picked (which set session.contextId) survives the empty→active
-      // re-render — not the stale value captured when the panel first mounted.
-      const liveQ = readQuery();
-      const liveCtx = liveQ.contextId
-        ? getContextById(liveQ.contextId)
-        : session.contextId
-          ? getContextById(session.contextId)
-          : attachedContext;
-      const fresh = renderAssistantPanel(session, liveCtx);
-      const tmp = document.createElement("div");
-      tmp.innerHTML = fresh;
-      const newAside = tmp.firstElementChild;
-      if (newAside && aside) {
-        screen.replaceChild(newAside, aside);
-      }
-    }
+  const afterAsideSwap = () => {
     rebindWizardKeyboardIfActive();
     // The previous aside was swapped wholesale — re-bind drag/drop on the
     // fresh element. Without this, dropping a file after any wizard
@@ -1254,6 +1243,50 @@ function wireAssistantPanel(root, session, attachedContext) {
     queueMicrotask(() => {
       const wizardChat = root.querySelector("#inlineQuestionChat, .session__assistant-wizard-chat");
       if (wizardChat) wizardChat.scrollTop = wizardChat.scrollHeight;
+    });
+  };
+  const buildAside = () => {
+    // Recompute the attached playbook from the live state so a pill the
+    // user picked (which set session.contextId) survives the empty→active
+    // re-render — not the stale value captured when the panel first mounted.
+    const liveQ = readQuery();
+    const liveCtx = liveQ.contextId
+      ? getContextById(liveQ.contextId)
+      : session.contextId
+        ? getContextById(session.contextId)
+        : attachedContext;
+    const tmp = document.createElement("div");
+    tmp.innerHTML = renderAssistantPanel(session, liveCtx);
+    return tmp.firstElementChild;
+  };
+  const refreshAssistantAside = () => {
+    // A hero exit is pending: its swap renders the latest state, nothing to do.
+    if (heroExit) return;
+    const aside = root.querySelector(".session__assistant");
+    const newAside = aside?.parentElement ? buildAside() : null;
+    if (!newAside) return afterAsideSwap();
+    // Leaving the newChatHero hero for the conversation: a View Transition
+    // glides the composer (or the question card that takes its place) from
+    // the middle of the hero to the foot, and the hero fades out
+    // (view-transition-name archie-composer, session.css; asked 2026-11-27:
+    // « une petite animation sympa de transition pour faire passer le
+    // composer en bas de l'écran et passer en mode conversation »). The
+    // browser snapshots the page at the next frame, so the hero must still be
+    // there then: the swap waits for the transition's callback, and renders
+    // the chat as it is by that time (the first question already asked).
+    const leavesHero =
+      aside.querySelector(".empty-chat--rows") &&
+      !newAside.querySelector(".empty-chat--rows") &&
+      document.startViewTransition &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!leavesHero) {
+      aside.replaceWith(newAside);
+      return afterAsideSwap();
+    }
+    heroExit = document.startViewTransition(() => {
+      heroExit = null;
+      root.querySelector(".session__assistant")?.replaceWith(buildAside());
+      afterAsideSwap();
     });
   };
   // Top-posts board — a filter/sort/selection change only needs the board grid
@@ -1323,7 +1356,7 @@ function wireAssistantPanel(root, session, attachedContext) {
   // accounts question — see open-in-clips.js.
   const fromSpace = attachClipsToChat(session.id);
   if (fromSpace)
-    import("./session/clip-draft-flow.js?v=2946").then(({ startClipDraftFromSpace }) =>
+    import("./session/clip-draft-flow.js?v=2951").then(({ startClipDraftFromSpace }) =>
       setTimeout(() => startClipDraftFromSpace(session.id, fromSpace), 150),
     );
 
@@ -2155,6 +2188,19 @@ function bindSession(root, session) {
             topPostsFlow.startTopPostsInline(session.id);
             return;
           }
+          // The newChatHero's « No Playbook created yet » card: the run's
+          // questions, asked here as question cards (playbook-chat-flow.js).
+          // Saved, the Playbook becomes this chat's, or opens to be fixed.
+          if (action === "create-playbook") {
+            startPlaybookChat(session.id, {
+              onSaved: (ctx, { open } = {}) => {
+                session.contextId = ctx.id;
+                if (open) return navigate(`/playbook/${ctx.id}`);
+                setHashQuery(`/session/${session.id}`, { contextId: ctx.id });
+              },
+            });
+            return;
+          }
           starterUse.set(session.id, "ideas");
           postAssistantMessage(
             session.id,
@@ -2384,7 +2430,7 @@ function bindSession(root, session) {
         // The clips open in the Clips space, the chat keeps them.
         const src = getSources(session.id).find((s) => s.id === openClipsBtn.dataset.clipCardOpen);
         if (src) {
-          import("./clips/open-in-clips.js?v=2946").then(({ openInClips }) => openInClips(session.id, src));
+          import("./clips/open-in-clips.js?v=2951").then(({ openInClips }) => openInClips(session.id, src));
           return;
         }
         openClipsPanel();

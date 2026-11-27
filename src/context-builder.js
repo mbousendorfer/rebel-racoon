@@ -12,20 +12,20 @@
 // objective, contentAction, ctaLinks, language, color, suggestions, editingId,
 // onComplete }.
 
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2946";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2951";
 import {
   analyzeWebsite,
   analyzeSocialProfiles,
   analyzeDocument,
   analyzeBrandFiles,
   analyzeInterview,
-} from "./context-mock-analysis.js?v=2946";
-import { cloneItems, ownNetworkVoices, voiceHasRules } from "./voice-parts.js?v=2946";
-import { markIntroSeen } from "./components/voice-intro-modal.js?v=2946";
-import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2946";
-import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2946";
-import { isFlagOn } from "./feature-flags.js?v=2946";
-import { createSessionNotifier } from "./store-utils.js?v=2946";
+} from "./context-mock-analysis.js?v=2951";
+import { cloneItems, ownNetworkVoices, voiceHasRules } from "./voice-parts.js?v=2951";
+import { markIntroSeen } from "./components/voice-intro-modal.js?v=2951";
+import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2951";
+import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2951";
+import { isFlagOn } from "./feature-flags.js?v=2951";
+import { createSessionNotifier } from "./store-utils.js?v=2951";
 
 const drafts = new Map(); // sessionId → draft
 const notifier = createSessionNotifier("context-builder");

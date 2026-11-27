@@ -14,8 +14,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2946";
-import { navigate } from "../router.js?v=2946";
+import { html, raw, escapeHtml } from "../utils.js?v=2951";
+import { navigate } from "../router.js?v=2951";
 import {
   getDraft,
   patchDraft,
@@ -24,12 +24,12 @@ import {
   writeAltManually,
   analyzeAltInterview,
   setAltVoiceSource,
-} from "../context-builder.js?v=2946";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2946";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2946";
-import { connectors as connectorMocks } from "../mocks.js?v=2946";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2946";
-import { networkIcon } from "../social-profiles.js?v=2946";
+} from "../context-builder.js?v=2951";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2951";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2951";
+import { connectors as connectorMocks } from "../mocks.js?v=2951";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2951";
+import { networkIcon } from "../social-profiles.js?v=2951";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
@@ -74,8 +74,10 @@ const continueButton = (label = "Continue", { disabled = false } = {}) =>
   `<button type="submit" class="ap-button primary blue" data-flow-next ${disabled ? "disabled" : ""}><span>${escapeHtml(label)}</span></button>`;
 
 // ── /welcome-alt/brand ───────────────────────────────────────────────────
+// The run's choices and texts are exported: the new chat's Playbook
+// conversation (playbook-chat-flow.js, flag newChatHero) asks the same steps.
 
-const OTHER_WAYS = [
+export const OTHER_WAYS = [
   {
     value: "interview",
     icon: "ap-icon-single-chat-bubble",
@@ -91,7 +93,7 @@ const OTHER_WAYS = [
   },
 ];
 
-function normalizeUrl(value) {
+export function normalizeUrl(value) {
   const v = String(value || "").trim();
   if (!v) return "";
   return /^https?:\/\//i.test(v) ? v : `https://${v}`;
@@ -341,7 +343,7 @@ export function renderWelcomeAltLanguage(_params, target) {
 // user wrote, or their own words used as written — or Skip, and the voice comes
 // from the website. Each way asks its own follow-up on the same screen.
 
-const VOICE_WAYS = [
+export const VOICE_WAYS = [
   { value: "profile", icon: "ap-icon-user", title: "Learn from an account", desc: "I read its recent posts." },
   {
     value: "document",
@@ -372,7 +374,7 @@ function pickDocument(onFile) {
 // level with the others (2026-11-04, asked: « toutes des cards clickables, pas
 // "use my website" en bas comme action principale »). With no source, a plain
 // Skip in the footer.
-function fallbackFor(sid) {
+export function fallbackFor(sid) {
   const source = getDraft(sid)?.sourceType;
   if (source === "website")
     return { icon: "ap-icon-web", title: "Use my website", desc: "I read how your site talks." };
@@ -521,8 +523,8 @@ export function renderWelcomeAltVoiceFrom(_params, target) {
 
 // Every step lists its choices the same way: one row under another, a title and
 // what it is for. Here, what I'd read in each.
-const DOC_CONNECTORS = ["slite", "notion", "gdrive", "slack"];
-const DOC_READS = {
+export const DOC_CONNECTORS = ["slite", "notion", "gdrive", "slack"];
+export const DOC_READS = {
   slite: "Your brand book and wiki pages",
   notion: "Brand pages and guidelines",
   gdrive: "Brand books, decks, and PDFs",

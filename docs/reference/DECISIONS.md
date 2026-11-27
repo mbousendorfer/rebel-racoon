@@ -196,6 +196,16 @@ connect screen (`/welcome-alt/connect`), a « Where do you post » screen (`/wel
 the Skip dialog (`skip-connect-modal.js`: three guarantees, then « Why not now? »), the review as a stack of
 cards with a per-card « Looks good », and a wall of blocks under a Confirm head.
 
+**One exception, flagged (2026-11-27):** under `newChatHero`, the hero's « No Playbook created yet » card
+makes the Playbook in the chat ([`playbook-chat-flow.js`](../../src/playbook-chat-flow.js)). It is the run,
+not the deleted chat onboarding: the same steps in the same order (`flowSteps()`), the same words
+(`STEP_TEXT`, `OTHER_WAYS`, `VOICE_WAYS`, exported from the run's screens), the same draft and save
+(context-builder), each step asked as a question card (the Quickpicker) instead of a screen, and still no
+accounts step. Everywhere else, New Start's door included, the screens make the Playbook. Asked: « au clic
+sur la card, ça devrait commencer une conversation et poser des questions pour créer le playbook », then
+« les mêmes questions / step que dans "UP-Interactive Playbook: the run first" mais en mode conversation,
+avec des cards de questions comme dans Claude / ChatGPT ».
+
 ⚠️ A surface that merely _lists_ profiles is out of scope on purpose — it renders its empty list.
 But a surface that makes the user _pick_ one must never render an empty picker: that is a silent
 dead end, which is the exact failure this feature removes. Top Posts was gated for that reason after
