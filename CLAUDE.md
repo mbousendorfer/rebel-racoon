@@ -127,6 +127,7 @@ User mode (`user-mode.js`): `"returning"` (populated mocks, default) or `"new-al
 | `newScheduleModal`       | **ON**  | the redesigned schedule modal; OFF = `schedule-modal-legacy.js`, deleted once the comparison ends                                                |
 | `draftMentions`          | OFF     | « mention Notion in the LinkedIn post » from the chat (`mention-flow.js`)                                                                        |
 | `uiIdeaCard`             | OFF     | the clearer compact idea card (`renderClearIdeaCard`)                                                                                            |
+| `interactivePlaybook`    | OFF     | a first-time user with no Playbook lands on the setup run (`/welcome-alt`); OFF, on a new chat                                                   |
 | `newStart4`              | OFF     | a first-time user with no Playbook lands on a chat that introduces Archie (`session/new-start.js`)                                               |
 | `newChatHero`            | OFF     | a first-time user's new chat (turning it on switches to new-alt): grey pixel field, example requests, « No Playbook yet » infobox                |
 

@@ -177,6 +177,22 @@ export const FLAGS = Object.freeze([
       "a user with no Playbook into the setup run. New Start #4, if on, wins.",
   },
   {
+    id: "interactivePlaybook",
+    group: "Onboarding",
+    tip: "A first-time user with no Playbook lands on the setup run (Let's build your Playbook together). Off: on a new chat. Turning it on switches to First-time user.",
+    label: "UP-Interactive Playbook: the run first",
+    // OFF: a first-time user lands on a new chat; the run is opened from its
+    // Create my Playbook links, never forced.
+    default: false,
+    hides:
+      "A first-time user (mode new-alt) with no Playbook: ON, / sends them " +
+      "into the setup run, its intro first (Let's build your Playbook " +
+      "together.). OFF, / lands on a new chat like any user; the run stays " +
+      "the way a Playbook is made, opened from Create my Playbook. Turning " +
+      "it on switches to First-time user. New Start #4 and the new chat's " +
+      "hero, if on, win: their chat introduces the run instead.",
+  },
+  {
     id: "newStart4",
     group: "Onboarding",
     tip: "No hero: the page is already a thread. Archie says hello in a turn typed live, offers the two doors, then example requests, the composer under them, the whole centred.",

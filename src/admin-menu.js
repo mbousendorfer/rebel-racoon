@@ -6,12 +6,12 @@
 // the side-effecting actions wired by the panel's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2938";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2938";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2938";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2938";
-import { getRole, setRole, ORG } from "./org.js?v=2938";
-import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2938";
+import { html, raw, escapeHtml } from "./utils.js?v=2939";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2939";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2939";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2939";
+import { getRole, setRole, ORG } from "./org.js?v=2939";
+import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2939";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
@@ -22,11 +22,13 @@ const ADMIN_ROLE_OPTIONS = [
 
 const ADMIN_MODE_OPTIONS = [
   { value: "returning", label: "Returning user", hint: "Populated mocks (default)" },
-  { value: "new-alt", label: "First-time user", hint: "Empty, starts with the first-time run" },
+  { value: "new-alt", label: "First-time user", hint: "Empty, no Playbook yet" },
 ];
 
 // Switch user mode: persist, land on a coherent screen for the target mode, then
 // full-reload so every store re-seeds. (Lifted from the old settings screen.)
+// First-time lands on / , which picks the run or a new chat (flag
+// interactivePlaybook, dashboard.js).
 export function applyUserMode(target) {
   if (target === getUserMode()) return;
   try {
@@ -36,7 +38,7 @@ export function applyUserMode(target) {
   }
   setUserMode(target);
   if (target === "new-alt" && !window.location.hash.startsWith("#/welcome-alt")) {
-    window.location.hash = "#/welcome-alt";
+    window.location.hash = "#/";
   } else if (target === "returning") {
     const h = window.location.hash;
     if (h.startsWith("#/welcome")) {
@@ -75,10 +77,11 @@ export function networksSummary() {
 }
 
 // Flip a feature flag, then reload so every store / surface re-reads it.
-// New Start and the new chat's hero (newChatHero) are first-time-user
-// screens: turning one on also switches to that mode (empty stores, no
-// Playbook), or the flag would show a populated account instead.
-const FIRST_TIME_FLAGS = (id) => id.startsWith("newStart") || id === "newChatHero";
+// New Start, the new chat's hero (newChatHero) and the run first
+// (interactivePlaybook) are first-time-user screens: turning one on also
+// switches to that mode (empty stores, no Playbook), or the flag would show a
+// populated account instead.
+const FIRST_TIME_FLAGS = (id) => id.startsWith("newStart") || id === "newChatHero" || id === "interactivePlaybook";
 export function toggleFlag(id) {
   const on = !getFlags()[id];
   setFlag(id, on);

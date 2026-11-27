@@ -1,12 +1,13 @@
-import { getSessions } from "../sessions-store.js?v=2938";
-import { getContexts } from "../contexts-store.js?v=2938";
-import { isNewUser } from "../user-mode.js?v=2938";
-import { isFlagOn, isNewStartOn } from "../feature-flags.js?v=2938";
+import { getSessions } from "../sessions-store.js?v=2939";
+import { getContexts } from "../contexts-store.js?v=2939";
+import { isNewUser } from "../user-mode.js?v=2939";
+import { isFlagOn, isNewStartOn } from "../feature-flags.js?v=2939";
 
 // Dashboard route — pure redirect surface.
 //
 // Two branches:
-//   1. First-time onboarding — isNewUser() with no Playbook yet → /welcome-alt.
+//   1. First-time onboarding — isNewUser() with no Playbook yet → /welcome-alt
+//      (flag interactivePlaybook; OFF, they land on a new chat like branch 2).
 //   2. Returning user — most recent session, or /session/new if none.
 //
 // `/` renders nothing of its own, deliberately. This is a tool you come to with
@@ -24,7 +25,14 @@ export function renderDashboard(_params, _target) {
   // Playbook builder).
   // Flag newStart: no run first — the new chat introduces Archie and offers it.
   // Flag newChatHero: the same, the hero's « No Playbook yet » infobox offers it.
-  if (isNewUser() && getContexts().length === 0 && !isNewStartOn() && !isFlagOn("newChatHero")) {
+  // Flag interactivePlaybook OFF: no run forced at all.
+  if (
+    isNewUser() &&
+    getContexts().length === 0 &&
+    isFlagOn("interactivePlaybook") &&
+    !isNewStartOn() &&
+    !isFlagOn("newChatHero")
+  ) {
     window.location.replace(window.location.href.split("#")[0] + "#/welcome-alt");
     return;
   }
