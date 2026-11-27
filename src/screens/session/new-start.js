@@ -21,8 +21,8 @@
 // video door is the clips starter. What is local (the rotation, the typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2941";
-import { escapeHtml } from "../../utils.js?v=2941";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2943";
+import { escapeHtml } from "../../utils.js?v=2943";
 
 const esc = escapeHtml;
 
@@ -94,9 +94,17 @@ const SPARKS = `
             </svg>`;
 const FRAME = `<span class="ns-cut__frame"><svg viewBox="0 0 90 160" preserveAspectRatio="none" aria-hidden="true"><rect x="1.5" y="1.5" width="87" height="157" rx="9" pathLength="100" /></svg></span>`;
 
-function doors() {
+// The two doors — one renderer, two hosts: this page's second turn, and the
+// new chat's hero under the example requests (flag newChatHero, 2026-11-27,
+// asked: « un bloc un peu plus visuel … les 2 blocs du FS New Start #4 … en
+// dessous des prompts suggérés »). `brand: false` drops the Playbook door
+// once there is a Playbook (only the hero has that case).
+export function renderDoors({ brand = true } = {}) {
   return `
       <div class="ns-doors">
+${
+  brand
+    ? `
         <a class="ns-door ns-door--missing" href="#/welcome-alt" data-ns-reveal style="--i: 1">
           ${SKEL.door}
           <!-- The DS status card glued on top (2026-11-27, asked: « une status bar
@@ -124,6 +132,9 @@ function doors() {
           <span class="ns-door__desc">Show me your website or a few files, and I'll learn your voice, your audience, and your look.</span>
           <span class="ap-link standalone ns-door__go">Create my Playbook<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
         </a>
+`
+    : ""
+}
 
         <button type="button" class="ns-door" ${starterAttrs("open-video-clips")} data-ns-reveal style="--i: 2">
           ${SKEL.door}
@@ -180,7 +191,7 @@ export function renderNewStart(composer = "") {
       <span class="ns-turn__gutter" aria-hidden="true"></span>
       <div class="ns-turn__body">
         <p class="ns-say" data-ns-reveal style="--i: 0">${SKEL.line}Here's what I do best. Pick one, or tell me what you need.</p>
-        ${doors()}
+        ${renderDoors()}
       </div>
     </div>
     <div class="ns-turn ns-turn--next" data-ns-next>

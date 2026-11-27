@@ -837,6 +837,12 @@ body.playbook-revoked .session__composer-card {
   text-align: left;
 }
 
+/* New Start's two doors under the requests (renderDoors): the requests'
+   margin already makes the gap. */
+.empty-chat__asks + .ns-doors {
+  margin-top: 0;
+}
+
 /* « Finish your voices »: a DS warning infobox under
    the starters, in the composer's column. */
 .empty-chat__voices {

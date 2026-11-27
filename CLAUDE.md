@@ -129,7 +129,7 @@ User mode (`user-mode.js`): `"returning"` (populated mocks, default) or `"new-al
 | `uiIdeaCard`             | OFF     | the clearer compact idea card (`renderClearIdeaCard`)                                                                                            |
 | `interactivePlaybook`    | OFF     | a first-time user with no Playbook lands on the setup run (`/welcome-alt`); OFF, on a new chat                                                   |
 | `newStart4`              | OFF     | a first-time user with no Playbook lands on a chat that introduces Archie (`session/new-start.js`)                                               |
-| `newChatHero`            | OFF     | a first-time user's new chat (turning it on switches to new-alt): grey pixel field, example requests, « No Playbook yet » infobox                |
+| `newChatHero`            | OFF     | a first-time user's new chat (turning it on switches to new-alt): grey pixel field, example requests, New Start's two doors                      |
 
 ## Design System — read first before UI/CSS work
 

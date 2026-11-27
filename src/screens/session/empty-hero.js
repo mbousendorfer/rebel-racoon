@@ -1,19 +1,19 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2941";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2941";
-import { getContextById, getContexts } from "../../contexts-store.js?v=2941";
-import { renderTopicCard } from "../../components/topic-card.js?v=2941";
-import { findTopicSource } from "../../topics-catalog.js?v=2941";
-import { html, raw } from "../../utils.js?v=2941";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2941";
-import { renderStarterCards } from "../../components/starter-card.js?v=2941";
-import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2941";
-import { voicesToFinish } from "../../voice-parts.js?v=2941";
-import { networkLabel } from "../../social-profiles.js?v=2941";
-import { parseHashParams } from "../../url-state.js?v=2941";
-import { renderAsks, renderNewStart } from "./new-start.js?v=2941";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2943";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2943";
+import { getContextById, getContexts } from "../../contexts-store.js?v=2943";
+import { renderTopicCard } from "../../components/topic-card.js?v=2943";
+import { findTopicSource } from "../../topics-catalog.js?v=2943";
+import { html, raw } from "../../utils.js?v=2943";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2943";
+import { renderStarterCards } from "../../components/starter-card.js?v=2943";
+import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2943";
+import { voicesToFinish } from "../../voice-parts.js?v=2943";
+import { networkLabel } from "../../social-profiles.js?v=2943";
+import { parseHashParams } from "../../url-state.js?v=2943";
+import { renderAsks, renderDoors, renderNewStart } from "./new-start.js?v=2943";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -126,13 +126,14 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
   );
   const videoLabel = firstVideo ? `"${firstVideo.filename}"` : "your video";
   // Flag newChatHero: the same wordmark + sub-line, the composer on the grey
-  // pixel field of the other empty states, New Start's example requests under it. No workflows nor
-  // Topics: both went on 2026-11-27 (asked: « supprimes ça », « pareil, ça vire
-  // ça »).
+  // pixel field of the other empty states, New Start's example requests under
+  // it, then its two doors (the Playbook one only while there is none). No
+  // workflows nor Topics: both went on 2026-11-27 (asked: « supprimes ça »,
+  // « pareil, ça vire ça »).
   if (isFlagOn("newChatHero")) {
     return html`
       <div class="empty-chat empty-chat--rows" data-empty-chat>
-        ${raw(noPlaybookBlock())} ${raw(playbookReadyBlock(session))}
+        ${raw(playbookReadyBlock(session))}
         <span class="empty-chat__logo" role="img" aria-label="Archie">
           <img class="empty-chat__logo-word empty-chat__logo-word--a" src="assets/logos/archie-wordmark.svg" alt="" />
           <img class="empty-chat__logo-mono" src="assets/logos/archie-mono.svg" alt="" />
@@ -149,7 +150,8 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
           <span class="empty-chat__dots" aria-hidden="true"></span>
           ${raw(composerMarkup)}
         </div>
-        ${raw(renderAsks("empty-chat__asks"))} ${raw(finishVoicesRow(session))}
+        ${raw(renderAsks("empty-chat__asks"))} ${raw(renderDoors({ brand: !getContexts().length }))}
+        ${raw(finishVoicesRow(session))}
       </div>
     `;
   }
@@ -206,27 +208,6 @@ function finishVoicesRow(session) {
         <button type="button" class="ap-button stroked grey" data-finish-voices="${ctx.id}" data-finish-voices-net="${nets[0]}">
           <span>${nets.length === 1 ? "Add its voice" : "Add their voices"}</span>
         </button>
-      </div>
-    </div>`;
-}
-
-// No Playbook at all yet (flag newChatHero, 2026-11-27, asked: « un bloc /
-// infobox pour dire aux utilisateurs qu'ils n'ont pas de playbook et qu'il faut
-// en mettre »). At the top, where « Your Playbook is ready » shows once one is
-// made, so it holds above the fold; the DS warning infobox of « Finish your
-// voices »; the promise and the door of New Start's « Sound like your Brand »
-// (the setup run, the one way a Playbook is made).
-function noPlaybookBlock() {
-  if (getContexts().length) return "";
-  return `
-    <div class="ap-infobox warning has-title empty-chat__ready" role="status">
-      <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-      <div class="ap-infobox-content">
-        <div class="ap-infobox-texts">
-          <span class="ap-infobox-title">No Playbook yet</span>
-          <span class="ap-infobox-message">My posts will sound generic. Show me your website or a few files, and I'll learn your voice, your audience, and your look.</span>
-        </div>
-        <a class="ap-button stroked grey" href="#/welcome-alt"><span>Create my Playbook</span></a>
       </div>
     </div>`;
 }
