@@ -277,8 +277,8 @@ export const FLAGS = Object.freeze([
   {
     id: "newStart4",
     group: "Onboarding",
-    tip: "No hero: the page is already a thread. Archie says hello in a turn typed live, offers the two doors, then example requests; the composer at the foot.",
-    label: "UP-New Start #4: Archie opens, composer at the foot",
+    tip: "No hero: the page is already a thread. Archie says hello in a turn typed live, offers the two doors, then example requests, the composer under them, the whole centred.",
+    label: "UP-New Start #4: Archie opens, composer under the turns",
     default: false,
     hides:
       "A first-time user (mode new-alt) with no Playbook lands on a new chat " +

@@ -44,6 +44,12 @@
   background: var(--app-bg);
 }
 
+/* No composer at the foot here: the thread drops the room it keeps for one,
+   so the block centres in the page. */
+.session__assistant-thread:has(> .empty-chat.ns) {
+  padding-bottom: var(--ref-spacing-md);
+}
+
 .empty-chat.ns::before {
   display: none;
 }
@@ -310,6 +316,25 @@
 
 .ns-door__go {
   margin: var(--ref-spacing-xxs) var(--ref-spacing-xxs) 0;
+}
+
+/* « No Playbook yet. »: the DS status card glued on the door's top edge,
+   over its padding, its corners following the door's (16px − the 1px border). */
+.ns-door__status {
+  width: calc(100% + 2 * var(--ref-spacing-xs));
+  min-width: 0;
+  margin: calc(-1 * var(--ref-spacing-xs)) calc(-1 * var(--ref-spacing-xs)) var(--ref-spacing-xxs);
+  border-radius: 15px 15px 0 0;
+}
+
+.ns__composer {
+  margin-top: var(--ref-spacing-md);
+}
+
+/* In the block, the card lines up with the turns (Archie's mark), not inset
+   by the padding it keeps at the foot of a started chat. */
+.ns__composer > .session__composer {
+  padding: 0;
 }
 
 /* Both stages run on one 9s loop, so the two doors breathe together. */
@@ -709,16 +734,17 @@ g:nth-child(3) > .ns-spark {
   }
 }
 
-/* The composer at the foot (session.js renders it there, as in a started
-   chat); the turns sit centred above it, and the requests are my third turn:
-   text, each led by its tone tile, no box. */
-.ns--foot .ns-turn + .ns-turn {
+/* The requests are my third turn: text, each led by its tone tile, no box.
+   The composer comes after them, inside the block, and the whole block is
+   centred in the page (.empty-chat's margin: auto); it was at the foot until
+   2026-11-27. */
+.ns--thread .ns-turn + .ns-turn {
   margin-top: var(--ref-spacing-xs);
 }
 
 /* Air between the doors and « Or ask me something like: » (asked: « plus
    d'espace entre les blocs et les liens, et entre les liens »). */
-.ns--foot .ns-turn + .ns-turn:has(.ns-suggests) {
+.ns--thread .ns-turn + .ns-turn:has(.ns-suggests) {
   margin-top: var(--ref-spacing-lg);
 }
 

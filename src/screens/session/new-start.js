@@ -5,7 +5,9 @@
 // vidéo clipping », then « 1 · Portes vivantes » for the body. #1, #2 (a wall of
 // posts) and #3 (the same thread, composer under it) were deleted; #4 stays:
 // Archie opens the thread — hello (typed live), the doors as his offer, then the
-// example requests as his third turn — with the composer at the foot.
+// example requests as his third turn — then the composer, the whole block
+// centred in the page (2026-11-27, asked: « remonte le champ d'input … que
+// l'ensemble soit plutôt centré verticalement »; it was at the foot).
 //
 // The requests: three at a time, a new set every few seconds, one is always a
 // video. The two doors each play what they do:
@@ -19,8 +21,8 @@
 // video door is the clips starter. What is local (the rotation, the typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2925";
-import { escapeHtml } from "../../utils.js?v=2925";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2926";
+import { escapeHtml } from "../../utils.js?v=2926";
 
 const esc = escapeHtml;
 
@@ -95,8 +97,17 @@ const FRAME = `<span class="ns-cut__frame"><svg viewBox="0 0 90 160" preserveAsp
 function doors() {
   return `
       <div class="ns-doors">
-        <a class="ns-door" href="#/welcome-alt" data-ns-reveal style="--i: 1">
+        <a class="ns-door ns-door--missing" href="#/welcome-alt" data-ns-reveal style="--i: 1">
           ${SKEL.door}
+          <!-- The DS status card glued on top (2026-11-27, asked: « une status bar
+               au dessus de l'invite à créer un playbook, pour
+               signifier qu'il est manquant »): orange = action required. -->
+          <span class="ap-status-card orange ns-door__status">
+            <span class="upper">
+              <i class="ap-icon-warning_fill" aria-hidden="true"></i>
+              <span class="flow"><span>No Playbook yet.</span> My posts will sound generic.</span>
+            </span>
+          </span>
           <span class="ns-door__stage ns-voice" aria-hidden="true">
             <span class="ns-voice__post ns-voice__post--before">
               <span class="ap-status grey no-dot">Without a Playbook</span>
@@ -110,7 +121,7 @@ function doors() {
             ${SPARKS}
           </span>
           <span class="ns-door__title">Sound like your Brand</span>
-          <span class="ns-door__desc">Without a Playbook, my posts stay generic. Show me your website or a few files, and I'll learn your voice, your audience, and your look.</span>
+          <span class="ns-door__desc">Show me your website or a few files, and I'll learn your voice, your audience, and your look.</span>
           <span class="ap-link standalone ns-door__go">Create my Playbook<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
         </a>
 
@@ -159,11 +170,11 @@ const hello = () => `
         </div>
       </div>`;
 
-// The composer sits at the foot (session.js renders it there), the turns
-// centred above it, the requests as my third turn.
-export function renderNewStart() {
+// The turns, the requests as my third turn, then the composer (session.js
+// renders it, it is only placed here).
+export function renderNewStart(composer = "") {
   return `
-  <archie-new-start class="empty-chat ns ns--thread ns--foot" data-empty-chat>
+  <archie-new-start class="empty-chat ns ns--thread" data-empty-chat>
     ${hello()}
     <div class="ns-turn ns-turn--next" data-ns-next>
       <span class="ns-turn__gutter" aria-hidden="true"></span>
@@ -179,6 +190,7 @@ export function renderNewStart() {
         ${SETS.map((s, i) => `<ul class="ns-suggests__set" data-ns-set="${i}"${i ? " hidden" : ""} aria-label="Things you can ask me">${s.map((x, n) => suggestion(x, n)).join("")}</ul>`).join("")}
       </div>
     </div>
+    <div class="ns__composer">${composer}</div>
   </archie-new-start>`;
 }
 
