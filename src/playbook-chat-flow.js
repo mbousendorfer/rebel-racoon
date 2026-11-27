@@ -10,6 +10,11 @@
 // thread (variant `pb-ask`, renderPbAskTurn in thread-render.js): the run's own
 // option rows, URL field and answer box, inside an Archie turn. The composer
 // stays at the foot. Answered, a card folds to its question and the answer.
+// A question that only takes words (the interview, the Brand's name, the voice
+// in your own words) is no card: I ask it as a sentence and the answer is
+// typed in the composer, like any reply (asked: « ça devrait simplement être
+// une phrase dans la conversation, et que l'utilisateur réponde en utilisant
+// le composer »).
 // The Playbook is the run's draft (context-builder.js), keyed by this chat,
 // saved the same way.
 //
@@ -21,11 +26,12 @@ import {
   getThread,
   refreshThread,
   postAssistantMessage,
+  postUserTurn,
   postVoiceTurn,
   startPending,
   updatePending,
   finishPending,
-} from "./assistant.js?v=2957";
+} from "./assistant.js?v=2958";
 import {
   createAltDraft,
   readAltWebsite,
@@ -38,12 +44,12 @@ import {
   getDraft,
   patchDraft,
   save,
-} from "./context-builder.js?v=2957";
-import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2957";
-import { LANGUAGE_OPTIONS } from "./languages.js?v=2957";
-import { connectors as connectorMocks } from "./mocks.js?v=2957";
-import { buildConnectedProfileItems } from "./social-profiles.js?v=2957";
-import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2957";
+} from "./context-builder.js?v=2958";
+import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2958";
+import { LANGUAGE_OPTIONS } from "./languages.js?v=2958";
+import { connectors as connectorMocks } from "./mocks.js?v=2958";
+import { buildConnectedProfileItems } from "./social-profiles.js?v=2958";
+import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2958";
 import {
   OTHER_WAYS,
   VOICE_WAYS,
@@ -51,8 +57,8 @@ import {
   DOC_READS,
   normalizeUrl,
   fallbackFor,
-} from "./screens/welcome-alt-steps.js?v=2957";
-import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2957";
+} from "./screens/welcome-alt-steps.js?v=2958";
+import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2958";
 
 // « 2 of 5 », counted on the run's own steps.
 function stepLabel(step) {
@@ -99,6 +105,7 @@ function settle(sid, id, answer = "") {
 // Back: the current card and the one before it leave the thread; `again`
 // asks the earlier step anew.
 function goBack(run, again) {
+  textWaits.delete(run.sid);
   const drop = [...(run.groups.pop() || []), ...(run.groups.pop() || [])];
   const thread = getThread(run.sid);
   for (const id of drop) {
@@ -150,6 +157,31 @@ export function handlePbAsk(event) {
   else if (act === "skip") h.onSkip?.(id);
   else if (act === "files") card.querySelector("[data-pb-file]")?.click();
   else h.onAct?.(act, id);
+  return true;
+}
+
+// ── Questions in words ────────────────────────────────────────────────────
+// Archie asks in a sentence; the next message typed in the composer is the
+// answer (session.js hands it over through answerPbText before anything else
+// reads it). No card, no Back.
+
+const textWaits = new Map(); // sid → (text) => void
+
+function askText(run, question, onAnswer) {
+  postAssistantMessage(run.sid, question);
+  textWaits.set(run.sid, onAnswer);
+  run.groups.push([getThread(run.sid).at(-1)?.id].filter(Boolean));
+  window.setTimeout(() => document.querySelector("#assistantInput")?.focus({ preventScroll: true }), 60);
+}
+
+/** The composer's message, when a question in words is waiting for it. */
+export function answerPbText(sid, text) {
+  const onAnswer = textWaits.get(sid);
+  if (!onAnswer) return false;
+  textWaits.delete(sid);
+  postUserTurn(sid, text);
+  // A beat before the next line, the way a reply lands.
+  window.setTimeout(() => onAnswer(text), 450);
   return true;
 }
 
@@ -263,8 +295,10 @@ function askFiles(run) {
   );
 }
 
-// The run's interview, a card per question; a vague answer gets one follow-up.
-// Back goes to the question before, or to the website at the first.
+// The run's interview, one sentence per question, answered in the composer;
+// a vague answer gets one follow-up. An optional question takes « skip ».
+const SKIP = /^(skip|pass|no|none|n\/a|nothing)[.!]?$/i;
+
 function askInterview(run) {
   const { sid } = run;
   const step = nextInterviewQuestion(run.turns);
@@ -273,61 +307,26 @@ function askInterview(run) {
     run.source = "interview";
     return next(run, "url");
   }
-  const record = (id, answer, turn) => {
-    settle(sid, id, answer);
-    run.turns.push({ topic: step.topic, question: step.question, ...turn });
+  askText(run, step.optional ? `${step.question} You can skip this one.` : step.question, (text) => {
+    const skipped = step.optional && SKIP.test(text.trim());
+    run.turns.push({
+      topic: step.topic,
+      question: step.question,
+      ...(skipped ? { answer: "", skipped: true } : { answer: text, ...(step.followUp ? { followUp: true } : {}) }),
+    });
     askInterview(run);
-  };
-  ask(
-    run,
-    {
-      kind: "text",
-      title: step.question,
-      subtitle: step.followUp ? "One more detail and I'll have it." : `Question ${run.turns.length + 1}`,
-      step: stepLabel("url"),
-      placeholder: "In your own words…",
-      submitLabel: "Continue",
-      skipLabel: step.optional ? "Skip this question" : "",
-      back: true,
-    },
-    {
-      onText: (text, id) => record(id, text, { answer: text, ...(step.followUp ? { followUp: true } : {}) }),
-      onSkip: (id) => record(id, "Skipped", { answer: "", skipped: true }),
-      onBack: (r) => {
-        if (!r.turns.length) return askWebsite(r);
-        r.turns.pop();
-        askInterview(r);
-      },
-    },
-  );
+  });
 }
 
 // « Fill it in myself »: the name, then the Playbook page is the form.
 function askName(run) {
   const { sid } = run;
-  ask(
-    run,
-    {
-      kind: "text",
-      title: "What's your Brand called?",
-      subtitle: "I'll open an empty Playbook under that name for you to fill in.",
-      step: stepLabel("url"),
-      placeholder: "Your Brand's name",
-      submitLabel: "Continue",
-      short: true,
-      back: true,
-    },
-    {
-      onText: (name, id) => {
-        settle(sid, id, name);
-        writeAltManually(sid);
-        patchDraft(sid, { name });
-        run.source = "manual";
-        next(run, "url");
-      },
-      onBack: askWebsite,
-    },
-  );
+  askText(run, "What's your Brand called? I'll open an empty Playbook under that name for you to fill in.", (name) => {
+    writeAltManually(sid);
+    patchDraft(sid, { name: name.trim() });
+    run.source = "manual";
+    next(run, "url");
+  });
 }
 
 // ── 2 · Language (flag multilingualPlaybook) ───────────────────────────────
@@ -491,26 +490,10 @@ function askVoiceDocument(run) {
 
 function askVoiceWords(run) {
   const { sid } = run;
-  ask(
-    run,
-    {
-      kind: "text",
-      title: "Describe it in your own words",
-      subtitle: "I follow it exactly as you write it.",
-      step: stepLabel("voiceFrom"),
-      placeholder: "e.g. Candid and specific. Short paragraphs, no jargon. Confident but down-to-earth.",
-      submitLabel: "Continue",
-      back: true,
-    },
-    {
-      onText: (text, id) => {
-        settle(sid, id, text);
-        setAltVoiceSource(sid, { kind: "custom", text });
-        next(run, "voiceFrom");
-      },
-      onBack: askVoiceFrom,
-    },
-  );
+  askText(run, "Describe your voice in your own words. I'll follow it exactly as you write it.", (text) => {
+    setAltVoiceSource(sid, { kind: "custom", text: text.trim() });
+    next(run, "voiceFrom");
+  });
 }
 
 // ── 5 · The analysis, if it hasn't landed yet ──────────────────────────────
