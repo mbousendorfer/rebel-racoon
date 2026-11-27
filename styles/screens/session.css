@@ -843,18 +843,101 @@ body.playbook-revoked .session__composer-card {
   margin-top: 0;
 }
 
-/* In the hero the Playbook door is the thing to do first, so its border takes
-   the status card's orange (orange-40); the card stays white (an orange-10
-   fill was too much, 2026-11-27). Hover stays the cards' blue border. New
-   Start keeps its grey border (asked: « cette card devrait être plus
-   infoboxée, ptet le contour en couleur », then « le background orange,
-   c'est too much »). */
-.empty-chat__asks + .ns-doors .ns-door--missing {
-  border-color: var(--ref-color-orange-40);
+/* The hero's warning (heroWarning in empty-hero.js): one slim row in the
+   composer's column — a still post marked with the warning glyph on the
+   status card's orange, what's missing, the way to fix it. The row is the
+   button: hover = blue border, nothing moves. */
+.hero-warning {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  width: 100%;
+  max-width: 740px;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-xs) var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-orange-40);
+  border-radius: 16px;
+  background: var(--ref-color-white);
+  font: inherit;
+  text-align: left;
+  color: var(--ref-color-grey-100);
+  cursor: pointer;
+  transition: border-color var(--ref-animation-short) var(--app-ease-standard);
 }
 
-.empty-chat__asks + .ns-doors .ns-door--missing:hover {
+.hero-warning:is(:hover, :focus-visible) {
+  outline: none;
   border-color: var(--ref-color-electric-blue-100);
+}
+
+.hero-warning:focus-visible {
+  box-shadow: 0 0 0 2px var(--ref-color-electric-blue-100);
+}
+
+/* A post with nothing of the Brand in it: grey lines on a white sheet, the
+   warning glyph on its corner. */
+.hero-warning__art {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 64px;
+  border-radius: 10px;
+  background: var(--ref-color-orange-20);
+}
+
+.hero-warning__post {
+  display: grid;
+  gap: 5px;
+  width: 52px;
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--ref-color-white);
+}
+
+.hero-warning__post b {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ref-color-grey-20);
+}
+
+.hero-warning__post b:last-child {
+  width: 60%;
+}
+
+.hero-warning__badge {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: var(--sys-icon-css-md);
+  color: var(--ref-color-orange-150);
+}
+
+.hero-warning__text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+
+.hero-warning__title {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.hero-warning__desc {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.hero-warning__go {
+  flex: none;
+}
+
+.empty-chat__asks + .hero-warning {
+  margin-bottom: var(--ref-spacing-xs);
 }
 
 /* « Finish your voices »: a DS warning infobox under

@@ -1,19 +1,19 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2963";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2963";
-import { getContextById, getContexts } from "../../contexts-store.js?v=2963";
-import { renderTopicCard } from "../../components/topic-card.js?v=2963";
-import { findTopicSource } from "../../topics-catalog.js?v=2963";
-import { html, raw } from "../../utils.js?v=2963";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2963";
-import { renderStarterCards } from "../../components/starter-card.js?v=2963";
-import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2963";
-import { voicesToFinish } from "../../voice-parts.js?v=2963";
-import { networkLabel } from "../../social-profiles.js?v=2963";
-import { parseHashParams } from "../../url-state.js?v=2963";
-import { renderAsks, renderDoors, renderNewStart } from "./new-start.js?v=2963";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2964";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2964";
+import { getContextById, getContexts } from "../../contexts-store.js?v=2964";
+import { renderTopicCard } from "../../components/topic-card.js?v=2964";
+import { findTopicSource } from "../../topics-catalog.js?v=2964";
+import { html, raw, escapeHtml } from "../../utils.js?v=2964";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2964";
+import { renderStarterCards } from "../../components/starter-card.js?v=2964";
+import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2964";
+import { voicesToFinish } from "../../voice-parts.js?v=2964";
+import { networkLabel } from "../../social-profiles.js?v=2964";
+import { parseHashParams } from "../../url-state.js?v=2964";
+import { renderAsks, renderDoors, renderNewStart } from "./new-start.js?v=2964";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -150,8 +150,7 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
           <span class="empty-chat__dots" aria-hidden="true"></span>
           ${raw(composerMarkup)}
         </div>
-        ${raw(renderAsks("empty-chat__asks"))}
-        ${raw(renderDoors({ brand: !getContexts().length, hero: true, voices: voicesToFinishDoor(session) }))}
+        ${raw(renderAsks("empty-chat__asks"))} ${raw(heroWarning(session))} ${raw(renderDoors({ brand: false }))}
       </div>
     `;
   }
@@ -184,15 +183,49 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
 // finish (2026-10-29, asked: « quand des voice sont incomplètes … un bloc sur la
 // home avec un nudge », then « Un starter de plus »). It goes when they're all
 // done; it opens the Playbook's Voice tab on the first one.
-// The hero's voices door (renderDoors' `voices`): the same networks and the
-// same way in as « Finish your voices » below, as a door beside the clips one.
-function voicesToFinishDoor(session) {
+// What's missing before my drafts can sound like the Brand, in the hero (flag
+// newChatHero): no Playbook yet, or networks still on the default voice. A
+// warning, not a use case (asked 2026-11-27: « cette boite, elle ressemble
+// actuellement à un use case, ça a la même tête que "faire un clip" … comme un
+// warning. Là, la landing est vraiment bruyante »): one slim row, a still
+// picture of a post marked with the warning glyph, what's missing in a line,
+// and the way to fix it — the conversation in this chat. It replaced a door
+// with an animated stage, the clips door's twin.
+function heroWarning(session) {
   const ctx = session?.contextId ? getContextById(session.contextId) : null;
+  if (!getContexts().length) {
+    return warningRow({
+      attrs: `data-starter="create-playbook" data-starter-action="create-playbook" data-starter-prompt="Help me create my Playbook"`,
+      title: "No Playbook created yet",
+      text: "My posts will sound generic until I learn your Brand: your voice, your audience, your look.",
+      go: "Create my Playbook",
+    });
+  }
   const nets = voicesToFinish(ctx);
-  if (!nets.length) return null;
+  if (!nets.length) return "";
   const names = nets.map(networkLabel);
   const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
-  return { ctxId: ctx.id, nets, label: names[0], list, count: nets.length };
+  return warningRow({
+    attrs: `data-starter="finish-voices" data-starter-action="finish-voices" data-starter-prompt="Help me finish my voices" data-voices-ctx="${escapeHtml(ctx.id)}" data-voices-nets="${escapeHtml(nets.join(","))}"`,
+    title: "Finish your voices",
+    text: `${list} still ${nets.length === 1 ? "uses" : "use"} your default voice, so ${nets.length === 1 ? "its" : "their"} drafts may miss what works there.`,
+    go: nets.length === 1 ? "Add its voice" : "Add their voices",
+  });
+}
+
+function warningRow({ attrs, title, text, go }) {
+  return `
+    <button type="button" class="hero-warning" ${attrs}>
+      <span class="hero-warning__art" aria-hidden="true">
+        <span class="hero-warning__post"><b></b><b></b><b></b></span>
+        <i class="ap-icon-warning_fill hero-warning__badge"></i>
+      </span>
+      <span class="hero-warning__text">
+        <span class="hero-warning__title">${escapeHtml(title)}</span>
+        <span class="hero-warning__desc">${escapeHtml(text)}</span>
+      </span>
+      <span class="ap-link standalone hero-warning__go">${escapeHtml(go)}<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
+    </button>`;
 }
 
 function finishVoicesRow(session) {

@@ -21,8 +21,8 @@
 // video door is the clips starter. What is local (the rotation, the typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2963";
-import { escapeHtml } from "../../utils.js?v=2963";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2964";
+import { escapeHtml } from "../../utils.js?v=2964";
 
 const esc = escapeHtml;
 
@@ -97,56 +97,16 @@ const FRAME = `<span class="ns-cut__frame"><svg viewBox="0 0 90 160" preserveAsp
 // The two doors — one renderer, two hosts: this page's second turn, and the
 // new chat's hero under the example requests (flag newChatHero, 2026-11-27,
 // asked: « un bloc un peu plus visuel … les 2 blocs du FS New Start #4 … en
-// dessous des prompts suggérés »). `brand: false` drops the Playbook door
-// once there is a Playbook (only the hero has that case). `hero`: the door is
-// named for what is missing, the status card keeps only the cost (asked:
-// « Sound like your brand devrait plutôt s'appeler "no Playbook created yet" »).
-// `voices` (the hero, once a Playbook exists): { ctxId, nets, label, list,
-// count } — the networks still on the default voice. It takes the Playbook
-// door's place, with the same anatomy: the orange status card on top, a stage
-// that plays the default voice becoming the network's, the way to add them
-// (asked 2026-11-27: « Une fois que j'ai fait mon premier playbook et pas de
-// voix remplies, j'aimerais avoir un bloc de rappel pour les voix, de la même
-// façon que pour le playbook manquant »).
-function voicesDoor(v) {
-  return `
-        <!-- Starts the Voice step in this chat, network after network
-             (finishNetworkVoices, network-voice-flow.js). -->
-        <button type="button" class="ns-door ns-door--missing" data-starter="finish-voices" data-starter-action="finish-voices" data-starter-prompt="Help me finish my voices" data-voices-ctx="${esc(v.ctxId)}" data-voices-nets="${esc(v.nets.join(","))}" data-ns-reveal style="--i: 1">
-          ${SKEL.door}
-          <span class="ap-status-card orange ns-door__status">
-            <span class="upper">
-              <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-              <span class="flow">${esc(v.list)} ${v.count === 1 ? "uses" : "use"} your default voice.</span>
-            </span>
-          </span>
-          <span class="ns-door__stage ns-voice" aria-hidden="true">
-            <span class="ns-voice__post ns-voice__post--before">
-              <span class="ap-status grey no-dot">Default voice</span>
-              <span class="ns-voice__text">Our spring collection is now available. Discover the new pieces on our website today.</span>
-              <span class="ns-voice__sweep"></span>
-            </span>
-            <span class="ns-voice__post ns-voice__post--after">
-              <span class="ap-status green no-dot">${esc(v.label)} voice</span>
-              <span class="ns-voice__text ns-voice__write">Spring just landed. <mark>Six new pieces</mark>, one rule: wear them your way. Which one's yours?</span>
-            </span>
-            ${SPARKS}
-          </span>
-          <span class="ns-door__title">Finish your voices</span>
-          <span class="ns-door__desc">Each network rewards its own way of talking. Give ${v.count === 1 ? "it" : "each one"} a voice and its drafts will fit where they're posted.</span>
-          <span class="ap-link standalone ns-door__go">${v.count === 1 ? "Add its voice" : "Add their voices"}<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
-        </button>`;
-}
-
-export function renderDoors({ brand = true, hero = false, voices = null } = {}) {
+// dessous des prompts suggérés »). The hero shows the clips door only
+// (`brand: false`): what's missing there is a warning row of its own
+// (heroWarning in empty-hero.js), not a door.
+export function renderDoors({ brand = true } = {}) {
   return `
       <div class="ns-doors">
 ${
   brand
     ? `
-        <!-- In the hero the door starts the Playbook conversation in this chat
-             (playbook-chat-flow.js); in New Start it opens the run. -->
-        ${hero ? `<button type="button" class="ns-door ns-door--missing" data-starter="create-playbook" data-starter-action="create-playbook" data-starter-prompt="Help me create my Playbook" data-ns-reveal style="--i: 1">` : `<a class="ns-door ns-door--missing" href="#/welcome-alt" data-ns-reveal style="--i: 1">`}
+        <a class="ns-door ns-door--missing" href="#/welcome-alt" data-ns-reveal style="--i: 1">
           ${SKEL.door}
           <!-- The DS status card glued on top (2026-11-27, asked: « une status bar
                au dessus de l'invite à créer un playbook, pour
@@ -154,7 +114,7 @@ ${
           <span class="ap-status-card orange ns-door__status">
             <span class="upper">
               <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-              <span class="flow">${hero ? "My posts will sound generic." : "<span>No Playbook yet.</span> My posts will sound generic."}</span>
+              <span class="flow"><span>No Playbook yet.</span> My posts will sound generic.</span>
             </span>
           </span>
           <span class="ns-door__stage ns-voice" aria-hidden="true">
@@ -169,14 +129,12 @@ ${
             </span>
             ${SPARKS}
           </span>
-          <span class="ns-door__title">${hero ? "No Playbook created yet" : "Sound like your Brand"}</span>
+          <span class="ns-door__title">Sound like your Brand</span>
           <span class="ns-door__desc">Show me your website or a few files, and I'll learn your voice, your audience, and your look.</span>
           <span class="ap-link standalone ns-door__go">Create my Playbook<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
-        ${hero ? "</button>" : "</a>"}
+        </a>
 `
-    : voices
-      ? voicesDoor(voices)
-      : ""
+    : ""
 }
 
         <button type="button" class="ns-door" ${starterAttrs("open-video-clips")} data-ns-reveal style="--i: 2">
