@@ -8,8 +8,8 @@
 // Suggested values become menthol chips (AI-suggested). Other static
 // option lists come from the brief panel renderer.
 
-import { hostname } from "./utils.js?v=2980";
-import { objectivesInText } from "./objective-measures.js?v=2980";
+import { hostname } from "./utils.js?v=2984";
+import { objectivesInText } from "./objective-measures.js?v=2984";
 
 const AGORAPULSE = {
   name: "Agorapulse",
@@ -553,7 +553,7 @@ export function analyzeBrandFiles(files = []) {
 // word-count heuristic.
 // A turn: { topic, question, answer, skipped?, followUp? }.
 
-export const INTERVIEW_OPENING = "Who are you, and what do you do? It can be a business or just you.";
+const INTERVIEW_OPENING = "Who are you, and what do you do? It can be a business or just you.";
 const MAX_INTERVIEW_ANSWERS = 6;
 
 const INTERVIEW_TOPICS = [

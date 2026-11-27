@@ -1326,12 +1326,6 @@ body.clips-editing .app-content {
   scroll-margin-top: var(--ref-spacing-lg);
 }
 
-@keyframes clips-shimmer {
-  to {
-    transform: translateX(100%);
-  }
-}
-
 /* The Drafts panel's selection slot has nothing to hold here: without it the
    cards line up with the heading above them. */
 .clips-drafts .posts__row-check:empty {

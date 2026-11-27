@@ -1,8 +1,8 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2980";
-import { conceptHint, conceptText } from "../concepts.js?v=2980";
-import { getPath, navigate } from "../router.js?v=2980";
-import { parseHashParams } from "../url-state.js?v=2980";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2980";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2984";
+import { conceptHint, conceptText } from "../concepts.js?v=2984";
+import { getPath, navigate } from "../router.js?v=2984";
+import { parseHashParams } from "../url-state.js?v=2984";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2984";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -18,37 +18,32 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=2980";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2980";
-import { contentCounts } from "./right-panel/overview-view.js?v=2980";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2980";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2980";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2980";
+} from "./right-panel.js?v=2984";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2984";
+import { contentCounts } from "./right-panel/overview-view.js?v=2984";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2984";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2984";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2984";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=2980";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2980";
-import { open as openRenameModal } from "./rename-modal.js?v=2980";
+} from "./conversation-status-card.js?v=2984";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2984";
+import { open as openRenameModal } from "./rename-modal.js?v=2984";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=2980";
-import { isFlagOn } from "../feature-flags.js?v=2980";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2980";
-import { findCadence } from "../topics-catalog.js?v=2980";
-import {
-  getPickerState as getTopPostsState,
-  subscribePicker as subscribeTopPosts,
-  backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=2980";
+} from "../contexts-store.js?v=2984";
+import { isFlagOn } from "../feature-flags.js?v=2984";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2984";
+import { findCadence } from "../topics-catalog.js?v=2984";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2980";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2984";
 
 // Persistent top bar.
 //
@@ -114,39 +109,11 @@ export function renderTopbar(_options = {}) {
         : getPath().startsWith("/insights")
           ? renderInsightsActions()
           : "";
-  // On the repurposing winner board (profile-first mode), the topbar leads with
-  // a "Change profile" back — the app's standard back affordance — in place of
-  // the session title.
   const ownLeft = pageActions && pageActions.path === getPath() ? pageActions.left : "";
-  const left = ownLeft
-    ? ownLeft
-    : back
-      ? renderBack(back)
-      : isTopPostsBoard()
-        ? renderTopPostsBack()
-        : renderTitle(onSession);
+  const left = ownLeft ? ownLeft : back ? renderBack(back) : renderTitle(onSession);
   el.innerHTML = html`
     <div class="app-topbar__left">${raw(left)}</div>
     <div class="app-topbar__right">${raw(rightSide)}</div>
-  `;
-}
-
-// True when the active session is showing the repurposing board (step 2) —
-// i.e. there's a "Change profile" step to go back to.
-function isTopPostsBoard() {
-  if (!isSessionRoute()) return false;
-  const sid = currentSessionId();
-  return !!sid && getTopPostsState(sid)?.stage === "board";
-}
-
-// "‹ Change profile" — same back treatment as the Playbook page, so the
-// repurposing board's back matches every other back in the app.
-function renderTopPostsBack() {
-  return `
-    <button type="button" class="ap-button ghost grey app-topbar__back" data-topbar-topposts-back>
-      <i class="ap-icon-arrow-left" aria-hidden="true"></i>
-      <span>Change account</span>
-    </button>
   `;
 }
 
@@ -271,12 +238,6 @@ export function initTopbar() {
       navigate(backBtn.dataset.topbarBack || "/");
       return;
     }
-    // "Change profile" — back to the repurposing profile chooser (step 1).
-    if (event.target.closest("[data-topbar-topposts-back]")) {
-      const sid = currentSessionId();
-      if (sid) topPostsBackToProfiles(sid);
-      return;
-    }
     // Click the conversation title → open the rename modal for it.
     const renameBtn = event.target.closest("[data-topbar-rename-session]");
     if (renameBtn) {
@@ -374,7 +335,6 @@ export function initTopbar() {
   let unsubscribeSources = null;
   let unsubscribeLibrary = null;
   let unsubscribePosts = null;
-  let unsubscribeTopPosts = null;
   function syncThreadSubscription() {
     const sid = currentSessionId();
     if (sid === lastSessionId) return;
@@ -394,19 +354,12 @@ export function initTopbar() {
       unsubscribePosts();
       unsubscribePosts = null;
     }
-    if (unsubscribeTopPosts) {
-      unsubscribeTopPosts();
-      unsubscribeTopPosts = null;
-    }
     lastSessionId = sid;
     if (sid) {
       unsubscribeThread = subscribeThread(sid, () => renderTopbar());
       unsubscribeSources = subscribeSources(sid, () => renderTopbar());
       unsubscribeLibrary = subscribeLibrary(sid, () => renderTopbar());
       unsubscribePosts = subscribePosts(sid, () => renderTopbar());
-      // Repurposing stage changes (profile → board → back) flip the topbar
-      // between the session title and the "Change profile" back.
-      unsubscribeTopPosts = subscribeTopPosts(sid, () => renderTopbar());
     }
   }
   syncThreadSubscription();

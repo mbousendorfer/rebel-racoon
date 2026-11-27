@@ -4,18 +4,18 @@
 // session.js, unchanged; the mention picker stays there, since bindSession
 // writes its highlight state.
 
-import { isFlagOn } from "../../feature-flags.js?v=2980";
-import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2980";
-import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2980";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2980";
-import { getSources, getIdeas } from "../../library.js?v=2980";
-import { getThread } from "../../assistant.js?v=2980";
-import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2980";
-import { revokedContextFor } from "../../playbook-access.js?v=2980";
-import { getSessionById } from "../../sessions-store.js?v=2980";
-import { getActiveConnector } from "../../composer-connector.js?v=2980";
-import { COMPOSER_DEFAULT_PLACEHOLDER } from "../session.js?v=2980";
-import { renderTopicPickerRow } from "./empty-hero.js?v=2980";
+import { isFlagOn } from "../../feature-flags.js?v=2984";
+import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2984";
+import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2984";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2984";
+import { getSources, getIdeas } from "../../library.js?v=2984";
+import { getThread } from "../../assistant.js?v=2984";
+import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2984";
+import { revokedContextFor } from "../../playbook-access.js?v=2984";
+import { getSessionById } from "../../sessions-store.js?v=2984";
+import { getActiveConnector } from "../../composer-connector.js?v=2984";
+import { COMPOSER_DEFAULT_PLACEHOLDER } from "../session.js?v=2984";
+import { renderTopicPickerRow } from "./empty-hero.js?v=2984";
 
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the

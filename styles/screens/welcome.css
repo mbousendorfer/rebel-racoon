@@ -642,12 +642,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
   }
 }
 
-@keyframes welcome-flow-reveal {
-  40% {
-    transform: scale(1.03);
-  }
-}
-
 @media (max-width: 480px) {
   .welcome-flow__url {
     flex-direction: column;
@@ -1106,10 +1100,10 @@ body:not(.onboarding) .welcome-intro__wordmark {
   border-radius: var(--app-radius-card);
   overflow: hidden;
 }
-.welcome-review__net:not(.is-inert):hover {
+.welcome-review__net:hover {
   border-color: var(--ref-color-electric-blue-100);
 }
-.welcome-review__net[aria-current="true"]:not(.is-inert) {
+.welcome-review__net[aria-current="true"] {
   border-color: var(--ref-color-electric-blue-100);
   background: var(--ref-color-electric-blue-10);
 }
@@ -1127,9 +1121,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
   text-align: left;
   color: inherit;
   cursor: pointer;
-}
-.welcome-review__net.is-inert .welcome-review__net-main {
-  cursor: default;
 }
 .welcome-review__net-main:focus-visible {
   outline: 2px solid var(--ref-color-electric-blue-100);
@@ -1791,15 +1782,6 @@ button.recap__logotile:hover {
   align-self: flex-start;
 }
 
-/* Network mini-badges (icons only) — cards + read-only modal. */
-.recap__refimg-nets {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xxs);
-  font-size: var(--ref-font-size-md);
-  line-height: 1;
-}
-
 /* Base remove × button (also used by the card remove handle). */
 .recap__refimg-remove {
   position: absolute;
@@ -1829,229 +1811,10 @@ button.recap__logotile:hover {
   color: var(--ref-color-grey-80);
 }
 
-/* Compact icon-only network toggles (in the detail modal). */
-.recap__refedit-nets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xxs);
-}
-
-.recap__refedit-net {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border: 1px solid var(--app-border);
-  border-radius: var(--app-radius-md);
-  background: var(--ref-color-white);
-  cursor: pointer;
-  transition:
-    border-color var(--ref-animation-short) var(--app-ease-out),
-    box-shadow var(--ref-animation-short) var(--app-ease-out);
-}
-
-.recap__refedit-net > i {
-  font-size: 18px;
-}
-
-.recap__refedit-net:hover {
-  border-color: var(--ref-color-electric-blue-100);
-}
-
-.recap__refedit-net[aria-pressed="true"] {
-  border-color: var(--ref-color-electric-blue-100);
-  box-shadow: inset 0 0 0 1px var(--ref-color-electric-blue-100);
-}
-
-/* Per-image detail modal — DS .ap-dialog chrome inside a centred backdrop.
-   .app-modal-backdrop already supplies fixed/inset/scrim/z-index; this co-class
-   just centres the dialog. .ap-dialog supplies the card (bg/radius/flex). */
-.recap__refmodal-backdrop {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--ref-spacing-lg);
-}
-
 .recap__refmodal.ap-dialog {
   width: min(760px, 100%);
   max-height: 88vh;
   box-shadow: var(--app-shadow-popover-lg);
-}
-
-/* .ap-dialog is overflow:hidden with a fixed header/footer, so let the content
-   region take the remaining height and scroll. */
-.recap__refmodal-content {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-}
-
-.recap__refmodal-grid {
-  display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
-  gap: var(--ref-spacing-lg);
-}
-
-@media (max-width: 640px) {
-  .recap__refmodal-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-/* Fixed-size preview block — any image (portrait/landscape) fits the same
-   square, letterboxed on the surface rather than stretching the modal. */
-.recap__refmodal-preview {
-  align-self: start;
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: var(--app-radius-md);
-  overflow: hidden;
-  background: var(--ref-color-grey-10);
-}
-
-.recap__refmodal-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-
-.recap__refmodal-panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-lg);
-  min-width: 0;
-}
-
-.recap__refmodal-sec {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-}
-
-.recap__refmodal-sec .ap-textarea-field {
-  width: 100%;
-  min-width: 0;
-}
-
-.recap__refmodal-sec .ap-textarea-field textarea {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Tags — DS .ap-tag chips (removable in edit) + an inline add-input. */
-.recap__reftags {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-}
-
-.recap__reftag-input {
-  min-width: 90px;
-  flex: 1;
-  padding: 2px var(--ref-spacing-xxs);
-  border: 0;
-  background: none;
-  outline: none;
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-}
-
-/* Colours — editable swatches (native picker + × to remove) + add; static dots in read. */
-.recap__refcolors {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-}
-
-.recap__refcolor {
-  position: relative;
-  width: 32px;
-  height: 32px;
-}
-
-.recap__refcolor-input {
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  border: 1px solid var(--app-border);
-  border-radius: var(--app-radius-sm);
-  background: none;
-  cursor: pointer;
-}
-
-.recap__refcolor-input::-webkit-color-swatch-wrapper {
-  padding: 2px;
-}
-
-.recap__refcolor-input::-webkit-color-swatch {
-  border: none;
-  border-radius: 3px;
-}
-
-.recap__refcolor-x {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 16px;
-  height: 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 0;
-  border-radius: var(--app-radius-circle);
-  background: rgb(10 27 51 / 72%);
-  color: var(--ref-color-white);
-  cursor: pointer;
-}
-
-.recap__refcolor-x > i {
-  font-size: 8px;
-}
-
-.recap__refcolor-add {
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px dashed var(--ref-color-grey-20);
-  border-radius: var(--app-radius-sm);
-  background: none;
-  color: var(--ref-color-grey-80);
-  cursor: pointer;
-}
-
-.recap__refcolor-add:hover {
-  border-color: var(--ref-color-electric-blue-100);
-  color: var(--ref-color-electric-blue-100);
-}
-
-.recap__refmodal-dot {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--app-radius-sm);
-  border: 1px solid var(--app-border);
-}
-
-.recap__refmodal-note {
-  margin: 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-80);
-}
-
-.recap__refmodal-empty {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-  font-style: italic;
 }
 
 /* ── Competitors: card grid + per-competitor detail modal ─────────────────

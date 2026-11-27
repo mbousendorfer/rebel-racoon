@@ -1,9 +1,7 @@
 // Clip captions — auto-generated subtitle segments + style presets.
 //
-// Captions are NOT seeded in mocks.js — they're synthesized on demand from a
-// clip's title + summary (the "auto-generated subtitles" narrative) by
-// buildCaptions(). Once a clip has been edited + saved, its captions ride
-// along on the clip object (captions / captionsOn / captionStyle).
+// Captions are NOT seeded in mocks.js. Once a clip has been edited + saved, its
+// captions ride along on the clip object (captions / captionsOn / captionStyle).
 //
 // A caption SEGMENT is { id, start, end, text, emph } where `emph` is a list
 // of [startChar, endChar] ranges into `text` marking emphasized words. The
@@ -14,46 +12,6 @@
 // bag of rendering values, applied by caption-editor.js, not a CSS class. An
 // earlier generation mapped each preset to a `.vc-cap--<id>` class; those classes
 // were never written and that generation is gone.
-
-// Tokenise the clip's headline text into short on-screen caption lines and
-// distribute them evenly across the clip's duration. Deterministic: same clip
-// in → same captions out (no randomness, safe for resume/replays).
-function buildCaptions(clip) {
-  if (!clip) return [];
-  const clipStart = clip.start || 0;
-  const dur = Math.max(1, (clip.end || 0) - clipStart);
-  const raw = [clip.title, clip.summary].filter(Boolean).join(" — ");
-  const words = raw.replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
-  if (!words.length) return [];
-
-  const PER_LINE = 4;
-  const lines = [];
-  for (let i = 0; i < words.length; i += PER_LINE) lines.push(words.slice(i, i + PER_LINE));
-
-  const segDur = dur / lines.length;
-  return lines.map((ws, i) => {
-    const text = ws.join(" ");
-    const start = +(clipStart + i * segDur).toFixed(2);
-    const end = +(clipStart + (i + 1) * segDur).toFixed(2);
-
-    // Seed emphasis on a punchy word every other line — a number or a long
-    // word reads as the "key" word — so the feature is visible out of the box.
-    const emph = [];
-    if (i % 2 === 0) {
-      const wi = ws.findIndex((w) => /\d/.test(w) || w.replace(/[^A-Za-z]/g, "").length >= 7);
-      if (wi >= 0) {
-        let c = 0;
-        for (let k = 0; k < wi; k++) c += ws[k].length + 1;
-        const w = ws[wi];
-        const m = w.match(/[A-Za-z0-9'’-]+/);
-        const lead = m ? w.indexOf(m[0]) : 0;
-        const word = m ? m[0] : w;
-        emph.push([c + lead, c + lead + word.length]);
-      }
-    }
-    return { id: `${clip.id || "clip"}_cap_${i}`, start, end, text, emph };
-  });
-}
 
 /* ════════════════════════════════════════════════════════════════════
  *  RICH CAPTION MODEL — ported from platform-studio's video-editor

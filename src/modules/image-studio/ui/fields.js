@@ -2,7 +2,7 @@
 // .ap-textarea-field, .ap-select, .ap-toggle-container, .ap-tag). Every field carries
 // data-imst-field="<path>" so one delegated listener can write it back.
 
-import { html, raw } from "../lib/html.js?v=2980";
+import { html, raw } from "../lib/html.js?v=2984";
 
 export function field({ label, hint, control, id }) {
   return html`
@@ -96,7 +96,7 @@ export function toggle({ path, checked, label, disabled = false }) {
   `;
 }
 
-/** DS-port range slider (.ap-slider). The filled part follows --fill, kept in sync by syncSlider(). */
+/** DS-port range slider (.ap-slider). The filled part follows --fill, set at render. */
 export function slider({ path, value, min = 0, max = 1, step = 0.05, label, disabled = false }) {
   const fill = ((value - min) / (max - min)) * 100;
   return html`<input
@@ -111,12 +111,6 @@ export function slider({ path, value, min = 0, max = 1, step = 0.05, label, disa
     aria-label="${label}"
     ${disabled ? "disabled" : ""}
   />`;
-}
-
-export function syncSlider(input) {
-  const min = Number(input.min);
-  const max = Number(input.max);
-  input.style.setProperty("--fill", `${((Number(input.value) - min) / (max - min)) * 100}%`);
 }
 
 export function checkbox({ path, checked, label, caption, disabled = false, attrs = "" }) {

@@ -26,10 +26,10 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2980";
-import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER, getReviewer, hasProfileAccess } from "../org.js?v=2980";
-import { profileForNetwork } from "../social-profiles.js?v=2980";
-import { html, raw, escapeText, escapeAttr, formatDayLabel } from "../utils.js?v=2980";
+} from "../modal-coordinator.js?v=2984";
+import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER, getReviewer, hasProfileAccess } from "../org.js?v=2984";
+import { profileForNetwork } from "../social-profiles.js?v=2984";
+import { html, raw, escapeText, escapeAttr, formatDayLabel, fold } from "../utils.js?v=2984";
 
 const MODAL_ID = "assignReview";
 
@@ -40,12 +40,6 @@ let state = emptyState();
 function emptyState() {
   return { posts: [], reviewerId: null, dueAt: null, comment: "", query: "", onConfirm: null };
 }
-
-const fold = (text) =>
-  (text || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "");
 
 // Why this person can't review these drafts — or null. External reviewers
 // approve through a link, with no seat and so no profile gate.

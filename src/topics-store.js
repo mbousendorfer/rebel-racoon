@@ -49,17 +49,10 @@
 //   markUsed(id) / ignoreTopic(id, reason) / unignoreTopic(id)
 //   subscribe(fn)                      → unsubscribe
 
-import { topics as seed } from "./mocks.js?v=2980";
-import { isNewUser } from "./user-mode.js?v=2980";
-import { createNotifier } from "./store-utils.js?v=2980";
-import {
-  DEFAULT_MARKED_IDS,
-  MARKED_STATUS_IDS,
-  LIVE_SOURCE_IDS,
-  TOPIC_STATES,
-  findTopicState,
-  kindOf,
-} from "./topics-catalog.js?v=2980";
+import { topics as seed } from "./mocks.js?v=2984";
+import { isNewUser } from "./user-mode.js?v=2984";
+import { createNotifier } from "./store-utils.js?v=2984";
+import { DEFAULT_MARKED_IDS, LIVE_SOURCE_IDS, TOPIC_STATES, findTopicState, kindOf } from "./topics-catalog.js?v=2984";
 
 const topics = (isNewUser() ? [] : seed).map(cloneTopic);
 
@@ -391,10 +384,6 @@ export function topicTitle(topic) {
 
 function getStatus(topicId) {
   return (triage.get(topicId) || {}).status || "new";
-}
-
-function getIgnoreReason(topicId) {
-  return (triage.get(topicId) || {}).reason || "";
 }
 
 /**

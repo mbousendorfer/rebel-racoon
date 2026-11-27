@@ -87,8 +87,8 @@
 //   skipDisabled      bool    — Skip shown disabled (its label says when it unlocks); Esc → Back
 //   onBack()          fn      — called when ← Back is clicked; if omitted, no back btn
 
-import { chatTurn } from "./screens/_analyse-common.js?v=2980";
-import { createSessionNotifier } from "./store-utils.js?v=2980";
+import { chatTurn } from "./screens/_analyse-common.js?v=2984";
+import { createSessionNotifier } from "./store-utils.js?v=2984";
 
 const states = new Map(); // sessionId → opts
 const sessionNotifier = createSessionNotifier("inline-question");
@@ -162,12 +162,6 @@ export function submitSingle(sessionId) {
   states.delete(sessionId);
   notify(sessionId);
   s.onPick?.(value);
-}
-
-// Single-select mode — the currently highlighted value (or null). Lets the
-// caller render its confirm affordance's enabled/disabled state.
-export function getSelected(sessionId) {
-  return states.get(sessionId)?._selected ?? null;
 }
 
 // Bump a row's count by ±delta, clamped. Works for full stepper pickers and

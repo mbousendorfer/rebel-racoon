@@ -51,16 +51,16 @@ Tous namespacés `--app-*`. Charte : _« prefer DS tokens first; fall back to th
 - **Surfaces** : `--app-bg`, `--app-surface`, `--app-surface-subtle`, `--app-border` (grey-20, TOUT filet ; l'ancien `--app-border-soft` grey-10 y a été fondu), `--app-color-sidebar-bg`, `--app-modal-backdrop`, `--app-thumb-scrim` (dégradé sous un texte posé sur une vignette).
 - **Accent « butter »** (Archie) : `--app-butter` (#f7ffc5, fond pill status), `--app-butter-accent` (#8a9b2e olive, dot).
 - **Logo mark** : `--app-archie-mark` (#ff3c00).
-- **Conversation navy** (brand tertiaire #0A1B33, remplace l'electric-blue dans le thread) : `--app-convo-navy(-deep/-05/-10/-20)`.
+- **Conversation navy** (brand tertiaire #0A1B33, remplace l'electric-blue dans le thread) : `--app-convo-navy(-10)`.
 - **Pas de palette sombre** : ⚠️ la rampe `--app-vc-*` et le périmètre sombre du Clips space ont été retirés le 2026-10-26 — ne pas les ramener. Le Clips space est le DS clair et ses composants ; **seule la vidéo se lit sur un puits noir** (`#000` littéral), et ses calques (cadre de recadrage, zones sûres, boîte de sous-titres) gardent leurs couleurs littérales. Restent faits main, faute de composant DS : la timeline, la rail d'outils de l'éditeur, les glyphes In / Out / Split / Snap / Join et le sélecteur de couleur (swatch natif + hex).
 - **Radius** : `--app-radius-sm/-md/-lg` (alias des `--sys-border-radius-*`), `-button-sm` (6), `-starter` (10), `-card` / `-xl` (12), `-modal` (16), `-pill` (999), `-circle` (50%).
-- **Elevation** : `--app-shadow-subtle/-low/-popover-md/-lg/-drawer-left/-card/-modal/-orange-hover`.
+- **Elevation** : `--app-shadow-subtle/-low/-popover-md/-lg/-drawer-left/-card/-modal`.
 - **Easing** : `--app-ease-out/-bounce/-standard`.
 - **Espacement** : `--app-spacing-micro` (2), le seul pas sous l'échelle DS.
 - **Graphes** (Insights) : `--app-chart-on-track/-at-risk/-off-track/-neutral` (+ `-soft`), `-target`, `-grid`, `-axis`, `-axis-line`, `--app-chart-data-1…10` (voir §3bis).
 - **Mesure** : `--app-content` (1080) — la largeur de contenu de TOUTE page pleine largeur. C'est la mesure de la fiche Playbook (`.recap > *`, welcome.css), adoptée le 2026-09-11 comme référence de l'app à la place de trois caps qui ne s'accordaient pas (1280 catalogue + connectors, 1200 Insights, 1080 fiche). Tout est `border-box`, donc une page qui se padde elle-même plafonne à `calc(var(--app-content) + 2 * <son gutter>)` : ce qu'un lecteur compare d'une page à l'autre, c'est où le CONTENU commence, pas où la gouttière invisible commence. Seule exception, documentée dans son fichier : `/topics`, dont le cap est une SOMME (plafond de la liste + mesure de prose + gaps) et pas un goût. `--app-chat-card` (520) est la largeur d'une carte d'Archie dans le fil.
-- **Chrome** : `--app-topbar-height` (56), `--app-sidebar-width` (260) / `-collapsed` (56), `--app-right-panel-width` (460).
-- **Z-index (centralisé)** : content 5, overlay 10, right-panel 15, modal-backdrop 50, modal 60, modal-stacked-backdrop 70, modal-stacked 71, admin 100.
+- **Chrome** : `--app-topbar-height` (56), `--app-sidebar-width` (260) / `-collapsed` (56). La largeur du panneau droit : [`SHELL-LAYOUT.md`](SHELL-LAYOUT.md).
+- **Z-index (centralisé)** : content 5, overlay 10, modal-backdrop 50, modal 60, modal-stacked 71, admin 100.
 
 ⚠️ **Typo** : aucune taille/poids de police côté app — tout vient des text styles DS (`--sys-text-style-*`). Voir mémoire _ads-figma-text-styles_.
 
