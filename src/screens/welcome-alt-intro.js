@@ -8,11 +8,11 @@
 // this list too), then the review. Right, the scene that teaches what a
 // Playbook changes (welcome-alt-explainer.js).
 
-import { html, raw } from "../utils.js?v=2960";
-import { navigate } from "../router.js?v=2960";
-import { flowSteps, startFlow, STEP_TEXT, tint } from "./welcome-alt-shell.js?v=2960";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2960";
-import { paintExplainer } from "./welcome-alt-explainer.js?v=2960";
+import { html, raw } from "../utils.js?v=2963";
+import { navigate } from "../router.js?v=2963";
+import { flowSteps, startFlow, STEP_TEXT, tint } from "./welcome-alt-shell.js?v=2963";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2963";
+import { paintExplainer } from "./welcome-alt-explainer.js?v=2963";
 
 // What a Playbook holds, shown rather than told: its parts, under their
 // Playbook names, glyphs and tints.

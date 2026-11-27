@@ -74,6 +74,46 @@
   list-style: disc;
 }
 
+/* Suggested answers under a question in words (renderPbSayTurn): the hero's
+   suggestion rows made pressable in the thread — no sheen, regular weight, a
+   light edge, the plane on the one pointed at says a click sends it. */
+.pb-suggests {
+  display: grid;
+  gap: var(--ref-spacing-xxs);
+  margin: var(--ref-spacing-xs) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pb-suggests {
+  justify-items: start;
+}
+
+/* Each answer is a row you can press: white, a grey-20 edge, blue on hover
+   (the interactive colour), like the run's option rows, only lighter. */
+.pb-suggests .ns-suggest {
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-md);
+  background: var(--ref-color-white);
+  transition: border-color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.pb-suggests .ns-suggest:is(:hover, :focus-visible) {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.pb-suggests .ns-suggest__text {
+  animation: none;
+  background: none;
+  color: var(--ref-color-grey-100);
+  font-weight: var(--sys-text-style-body-weight);
+}
+
+.pb-suggests .ns-suggest:is(:hover, :focus-visible) .ns-suggest__text {
+  text-decoration: none;
+}
+
 /* A question card of the Playbook conversation (renderPbAskTurn, flag
    newChatHero): in Archie's turn, the question by weight, « 2 of 5 » beside
    it, then the run's own rows / URL field / answer box (welcome.css). Answered,

@@ -20,13 +20,13 @@
 // list scroll position survives — same rationale as the clip/idea thumbs it
 // replaces.
 
-import { escapeAttr, escapeText } from "../utils.js?v=2960";
-import { showToast } from "./toast.js?v=2960";
-import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2960";
-import { getContextById } from "../contexts-store.js?v=2960";
-import { networkLabel } from "../social-profiles.js?v=2960";
-import { feedbackNetworkVoice } from "../voice-parts.js?v=2960";
-import { openVoiceProposal } from "./voice-proposal-modal.js?v=2960";
+import { escapeAttr, escapeText } from "../utils.js?v=2963";
+import { showToast } from "./toast.js?v=2963";
+import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2963";
+import { getContextById } from "../contexts-store.js?v=2963";
+import { networkLabel } from "../social-profiles.js?v=2963";
+import { feedbackNetworkVoice } from "../voice-parts.js?v=2963";
+import { openVoiceProposal } from "./voice-proposal-modal.js?v=2963";
 
 // "What was off?" reasons per element kind. value = stable key, label = UI.
 const REASONS = {

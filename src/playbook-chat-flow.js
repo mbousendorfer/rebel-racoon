@@ -31,7 +31,7 @@ import {
   startPending,
   updatePending,
   finishPending,
-} from "./assistant.js?v=2960";
+} from "./assistant.js?v=2963";
 import {
   createAltDraft,
   readAltWebsite,
@@ -44,12 +44,12 @@ import {
   getDraft,
   patchDraft,
   save,
-} from "./context-builder.js?v=2960";
-import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2960";
-import { LANGUAGE_OPTIONS } from "./languages.js?v=2960";
-import { connectors as connectorMocks } from "./mocks.js?v=2960";
-import { buildConnectedProfileItems } from "./social-profiles.js?v=2960";
-import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2960";
+} from "./context-builder.js?v=2963";
+import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2963";
+import { LANGUAGE_OPTIONS } from "./languages.js?v=2963";
+import { connectors as connectorMocks } from "./mocks.js?v=2963";
+import { buildConnectedProfileItems } from "./social-profiles.js?v=2963";
+import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2963";
 import {
   OTHER_WAYS,
   VOICE_WAYS,
@@ -57,8 +57,8 @@ import {
   DOC_READS,
   normalizeUrl,
   fallbackFor,
-} from "./screens/welcome-alt-steps.js?v=2960";
-import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2960";
+} from "./screens/welcome-alt-steps.js?v=2963";
+import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2963";
 
 // « 2 of 5 », counted on the run's own steps.
 function stepLabel(step) {
@@ -165,20 +165,42 @@ export function handlePbAsk(event) {
 // answer (session.js hands it over through answerPbText before anything else
 // reads it). No card, no Back.
 
-const textWaits = new Map(); // sid → (text) => void
+// `suggestions` (2026-11-27, asked: « pour chaque question, on pourrait proposer
+// des options "par défaut" que l'utilisateur peut facilement cliquer … un peu
+// de proactivité »): likely answers under the sentence (variant `pb-say`,
+// renderPbSayTurn); a click sends one as the answer, typing still works. They
+// go once the question is answered.
 
-function askText(run, question, onAnswer) {
-  postAssistantMessage(run.sid, question);
-  textWaits.set(run.sid, onAnswer);
-  run.groups.push([getThread(run.sid).at(-1)?.id].filter(Boolean));
+const textWaits = new Map(); // sid → { onAnswer, sayId }
+const sayIds = new Map(); // pb-say turn id → sid
+
+function askText(run, question, onAnswer, suggestions = []) {
+  const sayId = postVoiceTurn(run.sid, "pb-say", { contextId: null, network: null, text: question, suggestions });
+  sayIds.set(sayId, run.sid);
+  textWaits.set(run.sid, { onAnswer, sayId });
+  run.groups.push([sayId]);
   window.setTimeout(() => document.querySelector("#assistantInput")?.focus({ preventScroll: true }), 60);
+}
+
+/** A suggested answer clicked under a question (delegated by session.js). */
+export function handlePbSuggest(event) {
+  const btn = event.target.closest?.("[data-pb-suggest]");
+  if (!btn) return false;
+  const sid = sayIds.get(btn.closest("[data-pb-say]")?.dataset.pbSay);
+  if (!sid) return false;
+  event.preventDefault();
+  answerPbText(sid, btn.dataset.pbSuggest);
+  return true;
 }
 
 /** The composer's message, when a question in words is waiting for it. */
 export function answerPbText(sid, text) {
-  const onAnswer = textWaits.get(sid);
-  if (!onAnswer) return false;
+  const wait = textWaits.get(sid);
+  if (!wait) return false;
   textWaits.delete(sid);
+  const say = getThread(sid).find((m) => m.id === wait.sayId);
+  if (say) say.resolved = true;
+  const onAnswer = wait.onAnswer;
   postUserTurn(sid, text);
   // A beat before the next line, the way a reply lands.
   window.setTimeout(() => onAnswer(text), 450);
@@ -297,7 +319,72 @@ function askFiles(run) {
 
 // The run's interview, one sentence per question, answered in the composer;
 // a vague answer gets one follow-up. An optional question takes « skip ».
-const SKIP = /^(skip|pass|no|none|n\/a|nothing)[.!]?$/i;
+const SKIP = /^(skip( this one)?|pass|no|none|n\/a|nothing)[.!]?$/i;
+
+// Likely answers for each interview topic, [business, person] like the
+// questions themselves, each long enough to pass as specific (a short answer
+// would earn a follow-up). Written for the prototype: a real Archie would draft
+// them from what it already knows. The audience leads with B2B or B2C from
+// what the earlier answers say.
+const SUGGESTED = {
+  who: [
+    [
+      "We're a small local business",
+      "We're a startup building a software product",
+      "We're an agency working for several clients",
+      "I'm a freelancer working on my own",
+    ],
+  ],
+  offer: [
+    [
+      "Products we make and sell online",
+      "Services we deliver to businesses",
+      "Software that saves teams time every week",
+    ],
+    [
+      "My expertise, through consulting and coaching",
+      "Content I create: articles, videos and talks",
+      "Freelance work for clients in my field",
+    ],
+  ],
+  audience: [
+    [
+      "Businesses: managers and their teams (B2B)",
+      "Consumers buying for themselves (B2C)",
+      "Both businesses and individual consumers",
+    ],
+    [
+      "Companies that could hire me (B2B)",
+      "People who follow my work and buy from me (B2C)",
+      "Recruiters and people in my industry",
+    ],
+  ],
+  goals: [
+    ["More people knowing our brand", "Leads and sales from social media", "More bookings and appointments"],
+    ["A bigger following in my field", "New clients for my services", "Finding my next job"],
+  ],
+  cta: [
+    ["Our website's homepage", "Our online shop", "Our booking page", "Skip this one"],
+    ["My portfolio", "My link-in-bio page", "My email or newsletter", "Skip this one"],
+  ],
+  rivals: [["Skip this one"]],
+};
+
+const B2B = /\b(software|saas|agency|consult\w*|b2b|teams?|companies|businesses|clients?|enterprise|startup)\b/i;
+const B2C =
+  /\b(shop|store|bakery|restaurant|caf[eé]|coffee|clothing|fashion|beauty|fitness|gym|consumers?|families|home)\b/i;
+
+function suggestionsFor(step, turns) {
+  const first = turns.find((t) => t.topic === "who" && !t.skipped)?.answer || "";
+  const personal = !/\b(we|we're|our|us)\b/i.test(first) && /\b(i|i'm|i am|my|me)\b/i.test(first);
+  const sets = SUGGESTED[step.topic] || [];
+  let list = [...((personal && sets[1]) || sets[0] || [])];
+  if (step.topic === "audience" && !personal) {
+    const said = turns.map((t) => t.answer || "").join(" ");
+    if (B2C.test(said) && !B2B.test(said)) list = [list[1], list[0], list[2]];
+  }
+  return list.map((label) => ({ label, value: label }));
+}
 
 function askInterview(run) {
   const { sid } = run;
@@ -307,15 +394,20 @@ function askInterview(run) {
     run.source = "interview";
     return next(run, "url");
   }
-  askText(run, step.optional ? `${step.question} You can skip this one.` : step.question, (text) => {
-    const skipped = step.optional && SKIP.test(text.trim());
-    run.turns.push({
-      topic: step.topic,
-      question: step.question,
-      ...(skipped ? { answer: "", skipped: true } : { answer: text, ...(step.followUp ? { followUp: true } : {}) }),
-    });
-    askInterview(run);
-  });
+  askText(
+    run,
+    step.optional ? `${step.question} You can skip this one.` : step.question,
+    (text) => {
+      const skipped = step.optional && SKIP.test(text.trim());
+      run.turns.push({
+        topic: step.topic,
+        question: step.question,
+        ...(skipped ? { answer: "", skipped: true } : { answer: text, ...(step.followUp ? { followUp: true } : {}) }),
+      });
+      askInterview(run);
+    },
+    suggestionsFor(step, run.turns),
+  );
 }
 
 // « Fill it in myself »: the name, then the Playbook page is the form.
@@ -490,10 +582,19 @@ function askVoiceDocument(run) {
 
 function askVoiceWords(run) {
   const { sid } = run;
-  askText(run, "Describe your voice in your own words. I'll follow it exactly as you write it.", (text) => {
-    setAltVoiceSource(sid, { kind: "custom", text: text.trim() });
-    next(run, "voiceFrom");
-  });
+  askText(
+    run,
+    "Describe your voice in your own words. I'll follow it exactly as you write it.",
+    (text) => {
+      setAltVoiceSource(sid, { kind: "custom", text: text.trim() });
+      next(run, "voiceFrom");
+    },
+    [
+      "Warm and direct. Short sentences, no jargon.",
+      "Professional and confident, backed by numbers.",
+      "Playful and casual, a few emojis, never stiff.",
+    ].map((label) => ({ label, value: label })),
+  );
 }
 
 // ── 5 · The analysis, if it hasn't landed yet ──────────────────────────────

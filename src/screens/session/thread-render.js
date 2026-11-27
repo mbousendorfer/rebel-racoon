@@ -4,7 +4,7 @@
 // prompt) render here. The pure, dependency-free turns stay in thread-turns.js.
 // Moved out of session.js, unchanged.
 
-import { sessionPlaybookId } from "../../active-playbook.js?v=2960";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2963";
 import {
   renderExtractingNotice,
   renderSourceIntakeTurn,
@@ -14,26 +14,26 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2960";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2960";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2960";
-import { getTopPost } from "../../top-posts-store.js?v=2960";
-import { getTopicById } from "../../topics-store.js?v=2960";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2960";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2960";
-import { escapeHtml, formatDayLabel, formatTimeOfDay, plural } from "../../utils.js?v=2960";
-import { getIdeas } from "../../library.js?v=2960";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2960";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2960";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2960";
-import { getPlans } from "../../post-plan-store.js?v=2960";
-import { isFlagOn } from "../../feature-flags.js?v=2960";
-import { CURRENT_USER } from "../../org.js?v=2960";
-import { getContextById } from "../../contexts-store.js?v=2960";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2960";
-import { getFocusKey } from "../../components/right-panel.js?v=2960";
-import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2960";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2960";
+} from "./thread-turns.js?v=2963";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2963";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2963";
+import { getTopPost } from "../../top-posts-store.js?v=2963";
+import { getTopicById } from "../../topics-store.js?v=2963";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2963";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2963";
+import { escapeHtml, formatDayLabel, formatTimeOfDay, plural } from "../../utils.js?v=2963";
+import { getIdeas } from "../../library.js?v=2963";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2963";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2963";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2963";
+import { getPlans } from "../../post-plan-store.js?v=2963";
+import { isFlagOn } from "../../feature-flags.js?v=2963";
+import { CURRENT_USER } from "../../org.js?v=2963";
+import { getContextById } from "../../contexts-store.js?v=2963";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2963";
+import { getFocusKey } from "../../components/right-panel.js?v=2963";
+import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2963";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2963";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -233,6 +233,9 @@ function renderTurn(message, sessionId) {
   }
   if (message.role === "assistant" && message.variant === "pb-ask") {
     return renderPbAskTurn(message);
+  }
+  if (message.role === "assistant" && message.variant === "pb-say") {
+    return renderPbSayTurn(message);
   }
 
   // Clip extraction — pending spinner pill that flips to a ready card with
@@ -506,6 +509,31 @@ function renderPlaybookLearnedTurn(message) {
         ${message.text ? `<p class="pb-learned__text">${escapeHtml(message.text)}</p>` : ""}
         ${facts ? `<dl class="pb-learned__facts">${facts}</dl>` : ""}
       </div>`,
+  });
+}
+
+// A question in words of the Playbook conversation (playbook-chat-flow.js):
+// Archie's sentence, then a few likely answers in the hero's suggestion style
+// (.ns-suggest, new-start.css) — a click sends one (handlePbSuggest). Once the
+// question is answered, only the sentence stays.
+function renderPbSayTurn(message) {
+  const e = escapeHtml;
+  const list =
+    !message.resolved && message.suggestions?.length
+      ? `<ul class="ns-suggests__set pb-suggests" aria-label="Suggested answers">${message.suggestions
+          .map(
+            (
+              sug,
+            ) => `<li><button type="button" class="ns-suggest" data-pb-suggest="${e(sug.value)}" title="Send this answer">
+            <span class="ns-suggest__text">${e(sug.label)}</span>
+            <i class="ap-icon-paper-plane ns-suggest__go" aria-hidden="true"></i>
+          </button></li>`,
+          )
+          .join("")}</ul>`
+      : "";
+  return renderMessageBubble({
+    role: "assistant",
+    text: `<div data-pb-say="${e(message.id)}">${e(message.text || "")}${list}</div>`,
   });
 }
 
