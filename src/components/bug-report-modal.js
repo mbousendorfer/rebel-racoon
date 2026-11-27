@@ -17,21 +17,21 @@
 // On submit we simulate a ~1.4s round-trip and flash a success state; the
 // modal then closes itself. Nothing is actually posted.
 
-import { escapeHtml, formatTimeOfDay } from "../utils.js?v=2973";
-import { getSessionById } from "../sessions-store.js?v=2973";
+import { escapeHtml, formatTimeOfDay } from "../utils.js?v=2978";
+import { getSessionById } from "../sessions-store.js?v=2978";
 import {
   requestOpen,
   notifyClose,
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2973";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2973";
+} from "../modal-coordinator.js?v=2978";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2978";
 
 const MODAL_ID = "bugReport";
 
 let backdrop, modal, submitBtn, problemInput, actionInput, problemError;
-let categoriesEl, previewEl, dropzoneFallback, dropzone, fileInput;
+let categoriesEl, previewEl, dropzoneFallback, fileInput;
 let previewImg, fileNameEl, contextBar;
 let selectedCategory = null;
 let screenshotDataUrl = null;
@@ -236,7 +236,6 @@ export function init() {
   categoriesEl = document.getElementById("bugCategories");
   previewEl = document.getElementById("bugScreenshotPreview");
   dropzoneFallback = document.getElementById("bugDropzoneFallback");
-  dropzone = document.getElementById("bugDropzone");
   fileInput = document.getElementById("bugFileInput");
   previewImg = document.getElementById("bugPreviewImg");
   fileNameEl = document.getElementById("bugFileName");

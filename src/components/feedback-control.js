@@ -20,13 +20,13 @@
 // list scroll position survives — same rationale as the clip/idea thumbs it
 // replaces.
 
-import { escapeAttr, escapeText } from "../utils.js?v=2973";
-import { showToast } from "./toast.js?v=2973";
-import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2973";
-import { getContextById } from "../contexts-store.js?v=2973";
-import { networkLabel } from "../social-profiles.js?v=2973";
-import { feedbackNetworkVoice } from "../voice-parts.js?v=2973";
-import { openVoiceProposal } from "./voice-proposal-modal.js?v=2973";
+import { escapeAttr, escapeText } from "../utils.js?v=2978";
+import { showToast } from "./toast.js?v=2978";
+import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2978";
+import { getContextById } from "../contexts-store.js?v=2978";
+import { networkLabel } from "../social-profiles.js?v=2978";
+import { feedbackNetworkVoice } from "../voice-parts.js?v=2978";
+import { openVoiceProposal } from "./voice-proposal-modal.js?v=2978";
 
 // "What was off?" reasons per element kind. value = stable key, label = UI.
 const REASONS = {
@@ -150,7 +150,6 @@ export function onFeedbackClick(event) {
   if (thumb) {
     const targetId = thumb.dataset.fbFor;
     const kind = thumb.dataset.fbKind || "";
-    const noun = NOUN[kind] || "result";
     const rec = setVerdict(targetId, thumb.dataset.fbVerdict, { kind });
     syncThumbs(targetId);
     const panel = findPanel(targetId);

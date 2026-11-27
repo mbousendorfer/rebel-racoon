@@ -642,12 +642,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
   }
 }
 
-@keyframes welcome-flow-reveal {
-  40% {
-    transform: scale(1.03);
-  }
-}
-
 @media (max-width: 480px) {
   .welcome-flow__url {
     flex-direction: column;
@@ -1106,10 +1100,10 @@ body:not(.onboarding) .welcome-intro__wordmark {
   border-radius: var(--app-radius-card);
   overflow: hidden;
 }
-.welcome-review__net:not(.is-inert):hover {
+.welcome-review__net:hover {
   border-color: var(--ref-color-electric-blue-100);
 }
-.welcome-review__net[aria-current="true"]:not(.is-inert) {
+.welcome-review__net[aria-current="true"] {
   border-color: var(--ref-color-electric-blue-100);
   background: var(--ref-color-electric-blue-10);
 }
@@ -1127,9 +1121,6 @@ body:not(.onboarding) .welcome-intro__wordmark {
   text-align: left;
   color: inherit;
   cursor: pointer;
-}
-.welcome-review__net.is-inert .welcome-review__net-main {
-  cursor: default;
 }
 .welcome-review__net-main:focus-visible {
   outline: 2px solid var(--ref-color-electric-blue-100);

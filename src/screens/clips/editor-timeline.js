@@ -39,11 +39,10 @@ import {
   splitTextAt,
   editPoints,
   fmtTC,
-  FRAME_MS,
   MIN_TEXT_MS,
   MIN_CLIP_MS,
   CARD_MS,
-} from "./editor.js?v=2973";
+} from "./editor.js?v=2978";
 import {
   segmentAt,
   moveBoundary,
@@ -53,12 +52,12 @@ import {
   LAYOUTS,
   resolve,
   merge,
-} from "../../clip-framing.js?v=2973";
-import { ratioOf } from "./shared.js?v=2973";
-import * as ce from "../../caption-editor.js?v=2973";
-import { deriveCues } from "../../clip-captions.js?v=2973";
-import { escapeHtml } from "../../utils.js?v=2973";
-import { GLYPH } from "./editor-panels.js?v=2973";
+} from "../../clip-framing.js?v=2978";
+import { ratioOf } from "./shared.js?v=2978";
+import * as ce from "../../caption-editor.js?v=2978";
+import { deriveCues } from "../../clip-captions.js?v=2978";
+import { escapeHtml } from "../../utils.js?v=2978";
+import { GLYPH } from "./editor-panels.js?v=2978";
 
 const RULER_H = 32;
 const FIT_PAD = 40; // px of air each side of the clip when fitted

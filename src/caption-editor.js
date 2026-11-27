@@ -28,7 +28,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock, plural } from "./utils.js?v=2973";
+import { escapeHtml, formatClock, plural } from "./utils.js?v=2978";
 import {
   PRESETS,
   presetById,
@@ -43,7 +43,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=2973";
+} from "./clip-captions.js?v=2978";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -67,7 +67,6 @@ let root = null; // the .cap-ed element inside host
 let mounted = false;
 
 let clip = null;
-let source = null;
 let onChangeCb = null;
 
 let state = null; // CaptionState
@@ -78,7 +77,6 @@ let duration = 1;
 let currentTime = 0;
 let playing = false;
 let rafId = null;
-let lastTs = 0;
 
 let activeTab = "presets";
 let cleanupActive = false; // show filler/pause decorations in the transcript
@@ -666,7 +664,6 @@ function setPlaying(on) {
     else video.pause();
   }
   if (on) {
-    lastTs = 0;
     rafId = requestAnimationFrame(tick);
   } else if (rafId) {
     cancelAnimationFrame(rafId);
@@ -1237,7 +1234,6 @@ export function mount(hostEl, c, src, opts = {}) {
   if (mounted) unmount();
   host = hostEl;
   clip = c;
-  source = src;
   onChangeCb = typeof opts.onChange === "function" ? opts.onChange : null;
   clock = opts.clock || null;
   presetIds = Array.isArray(opts.presetIds) ? opts.presetIds : null;
@@ -1313,7 +1309,6 @@ export function unmount() {
   root = null;
   host = null;
   clip = null;
-  source = null;
   onChangeCb = null;
   clock = null;
   presetIds = null;

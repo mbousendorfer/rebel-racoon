@@ -25,8 +25,8 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2973";
-import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=2973";
+} from "../modal-coordinator.js?v=2978";
+import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=2978";
 import {
   canTransfer,
   isMine,
@@ -35,10 +35,10 @@ import {
   recipientsOf,
   tiedProfile,
   profileBlockFor,
-} from "../playbook-access.js?v=2973";
-import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=2973";
-import { showToast } from "./toast.js?v=2973";
-import { html, raw, escapeHtml } from "../utils.js?v=2973";
+} from "../playbook-access.js?v=2978";
+import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=2978";
+import { showToast } from "./toast.js?v=2978";
+import { html, raw, escapeHtml } from "../utils.js?v=2978";
 
 const MODAL_ID = "sharePlaybook";
 
@@ -56,10 +56,6 @@ let orgAccess = false;
 // swallow what the reader was typing.
 let query = "";
 let transferTo = null;
-// The handover picker's own query. It doubles as the field's value once a
-// teammate is picked, so the field shows the choice instead of an empty box
-// next to an enabled Transfer button.
-let transferQuery = "";
 
 // Search has to ignore accents, or half this org is unreachable by typing:
 // "lea" would miss Léa Mercier and "ines" Inès Ferrand. Folded on both sides —
@@ -846,7 +842,6 @@ export function open({ contextId, onDone = null } = {}) {
   invited = new Set(currentRecipients(ctx));
   query = "";
   transferTo = null;
-  transferQuery = "";
   renderBody();
 
   showOverlay(modal, backdrop);
@@ -867,7 +862,6 @@ function close() {
   activeId = null;
   pendingOnDone = null;
   transferTo = null;
-  transferQuery = "";
   invited = new Set();
   orgAccess = false;
   query = "";

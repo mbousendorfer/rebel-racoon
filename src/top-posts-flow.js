@@ -1,16 +1,13 @@
 // Published-posts repurposing conversational flow orchestrator.
 //
-// Launched from the "Use top performing posts" new-chat starter card
-// (session.js starter click delegation → startTopPostsFlow). Runs inline in
-// the current session's assistant panel so it reads as one continuous
-// conversation.
+// Launched from the composer Add menu and the new-chat starter (session.js →
+// startTopPostsInline). Runs inline in the current session's thread so it reads
+// as one continuous conversation.
 //
 // Arc (mirrors the product spec "select one or more posts → adapt to each
 // connected network → schedule"):
-//   1. startTopPostsFlow  — surface the user's winners (board screen). The user
-//                           filters/sorts, then selects one or more via the
-//                           per-card checkbox + bulk bar (or the per-card
-//                           "Repurpose" shortcut for a single winner).
+//   1. startTopPostsInline — ask the account, the period and the ranking, then
+//                           post the winners widget in the thread.
 //   2. echoRepurposePicks — echo the picked post(s). session.js then drives the
 //                           profile quick-picker (inline-question), the same
 //                           numbered Quickpicker the draft flow uses; the data
@@ -32,10 +29,10 @@ import {
   postUserTurn,
   postUserProfilesTurn,
   reportDraftFailure,
-} from "./assistant.js?v=2973";
-import { getTopPosts, getTopPost } from "./top-posts-store.js?v=2973";
-import { addPostDraft } from "./posts-store.js?v=2973";
-import { addReadySource } from "./sources-stream.js?v=2973";
+} from "./assistant.js?v=2978";
+import { getTopPosts, getTopPost } from "./top-posts-store.js?v=2978";
+import { addPostDraft } from "./posts-store.js?v=2978";
+import { addReadySource } from "./sources-stream.js?v=2978";
 import {
   getConnectedProfiles,
   BRAND_INITIALS,
@@ -45,21 +42,20 @@ import {
   networkMeta,
   normalizeNetwork,
   getConnectedProfileById,
-} from "./social-profiles.js?v=2973";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2973";
-import { requireNetworkVoices } from "./network-voice-flow.js?v=2973";
-import { withPendingChip } from "./draft-flow.js?v=2973";
-import { SORTS, PERIODS } from "./components/top-post-card.js?v=2973";
-import * as inlineQuestion from "./inline-question.js?v=2973";
-import { playbookForNewWork } from "./active-playbook.js?v=2973";
+} from "./social-profiles.js?v=2978";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2978";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2978";
+import { withPendingChip } from "./draft-flow.js?v=2978";
+import { SORTS, PERIODS } from "./components/top-post-card.js?v=2978";
+import * as inlineQuestion from "./inline-question.js?v=2978";
+import { playbookForNewWork } from "./active-playbook.js?v=2978";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;
 // the title flags when the set was clipped.
 const MAX_DRAFTS = 10;
 
-// Simulated "loading this profile's top posts" beat between the profile chooser
-// (step 1) and the winner board.
+// Simulated "loading this profile's top posts" beat before the winners widget.
 const PROFILE_LOAD_MS = 1800;
 
 // The base body a winner is repurposed from — its own published copy. Repurposing
@@ -129,78 +125,9 @@ function repurposeContext(post) {
   };
 }
 
-// ---- Step 1: the winner-selection grid screen -------------------------
-//
-// Step 1 is a visual grid of post cards (a "screen"), not a numbered
-// quick-picker — it takes over the assistant panel the same way Batch / Clip
-// Studio do. session.js checks isPickerActive() in renderAssistantPanel, paints
-// the grid via renderTopPostsPickerScreen, and routes a card / bulk-bar click
-// back to session.js's startRepurposeFlow, which echoes the picks then opens
-// the profiles step.
-const pickerStates = new Map(); // sessionId → { stage, posts, profile, sort, period }
-const pickerSubs = new Map(); // sessionId → Set<fn>
-// The Playbook governing the voice of the repurposed drafts, chosen on step 1's
-// account screen. Kept OUTSIDE pickerStates because step 2 (echoRepurposePicks)
-// clears the picker state, but the choice must survive to executeRepurpose.
+// The Playbook governing the voice of the repurposed drafts, set when the flow
+// starts and read by executeRepurpose.
 const repurposeContexts = new Map(); // sessionId → contextId | null
-
-function notifyPicker(sessionId) {
-  const subs = pickerSubs.get(sessionId);
-  if (subs) for (const fn of subs) fn();
-}
-
-export function isPickerActive(sessionId) {
-  return pickerStates.has(sessionId);
-}
-
-export function getPickerState(sessionId) {
-  return pickerStates.get(sessionId) || null;
-}
-
-export function subscribePicker(sessionId, fn) {
-  if (!pickerSubs.has(sessionId)) pickerSubs.set(sessionId, new Set());
-  pickerSubs.get(sessionId).add(fn);
-  return () => pickerSubs.get(sessionId)?.delete(fn);
-}
-
-// The Playbook chosen on step 1 — its voice governs the repurposed drafts.
-export function getContextId(sessionId) {
-  return repurposeContexts.get(sessionId) || null;
-}
-
-// Pick the Playbook for this repurpose run (step 1's account screen). Notifies
-// so the studio screen repaints the select with the new value.
-export function setContext(sessionId, contextId) {
-  repurposeContexts.set(sessionId, contextId || null);
-  notifyPicker(sessionId);
-}
-
-// Change the active period filter (toolbar chip). "1m" | "3m" | "6m" | "1y".
-export function setPeriod(sessionId, period) {
-  const s = pickerStates.get(sessionId);
-  if (!s || s.period === period) return;
-  s.period = period;
-  notifyPicker(sessionId);
-}
-
-// Leave the grid without picking (Esc / route change cleanup). Clears the
-// inline-question that drives the profile stage too, so both stores reset
-// together (see armProfilePicker).
-export function exitPicker(sessionId) {
-  inlineQuestion.exit(sessionId);
-  repurposeContexts.delete(sessionId);
-  if (!pickerStates.has(sessionId)) return;
-  pickerStates.delete(sessionId);
-  notifyPicker(sessionId);
-}
-
-// Change the active sort (toolbar chip click). Re-renders the board.
-export function setSort(sessionId, sort) {
-  const s = pickerStates.get(sessionId);
-  if (!s || s.sort === sort) return;
-  s.sort = sort;
-  notifyPicker(sessionId);
-}
 
 // Connected social profiles offered on the account picker (step 1). This is what
 // the user picks first — the spec's "select a social profile in the first place".
@@ -211,7 +138,7 @@ export function setSort(sessionId, sort) {
 // picker's onPick resolves it back to an account + network. `search` folds in the
 // brand name so a name query matches an @handle row. No winner count: it isn't
 // known until the chosen profile's posts load.
-export function getProfileChoices() {
+function getProfileChoices() {
   return getConnectedProfiles().map((a) => {
     const net = normalizeNetwork(a.platform);
     return {
@@ -230,8 +157,8 @@ export function getProfileChoices() {
   });
 }
 
-// Shared arming of the account Quickpicker (studio step 1, inline step 1, and the
-// period step's Back all pick the same connected accounts). Rows are keyed by
+// Shared arming of the account Quickpicker (step 1 and the period step's Back
+// pick the same connected accounts). Rows are keyed by
 // account id; onAccount receives the resolved account (or null) + its network
 // slug. A live search box appears once the connected list is long enough that a
 // flat list stops being scannable.
@@ -251,103 +178,11 @@ function accountPickerOpts({ title, subtitle, single = false, onAccount }) {
   };
 }
 
-// Arm the account picker (step 1) as the *exact* in-chat picker component:
-// inlineQuestion.ask() with the connected-profile choices. session.js renders
-// its chrome inside the studio screen (hero + roadmap + Playbook control), and
-// the screen's "Next" button confirms the highlighted account (submitSingle →
-// chooseProfile). Single-select-with-confirm so the account + Playbook choices
-// are validated together in one step rather than the row advancing on click.
-function armProfilePicker(sessionId) {
-  inlineQuestion.ask(
-    sessionId,
-    accountPickerOpts({
-      title: "Pick an account",
-      subtitle: "I'll load its top posts next.",
-      single: true,
-      onAccount: (_account, network) => chooseProfile(sessionId, network),
-    }),
-  );
-}
-
-// Seed the picker at a given stage. Posts are loaded once up front; the board
-// filters them to the active profile ("all" = every winner, the flag-OFF mode).
-function openStage(sessionId, stage, profile = null) {
-  const posts = getTopPosts();
-  if (!posts.length) return;
-  pickerStates.set(sessionId, {
-    stage,
-    posts,
-    profile,
-    sort: "performance",
-    // Widest window by default so the board can surface the full top 20 (the
-    // "Show my 20 top posts" promise); the user narrows it with the filter.
-    period: "1y",
-  });
-  notifyPicker(sessionId);
-}
-
-// Profile chosen on the chooser screen → briefly "load" its top posts, then
-// reveal the board scoped to that profile.
-export function chooseProfile(sessionId, network) {
-  const s = pickerStates.get(sessionId);
-  if (!s) return;
-  s.profile = normalizeNetwork(network);
-  s.stage = "loading";
-  notifyPicker(sessionId);
-  setTimeout(() => {
-    const cur = pickerStates.get(sessionId);
-    if (!cur || cur.stage !== "loading") return; // bailed / re-entered
-    cur.stage = "board";
-    notifyPicker(sessionId);
-  }, PROFILE_LOAD_MS);
-}
-
-// Board → back to the profile chooser (step 1). Resets the profile and filters
-// so the chooser opens clean.
-export function backToProfiles(sessionId) {
-  const s = pickerStates.get(sessionId);
-  if (!s) return;
-  s.stage = "profile";
-  s.profile = null;
-  s.sort = "performance";
-  s.period = "1y";
-  armProfilePicker(sessionId);
-  notifyPicker(sessionId);
-}
-
-export function startTopPostsFlow(sessionId) {
-  if (!getTopPosts().length) {
-    // New-alt users have no published history yet — open the studio on a
-    // dedicated empty state rather than a bare chat line (which reads as a dead
-    // end). session.js paints the "empty" stage; Esc / "Back to chat" exits.
-    pickerStates.set(sessionId, { stage: "empty", posts: [], profile: null, sort: "performance", period: "1y" });
-    notifyPicker(sessionId);
-    return;
-  }
-  // Nothing connected (skipConnectProfiles) → the account picker would have no
-  // rows at all, which reads as a dead end. Ask for the connection first, then
-  // re-enter the flow from the top.
-  if (getConnectedProfiles().length === 0) {
-    requireConnectedProfiles(sessionId, { stepLabel: "Account", onReady: () => startTopPostsFlow(sessionId) });
-    return;
-  }
-  // Pre-select the Playbook the drafts will be written in — the default. Step
-  // 1's account screen lets the user switch it (setContext).
-  repurposeContexts.set(sessionId, playbookForNewWork()?.id || null);
-  // Step 1 is the full-page profile chooser: pick a connected profile → load its
-  // winners → a board scoped to that profile.
-  openStage(sessionId, "profile");
-  armProfilePicker(sessionId);
-}
-
-// ---- Inline (Add-menu) variant ---------------------------------------
+// ---- Entry point ---------------------------------------------------------
 //
-// Launched from the composer Add menu (session.js), this runs the SAME
-// repurpose feature but entirely IN the conversation — never the studio
-// takeover. It asks for the account with the in-chat Quickpicker, then posts an
-// interactive selection widget (assistant.postTopPostsWidget) instead of the
-// full-page board. Once posts are confirmed, session.js hands off to the shared
-// angle → scope → profile steps + executeRepurpose, unchanged.
+// Asks for the account with the in-chat Quickpicker, then posts an interactive
+// selection widget (assistant.postTopPostsWidget). Once posts are confirmed,
+// session.js hands off to the profiles step + executeRepurpose.
 export function startTopPostsInline(sessionId) {
   if (!getTopPosts().length) {
     postAssistantMessage(
@@ -356,13 +191,12 @@ export function startTopPostsInline(sessionId) {
     );
     return;
   }
-  // Same gate as the studio variant: an account picker with no rows is a dead end.
+  // An account picker with no rows is a dead end: connect first.
   if (getConnectedProfiles().length === 0) {
     requireConnectedProfiles(sessionId, { stepLabel: "Account", onReady: () => startTopPostsInline(sessionId) });
     return;
   }
-  // Default the drafts' voice the same way the studio does (parity); the inline
-  // flow keeps it implicit either way to stay short.
+  // The drafts' voice: the Playbook new work goes to, kept implicit to stay short.
   repurposeContexts.set(sessionId, playbookForNewWork()?.id || null);
   postAssistantMessage(sessionId, "Which account should I pull your top posts from?");
   inlineQuestion.ask(
@@ -486,9 +320,7 @@ function presentWinners(sessionId, network, sortKey = "performance", period = "1
 
 // ---- Step 2: echo the pick(s) ----------------------------------------
 //
-// Clears the board grid (it may or may not be up — the Details-modal
-// "Repurpose" path calls in with the grid still active) and echoes every chosen
-// winner as a compact preview card so the picks stay visible in the
+// Echoes every chosen winner as a compact preview card so the picks stay visible in the
 // conversation. Returns the valid post ids so the caller can drive the angle
 // quick-picker; the picker itself lives in session.js (inline-question), which
 // owns the onPick closures the way the draft flow's profile picker does.
@@ -496,11 +328,6 @@ export function echoRepurposePicks(sessionId, postIds, { echo = true } = {}) {
   const ids = (postIds || []).filter(Boolean);
   const posts = ids.map(getTopPost).filter(Boolean);
   if (!posts.length) return [];
-
-  if (pickerStates.has(sessionId)) {
-    pickerStates.delete(sessionId);
-    notifyPicker(sessionId);
-  }
 
   // The inline widget path already shows the picks (a frozen selection card), so
   // it validates ids without posting duplicate compact echoes (`echo: false`).
@@ -530,14 +357,6 @@ export function echoRepurposePicks(sessionId, postIds, { echo = true } = {}) {
 function repurposeSourceNetworks(postIds) {
   const posts = (postIds || []).map(getTopPost).filter(Boolean);
   return [...new Set(posts.map((p) => normalizeNetwork(p.network)).filter((n) => networkMeta(n)))];
-}
-
-// The connected profile account(s) the picked winner(s) already ran on — the
-// "same profile" repurpose target. Top posts are network-level (they don't pin a
-// specific account), so this resolves by matching the source network(s).
-function repurposeSourceProfiles(postIds) {
-  const sourceNets = repurposeSourceNetworks(postIds);
-  return getConnectedProfiles().filter((p) => sourceNets.includes(normalizeNetwork(p.platform)));
 }
 
 // Repurpose-target quick-picker items — the user's CONNECTED SOCIAL PROFILES,

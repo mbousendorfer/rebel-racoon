@@ -177,7 +177,6 @@ src/
       draft-questions.js  — language / profile / repurpose / angle / count / video-intake questions
       empty-hero.js       — a new chat's hero + « Topics to review »
       batch-studio-view.js — the Batch studio's screen and its replay into a chat
-      top-posts-view.js   — the Top posts repurpose screen
       workflow-flow.js    — the "How it works" block both studios share
       wizard-keyboard.js  — keyboard nav (↑↓ / 1–9 / Enter / Esc) for the picker
       clip-draft-flow.js  — "draft from clips" picker (ratio → subtitles → accounts → generate) + clipContext; the only external caller (right-panel) imports THIS, not the whole session screen

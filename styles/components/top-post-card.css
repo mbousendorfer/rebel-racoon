@@ -1,22 +1,8 @@
-/* Top-posts winner-selection board — the milker's most important screen
-   (renderTopPostsBoard in components/top-post-card.js). A sortable, comparison-
-   driven grid of winner cards. Card chrome (border/radius/padding/bg) comes
-   from the DS .ap-card; this file owns the toolbar, layout, the stat block,
-   the relative-performance bar, and interactive states. */
+/* Published posts — the decision card (Insights' linked posts), the echo row and
+   the in-thread winners widget (components/top-post-card.js). Card chrome
+   (border/radius/padding/bg) comes from the DS .ap-card. */
 
-/* Board screen container — top-anchored (override .analyse__chat-inner's
-   bottom-anchoring) and a touch wider than the 720px conversation column so 3
-   compact cards sit side by side. Centred, leaving room on the right for the
-   post-preview panel to slide in. Paired with distinct container classes in
-   session.js that opt the board out of the chat scroll-to-bottom pin. */
-.session__assistant-board-inner {
-  margin: 0 auto;
-  max-width: 980px;
-}
-
-/* The studios' intro header — Top posts and Batch share one frame, Archie
-   badge and title, so each reads as a first-class workflow. */
-.top-posts-intro,
+/* The Batch studio's intro header — Archie badge and title. */
 .batch-studio__intro {
   display: flex;
   flex-direction: column;
@@ -25,7 +11,6 @@
   gap: var(--ref-spacing-xs);
 }
 
-.top-posts-intro__badge,
 .batch-studio__ai-badge {
   display: inline-flex;
   align-items: center;
@@ -39,13 +24,11 @@
   font-weight: var(--sys-text-style-caption-bold-weight);
 }
 
-.top-posts-intro__badge i,
 .batch-studio__ai-badge i {
   font-size: var(--sys-icon-css-xs);
   color: var(--app-archie-mark);
 }
 
-.top-posts-intro__title,
 .batch-studio__title {
   margin: 0;
   font-family: var(--ref-font-family);
@@ -56,119 +39,11 @@
   color: var(--ref-color-grey-100);
 }
 
-.top-posts-intro__sub {
-  margin: 0;
-  max-width: 540px;
-  font-size: var(--sys-text-style-subtitle-size);
-  line-height: var(--sys-text-style-subtitle-line-height);
-  font-weight: var(--sys-text-style-subtitle-weight);
-  color: var(--ref-color-grey-80);
-}
-
-.top-posts-board {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-sm);
-  margin-top: var(--ref-spacing-lg);
-}
-
-/* ── Toolbar (filter ⇄ selection, swapped in place) ──────────────────
-   A single fixed-height slot. In filter mode it holds the count + the Profile,
-   Period and Sort dropdowns; when one or more winners are checked it swaps to
-   the selection actions IN PLACE. A firm min-height + a reserved (transparent)
-   border mean the swap adds no height, so the grid below never shifts. */
-.top-posts-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xs);
-  min-height: 48px;
-  padding: 0 var(--ref-spacing-sm);
-  border: 1px solid transparent;
-  border-radius: var(--ref-border-radius-md);
-}
-
-.top-posts-toolbar__count {
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-150);
-}
-
-/* Filters cluster (Period + Sort dropdowns) on the right of the toolbar. */
-.top-posts-filters {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xs);
-}
-
-/* Compact board dropdown — hug its content (override the DS full-width default)
-   so Period + Sort sit side by side; the dropdown panel stays comfortably wide. */
-.top-posts-select {
-  width: auto;
-}
-
-.top-posts-select > .ap-select-trigger {
-  width: auto;
-  gap: var(--ref-spacing-xxs);
-}
-
-.top-posts-select .ap-select-inline-label {
-  color: var(--sys-text-color-light);
-}
-
-.top-posts-select .ap-select-dropdown {
-  min-width: 200px;
-}
-
-/* ── Account picker (step 1) ─────────────────────────────────────────
-   The first screen reuses the app's numbered Quickpicker (.analyse__options,
-   rendered by renderPicker). This wrapper just centres it under the workflow
-   roadmap and constrains its width so it reads as a focused card, not a
-   full-bleed band, then stacks the keyboard hint bar beneath it. */
-/* Step 1 column — the account card stacked above the shared `.studio-commit`
-   bar (Playbook select + confirm CTA + hint), the same commit component the
-   Batch / Clip studios use. The commit owns its own top spacing (margin +
-   divider), so the wrapper adds no gap of its own. */
-.top-posts-account-picker {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  width: 100%;
-  max-width: 620px;
-  margin: var(--ref-spacing-lg) auto 0;
-}
-
-.top-posts-account-picker .analyse__options {
-  width: 100%;
-}
-
 /* "Source" marker in the repurpose profile picker caption — lifts it out of the
    muted "Network · Kind" prefix so the origin profile reads clearly. */
 .top-posts-source-tag {
   color: var(--ref-color-grey-100);
   font-weight: var(--sys-text-style-body-bold-weight);
-}
-
-/* ── Loading beat (profile → board) ─────────────────────────────────── */
-.top-posts-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-xxl) 0;
-  color: var(--ref-color-grey-80);
-}
-
-.top-posts-loading__label {
-  font-size: var(--sys-text-style-body-size);
-}
-
-/* Board empty-state (chosen profile has no winners in the current window).
-   Wraps the shared renderEmptyState chrome (.session__empty-*); this rule only
-   makes the block span the full grid width — .session__empty owns the layout. */
-.top-posts-empty {
-  grid-column: 1 / -1;
 }
 
 /* ── Grid ───────────────────────────────────────────────────────── */

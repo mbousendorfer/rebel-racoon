@@ -26,11 +26,11 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2973";
-import { getContextById } from "../contexts-store.js?v=2973";
-import { playbookForNewWork } from "../active-playbook.js?v=2973";
-import { isNewUser } from "../user-mode.js?v=2973";
-import { networkLabel, networkIcon, renderAvatar } from "../social-profiles.js?v=2973";
+} from "../modal-coordinator.js?v=2978";
+import { getContextById } from "../contexts-store.js?v=2978";
+import { playbookForNewWork } from "../active-playbook.js?v=2978";
+import { isNewUser } from "../user-mode.js?v=2978";
+import { networkLabel, networkIcon, renderAvatar } from "../social-profiles.js?v=2978";
 import {
   networkVoice,
   voiceNetworks,
@@ -39,7 +39,7 @@ import {
   baseValue,
   voiceItemsHtml,
   voiceNetTagHtml,
-} from "../voice-parts.js?v=2973";
+} from "../voice-parts.js?v=2978";
 import {
   proposeNetworkVoice,
   saveNetworkVoice,
@@ -48,11 +48,11 @@ import {
   voiceChoices,
   learnPhases,
   LEARN_PHASE_MS,
-} from "../network-voice-flow.js?v=2973";
-import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2973";
-import "../archie-pixels.js?v=2973";
-import { navigate } from "../router.js?v=2973";
-import { escapeHtml } from "../utils.js?v=2973";
+} from "../network-voice-flow.js?v=2978";
+import { NETWORK_VOICE_SAMPLE, NETWORK_VOICE_TRAITS } from "../mocks.js?v=2978";
+import "../archie-pixels.js?v=2978";
+import { navigate } from "../router.js?v=2978";
+import { escapeHtml } from "../utils.js?v=2978";
 
 const MODAL_ID = "voice-intro";
 const KEY = "archie-voice-intro-seen";
@@ -315,7 +315,6 @@ const CYCLE_MS = 5200;
 let backdrop, modal, titleEl, subEl, leftEl, actionsEl, stageEl;
 let ctxId = null;
 let learning = false;
-let shown = "brand"; // step 1: the voice on the stage
 let timer = null;
 
 const HTML = `
@@ -442,7 +441,6 @@ function showVoice(net, { manual = false } = {}) {
   if (!ctx || modal.classList.contains("is-stand")) return;
   const base = "brand";
   const voices = [base, ...comparisonNets(ctx)];
-  shown = net;
   const label = (n) => (n === "brand" ? "Default voice" : networkLabel(n));
   leftEl.innerHTML = `
     <ul class="voice-intro__voices" aria-label="Voices">

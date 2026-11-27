@@ -8,21 +8,20 @@
 // The state machine timers live here (not inside the modal) so uploads
 // continue in background after the user closes the modal.
 
-import { newId, prettyUrl } from "./utils.js?v=2973";
-import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=2973";
-import { isFlagOn } from "./feature-flags.js?v=2973";
-import { isNewUser } from "./user-mode.js?v=2973";
-import { createNotifier } from "./store-utils.js?v=2973";
-import { detectUrlService } from "./url-services.js?v=2973";
-import { showToast } from "./components/toast.js?v=2973";
+import { newId, prettyUrl } from "./utils.js?v=2978";
+import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=2978";
+import { isNewUser } from "./user-mode.js?v=2978";
+import { createNotifier } from "./store-utils.js?v=2978";
+import { detectUrlService } from "./url-services.js?v=2978";
+import { showToast } from "./components/toast.js?v=2978";
 import {
   getVideo,
   importFromSource,
   chatClipOf,
   syncClipsFromChat,
   subscribe as subscribeVideos,
-} from "./videos-store.js?v=2973";
-import { sessionPlaybookId } from "./active-playbook.js?v=2973";
+} from "./videos-store.js?v=2978";
+import { sessionPlaybookId } from "./active-playbook.js?v=2978";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.

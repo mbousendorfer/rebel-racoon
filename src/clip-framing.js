@@ -19,7 +19,7 @@
 //               one: {cx, cy, zoom}, two: {top: {cx, cy, zoom}, bottom},
 //               auto, camera }
 
-export const MIN_SEG_MS = 500;
+const MIN_SEG_MS = 500;
 const SNAP_MS = 300;
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));

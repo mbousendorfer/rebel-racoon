@@ -2,14 +2,14 @@
 // editor share: time formatting, the video-wide options (format, subtitles),
 // and the live reframed previews.
 
-import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2973";
-import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2973";
-import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2973";
-import { escapeHtml } from "../../utils.js?v=2973";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2973";
-import { showToast } from "../../components/toast.js?v=2973";
-import { navigate } from "../../router.js?v=2973";
-import { getVideo, getVideos, removeVideo, subscribe as subscribeVideos } from "../../videos-store.js?v=2973";
+import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2978";
+import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2978";
+import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2978";
+import { escapeHtml } from "../../utils.js?v=2978";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2978";
+import { showToast } from "../../components/toast.js?v=2978";
+import { navigate } from "../../router.js?v=2978";
+import { getVideo, getVideos, removeVideo, subscribe as subscribeVideos } from "../../videos-store.js?v=2978";
 
 // A footage well shows a loading sheen until its first frame is in (clips.css,
 // `:not(.is-ready)`): every well is marked here, once, from the media events
@@ -50,12 +50,6 @@ export function fmtMs(ms) {
   const m = Math.floor((s % 3600) / 60);
   const ss = String(s % 60).padStart(2, "0");
   return h ? `${h}:${String(m).padStart(2, "0")}:${ss}` : `${m}:${ss}`;
-}
-
-// A precise playhead: m:ss.d
-export function fmtPrecise(ms) {
-  const t = Math.max(0, ms || 0) / 1000;
-  return `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, "0")}`;
 }
 
 // The five ratios prod renders (set_clip_options), in the order creators read them.

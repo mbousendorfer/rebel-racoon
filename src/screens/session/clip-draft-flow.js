@@ -14,15 +14,15 @@
 // right panel (the only external caller) imports just this flow instead of the
 // whole screen.
 
-import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2973";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2973";
+import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2978";
+import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2978";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "../../social-profiles.js?v=2973";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2973";
-import { requireNetworkVoices } from "../../network-voice-flow.js?v=2973";
+} from "../../social-profiles.js?v=2978";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2978";
+import { requireNetworkVoices } from "../../network-voice-flow.js?v=2978";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -33,9 +33,9 @@ import {
   startPending,
   finishPending,
   GENERATION_TOOLS,
-} from "../../assistant.js?v=2973";
-import * as inlineQuestion from "../../inline-question.js?v=2973";
-import { addPostDraft } from "../../posts-store.js?v=2973";
+} from "../../assistant.js?v=2978";
+import * as inlineQuestion from "../../inline-question.js?v=2978";
+import { addPostDraft } from "../../posts-store.js?v=2978";
 
 // The generationContext a clip-derived draft carries — the "why this draft
 // exists" header shown on the post card.

@@ -1,29 +1,21 @@
-// top-post-card — the milker's winner-selection board (top-posts-flow.js →
-// renderTopPostsPickerScreen in session.js). This is the most important screen
-// of the feature: the user has to confidently pick which winner to build on,
-// so it's built for comparison, not just display.
+// top-post-card — how a published post is shown: the decision card (Insights'
+// linked posts), the echo row (a picked post in the thread, Sources), and the
+// in-thread winners widget (top-posts-flow.js). Pure render, no module state.
 //
-//   renderTopPostsBoard({ posts, sort }) → sort toolbar + responsive card grid
-//   renderTopPostCard(post, { selected }) → one decision card
-//
-// Each card leads with the decision metric (×-vs-average, big), backed by a
-// relative-performance bar (sorted descending, value labels always visible),
-// engagement rate and reach, recency, topic, and the percentile badge. Pure
-// render; no module-local state (the active sort lives in top-posts-flow's
-// picker state).
+//   renderTopPostCard(post, { … }) → one decision card
+//   renderPostEchoRow / renderTopPostEcho → one quoted post
+//   renderTopPostsWidget({ … }) → the single-select winners widget
 
-import { compactNumber, html, raw } from "../utils.js?v=2973";
+import { compactNumber, html, raw } from "../utils.js?v=2978";
 import {
   profileForNetwork,
   NETWORK_ICON_BY_PLATFORM,
   BRAND_INITIALS,
   networkLabel,
   networkMeta,
-} from "../social-profiles.js?v=2973";
-import { renderEmptyState } from "./empty-state.js?v=2973";
+} from "../social-profiles.js?v=2978";
 
-// Sort options for the toolbar. `key` matches data-top-post-sort + the picker
-// state; `compare` sorts descending by the decision-useful value (recent sorts
+// Ranking criteria the flow asks for (askRankCriterion). `compare` sorts descending by the decision-useful value (recent sorts
 // ascending by age). Always sorted so the strongest option for that lens is
 // first (chart guidance: rank descending by value).
 export const SORTS = [
@@ -32,7 +24,7 @@ export const SORTS = [
   { key: "impressions", label: "Impressions", compare: (a, b) => b.impressions - a.impressions },
 ];
 
-// Period filter — narrow the board to a recency window (spec: "filter by
+// Period filter — narrow the winners to a recency window (spec: "filter by
 // metrics"). `maxDays` is the inclusive age ceiling in days. Matched against each
 // post's `daysAgo`. Default window is the first entry (last month).
 export const PERIODS = [
@@ -41,42 +33,6 @@ export const PERIODS = [
   { key: "6m", label: "Last 6 months", maxDays: 180 },
   { key: "1y", label: "Last year", maxDays: 365 },
 ];
-
-// How many winners the board surfaces — the "Show my 20 top posts" promise.
-// The board caps its sorted list at this; the CTA copy uses it too.
-export const TOP_POSTS_LIMIT = 20;
-
-// One compact DS .ap-select (a native <details> dropdown) for a filter axis —
-// Period or Sort. Collapsing the old chip rows into two dropdowns keeps the
-// toolbar to a single tidy line. Options carry the same data-* hooks the chips
-// did (data-top-post-period / -sort), so the session delegation is unchanged;
-// picking one re-renders the board, which closes the <details>.
-function renderFilterSelect({ dataAttr, label, active, options }) {
-  const opts = options
-    .map((o) => {
-      const on = o.key === active.key;
-      return `<div
-          class="ap-select-option${on ? " selected" : ""}"
-          ${dataAttr}="${o.key}"
-          role="option"
-          aria-selected="${on ? "true" : "false"}"
-        >
-          <span class="ap-select-option-text">${o.label}</span>
-          ${on ? `<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}
-        </div>`;
-    })
-    .join("");
-  return `<details class="ap-select top-posts-select">
-      <summary class="ap-select-trigger">
-        <span class="ap-select-inline-label">${label}</span>
-        <span class="ap-select-value">${active.label}</span>
-        <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-      </summary>
-      <div class="ap-select-dropdown" role="listbox" aria-label="${label}">
-        <div class="ap-select-options">${opts}</div>
-      </div>
-    </details>`;
-}
 
 function iconFor(network) {
   return networkMeta(network)?.icon || "ap-icon-share";
@@ -173,32 +129,20 @@ function soloSizeTier(text) {
 }
 
 /**
- * ONE post, as the winners board draws it — and now as Insights draws the posts
- * that moved an objective, which is why the three host-owned slots are
- * parameters instead of being hard-coded to the board's own data.
- *
- * Everything that makes a post a post — the profile head with its `View on`
- * link, the copy, the media or the pull-quote, the post-type badge, the zone
- * geometry — is the SAME for both hosts. What differs is only what a host can
- * measure: the board has views / reach / reactions / shares and a
- * ×-vs-average; Insights has one measure's contribution and a ×-vs-median. So:
+ * ONE post, as Insights draws the posts that moved an objective. The profile
+ * head with its `View on` link, the copy, the media or the pull-quote and the
+ * post-type badge are fixed; the host owns what it measures:
  *
  *   statsHtml — the strip under the body. Give it `.top-post-card__stat`
  *               children; two columns read as well as four.
  *   heroHtml  — the footer's left half, the one figure the card is about.
- *   ctaHtml   — the footer's button, so each host carries its own data hook.
+ *   ctaHtml   — the footer's button, so the host carries its own data hook.
  *   className — a host modifier (Insights uses `--neutral`, see the CSS).
- *
- * Defaults reproduce the board exactly, so its call site stays `renderTopPostCard(p)`.
  */
-export function renderTopPostCard(
-  post,
-  { className = "", statsHtml: statsOverride = null, heroHtml = null, ctaHtml = null } = {},
-) {
+export function renderTopPostCard(post, { className = "", statsHtml, heroHtml, ctaHtml }) {
   // These are posts from the brand's own profiles, so the card leads with the
-  // profile identity (brand avatar + network badge + handle) — the same lens the
-  // board's profile chips sort by — rather than a bare network label. Falls back
-  // to the network label when no connected profile resolves.
+  // profile identity (brand avatar + network badge + handle). Falls back to the
+  // network label when no connected profile resolves.
   const account = profileForNetwork(post.network);
   const net = (post.network || "").toLowerCase();
   const networkIcon = NETWORK_ICON_BY_PLATFORM[net] || iconFor(post.network);
@@ -206,26 +150,6 @@ export function renderTopPostCard(
   const avatarInner = account?.photo
     ? `<img src="${account.photo}" alt="" />`
     : `<span class="ap-avatar-initials">${BRAND_INITIALS}</span>`;
-  // Metric breakdown (Views / Reach / Reactions / Shares) — the raw counts the
-  // decision leans on, below the ×-vs-average hero. Rendered as a 4-column strip
-  // (value stacked over label) so each metric reads as its own scannable column
-  // instead of a run-on line. IG surfaces Saves in place of Shares.
-  const secondaryVal = post.saves != null ? post.saves : post.shares;
-  const secondaryLabel = post.saves != null ? "Saves" : "Shares";
-  const statsHtml =
-    statsOverride !== null
-      ? statsOverride
-      : [
-          [compactNumber(post.views), "Views"],
-          [compactNumber(post.impressions), "Impressions"],
-          [compactNumber(post.reactions), "Reactions"],
-          [compactNumber(secondaryVal), secondaryLabel],
-        ]
-          .map(
-            ([v, l]) =>
-              `<div class="top-post-card__stat"><span class="top-post-card__stat-value">${v}</span><span class="top-post-card__stat-label">${l}</span></div>`,
-          )
-          .join("");
   const mediaHtml = renderMediaBlock(post);
   // Text-only winners have no media, so the copy IS the body: the pull-quote on a
   // soft "note" surface, with the post-type badge overlaid bottom-left (same as
@@ -254,25 +178,7 @@ export function renderTopPostCard(
 
       <div class="top-post-card__perf">
         <div class="top-post-card__stats">${raw(statsHtml)}</div>
-        <div class="top-post-card__foot">
-          ${raw(
-            heroHtml ||
-              html`<span class="top-post-card__hero">
-                <span class="top-post-card__hero-value">${post.vsAvg}×</span>
-                <span class="top-post-card__hero-label">vs&nbsp;average</span>
-              </span>`,
-          )}
-          ${raw(
-            ctaHtml ||
-              html`<button
-                type="button"
-                class="ap-button primary blue top-post-card__cta"
-                data-top-post-repurpose="${post.id}"
-              >
-                Repurpose
-              </button>`,
-          )}
-        </div>
+        <div class="top-post-card__foot">${raw(heroHtml)} ${raw(ctaHtml)}</div>
       </div>
     </article>
   `;
@@ -424,66 +330,6 @@ export function renderTopPostsWidget({ network, posts = [], selected = [], answe
       </div>
       <div class="top-posts-widget__list" role="radiogroup" aria-label="Pick one post to repurpose">${raw(rows)}</div>
       ${raw(footer)}
-    </div>
-  `;
-}
-
-// Step 1 (pick which connected account to mine) is now the app's numbered
-// Quickpicker (renderPicker), rendered by session.js from
-// top-posts-flow.getProfileChoices() — no bespoke card grid here anymore.
-
-// The board: Period/Sort toolbar + the sorted card grid, scoped to the profile
-// chosen on step 1. `profile` is a network slug; `sort` is one of SORTS[].key.
-// The board shows every matching winner (no pagination).
-export function renderTopPostsBoard({ posts, sort = "performance", profile = null, period = "all" }) {
-  const all = posts || [];
-  // `profile` is a specific network chosen on the step-1 profile chooser;
-  // "all" (or null) means no network filter.
-  const activeProfile = profile && profile !== "all" ? profile.toLowerCase() : "all";
-
-  const activePeriod = PERIODS.find((p) => p.key === period) || PERIODS[0];
-  const byProfile =
-    activeProfile === "all" ? all : all.filter((p) => (p.network || "").toLowerCase() === activeProfile);
-  const visible = byProfile.filter((p) => (p.daysAgo ?? 0) <= activePeriod.maxDays);
-
-  const active = SORTS.find((s) => s.key === sort) || SORTS[0];
-  // Cap at the top N (the "Show my 20 top posts" promise) after sorting.
-  const sorted = [...visible].sort(active.compare).slice(0, TOP_POSTS_LIMIT);
-  const count = sorted.length;
-
-  const cards = sorted.length
-    ? sorted.map((p) => renderTopPostCard(p)).join("")
-    : renderEmptyState({
-        icon: "ap-icon-feature-analytics",
-        title: "No top posts in this period",
-        body: "None of your posts beat your average in this period. Pick a longer one to look further back.",
-        wrapperClass: "session__empty top-posts-empty",
-      });
-
-  // One post is repurposed at a time (via each card's "Repurpose" button), so
-  // the toolbar just holds the count + the Period/Sort filters. No multi-select
-  // / bulk bar.
-  const toolbar = html`
-    <div class="top-posts-toolbar">
-      <span class="top-posts-toolbar__count">${count} best-performing ${count === 1 ? "post" : "posts"}</span>
-      <div class="top-posts-filters">
-        ${raw(
-          renderFilterSelect({
-            dataAttr: "data-top-post-period",
-            label: "Period",
-            active: activePeriod,
-            options: PERIODS,
-          }),
-        )}
-        ${raw(renderFilterSelect({ dataAttr: "data-top-post-sort", label: "Sort", active, options: SORTS }))}
-      </div>
-    </div>
-  `;
-
-  return html`
-    <div class="top-posts-board">
-      ${raw(toolbar)}
-      <div class="top-posts-grid" role="group" aria-label="Your top-performing posts">${raw(cards)}</div>
     </div>
   `;
 }
