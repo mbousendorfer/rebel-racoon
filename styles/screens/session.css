@@ -908,8 +908,7 @@ body.playbook-revoked .session__composer-card {
 
 /* A flat ellipse 720px wider than the composer, its core under the white
    card, so what shows is two wings of pixels on either side. It opens out
-   from the composer once, then drifts one tile diagonally every 16s and
-   breathes: motion you feel more than see. Reduced motion (base.css): still. */
+   from the composer once. Reduced motion (base.css): no sweep. */
 .empty-chat__dots {
   position: absolute;
   z-index: 0;
@@ -923,10 +922,23 @@ body.playbook-revoked .session__composer-card {
   background: conic-gradient(from 270deg at 2px 2px, var(--ref-color-grey-20) 25%, transparent 0) 7px 7px / 16px 16px;
   -webkit-mask: radial-gradient(closest-side, #000 30%, transparent) center / 100% 100% no-repeat;
   mask: radial-gradient(closest-side, #000 30%, transparent) center / 100% 100% no-repeat;
-  animation:
-    empty-chat-dots-in 1200ms var(--app-ease-out) both,
-    empty-chat-dots-drift 16s linear infinite,
-    empty-chat-dots-breathe 7s ease-in-out 1200ms infinite alternate;
+  animation: empty-chat-dots-in 1200ms var(--app-ease-out) both;
+}
+
+/* The motion: the same pixels darker (grey-60, a fill), shown only
+   under a soft band that crosses the field left to right every 6s, then
+   rests: the chat's « thinking » sheen (new-start.css, ns-sheen) on the
+   ground. A slow drift and an opacity breath were tried first: nobody saw
+   them (2026-11-27, « l'animation est imperceptible »). */
+.empty-chat__dots::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(from 270deg at 2px 2px, var(--ref-color-grey-60) 25%, transparent 0) 7px 7px / 16px 16px;
+  -webkit-mask: linear-gradient(100deg, transparent 30%, #000 45%, #000 55%, transparent 70%) 100% 0 / 300% 100%
+    no-repeat;
+  mask: linear-gradient(100deg, transparent 30%, #000 45%, #000 55%, transparent 70%) 100% 0 / 300% 100% no-repeat;
+  animation: empty-chat-dots-sweep 6s var(--app-ease-standard) 1200ms infinite;
 }
 
 @keyframes empty-chat-dots-in {
@@ -936,20 +948,22 @@ body.playbook-revoked .session__composer-card {
   }
 }
 
-/* One tile exactly, so the loop has no seam. */
-@keyframes empty-chat-dots-drift {
-  to {
-    background-position: 23px 23px;
+@keyframes empty-chat-dots-sweep {
+  0% {
+    -webkit-mask-position: 100% 0;
+    mask-position: 100% 0;
+  }
+  55%,
+  100% {
+    -webkit-mask-position: 0 0;
+    mask-position: 0 0;
   }
 }
 
-@keyframes empty-chat-dots-breathe {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0.55;
-  }
+/* The hero's requests read as plain lines, not New Start's bold quotes
+   (2026-11-27, « pas besoin de mettre ça en bold »). */
+.empty-chat__asks .ns-suggest__text {
+  font-weight: var(--sys-text-style-body-weight);
 }
 
 /* The composer leads: one line for the sub-line, more air under it, a taller
