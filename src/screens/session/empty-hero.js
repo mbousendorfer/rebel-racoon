@@ -1,19 +1,19 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2968";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2968";
-import { getContextById, getContexts } from "../../contexts-store.js?v=2968";
-import { renderTopicCard } from "../../components/topic-card.js?v=2968";
-import { findTopicSource } from "../../topics-catalog.js?v=2968";
-import { html, raw, escapeHtml } from "../../utils.js?v=2968";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2968";
-import { renderStarterCards } from "../../components/starter-card.js?v=2968";
-import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2968";
-import { voicesToFinish } from "../../voice-parts.js?v=2968";
-import { networkLabel } from "../../social-profiles.js?v=2968";
-import { parseHashParams } from "../../url-state.js?v=2968";
-import { renderAsks, renderDoors, renderNewStart, starterAttrs } from "./new-start.js?v=2968";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2970";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2970";
+import { getContextById, getContexts } from "../../contexts-store.js?v=2970";
+import { renderTopicCard } from "../../components/topic-card.js?v=2970";
+import { findTopicSource } from "../../topics-catalog.js?v=2970";
+import { html, raw, escapeHtml } from "../../utils.js?v=2970";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2970";
+import { renderStarterCards } from "../../components/starter-card.js?v=2970";
+import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2970";
+import { voicesToFinish } from "../../voice-parts.js?v=2970";
+import { networkLabel } from "../../social-profiles.js?v=2970";
+import { parseHashParams } from "../../url-state.js?v=2970";
+import { renderAsks, renderDoors, renderNewStart, starterAttrs } from "./new-start.js?v=2970";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the

@@ -2,14 +2,14 @@
 // editor share: time formatting, the video-wide options (format, subtitles),
 // and the live reframed previews.
 
-import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2968";
-import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2968";
-import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2968";
-import { escapeHtml } from "../../utils.js?v=2968";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2968";
-import { showToast } from "../../components/toast.js?v=2968";
-import { navigate } from "../../router.js?v=2968";
-import { getVideo, getVideos, removeVideo, subscribe as subscribeVideos } from "../../videos-store.js?v=2968";
+import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2970";
+import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2970";
+import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2970";
+import { escapeHtml } from "../../utils.js?v=2970";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2970";
+import { showToast } from "../../components/toast.js?v=2970";
+import { navigate } from "../../router.js?v=2970";
+import { getVideo, getVideos, removeVideo, subscribe as subscribeVideos } from "../../videos-store.js?v=2970";
 
 // A footage well shows a loading sheen until its first frame is in (clips.css,
 // `:not(.is-ready)`): every well is marked here, once, from the media events

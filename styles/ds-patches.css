@@ -305,6 +305,23 @@ button.ap-link {
   cursor: not-allowed;
 }
 
+.ap-filter-chip.blue {
+  /* Blue: a chip that acts (a suggested answer in the chat), not a filter
+     state — electric-blue being the interactive colour. Its words can run
+     longer than a filter's. Not in the DS's FilterChip yet. */
+  max-width: none;
+  height: auto;
+  min-height: 24px;
+  border-color: var(--ref-color-electric-blue-40);
+  background: var(--ref-color-electric-blue-10);
+  color: var(--ref-color-electric-blue-150);
+  white-space: normal;
+  text-align: left;
+}
+.ap-filter-chip.blue:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
 .ap-filter-chip[aria-pressed="true"] {
   background: var(--ref-color-electric-blue-10);
   border-color: var(--ref-color-electric-blue-100);

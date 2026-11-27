@@ -4,7 +4,7 @@
 // prompt) render here. The pure, dependency-free turns stay in thread-turns.js.
 // Moved out of session.js, unchanged.
 
-import { sessionPlaybookId } from "../../active-playbook.js?v=2968";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2970";
 import {
   renderExtractingNotice,
   renderSourceIntakeTurn,
@@ -14,26 +14,26 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2968";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2968";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2968";
-import { getTopPost } from "../../top-posts-store.js?v=2968";
-import { getTopicById } from "../../topics-store.js?v=2968";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2968";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2968";
-import { escapeHtml, formatDayLabel, formatTimeOfDay, plural } from "../../utils.js?v=2968";
-import { getIdeas } from "../../library.js?v=2968";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2968";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2968";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2968";
-import { getPlans } from "../../post-plan-store.js?v=2968";
-import { isFlagOn } from "../../feature-flags.js?v=2968";
-import { CURRENT_USER } from "../../org.js?v=2968";
-import { getContextById } from "../../contexts-store.js?v=2968";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2968";
-import { getFocusKey } from "../../components/right-panel.js?v=2968";
-import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2968";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2968";
+} from "./thread-turns.js?v=2970";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2970";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2970";
+import { getTopPost } from "../../top-posts-store.js?v=2970";
+import { getTopicById } from "../../topics-store.js?v=2970";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2970";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2970";
+import { escapeHtml, formatDayLabel, formatTimeOfDay, plural } from "../../utils.js?v=2970";
+import { getIdeas } from "../../library.js?v=2970";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2970";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2970";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2970";
+import { getPlans } from "../../post-plan-store.js?v=2970";
+import { isFlagOn } from "../../feature-flags.js?v=2970";
+import { CURRENT_USER } from "../../org.js?v=2970";
+import { getContextById } from "../../contexts-store.js?v=2970";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2970";
+import { getFocusKey } from "../../components/right-panel.js?v=2970";
+import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2970";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2970";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -233,6 +233,17 @@ function renderTurn(message, sessionId) {
   }
   if (message.role === "assistant" && message.variant === "pb-ask") {
     return renderPbAskTurn(message);
+  }
+  // A source being read in the Playbook conversation: the working pill while
+  // it runs (« Reading lemonde.fr… »), then « Read lemonde.fr · 6s ».
+  if (message.role === "assistant" && message.variant === "pb-reading") {
+    return renderNotice({
+      variant: "mermaid",
+      label: `${escapeHtml(message.label || "")}${message.loading ? "…" : ""}`,
+      loading: !!message.loading,
+      showChevron: false,
+      open: false,
+    });
   }
   if (message.role === "assistant" && message.variant === "pb-say") {
     return renderPbSayTurn(message);
@@ -513,21 +524,20 @@ function renderPlaybookLearnedTurn(message) {
 }
 
 // A question in words of the Playbook conversation (playbook-chat-flow.js):
-// Archie's sentence, then a few likely answers in the hero's suggestion style
-// (.ns-suggest, new-start.css) — a click sends one (handlePbSuggest). Once the
+// Archie's sentence, then a few likely answers as blue tags — a click sends
+// one (handlePbSuggest). Once the
 // question is answered, only the sentence stays.
 function renderPbSayTurn(message) {
   const e = escapeHtml;
+  // Blue tags in a wrapping row (the interactive colour; one line per answer
+  // took too much room — asked: « des genre de tags, en blue … pas 1 ligne par
+  // élément »).
   const list =
     !message.resolved && message.suggestions?.length
-      ? `<ul class="ns-suggests__set pb-suggests" aria-label="Suggested answers">${message.suggestions
+      ? `<ul class="pb-suggests" aria-label="Suggested answers">${message.suggestions
           .map(
-            (
-              sug,
-            ) => `<li><button type="button" class="ns-suggest" data-pb-suggest="${e(sug.value)}" title="Send this answer">
-            <span class="ns-suggest__text">${e(sug.label)}</span>
-            <i class="ap-icon-paper-plane ns-suggest__go" aria-hidden="true"></i>
-          </button></li>`,
+            (sug) =>
+              `<li><button type="button" class="ap-filter-chip blue" data-pb-suggest="${e(sug.value)}" title="Send this answer">${e(sug.label)}</button></li>`,
           )
           .join("")}</ul>`
       : "";

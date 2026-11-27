@@ -26,10 +26,10 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2968";
-import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER, getReviewer, hasProfileAccess } from "../org.js?v=2968";
-import { profileForNetwork } from "../social-profiles.js?v=2968";
-import { html, raw, escapeText, escapeAttr, formatDayLabel } from "../utils.js?v=2968";
+} from "../modal-coordinator.js?v=2970";
+import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER, getReviewer, hasProfileAccess } from "../org.js?v=2970";
+import { profileForNetwork } from "../social-profiles.js?v=2970";
+import { html, raw, escapeText, escapeAttr, formatDayLabel } from "../utils.js?v=2970";
 
 const MODAL_ID = "assignReview";
 

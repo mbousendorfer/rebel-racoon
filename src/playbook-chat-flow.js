@@ -22,16 +22,7 @@
 // exists only under newChatHero, opened from its « No Playbook created yet »
 // card; everywhere else the run's screens make the Playbook.
 
-import {
-  getThread,
-  refreshThread,
-  postAssistantMessage,
-  postUserTurn,
-  postVoiceTurn,
-  startPending,
-  updatePending,
-  finishPending,
-} from "./assistant.js?v=2968";
+import { getThread, refreshThread, postAssistantMessage, postUserTurn, postVoiceTurn } from "./assistant.js?v=2970";
 import {
   createAltDraft,
   readAltWebsite,
@@ -44,12 +35,12 @@ import {
   getDraft,
   patchDraft,
   save,
-} from "./context-builder.js?v=2968";
-import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2968";
-import { LANGUAGE_OPTIONS } from "./languages.js?v=2968";
-import { connectors as connectorMocks } from "./mocks.js?v=2968";
-import { buildConnectedProfileItems } from "./social-profiles.js?v=2968";
-import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2968";
+} from "./context-builder.js?v=2970";
+import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2970";
+import { LANGUAGE_OPTIONS } from "./languages.js?v=2970";
+import { connectors as connectorMocks } from "./mocks.js?v=2970";
+import { buildConnectedProfileItems } from "./social-profiles.js?v=2970";
+import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2970";
 import {
   OTHER_WAYS,
   VOICE_WAYS,
@@ -57,8 +48,8 @@ import {
   DOC_READS,
   normalizeUrl,
   fallbackFor,
-} from "./screens/welcome-alt-steps.js?v=2968";
-import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2968";
+} from "./screens/welcome-alt-steps.js?v=2970";
+import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2970";
 
 // « 2 of 5 », counted on the run's own steps.
 function stepLabel(step) {
@@ -227,7 +218,7 @@ function readImages(files) {
  */
 export function startPlaybookChat(sid, { onSaved = () => {} } = {}) {
   createAltDraft(sid);
-  const run = { sid, onSaved, turns: [], groups: [] };
+  const run = { sid, onSaved, turns: [], groups: [], readings: [] };
   postAssistantMessage(
     sid,
     "Let's build your Playbook together: a few questions, one at a time. I'll learn how you sound, who you speak to, and how you look.",
@@ -273,9 +264,15 @@ function askWebsite(run) {
     {
       onText: (value, id) => {
         const url = normalizeUrl(value);
-        settle(sid, id, url.replace(/^https?:\/\//i, "").replace(/\/$/, ""));
+        const host = url.replace(/^https?:\/\//i, "").replace(/\/$/, "");
+        settle(sid, id, host);
         readAltWebsite(sid, url);
         run.source = "website";
+        startReading(run, {
+          phases: [`Reading ${host}`, ...LOADING_STAGES.slice(1).map((st) => st.title)],
+          done: `Read ${host}`,
+          until: analysisDone(sid),
+        });
         next(run, "url");
       },
       onPick: (v, id) => {
@@ -310,6 +307,11 @@ function askFiles(run) {
         settle(sid, id, list.length > 1 ? `${list.length} images` : list[0].name);
         readAltFiles(sid, list);
         run.source = "documents";
+        startReading(run, {
+          phases: FILE_LOADING_STAGES.map((st) => st.title),
+          done: list.length > 1 ? `Read ${list.length} images` : `Read ${list[0].name}`,
+          until: analysisDone(sid),
+        });
         next(run, "url");
       },
       onBack: askWebsite,
@@ -392,6 +394,11 @@ function askInterview(run) {
   if (step.done) {
     analyzeAltInterview(sid, run.turns);
     run.source = "interview";
+    startReading(run, {
+      phases: INTERVIEW_LOADING_STAGES.map((st) => st.title),
+      done: "Read your answers",
+      until: analysisDone(sid),
+    });
     return next(run, "url");
   }
   askText(
@@ -546,8 +553,14 @@ function askVoiceAccount(run) {
     },
     {
       onPick: (pid, id) => {
-        settle(sid, id, items.find((i) => i.value === pid)?.title || "");
+        const it = items.find((i) => i.value === pid);
+        settle(sid, id, it?.title || "");
         setAltVoiceSource(sid, { kind: "profile", id: pid });
+        startReading(run, {
+          phases: [`Reading ${it?.title || "the account"}'s posts`, "Learning how you sound there"],
+          done: `Read ${it?.title || "the account"}'s posts`,
+          until: pause(4200),
+        });
         next(run, "voiceFrom");
       },
       onBack: askVoiceFrom,
@@ -573,6 +586,11 @@ function askVoiceDocument(run) {
       onFiles: ([f], id) => {
         settle(sid, id, f.name);
         setAltVoiceSource(sid, { kind: "document", name: f.name });
+        startReading(run, {
+          phases: [`Reading ${f.name}`, "Learning how you write"],
+          done: `Read ${f.name}`,
+          until: pause(3200),
+        });
         next(run, "voiceFrom");
       },
       onBack: askVoiceFrom,
@@ -597,30 +615,52 @@ function askVoiceWords(run) {
   );
 }
 
-// ── 5 · The analysis, if it hasn't landed yet ──────────────────────────────
+// ── 5 · Reading, in the background ─────────────────────────────────────────
+// A website, files, the answers, an account's posts, a document: each takes a
+// moment to read. A loader turn says so the moment it starts (variant
+// `pb-reading`, the thread's working pill), its words moving through the
+// run's stages, while the next questions are asked; done, it stays as « Read
+// lemonde.fr · 6s » (asked 2026-11-27: « ça prend un peu de temps, donc
+// rajouter un loader asynchrone est nécessaire sur ces étapes »). The review
+// waits for every reading.
+
+const pause = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
+const analysisDone = (sid) =>
+  new Promise((resolve) => {
+    if (isAnalysisReady(sid)) return resolve();
+    const off = subscribeDraft(sid, () => {
+      if (!isAnalysisReady(sid)) return;
+      off?.();
+      resolve();
+    });
+  });
+
+function startReading(run, { phases, done, until }) {
+  const { sid } = run;
+  const started = Date.now();
+  const id = postVoiceTurn(sid, "pb-reading", { contextId: null, network: null, label: phases[0], loading: true });
+  const find = () => getThread(sid).find((m) => m.id === id);
+  let i = 0;
+  const tick = window.setInterval(() => {
+    const m = find();
+    if (!m?.loading || i >= phases.length - 1) return;
+    m.label = phases[++i];
+    refreshThread(sid);
+  }, 1600);
+  run.readings.push(
+    until.then(() => {
+      window.clearInterval(tick);
+      const m = find();
+      if (!m) return;
+      m.loading = false;
+      m.label = `${done} · ${Math.max(1, Math.round((Date.now() - started) / 1000))}s`;
+      refreshThread(sid);
+    }),
+  );
+}
 
 function whenReady(run, then) {
-  const { sid } = run;
-  if (isAnalysisReady(sid)) return then();
-  const stages =
-    run.source === "documents"
-      ? FILE_LOADING_STAGES
-      : run.source === "interview"
-        ? INTERVIEW_LOADING_STAGES
-        : LOADING_STAGES;
-  let i = 0;
-  const pending = startPending(sid, `${stages[0].title}…`);
-  const tick = window.setInterval(() => {
-    i = Math.min(i + 1, stages.length - 1);
-    updatePending(sid, pending, `${stages[i].title}…`);
-  }, 1500);
-  const off = subscribeDraft(sid, () => {
-    if (!isAnalysisReady(sid)) return;
-    window.clearInterval(tick);
-    off?.();
-    finishPending(sid, pending);
-    then();
-  });
+  Promise.all([analysisDone(run.sid), ...run.readings]).then(then);
 }
 
 // ── 6 · What I learned ─────────────────────────────────────────────────────
