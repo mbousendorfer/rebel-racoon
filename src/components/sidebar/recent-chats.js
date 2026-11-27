@@ -8,22 +8,22 @@ import {
   togglePin as togglePinSession,
   updateSession,
   deleteSession,
-} from "../../sessions-store.js?v=2944";
-import { isNewUser } from "../../user-mode.js?v=2944";
-import { escapeHtml } from "../../utils.js?v=2944";
-import { getContextById } from "../../contexts-store.js?v=2944";
-import { canView } from "../../playbook-access.js?v=2944";
-import { showToast } from "../toast.js?v=2944";
-import { open as openRenameModal } from "../rename-modal.js?v=2944";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2944";
-import { clearSession as clearAssistantSession } from "../../assistant.js?v=2944";
-import { clearSession as clearPostsSession } from "../../posts-store.js?v=2944";
-import { clearSession as clearLibrarySession } from "../../library.js?v=2944";
-import { clearSession as clearSourcesSession } from "../../sources-stream.js?v=2944";
-import { clearSession as clearPostPlansSession } from "../../post-plan-store.js?v=2944";
-import { getPath, navigate } from "../../router.js?v=2944";
-import { closePanel as closeRightPanel } from "../right-panel.js?v=2944";
-import { getOrganizePrefs } from "../sidebar.js?v=2944";
+} from "../../sessions-store.js?v=2945";
+import { isNewUser } from "../../user-mode.js?v=2945";
+import { escapeHtml } from "../../utils.js?v=2945";
+import { getContextById } from "../../contexts-store.js?v=2945";
+import { canView } from "../../playbook-access.js?v=2945";
+import { showToast } from "../toast.js?v=2945";
+import { open as openRenameModal } from "../rename-modal.js?v=2945";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2945";
+import { clearSession as clearAssistantSession } from "../../assistant.js?v=2945";
+import { clearSession as clearPostsSession } from "../../posts-store.js?v=2945";
+import { clearSession as clearLibrarySession } from "../../library.js?v=2945";
+import { clearSession as clearSourcesSession } from "../../sources-stream.js?v=2945";
+import { clearSession as clearPostPlansSession } from "../../post-plan-store.js?v=2945";
+import { getPath, navigate } from "../../router.js?v=2945";
+import { closePanel as closeRightPanel } from "../right-panel.js?v=2945";
+import { getOrganizePrefs } from "../sidebar.js?v=2945";
 
 // "Sort & group" control — options for the two rows. Grouping is limited to the
 // dimensions the session record supports: Playbook (contextId) and Date

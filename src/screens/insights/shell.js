@@ -31,27 +31,27 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=2944";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2944";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=2944";
+import { html, raw } from "../../utils.js?v=2945";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2945";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=2945";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=2944";
-import { getPath, navigate } from "../../router.js?v=2944";
-import { isFlagOn } from "../../feature-flags.js?v=2944";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2944";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2944";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=2944";
-import { openNewPlaybookFlow } from "../../context-builder.js?v=2944";
-import { renderAvatar } from "../../social-profiles.js?v=2944";
-import { firstRunText, FIRST_RUN_BRAND } from "../home/lists.js?v=2944";
-import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=2944";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=2944";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=2944";
-import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=2944";
+} from "../../active-playbook.js?v=2945";
+import { getPath, navigate } from "../../router.js?v=2945";
+import { isFlagOn } from "../../feature-flags.js?v=2945";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2945";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2945";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=2945";
+import { openNewPlaybookFlow } from "../../context-builder.js?v=2945";
+import { renderAvatar } from "../../social-profiles.js?v=2945";
+import { firstRunText, FIRST_RUN_BRAND } from "../home/lists.js?v=2945";
+import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=2945";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=2945";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=2945";
+import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=2945";
 
 // ── Module state ──────────────────────────────────────────────────────────
 

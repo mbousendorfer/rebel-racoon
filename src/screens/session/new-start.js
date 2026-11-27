@@ -21,8 +21,8 @@
 // video door is the clips starter. What is local (the rotation, the typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2944";
-import { escapeHtml } from "../../utils.js?v=2944";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2945";
+import { escapeHtml } from "../../utils.js?v=2945";
 
 const esc = escapeHtml;
 
@@ -98,8 +98,10 @@ const FRAME = `<span class="ns-cut__frame"><svg viewBox="0 0 90 160" preserveAsp
 // new chat's hero under the example requests (flag newChatHero, 2026-11-27,
 // asked: « un bloc un peu plus visuel … les 2 blocs du FS New Start #4 … en
 // dessous des prompts suggérés »). `brand: false` drops the Playbook door
-// once there is a Playbook (only the hero has that case).
-export function renderDoors({ brand = true } = {}) {
+// once there is a Playbook (only the hero has that case). `hero`: the door is
+// named for what is missing, the status card keeps only the cost (asked:
+// « Sound like your brand devrait plutôt s'appeler "no Playbook created yet" »).
+export function renderDoors({ brand = true, hero = false } = {}) {
   return `
       <div class="ns-doors">
 ${
@@ -113,7 +115,7 @@ ${
           <span class="ap-status-card orange ns-door__status">
             <span class="upper">
               <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-              <span class="flow"><span>No Playbook yet.</span> My posts will sound generic.</span>
+              <span class="flow">${hero ? "My posts will sound generic." : "<span>No Playbook yet.</span> My posts will sound generic."}</span>
             </span>
           </span>
           <span class="ns-door__stage ns-voice" aria-hidden="true">
@@ -128,7 +130,7 @@ ${
             </span>
             ${SPARKS}
           </span>
-          <span class="ns-door__title">Sound like your Brand</span>
+          <span class="ns-door__title">${hero ? "No Playbook created yet" : "Sound like your Brand"}</span>
           <span class="ns-door__desc">Show me your website or a few files, and I'll learn your voice, your audience, and your look.</span>
           <span class="ap-link standalone ns-door__go">Create my Playbook<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
         </a>

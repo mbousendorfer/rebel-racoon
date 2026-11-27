@@ -1,19 +1,19 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2944";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2944";
-import { getContextById, getContexts } from "../../contexts-store.js?v=2944";
-import { renderTopicCard } from "../../components/topic-card.js?v=2944";
-import { findTopicSource } from "../../topics-catalog.js?v=2944";
-import { html, raw } from "../../utils.js?v=2944";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2944";
-import { renderStarterCards } from "../../components/starter-card.js?v=2944";
-import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2944";
-import { voicesToFinish } from "../../voice-parts.js?v=2944";
-import { networkLabel } from "../../social-profiles.js?v=2944";
-import { parseHashParams } from "../../url-state.js?v=2944";
-import { renderAsks, renderDoors, renderNewStart } from "./new-start.js?v=2944";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2945";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2945";
+import { getContextById, getContexts } from "../../contexts-store.js?v=2945";
+import { renderTopicCard } from "../../components/topic-card.js?v=2945";
+import { findTopicSource } from "../../topics-catalog.js?v=2945";
+import { html, raw } from "../../utils.js?v=2945";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2945";
+import { renderStarterCards } from "../../components/starter-card.js?v=2945";
+import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2945";
+import { voicesToFinish } from "../../voice-parts.js?v=2945";
+import { networkLabel } from "../../social-profiles.js?v=2945";
+import { parseHashParams } from "../../url-state.js?v=2945";
+import { renderAsks, renderDoors, renderNewStart } from "./new-start.js?v=2945";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -150,7 +150,7 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
           <span class="empty-chat__dots" aria-hidden="true"></span>
           ${raw(composerMarkup)}
         </div>
-        ${raw(renderAsks("empty-chat__asks"))} ${raw(renderDoors({ brand: !getContexts().length }))}
+        ${raw(renderAsks("empty-chat__asks"))} ${raw(renderDoors({ brand: !getContexts().length, hero: true }))}
         ${raw(finishVoicesRow(session))}
       </div>
     `;
