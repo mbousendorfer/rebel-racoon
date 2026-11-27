@@ -106,11 +106,11 @@ Never hand-edit a `?v=`. ⚠️ A cached entry point pins the whole old import g
 - Any global settings page; the Topics _magazine_ and its front page.
 - Image Studio: the _classic_ / _auto-brief_ arrangements, the Generate | Edit tabs, an Advanced tab.
 - Clips: the Clip Studio and the Video Clips modal (deleted 2026-11-27, the Clips space is the only place), the tool rail, the « preview first » editor, a dark mode (2026-10-26), an Audio track (prod has none).
-- New chat: a « What are we posting today? » headline, the pixel stage boxing the composer, workflows as tile-cards, then as rows under a pixel halo (`newChatHero`, deleted 2026-11-27: the three cards stay); the eight HOME-1…8 homes; New Start #1–3 (pixel halo, blank-page top, wall of posts).
+- New chat: a « What are we posting today? » headline, the pixel stage boxing the composer, workflows as tile-cards; the eight HOME-1…8 homes; New Start #1–3 (pixel halo, blank-page top, wall of posts).
 - The Playbook as a workspace: one active Playbook in a rail switcher, everything scoped under it, the account home `/home` (`playbookWorkspace`, deleted 2026-11-27).
 - Onboarding: the « Try it with a demo brand » demo on Bramble & Bean (`demoMode`, deleted 2026-11-27), the chat onboarding and its accounts step, the connect and networks screens, the Skip dialog, the review as a stack of cards.
 - Voice: « A few questions » as a separate way, a « LinkedIn · Default » first-network model, a « chosen default » state, « Use my default voice for X » / « Remove the X voice ».
-- Removed flags, never to come back as toggles: `clipsSpace`, `newConversationStyles`, `draftChanges`, `voicePerNetwork`, `connectFirst`, `reviewScroll`, `draftInlineEdit`, `topicFeed`, `playbook2`, `sexySquirrel`, `skipConnectProfiles`, `playbookNoWebsite`, `playbookCompetitors`, `playbookColors`, `manyProfiles`, `statusActionSnackbars` (all baked ON); `playbookWorkspace`, `newChatHero`, `emptyStateGround`, `demoMode`, `homeOneInput`…`homeDrawer`, `chatPreviewTool`, `newStart`…`newStart3`, `brandTintedPresets`, `playbookDefault`, `imageStudioAutoBrief`, `imageStudioSetupFirst`, `imageStudioV2`, `frontPage`, `topics` (deleted).
+- Removed flags, never to come back as toggles: `clipsSpace`, `newConversationStyles`, `draftChanges`, `voicePerNetwork`, `connectFirst`, `reviewScroll`, `draftInlineEdit`, `topicFeed`, `playbook2`, `sexySquirrel`, `skipConnectProfiles`, `playbookNoWebsite`, `playbookCompetitors`, `playbookColors`, `manyProfiles`, `statusActionSnackbars` (all baked ON); `playbookWorkspace`, `emptyStateGround`, `demoMode`, `homeOneInput`…`homeDrawer`, `chatPreviewTool`, `newStart`…`newStart3`, `brandTintedPresets`, `playbookDefault`, `imageStudioAutoBrief`, `imageStudioSetupFirst`, `imageStudioV2`, `frontPage`, `topics` (deleted).
 
 ## Admin, user mode, feature flags
 
@@ -128,6 +128,7 @@ User mode (`user-mode.js`): `"returning"` (populated mocks, default) or `"new-al
 | `draftMentions`          | OFF     | « mention Notion in the LinkedIn post » from the chat (`mention-flow.js`)                                                                        |
 | `uiIdeaCard`             | OFF     | the clearer compact idea card (`renderClearIdeaCard`)                                                                                            |
 | `newStart4`              | OFF     | a first-time user with no Playbook lands on a chat that introduces Archie (`session/new-start.js`)                                               |
+| `newChatHero`            | OFF     | the new chat as rows under a pixel halo, New Start's example requests, and a « No Playbook yet » infobox (deleted then restored 2026-11-27)      |
 
 ## Design System — read first before UI/CSS work
 
