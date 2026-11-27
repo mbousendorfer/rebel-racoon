@@ -25,7 +25,7 @@ import {
   startPending,
   updatePending,
   finishPending,
-} from "./assistant.js?v=2955";
+} from "./assistant.js?v=2957";
 import {
   createAltDraft,
   readAltWebsite,
@@ -38,12 +38,12 @@ import {
   getDraft,
   patchDraft,
   save,
-} from "./context-builder.js?v=2955";
-import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2955";
-import { LANGUAGE_OPTIONS } from "./languages.js?v=2955";
-import { connectors as connectorMocks } from "./mocks.js?v=2955";
-import { buildConnectedProfileItems } from "./social-profiles.js?v=2955";
-import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2955";
+} from "./context-builder.js?v=2957";
+import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2957";
+import { LANGUAGE_OPTIONS } from "./languages.js?v=2957";
+import { connectors as connectorMocks } from "./mocks.js?v=2957";
+import { buildConnectedProfileItems } from "./social-profiles.js?v=2957";
+import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2957";
 import {
   OTHER_WAYS,
   VOICE_WAYS,
@@ -51,8 +51,8 @@ import {
   DOC_READS,
   normalizeUrl,
   fallbackFor,
-} from "./screens/welcome-alt-steps.js?v=2955";
-import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2955";
+} from "./screens/welcome-alt-steps.js?v=2957";
+import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2957";
 
 // « 2 of 5 », counted on the run's own steps.
 function stepLabel(step) {
@@ -82,7 +82,7 @@ function ask(run, spec, handlers, { withIds = [] } = {}) {
     document.querySelector(`[data-pb-ask="${id}"] :is(input[type=text], textarea)`)?.focus({ preventScroll: true });
   };
   window.setTimeout(focus, 60);
-  window.setTimeout(focus, 900);
+  window.setTimeout(focus, 2400);
   return id;
 }
 

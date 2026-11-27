@@ -9,12 +9,12 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2955";
-import { renderTopbar } from "../../components/topbar.js?v=2955";
-import { playbookForNewWork } from "../../active-playbook.js?v=2955";
-import { getPosts } from "../../posts-store.js?v=2955";
-import { escapeHtml, plural } from "../../utils.js?v=2955";
-import { renderAvatar } from "../../social-profiles.js?v=2955";
+import { navigate } from "../../router.js?v=2957";
+import { renderTopbar } from "../../components/topbar.js?v=2957";
+import { playbookForNewWork } from "../../active-playbook.js?v=2957";
+import { getPosts } from "../../posts-store.js?v=2957";
+import { escapeHtml, plural } from "../../utils.js?v=2957";
+import { renderAvatar } from "../../social-profiles.js?v=2957";
 import {
   getVideos,
   exampleVideo,
@@ -24,7 +24,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2955";
+} from "../../videos-store.js?v=2957";
 import {
   fmtMs,
   previewMarkup,
@@ -37,7 +37,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2955";
+} from "./shared.js?v=2957";
 
 let target = null;
 let disposeShowcase = null;
