@@ -1,20 +1,20 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code in this repository. This file holds the rules and the map; the detail lives in [`docs/`](docs/README.md). It is not a changelog: a routine change is recorded in `docs/`, never here.
 
 ## What this is
 
-Interactive prototype for exploring and validating Agorapulse UI redesigns — specifically **Archie**, an AI content assistant (sources → ideas → drafts → schedule). No build step, no bundler — static ES modules served locally. The codebase mixes English (code, UI copy) and French (some comments). Archie speaks in the first person ("I", "Let's") — never third-person "Archie" — in user-facing copy.
+Interactive prototype for exploring and validating Agorapulse UI redesigns — specifically **Archie**, an AI content assistant (sources → ideas → drafts → schedule). Static ES modules, no build step. Code and UI copy are in English, some comments and most docs in French. Archie speaks in the first person ("I", "Let's") — never third-person "Archie" — in user-facing copy.
 
 ## Before you build a feature — read the docs
 
-`docs/` is not background reference: it records decisions that were argued, shipped, and in several cases **reverted**. Designing here without reading it means re-proposing something that was already tried and removed — which is the single most common failure mode on this repo.
+`docs/` records decisions that were argued, shipped, and in several cases **reverted**. Designing without reading it means re-proposing something already tried and removed — the most common failure mode on this repo.
 
-**Whenever a request adds, moves, or changes a feature** — a screen, a section, a field, a control, a flow — read these BEFORE proposing anything:
+**Whenever a request adds, moves, or changes a feature** (a screen, a section, a field, a control, a flow), read BEFORE proposing anything:
 
-1. **[`docs/reference/CONCEPTS.md`](docs/reference/CONCEPTS.md)** — what each object IS and where its boundary sits. It settles _"which entity does this thing belong to?"_, the question most rejected designs here got wrong.
-2. **[`docs/reference/FEATURES.md`](docs/reference/FEATURES.md)** — the § covering the surface you're touching, so you extend what exists instead of building a parallel version beside it.
-3. Then the doc for the dimension in play:
+1. **[`CONCEPTS.md`](docs/reference/CONCEPTS.md)** — what each object IS and where its boundary sits (_"which entity does this belong to?"_, the question most rejected designs got wrong).
+2. **[`FEATURES.md`](docs/reference/FEATURES.md)** — the § for the surface you touch, so you extend what exists instead of building a parallel version.
+3. The doc for the dimension in play:
 
 | You're touching…                      | Read                                                                                                      |
 | ------------------------------------- | --------------------------------------------------------------------------------------------------------- |
@@ -26,9 +26,10 @@ Interactive prototype for exploring and validating Agorapulse UI redesigns — s
 | user-facing copy                      | [`copy-principles.md`](docs/copy/copy-principles.md) + [`GLOSSARY.md`](docs/reference/GLOSSARY.md)        |
 | sidebar / right-panel sizing behavior | [`PANEL-SIDEBAR-RULES.md`](docs/reference/PANEL-SIDEBAR-RULES.md)                                         |
 | Insights / objectives                 | [`FEATURES.md`](docs/reference/FEATURES.md) §19                                                           |
+| a feature flag or the Admin panel     | [`FEATURES.md`](docs/reference/FEATURES.md) §14                                                           |
 | a surface named in § Decisions        | its section in [`DECISIONS.md`](docs/reference/DECISIONS.md)                                              |
 
-Then say, in the proposal itself: **which object the feature attaches to, and why it belongs there** rather than on a neighbour. If a doc contradicts what you were about to build, the doc wins until the user overrules it — and when the user does overrule it, update the doc in the same commit.
+Then say, in the proposal itself, **which object the feature attaches to, and why** rather than a neighbour. If a doc contradicts what you were about to build, the doc wins until the user overrules it — and then update the doc (in `docs/`) in the same commit.
 
 **The three arbitrations that keep coming back** (each already cost a revert):
 
@@ -36,211 +37,129 @@ Then say, in the proposal itself: **which object the feature attaches to, and wh
 - **A Playbook is an identity sheet, not a container** — no produced content, no metrics, no operational config ([`CONCEPTS.md`](docs/reference/CONCEPTS.md) §1).
 - **Never invent a component, token, or icon the DS already ships** (§ Design System).
 
-## Running the prototype
+## Running and checking
 
 ```bash
 npm install   # tooling only (prettier / husky / lint-staged) — the DS comes from the CDN
-npm start     # runs `npx serve -p 8000` — open http://localhost:8000
+npm start     # npx serve -p 8000 — open http://localhost:8000
 ```
 
-With Claude Code the dev server auto-launches via `.claude/launch.json` (server name `archie`, `python3 -m http.server` on an auto-assigned port). There is **no test suite**; verify changes by running the app (see the verify/run skills) and the checks: `npm run check:ds` (every token / icon / `.ap-*` class resolves against the DS the app loads), `check:dead`, `check:versions`, `check:templates`, `check:framing` (the Clips space's reframe engine), `check:diff` (the draft word diff).
+In Claude Code, `preview_start {name: "archie"}` runs `scripts/dev-server.py` on an auto-assigned port (`.claude/launch.json`). There is **no test suite**: verify by running the app, plus the checks — `npm run check:ds` (every token / icon / `.ap-*` class resolves against the DS the app loads), `check:dead`, `check:versions`, `check:templates`, `check:framing` (the Clips reframe engine), `check:diff` (the draft word diff), `check:mentions`, `check:utils`.
 
 ## Architecture
 
-**Vanilla JS only** — no build step, no bundler, no framework, no external runtime deps. A hash-based router (`src/router.js`) renders the matched route into `#app` on every `hashchange`. The persistent app shell (sidebar + topbar + right panel) lives outside `#app` and is updated by subscriptions. Each screen, modal, and component owns its own DOM and uses **pure event delegation** with `data-*` attributes.
+Full source tree and lifecycle: [`ARCHITECTURE.md`](docs/reference/ARCHITECTURE.md).
 
-### App shell
+**Vanilla JS only** — no bundler, no framework, no runtime deps. `index.html` is the one HTML entry point, markup only: it mounts the shell (`#sidebar`, `#topbar`, `#app`, `#toastRegion`) and loads every stylesheet + `src/app.js`. `app.js` registers the routes, calls each component's `init()` (which injects its DOM into `<body>` once), and calls `start()`. A hash router (`src/router.js`) renders the matched route into `#app` on **every** `hashchange`, query-only changes included; a screen's `render(params, target)` may return a cleanup the router runs before the next render. `setAfterRender` (in `app.js`) re-renders the sidebar + status card after each route change and toggles `body.onboarding` for the welcome-alt flow. Each screen, modal and component owns its DOM and uses **pure event delegation** on `data-*` attributes.
 
-`index.html` is the only HTML entry point. It mounts the shell — `#sidebar`, `#topbar`, `#app`, `#toastRegion` — and loads every stylesheet + `src/app.js`. `app.js` registers the routes, calls each component's `init()` (which injects that component's DOM into `<body>` once), and calls `start()`. The right panel and all modals inject themselves on `init()`.
+### Routes (declared in `src/app.js`; chrome levels and URL state in [`ROUTES.md`](docs/reference/ROUTES.md))
 
-### Routes (declared in `src/app.js`) — details, chrome levels and URL state in [`ROUTES.md`](docs/reference/ROUTES.md)
+| Route                                     | Screen                            | In one line                                                                                       |
+| ----------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `/`                                       | `dashboard.js`                    | A redirect only: the active brand's most recent chat in scope, else a new one                     |
+| `/session/:id`                            | `session.js` + `session/`         | The chat: thread, composer, per-session flows, the studios                                        |
+| `/home`                                   | `home.js` + `home/`               | The account home (flag `playbookWorkspace`): Chats / Playbooks tabs; flag OFF → `/`               |
+| `/contexts`                               | `home.js`                         | The Playbooks catalogue; in workspace mode `replace`s to `/home?tab=playbooks`                    |
+| `/playbook/:id`                           | `playbook.js`                     | A Playbook's fiche (`?tab=`)                                                                      |
+| `/playbook/:id/styles/new`, `…/:styleId`  | `modules/image-studio/`           | The brand's image-style creator                                                                   |
+| `/insights` (`/insights/:tab` → redirect) | `insights/shell.js`               | The active Playbook's objectives (flag `insightsHub`)                                             |
+| `/connectors`                             | `connectors.js`                   | Connectors gallery, detail in a modal (flag `connectors`)                                         |
+| `/topics`, `/topics/settings`             | `topics.js`, `topics-settings.js` | The Topic Feed and its listening config, one Playbook at a time                                   |
+| `/clips`, `/clips/:id`, `…/edit/:clipId`  | `screens/clips/`                  | The Clips space (flag `clipsSpace`): library, one video's project, the clip editor                |
+| `/welcome-alt/*`                          | `welcome-alt*.js`                 | First-time onboarding as screens: `intro` → `brand` → … → `ready` → `recap` (the Brief) → `voice` |
 
-| Route                                     | Screen                            | In one line                                                                                                                                                                     |
-| ----------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                                       | `dashboard.js`                    | A redirect and nothing else: the active **brand's** home (most recent chat in scope, else a new one)                                                                            |
-| `/session/:id`                            | `session.js` + `session/`         | The chat surface: thread, composer, per-session flows, the studios                                                                                                              |
-| `/home`                                   | `home.js` + `home/`               | The **account** home (flag `playbookWorkspace`): hero + Chats / Playbooks tabs; flag OFF → `/`                                                                                  |
-| `/contexts`                               | `home.js`                         | The Playbooks catalogue; in workspace mode it `replace`s to `/home?tab=playbooks`                                                                                               |
-| `/playbook/:id`                           | `playbook.js`                     | A Playbook's fiche (`?tab=`)                                                                                                                                                    |
-| `/playbook/:id/styles/new`, `…/:styleId`  | `modules/image-studio/`           | The brand's image-style creator                                                                                                                                                 |
-| `/insights` (`/insights/:tab` → redirect) | `insights/shell.js`               | The active Playbook's objectives (flag `insightsHub`)                                                                                                                           |
-| `/connectors`                             | `connectors.js`                   | Connectors gallery; detail in a modal (flag `connectors`)                                                                                                                       |
-| `/topics`, `/topics/settings`             | `topics.js`, `topics-settings.js` | The Topic Feed and its listening config, one Playbook at a time                                                                                                                 |
-| `/clips`, `/clips/:id`, `…/edit/:clipId`  | `screens/clips/`                  | The Clips space (flag `clipsSpace`): the Playbook's videos, one video's project (Clips · Drafts), the one clip editor                                                           |
-| `/welcome-alt`, `/welcome-alt/recap`      | `welcome-alt*.js`                 | First-time onboarding, as screens: `/welcome-alt` redirects to `/welcome-alt/intro` → `/brand` → `/voice-from` … `/ready` → `/recap` (the Brief) → `/voice` (the default voice) |
+There is **no `/settings` route**. The prototype controls live in the hidden **Admin** panel, ⇧D only (`admin-panel.js`): a Settings tab (`admin-menu.js` — user mode, feature flags) and a Preview in chat tab (`chat-gallery.js`). Nothing in the UI points at it.
 
-There is **no `/settings` route** — it was removed. The prototype Admin controls (user mode + feature flags + docs link) now live in a hidden Admin panel opened with ⇧D (`admin-panel.js`, its Settings tab rendered by `admin-menu.js`; nothing in the UI points at it, the sidebar cog keeps only feedback, bug report and shortcuts); the old Social-accounts page was dropped (`social-profiles.js` now holds the connected-account state and the NETWORKS table).
+> **Vocabulary:** a saved AI context is a **Playbook** in the UI but a **Context** in code (`contexts-store`, `contextId`). Source → Idea → Draft (post) → Schedule is the pipeline; a **Topic** (`topics-store`) is an optional step upstream. `topic` is never a synonym for **Idea**.
 
-`setAfterRender` (in `app.js`) re-renders the sidebar + conversation-status-card after every route change and toggles the `body.onboarding` full-bleed class for the welcome-alt flow.
+### State
 
-> **Vocabulary:** a saved AI context is a **Playbook** (UI label) but the code/store calls it a **Context** (`contexts-store`, `contextId`). Source → Idea → Draft (post) → Schedule is the content pipeline; a **Topic** (`topics-store`) is an optional step upstream of it. `topic` stays banned as a synonym for **Idea** — a Topic is its own object.
+No store library. A store is a module-level `Map(sessionId → state)` (or one array for a catalog) plus subscribers from `createNotifier()` (`store-utils.js`), seeded lazily from `mocks.js` — or left empty in `new-alt` mode (`isNewUser()`). **Per-session**: what a user brings into a chat belongs to that chat (`sources-stream`, `library`, `posts-store`, `post-plan-store`, `assistant`, `composer-mentions`; [`CONCEPTS.md`](docs/reference/CONCEPTS.md) §3). **Global**: the catalogs that pre-exist any chat (`contexts`, `topics`, `videos-store`…). Almost no persistence: a few `localStorage` preferences, `sessionStorage` handoffs, and the Image Generator (`localStorage` + IndexedDB). Every store, its API and every persisted key: [`STORES.md`](docs/reference/STORES.md) — read it before adding state, update it in the same commit.
 
-### Source layout — the map (full annotated tree: [`ARCHITECTURE.md`](docs/reference/ARCHITECTURE.md#source-layout))
+URL state is hash query params (`#/session/:id?panel=drafts`): read with `parseHashParams()`, write with `setHashQuery(path, params)`. Cross-navigation one-shots go through `handoff.js` (`setHandoff` / `consumeHandoff`, over `sessionStorage`); live keys in [`ROUTES.md` § Handoffs](docs/reference/ROUTES.md#handoffs-entre-routes). A key is added with both ends or not at all — one consumed but never set is dead code that reads as an entry point.
 
-```
-src/
-  app.js · router.js · url-state.js · handoff.js · utils.js · store-utils.js   — the boot + the primitives
-  user-mode.js · feature-flags.js · ff-catalog.js · org.js · active-playbook.js · playbook-access.js
-  mocks.js + mocks/        ALL seed data, one file per domain, self-contained
-  *-store.js, library.js, assistant.js, sources-stream.js, social-profiles.js   — state (see STORES.md)
-  *-flow.js, context-builder.js, inline-question.js, playbook-view.js, topic-article.js …  — orchestrators
-  modules/image-studio/    — the Image Generator, self-contained
-  screens/                 one module per route; big ones split by subject into a folder:
-                           session/ · home/ · insights/
-  components/              init() + render/open(); right-panel/ · sidebar/ · video-clips-modal/
-  modal-coordinator.js     one overlay at a time
-```
+### Module loading — one `?v=` for the whole app
 
-### State management
-
-**No external store library.** Stores follow one pattern: a module-level `Map(sessionId → state)` (or a single array for catalogs) plus a `Set<fn>` of subscribers notified shallowly on each mutation, built with `createNotifier()` from `store-utils.js`. State seeds lazily from `mocks.js` on first read — **or stays empty in `new-alt` mode** (`isNewUser()`).
-
-The catalogue — every store, its scope, its full public API — lives in [`STORES.md`](docs/reference/STORES.md#catalogue-des-stores); read it before adding state, and update it in the same commit.
-
-**Per-session** stores: `sources-stream` (sources — `Map(sessionId → Source[])`, per-session subscribers, `clearSession()`), `library`, `posts-store`, `post-plan-store`, `assistant`, `composer-mentions`. That's the model: what a user brings into a chat belongs to that chat ([`docs/reference/CONCEPTS.md`](docs/reference/CONCEPTS.md) §3). **Global** are the catalogs, legitimately — they pre-exist any chat: `contexts`, `connectors`, `folders`, `sessions`, `schedule`, `schedule-presets`, `top-posts`, `topic-feeds`, `topics`, `videos-store` (the Clips space's library, per Playbook) — plus `sources-stream`'s **uploads**, a transient pre-source pool the Add-source modal reads as a whole. `library.js` subscribes to sources-stream and re-emits per-session so any session's content surfaces repaint when a source lands. **Almost no persistence** — a few preferences in `localStorage` (user mode, flags, role, the active Playbook, sidebar collapse, Sort & group, the status card, the Insights layout), the `sessionStorage` handoffs, and one real exception: the Image Generator keeps its styles / creations in `localStorage` + IndexedDB. Every key, with its owner: [`STORES.md` § Persistence](docs/reference/STORES.md#persistence). A new key goes in that table.
-
-### Decisions — one line each, the reasoning in [`DECISIONS.md`](docs/reference/DECISIONS.md)
-
-Each of these was argued and several were reverted; read its section before touching the surface.
-
-- **[A settings surface must not aggregate](docs/reference/DECISIONS.md#a-settings-surface-must-not-aggregate)** — three global settings pages were reverted (drawer, Connectors section, `/settings`). Config lives on the entity that owns it or on a route scoped to one feature.
-- **[Playbook sharing](docs/reference/DECISIONS.md#playbook-sharing-the-store-holds-the-facts-playbook-access-holds-the-rights)** (flag `playbookSharing`) — three scopes (`personal` / `members` = fixed list / `organization` = dynamic). `contexts-store` never filters; `playbook-access.js` is the only gate. `canEdit` is the owner only; a manager gets `canGovern` (share, hand over, delete), never content. A profile-tied Playbook reaches only people who can reach that profile (fails open). Ownership is chrome, never a section.
-- **[The Image Studio is split by subject](docs/reference/DECISIONS.md#the-image-studio-is-split-by-subject-and-the-engine-holds-no-dom)** — `src/modules/image-studio/`: persistent state in `state/store.js` + `creation-actions.js`, the dialog's state in the `mountStudio()` closure (`views/studio.js`); every change re-renders via `paint()`, the only DOM patching is the editor's Silent section; the prompt is `buildPrompt()` at generate time, no Advanced tab. A carousel (Slides 1–10, run config) is ONE creation sharing one `styleSnapshot`, `slides[]` per variation. ⚠️ The _classic_ / _auto-brief_ arrangements and the Generate | Edit tabs were deleted — don't propose them back. A confirm inside the studio is the module's `confirmDialog`, never `confirm-modal.js`. Five class families are built by concatenation — a rename breaks them silently.
-- **[Connectors](docs/reference/DECISIONS.md#connectors-as-live-mcp-queryable-sources)** (flag `connectors`) — a connected connector is a live source asked in chat (`sendConnectorMessage`, simulated MCP). Managed only on `/connectors`.
-- **[The Topic Feed](docs/reference/DECISIONS.md#the-topic-feed--the-one-place-archie-proposes-instead-of-waiting)** — the triage queue on `/topics`. ⚠️ It replaced a Topics _magazine_, deleted rather than flagged: don't bring the magazine or its front page back. `topics-catalog.js` is CONFIG (ships in `new-alt`); only `competitor-posts` and `influencer-posts` are live, and the default filter derives from them.
-- **[Four separate fields, one visual vocabulary](docs/reference/DECISIONS.md#the-invariant-four-separate-fields-one-visual-vocabulary)** — `status` / `kind` / `isTrending` / `isUpdated` stay four fields, shown as six chips. Filters = three grouped controls (Topics lane multi-select empty at rest · Marked as · Sources); signals are never filter rows, so an ignored Topic never resurfaces. Triage lives in its own `Map`; the trail is two-sided.
-- **[Connecting an account](docs/reference/DECISIONS.md#connecting-an-account-asked-in-the-flow-never-as-a-prerequisite)** — asked in the flow, never as a prerequisite: `requireConnectedProfiles()` wraps every path that produces a draft, and the flow resumes where it left off. The grid asks, the dialog consents; the Skip is not silent (required reasons, free exit). A picker must never render empty.
-- **[The listening config left the Playbook](docs/reference/DECISIONS.md#the-listening-config-left-the-playbook)** — one feed per Playbook in `topic-feeds-store`, provisioned on read, never deletable.
-- **[The Playbook scope](docs/reference/DECISIONS.md#the-playbook-scope--pb-by-default-a-workspace-behind-playbookworkspace)** (flag `playbookWorkspace`) — OFF: `?pb=` and a per-chat Playbook. ON: one active Playbook chosen in the rail, everything scoped under it, the six in-flow pickers gone, `/home` the account level (`isAccountScope`). The flag short-circuits in `active-playbook.js` only. A chat keeps its own Playbook. ⚠️ Never re-point a surface at `getDefaultContext()` or add a `?pb=` producer outside those three functions.
-- **[One article, three hosts](docs/reference/DECISIONS.md#one-article-three-hosts)** — `topic-article.js` is the single renderer (feed pane, picker dialog, in-chat dialog); `topic-card.js` emits two shapes, no third.
-- **[The master–detail: the list shrinks](docs/reference/DECISIONS.md#the-masterdetail-the-list-shrinks)** — the article pane is the fixed half, the list absorbs the rest, split measured by a `@container` query, never a media query.
-- **[Two verbs, and only two](docs/reference/DECISIONS.md#two-verbs-and-only-two)** — Use in chat (marks Used, attaches as a Source) and Ignore (asks why, reversible, the reason is kept). The composer's picker is the one inline exception.
-- **[The Clips space](docs/reference/DECISIONS.md#the-clips-space-the-video-first-one-editor)** (flag `clipsSpace`) — a Video belongs to the Playbook's library, not a chat; prod's order (analysis on upload, options after the pick); ONE clip editor, a desktop editing workspace since 2026-11-23 (library left: Transcript · Text presets · Brand; viewer: Output or Source + output; an inspector right that follows the SELECTION — text, framing part (`clip-framing.js`), captions, brand item, else the clip; a full-width timeline with every track always (Brand · Text · Subtitles · Video; no Audio track — prod has none, the waveform is a texture along the Video track's foot), zoom, select and split tools, snapping, context menu, J / K / L; the editor TRIMS — the clip's edges on the Video track or I / O, within prod's ±2 min window; `editor.js` · `editor-timeline.js` · `editor-panels.js`, styles in `clip-editor.css`) — the tool rail and the « preview first » editor it replaced are gone, don't bring them back; drafts written in the space (`posts-store` key `video-<id>`). No conversation there; a chat's clips ARE its video's (2026-11-25): a chat video with clips enters the Playbook's library, `source.clips` is the video's mirror (all its clips, same footage), edits on either side show on the other (`updateSourceClips` → `syncClipsFromChat`), and "Open in Clips" / a clip card's Edit open the space. The space is the light DS with its components only; the footage alone sits on a black well — a dark mode was tried and removed (2026-10-26), don't bring it back.
-- **[The DS ports live in ds-patches.css](docs/reference/DECISIONS.md#the-ds-ports-live-in-ds-patchescss)** — `.ap-filter-dropdown` (and `.ap-segmented-control` for the Image Generator's Variations, `.ap-close-button` for the style creator's image tiles) are transcriptions of Angular-only DS components; their token substitutions are commented and wait for the DS to publish the real names.
-
-### Routing & screen lifecycle
-
-`router.js` re-runs the matched handler on **every** `hashchange` (including query-only changes — it matches on the path with the query stripped). A screen's `render(params, target)` may return a cleanup function that the router invokes before the next render. URL state is encoded as hash query params (`#/session/:id?panel=drafts`, `#/playbook/:id?tab=voice`); read it with `parseHashParams()` and mutate with `setHashQuery(path, params)` (calls `navigate()`).
-
-### Cross-screen handoffs
-
-`handoff.js` exposes `setHandoff(key, payload)` / `consumeHandoff(key)` (atomic read+remove) over `sessionStorage` — the one-shot bridge across a navigation. The live keys, who sets and who consumes each: [`ROUTES.md` § Handoffs](docs/reference/ROUTES.md#handoffs-entre-routes). ⚠️ A key that is consumed but never set reads as a live entry point and is dead — add a key only with both ends (`focusObjective` was removed for this on 2026-09-30).
-
-### Admin / user mode (prototype controls)
-
-The **Admin** panel, ⇧D only (`admin-panel.js`, 2026-11-26, like Protopulse's Moderator: hidden from testers; Esc closes), is the prototype control panel. Two tabs: **Settings** (`admin-menu.js`) and **Preview in chat** (`chat-gallery.js`, the catalogue of every chat element and trigger, played in the chat on screen). Settings holds user mode (`user-mode.js` — `"returning"`, populated mocks, default · `"new-alt"`, empty stores + first-time onboarding; `isNewUser()`) and the feature flags (`ff-catalog.js`, read via `isFlagOn()`); each change reloads so stores re-seed. What each flag gates, in full: [`FEATURES.md` §14](docs/reference/FEATURES.md#14-admin-feature-flags--user-modes). One line each:
-
-- `insightsHub` (OFF) — the whole `/insights` section. · `playbookWorkspace` (OFF) — the Playbook as the level above the work (rail switcher, scoped surfaces, `/home`). · `connectors` (OFF) — the whole connectors feature, the onboarding's documents step included.
-- `playbookSharing` (OFF) — ownership, three scopes, governance, the profile gate; its two demo Playbooks and demo chat are seeded **only** under the flag.
-- `newScheduleModal` (**ON**) — the redesigned schedule modal; OFF reopens `schedule-modal-legacy.js`, a delete once the comparison ends. · `newConversationStyles` (**ON** since 2026-10-29) — the thread in Figma's « two sides » style (§ E): a mirrored avatar column — Archie's disc left, yours right, on each turn's first line, one content edge per side, no names; time on hover in the gutter, white object chips; a wrap of the rendered turns in `renderTwoSides`. It holds EVERY conversation restyle since Monday 2026-10-05 (before / after): OFF = the Monday thread, its values in `styles/chat-legacy.css` (`body:not(.conv-new)`, class set in `app.js`) + a few `isFlagOn` branches for the Monday markup — delete them all when the flag is baked. · `newChatHero` (**ON** since 2026-10-28, R3) — a new chat keeps its wordmark + sub-line and composer, and shows the three workflow starters as rows — title + description (`renderStarterCards({ rows: true })`) — instead of the big cards, then one row of three Topics (a « What are we posting today? » headline was tried and dropped; the FUX pixel stage behind the composer and the workflows as white tile-cards were rejected 2026-10-20 — keep them rows); the home keeps the cards. · `demoMode` (OFF) — _Try it with a demo brand_ from the first screen of the first-time run: a card at the bottom of the sidebar on every screen, then the real new chat on « Demo: Bramble & Bean » (made up, a fully filled Playbook, three pretend accounts already connected, no Playbook can be created, nothing of the user's own comes in — every upload is disabled, turned into « demo content », or refused; the stores swap to its top posts, Topics, sample files, ideas and clips under `isDemo()`, so every way in works), one wave of drafts in any chat then a soft stop, every Schedule → a _This is a demo_ dialog, _Exit demo_ wipes it all (`demo-flow.js`, state in `demo-mode.js`). · `contentPanel` (**ON** since 2026-10-28, R4) — the three pills become the side panel's own tabs, in the topbar right above it (Overview │ Sources › Ideas, Clips › Drafts with counts, a dot on a tab with something new; the panel has no header row; Clips is a tab, so the Ideas view has no sub-tabs and no kind filter; a single « Content » button was tried first) and an **Overview** that is the status card's other form — one or the other: with `conversationStatusCard` ON the card stays (no « i » toggle — shown whenever the panel is closed) and the Overview tab is gone (`hasOverview()`) (`overview-view.js`: my next step as the DS infobox (info / warning / success), then the chat's real content — source tiles, ideas with their kind, a clips filmstrip, draft excerpts with their status); Sources / Ideas / Drafts share one look (grey-05 canvas, white cards); every result in the thread is a card that opens the panel on ITS objects (`focusManyInPanel`, `.is-active` while open from it), with no toast nor green composer bar, and the panel never opens by itself. · Voice per network (no flag: `voicePerNetwork` baked ON 2026-11-19; prod has it behind `content-studio-network-voice`) — the **default voice** is GENERIC, tied to no network (the Playbook's five parts; its tab « Default voice », 2026-10-28 — the « LinkedIn · Default » first-network model of the same morning was reverted); every network is a variation of it: its own rules or that voice; one state `default` | `own`. A voice is given the same ways everywhere — learn from posts · adapt the default voice (« Adapt for X », nothing to read) · a document · write it myself, each part asking its question (« A few questions » merged in 2026-11-04, don't bring it back) (+ use the default voice when a draft waits) — and what Archie learns is a PROPOSAL, shown, saved only on « Add to Voice profile » or opened unsaved in the editor (`network-voice-flow.js`, `voice-proposal-modal.js`, `learnedVoiceHtml`). Before a draft for a network never set, a blocking Voice step (chat; dialog in Clips); a draft in the default voice says so (« Written in your default voice. No X voice yet. » + « Add a voice for X »); copy: default voice · voice for X (« X voice ») · Add to Voice profile, never « rules for X » nor « voice learned »; a voice change never rewrites a draft — the drafts written before say so (Rewrite it; `changedAt` / `voiceChangedAt` vs `writtenAt`); a draft's feedback can propose a voice update; returning users get a one-time intro dialog that walks them through personalizing each other network, one at a time (`voice-intro-modal.js`); the networks shown are those with a connected account (from two), plus any with a voice of its own — « Add a voice for another network » adds one with no account, even with a single network connected; without an action a network uses the default voice: a dashed « X voice · Configure » row, no « chosen default » state, no « Use my default voice for X » nor « Remove the X voice » (2026-11-05); a network has a voice of its own (a card, its rules counted) or the default voice; its page offers the ways (its posts, a document, adapt the default voice, write it myself), and « Use my default voice instead » on one with rules; the creation's Voice review follows the same model — a network opened and left with no voice is not added (« Skip for now »), only voices with rules are saved, so a connected network with none is asked at its first draft (this replaces « the run leaves no network unanswered », 2026-11-04); learning a network's voice in the fiche plays the run's scene in the page, then opens it in edit, unsaved — no proposal dialog. Full rules: FEATURES §9, DECISIONS « Une voix par réseau ». · `clipsSpace` (OFF) — the Clips space (§ Decisions): a Clips row in the rail → `/clips`, the video library of the Playbook; analysis on upload (prod's order), then the clips with live reframed previews and the video's Format / Subtitles, then one draft per clip × account (CTA none / in post / first comment) and Schedule, all without a chat; one editor (`/clips/:id/edit/:clipId`), a desktop editing workspace — library, viewer, an inspector that follows the selection, a four-track timeline that trims, cuts and zooms (§ Decisions); "How your clips look" on the fiche's Branding tab; the Extract video clips starter leads there and a chat's video opens there ("Open in Clips"). OFF = the Clip Studio and the Video Clips modal, untouched. · `uiIdeaCard` (OFF, label « UI-Idea card: clearer ») — the compact idea card says what it is (« Story idea », thumbs beside it), where it comes from (« From notes.pdf », Why this idea at the end of that line) and what to do with it (a footer of actions alone, the Draft lit on card hover); `renderClearIdeaCard` in `idea-card-compact.js`, its CSS under `body.ui-idea-card` in `right-panel.css`. · `draftMentions` (OFF, « UI-Mentions in drafts ») — « mention Notion in the LinkedIn post » in the chat: a search per draft's network, accounts ticked, the name becomes the mention (`mention-flow.js`, `mentions.js`). · `newStart4` (OFF, « UP-New Start #4 ») — a first-time user with no Playbook lands on a new chat that introduces Archie instead of the run (`session/new-start.js`, `isNewStartOn()`; turning it on in Admin switches to First-time user): Archie opens the thread (hello typed live, two animated doors: Playbook, video clips, then rotating example requests as his third turn, text links, no box), the composer at the foot; no pixel halo nor wordmark there. · `conversationStatusCard`, `multilingualPlaybook` (OFF).
-
-**Removed flags — do not reintroduce as toggles:** `draftChanges` (baked ON 2026-11-27 — prod ships it with no switch, sc-211847: a rewrite keeps the replaced version on the draft (`revision`, `undoRevision`), the chat says it in one sentence (`postRevisionTurn`), the draft carries the DS green status card « Your post has been updated. » + Undo ↔ Redo · View changes · ×; `word-diff.js`, `draft-changes.css`), `homeOneInput` … `homeDrawer` (HOME-1…8, the eight candidate new-chat homes, deleted with `home-directions.js` 2026-11-26), `chatPreviewTool` (deleted 2026-11-26 — its catalogue is the Admin panel's Preview in chat tab), `newStart`, `newStart1`, `newStart2` and `newStart3` (deleted 2026-11-26 — the first version reused the old hero's pixel halo, then the blank-page top, the wall of posts and the thread with the composer under it were dropped), `connectFirst` (baked ON 2026-10-29 — the first-time run as screens is the only one: the plan, the brand, the reveal, then the Brief and the default voice reviewed; the chat onboarding, its accounts step and the Skip dialog were deleted; « Draft my first post » opens a new chat on the saved Playbook, no reload), `reviewScroll` (baked ON 2026-10-20 — the run's review is a scrolling column; the stack it replaced was deleted), `topicFeed`, `playbook2`, `sexySquirrel` (the Image Generator + brand kit, old Image Studio deleted) and `skipConnectProfiles` (all baked ON 2026-10-07), `draftInlineEdit` (baked ON 2026-10-19), `brandTintedPresets` (deleted 2026-10-20 — ready-made style thumbnails stay in Acme's palette), `playbookNoWebsite` (baked ON 2026-10-16 — prod's `content-studio-playbook-no-website`: "I don't have a website" → an interview, `nextInterviewQuestion` / `analyzeInterview`), `playbookDefault` (deleted), `statusActionSnackbars`, `playbookColors`, `manyProfiles`, `playbookCompetitors` (baked ON), `imageStudioAutoBrief`, `imageStudioSetupFirst`, `imageStudioV2`, `frontPage`, `topics` (deleted with what they switched).
-
-### Module loading
-
-ES modules with a `?v=N` cache-busting suffix (`from "./assistant.js?v=1"`). **One number for the whole app** — every module specifier in `src/` and every app stylesheet in `index.html` carries the same `?v=`. The browser caches a module by its exact URL, so a store named at two versions becomes two module instances with split state; a single shared number makes that impossible instead of merely discouraged.
+Every module specifier in `src/` and every app stylesheet in `index.html` carries the same `?v=N`. The browser caches a module by exact URL, so a store imported at two versions becomes two instances with split state.
 
 ```bash
-npm run bump            # N → N+1 across every file, in one pass — run it for ANY js/css change
+npm run bump            # N → N+1 everywhere — run it for ANY js/css change
 npm run check:versions  # fails on drift; the pre-commit hook runs it
 ```
 
-Never hand-edit a `?v=`. `scripts/cache-version.mjs` owns the number (it also covers dynamic `import("…")`, which a hand-bump used to miss), and the pre-commit hook blocks a commit whose versions disagree. The number is only a cache-buster — the server resolves the same file whatever the suffix — so a bump is always behaviour-neutral.
+Never hand-edit a `?v=`. ⚠️ A cached entry point pins the whole old import graph: after a JS change, verify a _visible_ effect in the browser — a CSS-only confirmation proves nothing about the JS.
 
-⚠️ **A cached entry point pins the whole old import graph.** After a JS change, verify a _visible_ effect (a removed node, a changed class) in the browser: a CSS-only confirmation proves nothing about the JS.
+## Decisions — one line each, the reasoning in [`DECISIONS.md`](docs/reference/DECISIONS.md)
 
-The **Design System is loaded from jsDelivr at `@latest`** (`index.html`: `@agorapulse/ui-theme` tokens + CSS-UI + Averta, `@agorapulse/ui-symbol` icons) and nothing of it is vendored — the published package is the only source, as the `design-guidelines` skill prescribes. Everything else is local: no other CDN / `esm.sh` import in app code (the bug-report modal's html2canvas capture, the one exception, was removed on 2026-10-28). `package.json` holds tooling only (prettier/husky/lint-staged). The pre-commit hook runs `check-template-comments.py`, `cache-version.mjs check`, and `prettier --write` on staged files.
+- **[Settings must not aggregate](docs/reference/DECISIONS.md#a-settings-surface-must-not-aggregate)** — three global settings pages reverted (drawer, Connectors section, `/settings`).
+- **[Playbook sharing](docs/reference/DECISIONS.md#playbook-sharing-the-store-holds-the-facts-playbook-access-holds-the-rights)** (flag `playbookSharing`) — `contexts-store` never filters, `playbook-access.js` is the only gate; `canEdit` = owner only, a manager gets `canGovern`, never content.
+- **[The Playbook scope](docs/reference/DECISIONS.md#the-playbook-scope--pb-by-default-a-workspace-behind-playbookworkspace)** (flag `playbookWorkspace`) — the flag short-circuits in `active-playbook.js` only. Never re-point a surface at `getDefaultContext()` nor add a `?pb=` producer outside those functions.
+- **[The Image Studio](docs/reference/DECISIONS.md#the-image-studio-is-split-by-subject-and-the-engine-holds-no-dom)** — `src/modules/image-studio/`, state in `state/`, re-render via `paint()`, prompt built at generate time; a confirm inside it is its own `confirmDialog`. Five class families are built by concatenation — a rename breaks them silently.
+- **[Connectors](docs/reference/DECISIONS.md#connectors-as-live-mcp-queryable-sources)** (flag `connectors`) — a live source asked in chat (simulated MCP), managed only on `/connectors`.
+- **[The Topic Feed](docs/reference/DECISIONS.md#the-topic-feed--the-one-place-archie-proposes-instead-of-waiting)** — a triage queue; `status` / `kind` / `isTrending` / `isUpdated` stay [four fields](docs/reference/DECISIONS.md#the-invariant-four-separate-fields-one-visual-vocabulary); [two verbs only](docs/reference/DECISIONS.md#two-verbs-and-only-two) (Use in chat, Ignore); [one article renderer, three hosts](docs/reference/DECISIONS.md#one-article-three-hosts); in [the master–detail the list shrinks](docs/reference/DECISIONS.md#the-masterdetail-the-list-shrinks) (`@container`, never a media query); [one listening feed per Playbook](docs/reference/DECISIONS.md#the-listening-config-left-the-playbook), never deletable.
+- **[Connecting an account](docs/reference/DECISIONS.md#connecting-an-account-asked-in-the-flow-never-as-a-prerequisite)** — asked in the flow, never as a prerequisite: `requireConnectedProfiles()` wraps every path that produces a draft. A picker never renders empty.
+- **[The Clips space](docs/reference/DECISIONS.md#the-clips-space-the-video-first-one-editor)** (flag `clipsSpace`) — a Video belongs to the Playbook's library, not a chat; one clip editor (library · viewer · inspector that follows the selection · four-track timeline that trims); a chat's clips ARE its video's, kept in sync. Light DS only, footage on a black well.
+- **[One voice per network](docs/reference/DECISIONS.md#une-voix-par-réseau--une-seule-règle-partout)** (baked ON) — the **default voice** is generic; each network has its own voice or uses the default. What Archie learns is a proposal, saved only on « Add to Voice profile ». A voice change never rewrites a draft. Copy: default voice · X voice · Add to Voice profile — never « rules for X » nor « voice learned ». Full model: [`FEATURES.md`](docs/reference/FEATURES.md) §9.
+- **[The DS ports live in ds-patches.css](docs/reference/DECISIONS.md#the-ds-ports-live-in-ds-patchescss)** — transcriptions of Angular-only DS components, waiting for the DS to publish them.
 
-## Design System — READ FIRST before UI/CSS work
+### Tried and removed — don't propose them back
 
-This project is built on the official Agorapulse Design System (`@agorapulse/ui-theme` + `@agorapulse/ui-symbol`, **loaded from jsDelivr `@latest`** — see `index.html`). **Do not invent custom components, tokens, or icons when the DS already provides them.** Regressions from ad-hoc CSS overriding DS tokens are the #1 source of bugs in this repo.
+- Any global settings page; the Topics _magazine_ and its front page.
+- Image Studio: the _classic_ / _auto-brief_ arrangements, the Generate | Edit tabs, an Advanced tab.
+- Clips: the tool rail, the « preview first » editor, a dark mode (2026-10-26), an Audio track (prod has none).
+- New chat: a « What are we posting today? » headline, the pixel stage boxing the composer, workflows as tile-cards (they stay rows); the eight HOME-1…8 homes; New Start #1–3 (pixel halo, blank-page top, wall of posts).
+- Onboarding: the chat onboarding and its accounts step, the connect and networks screens, the Skip dialog, the review as a stack of cards.
+- Voice: « A few questions » as a separate way, a « LinkedIn · Default » first-network model, a « chosen default » state, « Use my default voice for X » / « Remove the X voice ».
+- Removed flags, never to come back as toggles: `draftChanges`, `voicePerNetwork`, `connectFirst`, `reviewScroll`, `draftInlineEdit`, `topicFeed`, `playbook2`, `sexySquirrel`, `skipConnectProfiles`, `playbookNoWebsite`, `playbookCompetitors`, `playbookColors`, `manyProfiles`, `statusActionSnackbars` (all baked ON); `homeOneInput`…`homeDrawer`, `chatPreviewTool`, `newStart`…`newStart3`, `brandTintedPresets`, `playbookDefault`, `imageStudioAutoBrief`, `imageStudioSetupFirst`, `imageStudioV2`, `frontPage`, `topics` (deleted).
 
-### Required workflow before writing any HTML/CSS
+## Admin, user mode, feature flags
 
-**All DS work goes through the `/design-guidelines` skill** (`mode: html-prototype`) — it reads the specs from the `agorapulse/design` repo and the packages from the CDN, and carries the house rules the specs don't (ink grey-80…100, borders grey-20, blue = interactive, no nested elevation, no uppercase labels, no edge-accent bars, card hover = blue border, CTAs never full width, footers right-grouped). Generic design skills are a review checklist only. **Never the `ds-css` MCP** — it was removed from this repo.
+User mode (`user-mode.js`): `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding, `isNewUser()`). Flags: `ff-catalog.js`, read with `isFlagOn()`. Each change reloads so stores re-seed. **What each flag gates, in full: [`FEATURES.md`](docs/reference/FEATURES.md) §14.**
 
-1. **Find the component by intent** (the skill's lookup), then its CSS-UI classes in the CDN's `css-ui/index.css`.
-2. **Check the icon exists** in `@agorapulse/ui-symbol@latest/icons/ap-icons.css` — match the full class (`ap-icon-eye` does not exist, `ap-icon-eye-on` does). Use `<i class="ap-icon-{name}"></i>`.
-3. **Use DS tokens, not hardcoded values** — every `--ref-*` / `--sys-*` / `--comp-*` must exist in `desktop_variables.css`. Grey steps are `05 · 10 · 20 · 40 · 60 · 80 · 100 · 150` only.
-4. **Prefer `--sys-*` over `--ref-*`** when a semantic token exists.
-5. **Custom CSS only if nothing in the DS fits** — pick the right file:
-   - `styles/ds-patches.css` — the **only** place to extend a DS class with a missing variant or add a primitive the DS forgot (e.g. `.ap-filter-chip`, `.app-modal-backdrop`). It should shrink as the DS evolves.
-   - `styles/screens/<screen>.css` — screen-specific styling.
-   - `styles/components/<component>.css` — shared component styling.
-   - **Never** redeclare a `.ap-*` class with overrides outside `ds-patches.css` — it flips the cascade silently. The one standing exception is `styles/components/archie-loader.css`, which claims `.ap-loader` on purpose: every spinner in the app is replaced by the animated Archie mark, and that is a brand decision, not a missing DS primitive. It says so at the top of the file. Don't add a second exception without the same kind of note.
-6. **Validate before committing** — `npm run check:ds`. A name that doesn't exist fails silently (the declaration is dropped, the mask is empty), so this is the only thing that catches it.
+| Flag                     | Default | Gates                                                                                                                                            |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `insightsHub`            | OFF     | the whole `/insights` section                                                                                                                    |
+| `playbookWorkspace`      | OFF     | the Playbook as the level above the work: rail switcher, scoped surfaces, `/home`                                                                |
+| `connectors`             | OFF     | the connectors feature, onboarding's documents step included                                                                                     |
+| `clipsSpace`             | OFF     | the Clips space; OFF = the Clip Studio and the Video Clips modal                                                                                 |
+| `conversationStatusCard` | OFF     | the floating status card; with it, the panel has no Overview tab (`hasOverview()`)                                                               |
+| `contentPanel`           | **ON**  | the pills become the side panel's tabs (Overview │ Sources › Ideas, Clips › Drafts); results in the thread open the panel, it never opens itself |
+| `multilingualPlaybook`   | OFF     | languages per Playbook, voice per language                                                                                                       |
+| `playbookSharing`        | OFF     | ownership, three scopes, governance, the profile gate; its demo data seeds only under the flag                                                   |
+| `newScheduleModal`       | **ON**  | the redesigned schedule modal; OFF = `schedule-modal-legacy.js`, deleted once the comparison ends                                                |
+| `draftMentions`          | OFF     | « mention Notion in the LinkedIn post » from the chat (`mention-flow.js`)                                                                        |
+| `newConversationStyles`  | **ON**  | the « two sides » thread; OFF = the Monday 2026-10-05 thread (`chat-legacy.css` + `isFlagOn` branches — delete them all when baked)              |
+| `uiIdeaCard`             | OFF     | the clearer compact idea card (`renderClearIdeaCard`)                                                                                            |
+| `emptyStateGround`       | OFF     | the home's first-run empty states on the Playbook creation's warm ground                                                                         |
+| `newChatHero`            | **ON**  | a new chat shows the three workflow starters as rows, then three Topics                                                                          |
+| `demoMode`               | OFF     | « Try it with a demo brand » (`demo-flow.js`, `demo-mode.js`, `isDemo()`)                                                                        |
+| `newStart4`              | OFF     | a first-time user with no Playbook lands on a chat that introduces Archie (`session/new-start.js`)                                               |
 
-### Brand color convention
+## Design System — read first before UI/CSS work
 
-Per project preference: **orange = AI / spotlight actions** (Ask, Ask in a chat, primary AI CTA); **blue = routine list-page CTAs** (Connect, Create, navigation). Reuse shared primitives — e.g. filter chips use `.ap-filter-chip` (driven by `aria-pressed`), the same chip the Ideas panel uses.
+Built on the official Agorapulse DS (`@agorapulse/ui-theme` + `@agorapulse/ui-symbol`), **loaded from jsDelivr `@latest`** in `index.html`, nothing vendored. Ad-hoc CSS overriding DS tokens is the #1 source of bugs here.
 
-### DS files (jsDelivr, `@latest` — nothing vendored)
+**All DS work goes through the `/design-guidelines` skill** (`mode: html-prototype`): it reads the specs and the CDN packages and carries the house rules. Generic design skills are a review checklist only. Never the `ds-css` MCP.
 
-```
-@agorapulse/ui-theme@latest/assets/
-  desktop_variables.css      — design tokens (--ref-* / --sys-* / --comp-*)
-  style/css-ui/font-face.css — Averta font-face (resolves ../../fonts/averta/ on the CDN)
-  style/css-ui/index.css     — all .ap-* component classes
-@agorapulse/ui-symbol@latest/icons/
-  ap-icons.css               — icons (mask-image on <i class="ap-icon-*">)
-```
+1. **Find the component by intent** (the skill's lookup), then its classes in the CDN's `css-ui/index.css`.
+2. **Check the icon exists** in `ui-symbol@latest/icons/ap-icons.css` — full class name (`ap-icon-eye-on`, not `ap-icon-eye`).
+3. **DS tokens only**, `--sys-*` over `--ref-*`, never `--comp-*` in app CSS. Grey steps are `05 · 10 · 20 · 40 · 60 · 80 · 100 · 150` only.
+4. **Custom CSS only if nothing in the DS fits**, in the right file:
+   - `styles/ds-patches.css` — the **only** place to touch a `.ap-*` selector (a missing variant, a primitive the DS forgot like `.ap-filter-chip`). It should shrink as the DS evolves.
+   - `styles/screens/<screen>.css`, `styles/components/<component>.css` — screen / shared styling. App tokens in `styles/tokens.css`.
+   - Redeclaring a `.ap-*` class elsewhere flips the cascade silently. One standing exception, documented at its top: `styles/components/archie-loader.css` claims `.ap-loader` (every spinner is the Archie mark — a brand decision). A second exception needs the same kind of note.
+5. **`npm run check:ds` before committing** — an unknown token or icon fails silently (dropped declaration, empty mask); this is the only thing that catches it.
 
-### App styles (in `styles/`)
-
-```
-styles/
-  tokens.css        — app-only tokens (surface aliases, radius, shadows, chart palette → DS data tokens)
-  base.css          — resets, keyframes, the global [hidden] rule, app-wide token groupings
-  fonts.css         — the Image Studio's bundled display fonts (local @font-face, OFL)
-  layout.css        — app shell (sidebar / topbar / content / panel chrome)
-  ds-patches.css    — the only legitimate place to touch .ap-* selectors
-  chat.css          — composer + thread chrome
-  chat-legacy.css   — the thread as of Monday 2026-10-05, flag newConversationStyles OFF only
-  screens/          — analyse, batch-studio, caption-editor, clip-editor, clip-studio, connectors,
-                      contexts (the catalogue + the home's page box), home (its hero,
-                      tab toolbar and chats table), dashboard, image-studio-canvas,
-                      image-studio-v2, insights (+ insights-cockpit / -mob_index /
-                      -mob_side / -read, one per layout), modals, new-start, playbook-v2, posts,
-                      session, topics, topics-settings, welcome
-  components/       — add-source-modal, archie-loader, archie-pixels, clip-card, connectors-modal,
-                      conversation-status-card, draft-changes, feedback-control, objective-modal,
-                      right-panel, schedule-modal (+ schedule-modal-legacy), sidebar,
-                      social-post-card, subtitle-style, top-post-card, topic-badge,
-                      topic-card, video-clips-modal, workflow-flow
-src/modules/image-studio/styles/imst-*.css — the Image Generator's own sheets (linked from index.html)
-```
-
-### Token tiers
-
-- `--ref-*` — reference tokens (colors, spacing, fonts, radii) from the DS.
-- `--sys-*` — semantic tokens (text/border colors, component states) — prefer these.
-- `--comp-*` — component-level tokens — do not use directly in app CSS.
-
-Exception: `.ap-icon-sparkles-mermaid` gets its gradient from a patch in `ds-patches.css` (the DS paints the mask in currentColor). Third-party brand colors (connector accents, social logos) live as data in JS, not as DS tokens.
+**Colors:** orange = AI / spotlight actions (`.ap-button.primary.orange`); blue = routine CTAs and navigation. Third-party brand colors (connector accents, social logos) live as data in JS, not as tokens. `.ap-icon-sparkles-mermaid` gets its gradient from `ds-patches.css`.
 
 ## Key conventions
 
-- `index.html` is HTML markup only — all UI is rendered by JS.
-- All seed data lives under `src/mocks/`, one file per domain, re-exported by the `src/mocks.js` barrel — consumers always import from `mocks.js`, never from a domain file. A new domain is a new file plus one `export *` line; it must not read another domain.
-- Event wiring is **pure event delegation** with `data-*` attributes on the screen/modal/panel root. No inline `onclick`, no per-child `addEventListener` for interactive elements.
-- `?v=N` is ONE number for the whole app: `npm run bump` after any JS/CSS change, never a hand edit (§ Module loading).
-- The `html` tagged-template escapes interpolations by default — wrap trusted HTML fragments in `raw()`, and do **not** double-escape (don't call `escapeHtml()` on a value already interpolated into an `html` template).
+- All seed data lives under `src/mocks/`, one self-contained file per domain, re-exported by `src/mocks.js` — always import from the barrel.
+- Event wiring is pure delegation with `data-*` on the screen / modal / panel root. No inline `onclick`, no per-child listeners.
+- The `html` tagged template escapes interpolations: wrap trusted fragments in `raw()`, never `escapeHtml()` a value already interpolated.
+- The pre-commit hook runs `check-template-comments.py`, `cache-version.mjs check`, and prettier on staged files.
 - One ask = one commit, pushed to `main` (GitHub Pages deploys it); never create branches. Other sessions push to `main` too: fetch before pushing, and merge — never rebase — when behind.
 
 ## Docs
 
-All docs (except this file and `README.md`) live under [`docs/`](docs/). Start from [`docs/README.md`](docs/README.md) for the full index. **What to read before designing anything: § Before you build a feature, at the top of this file.**
-
-- [`docs/reference/CONCEPTS.md`](docs/reference/CONCEPTS.md) — **what each object IS**: the Playbook and its hard boundaries, what a session is and what belongs to it, the draft/post/top-post/source-post split, what a Studio is, and where Archie stops and Agorapulse starts. Read before adding a field, a section, or a surface.
-- [`docs/reference/FEATURES.md`](docs/reference/FEATURES.md) — **functional catalog of every app feature** (flows, states, entry points). Start here to learn what the app does.
-- [`docs/reference/DECISIONS.md`](docs/reference/DECISIONS.md) — **the arbitrations behind the code**, in full (the one-liners in § Decisions above link into it).
-- [`docs/reference/UI-PATTERNS.md`](docs/reference/UI-PATTERNS.md) — concrete DS usage (ds-patches inventory, app tokens, UI patterns, the loader system, colour convention).
-- [`docs/reference/`](docs/reference/) — current truth about the proto (architecture + the full source tree, routes, stores, design system, glossary, shell sizing).
-- [`docs/audits/`](docs/audits/) — dated snapshots (prod vs proto, alpha feedback, the Image Generator integration); read the date before trusting a detail.
-- [`docs/copy/`](docs/copy/) — UX copy principles (voice, tone, glossary).
-- [`docs/specs/`](docs/specs/) — acceptance criteria, written from the running app. [`AC-TOPIC-FEED.md`](docs/specs/AC-TOPIC-FEED.md) covers the Topic Feed; its §0 lists what this repo deliberately does differently from the spec it was ported from.
-
-## MCP
-
-- `plugin:figma:figma` (when enabled) — design ↔ code: `use_figma`, `get_design_context`, `get_screenshot`, `generate_diagram`, etc.
-- A live browser **preview** is available for verification (navigate routes, click, screenshot, read console).
+Index: [`docs/README.md`](docs/README.md). [`reference/`](docs/reference/) is the current truth (concepts, features, decisions, architecture, routes, stores, DS usage, glossary); [`audits/`](docs/audits/) are dated snapshots — read the date before trusting a detail; [`copy/`](docs/copy/) the UX copy principles; [`specs/`](docs/specs/) acceptance criteria written from the running app.
