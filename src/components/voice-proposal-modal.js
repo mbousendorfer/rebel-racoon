@@ -22,18 +22,18 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2924";
-import { getContextById } from "../contexts-store.js?v=2924";
-import { networkLabel } from "../social-profiles.js?v=2924";
+} from "../modal-coordinator.js?v=2925";
+import { getContextById } from "../contexts-store.js?v=2925";
+import { networkLabel } from "../social-profiles.js?v=2925";
 import {
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
   saveNetworkVoice,
   editNetworkVoiceInPlaybook,
-} from "../network-voice-flow.js?v=2924";
-import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2924";
-import { escapeHtml } from "../utils.js?v=2924";
+} from "../network-voice-flow.js?v=2925";
+import { learnedVoiceHtml } from "./voice-intro-modal.js?v=2925";
+import { escapeHtml } from "../utils.js?v=2925";
 
 const MODAL_ID = "voice-proposal";
 

@@ -18,10 +18,9 @@
 // the stream is handled by re-looking up the target selector each tick
 // — when it disappears the stream stops and the content commits at once.
 
-import { getPosts, updatePostContent } from "./posts-store.js?v=2924";
-import { isFlagOn } from "./feature-flags.js?v=2924";
-import { escapeText, plural } from "./utils.js?v=2924";
-import { DRAFT_TRANSLATIONS, DRAFT_TRANSLATION_FALLBACK } from "./mocks.js?v=2924";
+import { getPosts, updatePostContent } from "./posts-store.js?v=2925";
+import { escapeText, plural } from "./utils.js?v=2925";
+import { DRAFT_TRANSLATIONS, DRAFT_TRANSLATION_FALLBACK } from "./mocks.js?v=2925";
 
 const inFlight = new Map(); // postId → AbortController
 
@@ -35,7 +34,7 @@ const TOKEN_MS_MIN = 8;
 const TOKEN_MS_MAX = 18;
 
 // `onCommit(before, after)` fires once the new text is in — the chat posts its
-// "what changed" card from it (flag draftChanges). Both are { text, hashtags,
+// "what changed" card from it. Both are { text, hashtags,
 // cta, language }. `language` is the target of a "translate" rewrite. Returns
 // true when the rewrite started (a draft already rewriting, or locked, is left).
 export function startRewrite(sessionId, postId, intent = "fresh", { onCommit, language } = {}) {
@@ -94,7 +93,7 @@ export function startRewrite(sessionId, postId, intent = "fresh", { onCommit, la
         isRegenerating: false,
         regenerateStage: null,
         // The draft keeps what it replaced, so it can show and undo the change.
-        revision: isFlagOn("draftChanges") ? { before, intent, at: Date.now() } : null,
+        revision: { before, intent, at: Date.now() },
       });
       inFlight.delete(postId);
       onCommit?.(before, { text: final.text, hashtags: final.hashtags, cta: final.cta, language: final.language });

@@ -6,16 +6,16 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { newId } from "./utils.js?v=2924";
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2924";
-import { findConnector } from "./connectors-store.js?v=2924";
-import { createSessionNotifier } from "./store-utils.js?v=2924";
-import { addPostDraft } from "./posts-store.js?v=2924";
-import { showToast } from "./components/toast.js?v=2924";
-import { isFlagOn, isNewStartOn } from "./feature-flags.js?v=2924";
-import { getContexts } from "./contexts-store.js?v=2924";
-import { offerMentions } from "./mention-flow.js?v=2924";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2924";
+import { newId } from "./utils.js?v=2925";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2925";
+import { findConnector } from "./connectors-store.js?v=2925";
+import { createSessionNotifier } from "./store-utils.js?v=2925";
+import { addPostDraft } from "./posts-store.js?v=2925";
+import { showToast } from "./components/toast.js?v=2925";
+import { isFlagOn, isNewStartOn } from "./feature-flags.js?v=2925";
+import { getContexts } from "./contexts-store.js?v=2925";
+import { offerMentions } from "./mention-flow.js?v=2925";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2925";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -845,7 +845,7 @@ export function postImageLookSet(sessionId, { contextId, styleId, label }) {
   notify(sessionId);
 }
 
-// "What changed" — one draft, rewritten from the chat (flag draftChanges): my
+// "What changed" — one draft, rewritten from the chat: my
 // sentence, read from the turn's own before / after (« I made <the draft> shorter: … »);
 // the change itself is read and undone on the draft.
 export function postRevisionTurn(sessionId, { postId, network, intent, before, after }) {

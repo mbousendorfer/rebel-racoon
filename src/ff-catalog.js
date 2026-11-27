@@ -170,22 +170,6 @@ export const FLAGS = Object.freeze([
       "month calendar beside the list.",
   },
   {
-    id: "draftChanges",
-    group: "Chat & drafts",
-    tip: "When Archie rewrites a draft, you see what changed on the draft itself: the new words marked, View changes for the removed ones, Undo and a close button. The chat just says it.",
-    label: "UI-Draft changes: what changed",
-    // ON: a rewrite keeps the version it replaced. OFF: the rewrite as before,
-    // no marks, no undo.
-    default: true,
-    hides:
-      "What a rewrite asked in the chat changed. When ON (default), the chat " +
-      "says it in one sentence, with no card. On the draft itself, a green " +
-      "strip says « Your post has been updated. » with Undo (then Redo), View " +
-      "changes (the removed words struck in place, beside the added ones) and " +
-      "a close button. The new words stay marked until the close button, a " +
-      "hand edit or the next rewrite.",
-  },
-  {
     id: "draftMentions",
     group: "Chat & drafts",
     tip: "Ask Archie to mention people in a draft (« mention Notion and Jordan Lee in the LinkedIn post »): it opens a search on each draft's network, you tick the accounts, and it offers to when a draft names a brand.",

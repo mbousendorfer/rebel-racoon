@@ -5,8 +5,8 @@
 // the thread. Plus the post-plan switch and the schedule plan's "Adjust dates".
 // Moved out of session.js, unchanged; it touches none of the screen's state.
 
-import { escapeHtml, formatDayLabel, formatTimeOfDay } from "../../utils.js?v=2924";
-import { networkLabel, networkIcon } from "../../social-profiles.js?v=2924";
+import { escapeHtml, formatDayLabel, formatTimeOfDay } from "../../utils.js?v=2925";
+import { networkLabel, networkIcon } from "../../social-profiles.js?v=2925";
 import {
   getThread,
   postAssistantMessage,
@@ -19,39 +19,39 @@ import {
   startPending,
   finishPending,
   postActivity,
-} from "../../assistant.js?v=2924";
-import { startRewrite, languageOf, TRANSLATE_LANGUAGES } from "../../draft-rewrite.js?v=2924";
-import { startPostPlan } from "../../post-plan-flow.js?v=2924";
+} from "../../assistant.js?v=2925";
+import { startRewrite, languageOf, TRANSLATE_LANGUAGES } from "../../draft-rewrite.js?v=2925";
+import { startPostPlan } from "../../post-plan-flow.js?v=2925";
 import {
   MENTION_ASK,
   UNMENTION_ASK,
   mentionNamesIn,
   mentionInDrafts,
   unmentionInDrafts,
-} from "../../mention-flow.js?v=2924";
+} from "../../mention-flow.js?v=2925";
 import {
   getPlans as getPostPlans,
   getActivePlan as getActivePostPlan,
   setActivePlan as setActivePostPlan,
-} from "../../post-plan-store.js?v=2924";
-import { getSources } from "../../library.js?v=2924";
-import { getPosts, removePost, addPostDraft, updatePostContent } from "../../posts-store.js?v=2924";
-import * as inlineQuestion from "../../inline-question.js?v=2924";
-import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../../schedule-engine.js?v=2924";
-import { addToQueue } from "../../schedule-store.js?v=2924";
-import { refLabel } from "../../chat-refs.js?v=2924";
+} from "../../post-plan-store.js?v=2925";
+import { getSources } from "../../library.js?v=2925";
+import { getPosts, removePost, addPostDraft, updatePostContent } from "../../posts-store.js?v=2925";
+import * as inlineQuestion from "../../inline-question.js?v=2925";
+import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../../schedule-engine.js?v=2925";
+import { addToQueue } from "../../schedule-store.js?v=2925";
+import { refLabel } from "../../chat-refs.js?v=2925";
 import {
   openScheduleForPosts,
   onPostImage,
   openAssignForPosts,
   commitAssigned,
-} from "../../components/right-panel/drafts-view.js?v=2924";
-import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER } from "../../org.js?v=2924";
-import { isPostValid } from "../../post-validation.js?v=2924";
-import { reviewBlock } from "../../components/assign-modal.js?v=2924";
-import { isFlagOn } from "../../feature-flags.js?v=2924";
-import { focusInPanel } from "../../components/right-panel.js?v=2924";
-import { blockInDemo } from "../../demo-flow.js?v=2924";
+} from "../../components/right-panel/drafts-view.js?v=2925";
+import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER } from "../../org.js?v=2925";
+import { isPostValid } from "../../post-validation.js?v=2925";
+import { reviewBlock } from "../../components/assign-modal.js?v=2925";
+import { isFlagOn } from "../../feature-flags.js?v=2925";
+import { focusInPanel } from "../../components/right-panel.js?v=2925";
+import { blockInDemo } from "../../demo-flow.js?v=2925";
 
 // "Delete all the drafts" — a destructive, irreversible ask, so I confirm it in
 // the chat (Quickpicker) instead of acting on the sentence. Same set the Drafts
@@ -193,13 +193,12 @@ function rewriteDrafts(sessionId, targets, intent, { language } = {}) {
       ? `Rewriting [[post:${targets[0].id}]] ${done}.`
       : `Rewriting these ${targets.length} drafts ${done}:${targets.map((d) => `\n- [[post:${d.id}]]`).join("")}`,
   );
-  // Each rewritten draft gets its "what changed" sentence (flag draftChanges) —
+  // Each rewritten draft gets its "what changed" sentence —
   // or, when the ask touched several, one for all of them once the last lands.
   const grouped = targets.length > 1;
   const items = [];
   let expected = 0;
   const onCommit = (d) => {
-    if (!isFlagOn("draftChanges")) return undefined;
     if (!grouped)
       return (before, after) =>
         postRevisionTurn(sessionId, { postId: d.id, network: d.network, intent, before, after });

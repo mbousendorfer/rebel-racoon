@@ -11,10 +11,10 @@
 //     Archie's last rewrite; called again, it redoes it
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { newId } from "./utils.js?v=2924";
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2924";
-import { isNewUser } from "./user-mode.js?v=2924";
-import { createSessionNotifier } from "./store-utils.js?v=2924";
+import { newId } from "./utils.js?v=2925";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2925";
+import { isNewUser } from "./user-mode.js?v=2925";
+import { createSessionNotifier } from "./store-utils.js?v=2925";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).
@@ -182,7 +182,7 @@ export function updatePostContent(sessionId, postId, partial) {
   // { "@Notion": account } — the accounts the text's mentions point at
   // (mentions.js, flag draftMentions).
   if (partial.mentions !== undefined) post.mentions = partial.mentions;
-  // What Archie's last rewrite changed (flag draftChanges): { before, intent,
+  // What Archie's last rewrite changed: { before, intent,
   // at, undone?, hidden? }, `before` = { text, hashtags, cta, language }; `hidden` once
   // accepted on the draft. Cleared (null) by a hand edit.
   if (partial.revision !== undefined) post.revision = partial.revision;

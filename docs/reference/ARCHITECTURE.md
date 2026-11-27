@@ -131,7 +131,7 @@ src/
   post-plan-flow.js     — writing a post in a chat with no source (post plan → confirm → drafts)
   mention-flow.js       — mentions in drafts, asked in the chat (flag `draftMentions`)
   post-validation.js    — can this draft publish on its network? DERIVED on every read, never stored
-  word-diff.js          — what a rewrite changed, word by word (flag `draftChanges`; npm run check:diff)
+  word-diff.js          — what a rewrite changed, word by word (npm run check:diff)
   clip-framing.js       — the Clips space's reframe engine (port of prod's crop editor; npm run check:framing)
   objective-measures.js / objective-scoring.js / objective-flow.js — Insights' objectives: the
                           metric catalogue, the tiers, and the chat doors (flag `insightsHub`)

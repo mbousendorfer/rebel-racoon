@@ -1,12 +1,11 @@
-// word-diff — what a rewrite changed in a draft, word by word (flag
-// draftChanges). One diff, read on the draft in the panel: "after" at rest —
+// word-diff — what a rewrite changed in a draft, word by word. One diff, read on the draft in the panel: "after" at rest —
 // the post as it will publish, its new words marked — and "unified" (added
 // marked, removed struck) behind View changes.
 //
 // A text is a list of paragraphs. Tokens are its words plus a break between
 // paragraphs; spacing is not diffed (a post's paragraphs are plain sentences).
 
-import { escapeText } from "./utils.js?v=2924";
+import { escapeText } from "./utils.js?v=2925";
 
 const BREAK = "\n";
 

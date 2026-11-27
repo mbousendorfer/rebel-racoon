@@ -19,21 +19,21 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2924";
-import { isPortraitFormat } from "../clip-formats.js?v=2924";
-import { presetById } from "../clip-captions.js?v=2924";
-import { renderFeedbackControl } from "./feedback-control.js?v=2924";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2925";
+import { isPortraitFormat } from "../clip-formats.js?v=2925";
+import { presetById } from "../clip-captions.js?v=2925";
+import { renderFeedbackControl } from "./feedback-control.js?v=2925";
 import {
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=2924";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2924";
-import { REVEAL_MS } from "../archie-pixels.js?v=2924";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2924";
-import { languageOf } from "../draft-rewrite.js?v=2924";
+} from "../social-profiles.js?v=2925";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2925";
+import { REVEAL_MS } from "../archie-pixels.js?v=2925";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2925";
+import { languageOf } from "../draft-rewrite.js?v=2925";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -165,7 +165,7 @@ function renderVoiceStatus(net, opts, post) {
   return "";
 }
 
-// What my last rewrite changed (flag draftChanges, resolved by the host into
+// What my last rewrite changed (resolved by the host into
 // `opts.changes`): the DS green status card glued on top, « Your post has been
 // updated. » + Undo (then Redo) + View changes + ×, and the new words marked in
 // the text, which still reads as it will publish. View changes adds the removed
