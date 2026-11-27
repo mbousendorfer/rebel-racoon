@@ -6,7 +6,7 @@
 // ⇧D toggles it (not while typing), Esc and × close it. It holds what the
 // sidebar cog and the composer's « Admin: preview in chat » link used to show,
 // in two tabs: Settings (user mode, role, connected networks, every feature
-// flag, voice and clips tools, docs) and Preview in chat (the chat catalogue,
+// flag, docs) and Preview in chat (the chat catalogue,
 // when a chat is on screen). Nothing in the app points at it: the shortcut is the only way in.
 
 import {
@@ -15,15 +15,14 @@ import {
   applyOrgRole,
   toggleFlag,
   toggleNetwork,
-  replayVoiceIntro,
-  resetNetworkVoices,
-  armClipsFailure,
-} from "../admin-menu.js?v=2933";
+  applyNetworks,
+  networksSummary,
+} from "../admin-menu.js?v=2934";
 import {
   renderChatGalleryPanel,
   runChatGalleryItem,
   filterChatGallery,
-} from "../screens/session/chat-gallery.js?v=2933";
+} from "../screens/session/chat-gallery.js?v=2934";
 
 let root = null;
 
@@ -50,6 +49,7 @@ function paint() {
 function toggleAdminPanel(open = !isOpen()) {
   if (!root) return;
   if (open) paint();
+  else applyNetworks();
   root.hidden = !open;
   if (open) root.querySelector("[data-admin-panel-close]")?.focus();
 }
@@ -115,12 +115,22 @@ export function init() {
     if (networkRow) {
       event.preventDefault();
       toggleNetwork(networkRow.dataset.adminNetwork);
+      // Flip the row in place: a repaint would close the select.
+      const on = networkRow.getAttribute("aria-selected") !== "true";
+      networkRow.setAttribute("aria-selected", String(on));
+      networkRow.querySelector("input").checked = on;
+      root.querySelector("[data-admin-networks-value]").textContent = networksSummary();
     }
-    if (event.target.closest("[data-admin-voice-intro]")) replayVoiceIntro();
-    if (event.target.closest("[data-admin-voice-reset]")) resetNetworkVoices();
-    const fail = event.target.closest("[data-admin-clips-fail]");
-    if (fail) armClipsFailure(fail.dataset.adminClipsFail);
   });
+
+  // The networks select applies (reloads) once it closes.
+  root.addEventListener(
+    "toggle",
+    (event) => {
+      if (event.target.matches("[data-admin-networks]") && !event.target.open) applyNetworks();
+    },
+    true,
+  );
 
   root.addEventListener("input", (event) => {
     if (event.target.matches("[data-chat-gallery-search-input]")) filterChatGallery(root, event.target.value);

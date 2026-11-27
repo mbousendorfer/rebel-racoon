@@ -6,16 +6,12 @@
 // the side-effecting actions wired by the panel's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2933";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2933";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2933";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2933";
-import { getRole, setRole, ORG } from "./org.js?v=2933";
-import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2933";
-import { resetIntro } from "./components/voice-intro-modal.js?v=2933";
-import { getContexts, updateContext } from "./contexts-store.js?v=2933";
-import { showToast } from "./components/toast.js?v=2933";
-import { failNextAnalysis } from "./videos-store.js?v=2933";
+import { html, raw, escapeHtml } from "./utils.js?v=2934";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2934";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2934";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2934";
+import { getRole, setRole, ORG } from "./org.js?v=2934";
+import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2934";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
@@ -58,11 +54,24 @@ export function applyOrgRole(target) {
   window.location.reload();
 }
 
-// Connect or disconnect the brand on a network, then reload — every surface
-// reads the connected accounts at render time.
+// Connect or disconnect the brand on a network. The select stays open so
+// several can be ticked; the reload waits for it to close (applyNetworks) —
+// every surface reads the connected accounts at render time.
+let networksChanged = false;
 export function toggleNetwork(network) {
   setNetworkConnected(network, !isNetworkConnected(network));
-  window.location.reload();
+  networksChanged = true;
+}
+export function applyNetworks() {
+  if (networksChanged) window.location.reload();
+}
+
+export function networksSummary() {
+  const ids = Object.keys(NETWORKS);
+  const on = ids.filter(isNetworkConnected);
+  if (on.length === ids.length) return `All ${ids.length} networks`;
+  if (!on.length) return "No network connected";
+  return on.map((id) => NETWORKS[id].label).join(", ");
 }
 
 // Flip a feature flag, then reload so every store / surface re-reads it.
@@ -81,29 +90,6 @@ export function toggleFlag(id) {
     window.location.hash = "#/";
   }
   window.location.reload();
-}
-
-// The voice intro shows once; this shows it again.
-export function replayVoiceIntro() {
-  resetIntro();
-  window.location.reload();
-}
-
-// Every Playbook's network voices dropped, until the next reload re-seeds them:
-// the Voice step, the nudges and the intro's cards start over.
-export function resetNetworkVoices() {
-  getContexts().forEach((c) => updateContext(c.id, { voiceByNetwork: {} }));
-  showToast("Network voices reset. Each network asks for its voice at its next draft.", { duration: 3200 });
-}
-
-// One end armed for the Clips space: the next video added finds no clips
-// (prod's NO_SPEECH) or its job crashes.
-export function armClipsFailure(kind) {
-  failNextAnalysis(kind);
-  showToast(
-    kind === "crash" ? "The next video you add will crash its analysis." : "The next video you add will find no clips.",
-    { duration: 3200 },
-  );
 }
 
 export function renderAdminMenu() {
@@ -159,17 +145,17 @@ export function renderAdminMenu() {
   ).join("");
 
   // The networks the brand is connected on — all six unless one is unticked.
-  const networkRows = Object.entries(NETWORKS)
-    .map(
-      ([id, n]) => `
-      <label class="admin-menu__row admin-menu__flag" data-admin-network="${escapeHtml(id)}">
-        <span class="admin-menu__network"><i class="${escapeHtml(n.icon)}" aria-hidden="true"></i><span class="admin-menu__opt-label">${escapeHtml(n.label)}</span></span>
-        <span class="ap-toggle-container admin-menu__toggle" aria-hidden="true">
-          <input type="checkbox" ${isNetworkConnected(id) ? "checked" : ""} tabindex="-1" />
-          <i></i>
-        </span>
-      </label>`,
-    )
+  // The DS multi-select: a checkbox per option, the summary in the trigger.
+  const networkOptions = Object.entries(NETWORKS)
+    .map(([id, n]) => {
+      const on = isNetworkConnected(id);
+      return `
+      <div class="ap-select-option" role="option" aria-selected="${on}" tabindex="0" data-admin-network="${escapeHtml(id)}">
+        <span class="ap-checkbox-container ap-select-option-checkbox" aria-hidden="true"><input type="checkbox" tabindex="-1" ${on ? "checked" : ""} /><i></i></span>
+        <i class="${escapeHtml(n.icon)}" aria-hidden="true"></i>
+        <span class="ap-select-option-text">${escapeHtml(n.label)}</span>
+      </div>`;
+    })
     .join("");
 
   return html`
@@ -188,48 +174,17 @@ export function renderAdminMenu() {
       )}
       <div class="admin-menu__section">
         <span class="admin-menu__section-title">Connected networks</span>
-        <div class="admin-menu__flags">${raw(networkRows)}</div>
+        <details class="ap-select" data-admin-networks>
+          <summary class="ap-select-trigger" aria-label="Connected networks">
+            <span class="ap-select-value" data-admin-networks-value>${networksSummary()}</span>
+            <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
+          </summary>
+          <div class="ap-select-dropdown" role="listbox" aria-multiselectable="true">
+            <div class="ap-select-options">${raw(networkOptions)}</div>
+          </div>
+        </details>
       </div>
       ${raw(flagSections)}
-      <div class="admin-menu__section">
-        <span class="admin-menu__section-title">Voice</span>
-        <button type="button" class="admin-menu__doc" data-admin-voice-intro>
-          <span class="admin-menu__opt-text">
-            <span class="admin-menu__opt-label">Replay the voice intro</span>
-            <span class="admin-menu__opt-hint">Each network, its own voice — shown again on reload</span>
-          </span>
-          <i class="ap-icon-refresh" aria-hidden="true"></i>
-        </button>
-        <button type="button" class="admin-menu__doc" data-admin-voice-reset>
-          <span class="admin-menu__opt-text">
-            <span class="admin-menu__opt-label">Reset network voices</span>
-            <span class="admin-menu__opt-hint"
-              >Every network back on the default voice, never set: the Voice step asks again at the next draft</span
-            >
-          </span>
-          <i class="ap-icon-refresh" aria-hidden="true"></i>
-        </button>
-        <span class="admin-menu__opt-hint"
-          >In a chat, Preview in chat › Voice (above) plays the voice step, a voice change and feedback.</span
-        >
-      </div>
-      <div class="admin-menu__section">
-        <span class="admin-menu__section-title">Clips</span>
-        <button type="button" class="admin-menu__doc" data-admin-clips-fail="empty">
-          <span class="admin-menu__opt-text">
-            <span class="admin-menu__opt-label">No clips in the next video</span>
-            <span class="admin-menu__opt-hint">Prod's NO_SPEECH: the reason, Upload another video and Remove</span>
-          </span>
-          <i class="ap-icon-warning" aria-hidden="true"></i>
-        </button>
-        <button type="button" class="admin-menu__doc" data-admin-clips-fail="crash">
-          <span class="admin-menu__opt-text">
-            <span class="admin-menu__opt-label">Crash the next analysis</span>
-            <span class="admin-menu__opt-hint">The job fails at Transcribing audio: Try again and Remove</span>
-          </span>
-          <i class="ap-icon-warning" aria-hidden="true"></i>
-        </button>
-      </div>
       <div class="admin-menu__section">
         <span class="admin-menu__section-title">Docs</span>
         <a class="admin-menu__doc" href="handoff/overlays.html" target="_blank" rel="noopener">
