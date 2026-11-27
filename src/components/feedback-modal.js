@@ -9,7 +9,7 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2978";
+} from "../modal-coordinator.js?v=2979";
 
 const MODAL_ID = "feedback";
 

@@ -8,10 +8,10 @@
 //   hashtags({ brand, brief, network }) → Promise<string[]>
 //   promptFromImages({ colors, look }) → Promise<string>   (a style prompt read from reference images)
 
-import { MOCK } from "../../config/mock.js?v=2978";
-import { COPY_LIMITS } from "../../config/copy-limits.js?v=2978";
-import { hashString, prng, shuffle } from "../../lib/prng.js?v=2978";
-import { wait } from "../../lib/delegate.js?v=2978";
+import { MOCK } from "../../config/mock.js?v=2979";
+import { COPY_LIMITS } from "../../config/copy-limits.js?v=2979";
+import { hashString, prng, shuffle } from "../../lib/prng.js?v=2979";
+import { wait } from "../../lib/delegate.js?v=2979";
 
 function delay(signal, [min, max] = MOCK.copy.delayMs) {
   return wait(min + Math.random() * (max - min), signal);
@@ -171,9 +171,9 @@ export async function headlineFromPost({ text, round = 0 }, { signal } = {}) {
   const unique = postClauses(text);
   if (!unique.length) {
     const words = cleanPost(text).split(" ").slice(0, 6).join(" ");
-    return words ? capital(words) : "";
+    return words ? cap(words) : "";
   }
-  return capital(unique[round % unique.length]);
+  return cap(unique[round % unique.length]);
 }
 
 // A carousel's text, one line per slide, in the post's order: slide 1 is the
@@ -182,10 +182,8 @@ export async function headlineFromPost({ text, round = 0 }, { signal } = {}) {
 export async function slideLinesFromPost({ text, count, first = "" }) {
   const lines = postClauses(text).filter((c) => c.toLowerCase() !== first.toLowerCase());
   const head = first || lines.shift() || "";
-  return Array.from({ length: count }, (_, i) => capital(i === 0 ? head : lines[i - 1] || ""));
+  return Array.from({ length: count }, (_, i) => cap(i === 0 ? head : lines[i - 1] || ""));
 }
-
-const capital = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 
 function cleanPost(text) {
   return String(text || "")

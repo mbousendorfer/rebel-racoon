@@ -25,8 +25,8 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2978";
-import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=2978";
+} from "../modal-coordinator.js?v=2979";
+import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=2979";
 import {
   canTransfer,
   isMine,
@@ -35,10 +35,10 @@ import {
   recipientsOf,
   tiedProfile,
   profileBlockFor,
-} from "../playbook-access.js?v=2978";
-import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=2978";
-import { showToast } from "./toast.js?v=2978";
-import { html, raw, escapeHtml } from "../utils.js?v=2978";
+} from "../playbook-access.js?v=2979";
+import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=2979";
+import { showToast } from "./toast.js?v=2979";
+import { html, raw, escapeHtml, fold } from "../utils.js?v=2979";
 
 const MODAL_ID = "sharePlaybook";
 
@@ -58,14 +58,8 @@ let query = "";
 let transferTo = null;
 
 // Search has to ignore accents, or half this org is unreachable by typing:
-// "lea" would miss Léa Mercier and "ines" Inès Ferrand. Folded on both sides —
-// the row key and the query.
-function fold(text) {
-  return (text || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "");
-}
+// "lea" would miss Léa Mercier and "ines" Inès Ferrand. Folded on both sides
+// (utils.fold) — the row key and the query.
 
 const HTML = `
 <div class="app-modal-backdrop share-playbook-modal__backdrop" id="sharePlaybookBackdrop" hidden></div>
