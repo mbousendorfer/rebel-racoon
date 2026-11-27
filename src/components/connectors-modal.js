@@ -20,14 +20,14 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2931";
-import { navigate } from "../router.js?v=2931";
-import { newChatPath } from "../utils.js?v=2931";
-import { showToast } from "./toast.js?v=2931";
-import { setHandoff } from "../handoff.js?v=2931";
-import { findConnector, setConnectorStatus, subscribe as subscribeConnectors } from "../connectors-store.js?v=2931";
-import { renderGalleryBody, renderDetailBody } from "../connectors-view.js?v=2931";
-import { askConnector } from "../connector-ask.js?v=2931";
+} from "../modal-coordinator.js?v=2932";
+import { navigate } from "../router.js?v=2932";
+import { newChatPath } from "../utils.js?v=2932";
+import { showToast } from "./toast.js?v=2932";
+import { setHandoff } from "../handoff.js?v=2932";
+import { findConnector, setConnectorStatus, subscribe as subscribeConnectors } from "../connectors-store.js?v=2932";
+import { renderGalleryBody, renderDetailBody } from "../connectors-view.js?v=2932";
+import { askConnector } from "../connector-ask.js?v=2932";
 
 const MODAL_ID = "connectors";
 

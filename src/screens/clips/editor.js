@@ -24,18 +24,18 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2931";
-import { parseHashParams } from "../../url-state.js?v=2931";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2931";
-import { showToast } from "../../components/toast.js?v=2931";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2931";
-import { open as openRename } from "../../components/rename-modal.js?v=2931";
-import { getContextById } from "../../contexts-store.js?v=2931";
-import { escapeHtml } from "../../utils.js?v=2931";
-import * as ce from "../../caption-editor.js?v=2931";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2931";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2931";
-import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2931";
+import { navigate } from "../../router.js?v=2932";
+import { parseHashParams } from "../../url-state.js?v=2932";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2932";
+import { showToast } from "../../components/toast.js?v=2932";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2932";
+import { open as openRename } from "../../components/rename-modal.js?v=2932";
+import { getContextById } from "../../contexts-store.js?v=2932";
+import { escapeHtml } from "../../utils.js?v=2932";
+import * as ce from "../../caption-editor.js?v=2932";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2932";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2932";
+import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2932";
 import {
   framingContext,
   initialSegments,
@@ -49,7 +49,7 @@ import {
   merge,
   snapMs,
   resetSegment,
-} from "../../clip-framing.js?v=2931";
+} from "../../clip-framing.js?v=2932";
 import {
   RATIO_IDS,
   ratioOf,
@@ -61,8 +61,8 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2931";
-import { writePostsInChat } from "../../clips-chat.js?v=2931";
+} from "./shared.js?v=2932";
+import { writePostsInChat } from "../../clips-chat.js?v=2932";
 import {
   timelineShellHTML,
   paintTimeline,
@@ -77,8 +77,8 @@ import {
   timelineWheel,
   timelineDrop,
   revealPlayhead,
-} from "./editor-timeline.js?v=2931";
-import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2931";
+} from "./editor-timeline.js?v=2932";
+import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2932";
 
 const FPS = 25;
 export const FRAME_MS = 1000 / FPS;

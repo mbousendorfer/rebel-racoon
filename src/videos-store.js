@@ -28,11 +28,11 @@
 //             preset), transcript, segments (null = auto framing), texts[],
 //             brand (null = the Playbook's clip look) }
 
-import { newId } from "./utils.js?v=2931";
-import { seedVideos } from "./mocks.js?v=2931";
-import { isNewUser } from "./user-mode.js?v=2931";
-import { createNotifier } from "./store-utils.js?v=2931";
-import { getDefaultContext, getContextById } from "./contexts-store.js?v=2931";
+import { newId } from "./utils.js?v=2932";
+import { seedVideos } from "./mocks.js?v=2932";
+import { isNewUser } from "./user-mode.js?v=2932";
+import { createNotifier } from "./store-utils.js?v=2932";
+import { getDefaultContext, getContextById } from "./contexts-store.js?v=2932";
 
 const MIN_VIDEO_MS = 30 * 1000;
 const MAX_VIDEO_MS = 2 * 60 * 60 * 1000;
@@ -174,43 +174,12 @@ export function addVideo({
   return video;
 }
 
-// Two ways an analysis ends without clips, as in prod (clip-job.service):
-// « empty » (NO_SPEECH — the video, not the job: trying again changes nothing)
-// and « crash » (the job failed: Try again). The prototype never ends either
-// way on its own; failNextAnalysis arms one (its Admin entry was removed).
-const ANALYSIS_ENDS = {
-  empty: {
-    kind: "empty",
-    stage: "Finding the best moments",
-    reason:
-      "I couldn't find enough speech in this video to pick highlights from. Clips are chosen from what is said, so try a video with narration or dialogue.",
-  },
-  crash: {
-    kind: "crash",
-    stage: "Transcribing audio",
-    reason: "I couldn't finish working on this video. You can try again, or upload a different video.",
-  },
-};
-let failNext = null;
-export function failNextAnalysis(kind = "empty") {
-  failNext = kind;
-}
-
 function runAnalysis(video) {
   const started = Date.now();
-  const end = failNext && ANALYSIS_ENDS[failNext];
-  failNext = null;
   const timer = setInterval(() => {
     const p = Math.min(1, (Date.now() - started) / ANALYZE_MS);
     video.progress = p;
     video.stage = ANALYSIS_STAGES[Math.min(ANALYSIS_STAGES.length - 1, Math.floor(p * ANALYSIS_STAGES.length))];
-    if (end && video.stage === end.stage) {
-      clearInterval(timer);
-      video.status = "failed";
-      video.failure = { ...end };
-      notify();
-      return;
-    }
     if (p >= 1) {
       clearInterval(timer);
       if (!video.clips.length) video.clips = launchRequest(video) ? focusedMoments(video) : momentsFor(video);
