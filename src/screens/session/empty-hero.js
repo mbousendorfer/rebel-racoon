@@ -1,19 +1,19 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2936";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2936";
-import { getContextById, getContexts } from "../../contexts-store.js?v=2936";
-import { renderTopicCard } from "../../components/topic-card.js?v=2936";
-import { findTopicSource } from "../../topics-catalog.js?v=2936";
-import { html, raw } from "../../utils.js?v=2936";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2936";
-import { renderStarterCards } from "../../components/starter-card.js?v=2936";
-import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2936";
-import { voicesToFinish } from "../../voice-parts.js?v=2936";
-import { networkLabel } from "../../social-profiles.js?v=2936";
-import { parseHashParams } from "../../url-state.js?v=2936";
-import { renderAsks, renderNewStart } from "./new-start.js?v=2936";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2937";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2937";
+import { getContextById, getContexts } from "../../contexts-store.js?v=2937";
+import { renderTopicCard } from "../../components/topic-card.js?v=2937";
+import { findTopicSource } from "../../topics-catalog.js?v=2937";
+import { html, raw } from "../../utils.js?v=2937";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2937";
+import { renderStarterCards } from "../../components/starter-card.js?v=2937";
+import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2937";
+import { voicesToFinish } from "../../voice-parts.js?v=2937";
+import { networkLabel } from "../../social-profiles.js?v=2937";
+import { parseHashParams } from "../../url-state.js?v=2937";
+import { renderAsks, renderNewStart } from "./new-start.js?v=2937";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the

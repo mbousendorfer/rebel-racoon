@@ -696,6 +696,8 @@ Dans l'ordre de l'onglet Settings :
 
 Persistés en `localStorage` (`archie-feature-flags`), lus via `isFlagOn()` ([`feature-flags.js`](../../src/feature-flags.js)) : la valeur stockée l'emporte sur `default`, un id inconnu vaut OFF. Le détail de chaque feature est dans son § ; ici, seulement ce que le flag commute.
 
+**Partager ses flags par lien** : Admin → Share → « Copy link with my flags » copie l'URL courante avec `?ff=` (les flags qui diffèrent du défaut, `-id` = OFF, ex. `?ff=insightsHub,-contentPanel`). Ouvrir un lien `?ff=` remplace TOUS les flags stockés (un flag non nommé revient à son défaut), puis le paramètre quitte l'URL pour qu'un toggle dans l'Admin ne soit pas annulé au reload. Seuls les flags voyagent, pas le user mode ni les réseaux.
+
 #### New surfaces
 
 - **`insightsHub`** — _Insights hub (/insights)_ — **OFF**. ON : toute la section Insights (§19). OFF : ni ligne de rail, ni vue ; un `/insights` tapé rebondit sur `/` ([`insights/shell.js`](../../src/screens/insights/shell.js), `sidebar.js`, `topbar.js`).

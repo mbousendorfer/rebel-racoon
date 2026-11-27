@@ -17,12 +17,14 @@ import {
   toggleNetwork,
   applyNetworks,
   networksSummary,
-} from "../admin-menu.js?v=2936";
+} from "../admin-menu.js?v=2937";
+import { getFlagsShareUrl } from "../feature-flags.js?v=2937";
+import { showToast } from "./toast.js?v=2937";
 import {
   renderChatGalleryPanel,
   runChatGalleryItem,
   filterChatGallery,
-} from "../screens/session/chat-gallery.js?v=2936";
+} from "../screens/session/chat-gallery.js?v=2937";
 
 let root = null;
 
@@ -104,6 +106,15 @@ export function init() {
     if (item) {
       toggleAdminPanel(false);
       runChatGalleryItem(item.dataset.chatGalleryItem);
+      return;
+    }
+    if (event.target.closest("[data-admin-copy-flags]")) {
+      const url = getFlagsShareUrl();
+      navigator.clipboard
+        .writeText(url)
+        .then(() => showToast("Link copied. It opens with your flags."))
+        // Clipboard refused (embedded browser, no permission): hand it over to copy by hand.
+        .catch(() => window.prompt("Copy this link:", url));
       return;
     }
     const flagRow = event.target.closest("[data-admin-flag]");
