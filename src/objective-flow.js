@@ -21,12 +21,12 @@
 // module instances are shared — each holds per-session state in a module-local
 // Map, and a second copy at a different URL would hold its own.
 
-import { newChatPath } from "./utils.js?v=2970";
-import { navigate } from "./router.js?v=2970";
-import { setHandoff } from "./handoff.js?v=2970";
-import { postAssistantMessage, sendMessage } from "./assistant.js?v=2970";
-import * as inlineQuestion from "./inline-question.js?v=2970";
-import { objectiveNextMoves } from "./mocks.js?v=2970";
+import { newChatPath } from "./utils.js?v=2971";
+import { navigate } from "./router.js?v=2971";
+import { setHandoff } from "./handoff.js?v=2971";
+import { postAssistantMessage, sendMessage } from "./assistant.js?v=2971";
+import * as inlineQuestion from "./inline-question.js?v=2971";
+import { objectiveNextMoves } from "./mocks.js?v=2971";
 
 export const OBJECTIVE_CHAT_HANDOFF = "pendingObjectiveChat";
 

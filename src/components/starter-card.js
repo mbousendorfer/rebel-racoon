@@ -6,8 +6,8 @@
 // The CSS lives in styles/screens/session.css (`.starter-grid`, `.starter-card`
 // and its tones).
 
-import { chatStarters } from "../mocks.js?v=2970";
-import { escapeHtml } from "../utils.js?v=2970";
+import { chatStarters } from "../mocks.js?v=2971";
+import { escapeHtml } from "../utils.js?v=2971";
 
 /**
  * The starter cards' markup, ready to drop inside a `.starter-grid`.

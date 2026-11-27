@@ -2297,7 +2297,8 @@ body.playbook-revoked .session__composer-card {
   }
 }
 
-.session__assistant-thread.is-arriving .chat-turn {
+/* Each turn whole — its avatar and time with it, or they'd show on their own. */
+.session__assistant-thread.is-arriving > * {
   --app-rise-from: 16px;
   animation: app-rise 560ms var(--app-ease-out) calc(1150ms + var(--arrive-i, 0) * 240ms) both;
 }
