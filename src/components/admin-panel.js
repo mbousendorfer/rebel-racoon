@@ -17,12 +17,12 @@ import {
   toggleNetwork,
   applyNetworks,
   networksSummary,
-} from "../admin-menu.js?v=2934";
+} from "../admin-menu.js?v=2935";
 import {
   renderChatGalleryPanel,
   runChatGalleryItem,
   filterChatGallery,
-} from "../screens/session/chat-gallery.js?v=2934";
+} from "../screens/session/chat-gallery.js?v=2935";
 
 let root = null;
 
