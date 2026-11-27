@@ -981,7 +981,8 @@ body.playbook-revoked .session__composer-card {
    instead put them over the composer's menus (2026-10-20). So the wrapper only
    positions the halo; the halo sits at 0, under every hero child (1), and the
    composer, with its upward Add / Playbook menus, sits over all of them (3). */
-.empty-chat > .empty-chat__lead {
+.empty-chat > .empty-chat__lead,
+.empty-chat__screen > .empty-chat__lead {
   position: relative;
   z-index: auto;
   width: 100%;
@@ -1007,6 +1008,208 @@ body.playbook-revoked .session__composer-card {
 
 .session__assistant-thread:has(> .empty-chat--rows) {
   overflow-x: hidden;
+  /* The first screen is the thread's height (100cqh): the thread is sized by
+     the aside's grid, so it can be a size container. */
+  container-type: size;
+  padding-block: 0;
+}
+
+/* ── Flag newChatHero — two screens ──────────────────────────────────────
+   The first: what you came for (the composer, the requests, what's missing),
+   centred in exactly one thread's height, a discreet arrow at its foot. The
+   second, a scroll below: what I can do, in cards. */
+.empty-chat--rows {
+  margin: 0;
+  padding: 0 var(--ref-spacing-xs);
+  gap: 0;
+}
+
+.empty-chat__screen {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-sm);
+  width: 100%;
+  min-height: 100cqh;
+  padding-block: var(--ref-spacing-xl) var(--ref-spacing-xxl);
+}
+
+/* Over the pixel field (0), under the composer (3). */
+.empty-chat__screen > * {
+  position: relative;
+  z-index: 1;
+}
+
+.empty-chat__more {
+  position: absolute;
+  bottom: var(--ref-spacing-sm);
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  translate: -50% 0;
+  border: 0;
+  border-radius: var(--app-radius-circle);
+  background: none;
+  color: var(--ref-color-grey-80);
+  cursor: pointer;
+  animation: hero-more-nudge 2.4s var(--app-ease-standard) 1.5s infinite;
+}
+
+.empty-chat__more:hover,
+.empty-chat__more:focus-visible {
+  outline: none;
+  color: var(--ref-color-electric-blue-100);
+}
+
+.empty-chat__more:focus-visible {
+  box-shadow: 0 0 0 2px var(--ref-color-electric-blue-100);
+}
+
+/* A small nudge down every few seconds, then rest. */
+@keyframes hero-more-nudge {
+  0%,
+  60%,
+  100% {
+    transform: none;
+  }
+  75% {
+    transform: translateY(4px);
+  }
+}
+
+.empty-chat__features {
+  width: 100%;
+  max-width: 740px;
+  padding-block: var(--ref-spacing-xl) var(--ref-spacing-xxl);
+  text-align: left;
+  scroll-margin-top: var(--ref-spacing-md);
+}
+
+.empty-chat__features-title {
+  margin: 0;
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.empty-chat__features-lede {
+  margin: var(--ref-spacing-xxs) 0 0;
+  color: var(--ref-color-grey-80);
+}
+
+.hero-features {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 720px) {
+  .hero-features {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The stages the features draw themselves (the clips door brings its own):
+   still pictures on grey-05 — a file becoming posts, a top post becoming
+   drafts, topics with their tags. */
+/* Doubled class: new-start.css, loaded after, sets the stage to a block. */
+.ns-door__stage.hero-feature__stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-sm);
+  background: var(--ref-color-grey-05);
+}
+
+.hero-feature__file {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-md);
+  background: var(--ref-color-white);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-100);
+}
+
+.hero-feature__arrow {
+  color: var(--ref-color-grey-80);
+}
+
+.hero-feature__stack {
+  display: grid;
+  gap: 6px;
+}
+
+.hero-feature__sheet {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 6px;
+  row-gap: 4px;
+  width: 92px;
+  padding: 6px 8px;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: 6px;
+  background: var(--ref-color-white);
+}
+
+.hero-feature__sheet i {
+  grid-row: span 3;
+  font-size: var(--sys-icon-css-sm);
+  color: var(--ref-color-grey-100);
+}
+
+.hero-feature__sheet b {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ref-color-grey-20);
+}
+
+.hero-feature__sheet b:last-child {
+  width: 60%;
+}
+
+.hero-feature__post {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+
+.hero-feature__post .hero-feature__sheet {
+  width: 120px;
+}
+
+.hero-feature__topics {
+  display: grid;
+  gap: var(--ref-spacing-xs);
+  width: 70%;
+}
+
+.hero-feature__topic {
+  display: grid;
+  gap: 5px;
+  justify-items: start;
+  padding: var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-md);
+  background: var(--ref-color-white);
+}
+
+.hero-feature__topic b {
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--ref-color-grey-20);
+}
+
+.hero-feature__topic b:last-child {
+  width: 55%;
 }
 
 /* A flat ellipse 720px wider than the composer, its core under the white

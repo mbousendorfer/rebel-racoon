@@ -9,29 +9,29 @@
 // upload state machines live outside in sources-stream.js so they
 // continue running even after the modal closes.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2964";
-import { iconFor } from "../file-kinds.js?v=2964";
-import { connectorDocs } from "../mocks.js?v=2964";
+import { html, raw, escapeHtml } from "../utils.js?v=2967";
+import { iconFor } from "../file-kinds.js?v=2967";
+import { connectorDocs } from "../mocks.js?v=2967";
 import {
   getConnectors,
   findConnector,
   setConnectorStatus,
   subscribe as subscribeConnectors,
-} from "../connectors-store.js?v=2964";
-import { postConnectPrompt } from "../assistant.js?v=2964";
-import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2964";
+} from "../connectors-store.js?v=2967";
+import { postConnectPrompt } from "../assistant.js?v=2967";
+import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2967";
 import {
   requestOpen,
   notifyClose,
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2964";
-import { navigate } from "../router.js?v=2964";
-import { renderConnectorLogo } from "../connectors-view.js?v=2964";
-import { isFlagOn } from "../feature-flags.js?v=2964";
-import { showToast } from "./toast.js?v=2964";
-import { dropzoneHTML } from "./dropzone.js?v=2964";
+} from "../modal-coordinator.js?v=2967";
+import { navigate } from "../router.js?v=2967";
+import { renderConnectorLogo } from "../connectors-view.js?v=2967";
+import { isFlagOn } from "../feature-flags.js?v=2967";
+import { showToast } from "./toast.js?v=2967";
+import { dropzoneHTML } from "./dropzone.js?v=2967";
 
 const MODAL_ID = "addSource";
 import {
@@ -43,7 +43,7 @@ import {
   cancelUpload,
   getUploads,
   subscribeUploads,
-} from "../sources-stream.js?v=2964";
+} from "../sources-stream.js?v=2967";
 
 let backdrop, modal, contentEl, footerEl, fileInput;
 let initialized = false;

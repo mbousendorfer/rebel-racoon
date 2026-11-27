@@ -21,8 +21,8 @@
 // video door is the clips starter. What is local (the rotation, the typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2964";
-import { escapeHtml } from "../../utils.js?v=2964";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2967";
+import { escapeHtml } from "../../utils.js?v=2967";
 
 const esc = escapeHtml;
 
@@ -36,7 +36,7 @@ const SKEL = {
 };
 
 // The hooks session.js reads to run a workflow starter, by its action.
-function starterAttrs(action) {
+export function starterAttrs(action) {
   const s = chatStarters.find((x) => x.action === action);
   if (!s) return "";
   const prompt = (s.prompt || "")

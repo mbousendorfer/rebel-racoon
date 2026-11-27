@@ -1,19 +1,19 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2964";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2964";
-import { getContextById, getContexts } from "../../contexts-store.js?v=2964";
-import { renderTopicCard } from "../../components/topic-card.js?v=2964";
-import { findTopicSource } from "../../topics-catalog.js?v=2964";
-import { html, raw, escapeHtml } from "../../utils.js?v=2964";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2964";
-import { renderStarterCards } from "../../components/starter-card.js?v=2964";
-import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2964";
-import { voicesToFinish } from "../../voice-parts.js?v=2964";
-import { networkLabel } from "../../social-profiles.js?v=2964";
-import { parseHashParams } from "../../url-state.js?v=2964";
-import { renderAsks, renderDoors, renderNewStart } from "./new-start.js?v=2964";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2967";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2967";
+import { getContextById, getContexts } from "../../contexts-store.js?v=2967";
+import { renderTopicCard } from "../../components/topic-card.js?v=2967";
+import { findTopicSource } from "../../topics-catalog.js?v=2967";
+import { html, raw, escapeHtml } from "../../utils.js?v=2967";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2967";
+import { renderStarterCards } from "../../components/starter-card.js?v=2967";
+import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2967";
+import { voicesToFinish } from "../../voice-parts.js?v=2967";
+import { networkLabel } from "../../social-profiles.js?v=2967";
+import { parseHashParams } from "../../url-state.js?v=2967";
+import { renderAsks, renderDoors, renderNewStart, starterAttrs } from "./new-start.js?v=2967";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -133,24 +133,36 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
   if (isFlagOn("newChatHero")) {
     return html`
       <div class="empty-chat empty-chat--rows" data-empty-chat>
-        ${raw(playbookReadyBlock(session))}
-        <span class="empty-chat__logo" role="img" aria-label="Archie">
-          <img class="empty-chat__logo-word empty-chat__logo-word--a" src="assets/logos/archie-wordmark.svg" alt="" />
-          <img class="empty-chat__logo-mono" src="assets/logos/archie-mono.svg" alt="" />
-          <img
-            class="empty-chat__logo-word empty-chat__logo-word--b"
-            src="assets/logos/archie-alt-wordmark.svg"
-            alt=""
-          />
-        </span>
-        <div class="empty-chat__sub">${heroSub()}</div>
-        <div class="empty-chat__lead">
-          <!-- The other empty states' grey pixel field, masked into the
-               ground, on both sides of the composer, drifting slowly. -->
-          <span class="empty-chat__dots" aria-hidden="true"></span>
-          ${raw(composerMarkup)}
-        </div>
-        ${raw(renderAsks("empty-chat__asks"))} ${raw(heroWarning(session))} ${raw(renderDoors({ brand: false }))}
+        <!-- Two screens (2026-11-27, asked: « ce bloc … sur un "deuxième"
+             écran … avec une discrète flèche en bas de l'écran, qui
+             "scrollerait" sur un nouveau panneau, qui aurait des cards et
+             expliquerait les diverses features d'Archie »): the first holds
+             the composer, the requests and what's missing, the height of the
+             thread; the second, below, what I can do. -->
+        <section class="empty-chat__screen">
+          ${raw(playbookReadyBlock(session))}
+          <span class="empty-chat__logo" role="img" aria-label="Archie">
+            <img class="empty-chat__logo-word empty-chat__logo-word--a" src="assets/logos/archie-wordmark.svg" alt="" />
+            <img class="empty-chat__logo-mono" src="assets/logos/archie-mono.svg" alt="" />
+            <img
+              class="empty-chat__logo-word empty-chat__logo-word--b"
+              src="assets/logos/archie-alt-wordmark.svg"
+              alt=""
+            />
+          </span>
+          <div class="empty-chat__sub">${heroSub()}</div>
+          <div class="empty-chat__lead">
+            <!-- The other empty states' grey pixel field, masked into the
+                 ground, on both sides of the composer. -->
+            <span class="empty-chat__dots" aria-hidden="true"></span>
+            ${raw(composerMarkup)}
+          </div>
+          ${raw(renderAsks("empty-chat__asks"))} ${raw(heroWarning(session))}
+          <button type="button" class="empty-chat__more" data-hero-more aria-label="See what I can do">
+            <i class="ap-icon-chevron-down" aria-hidden="true"></i>
+          </button>
+        </section>
+        ${raw(renderFeatures())}
       </div>
     `;
   }
@@ -183,6 +195,60 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
 // finish (2026-10-29, asked: « quand des voice sont incomplètes … un bloc sur la
 // home avec un nudge », then « Un starter de plus »). It goes when they're all
 // done; it opens the Playbook's Voice tab on the first one.
+// The hero's second screen: what I can do, one card per feature, in the clips
+// door's shape (a stage that shows it, a title, a line, the way in). Each way
+// in is the feature's own: a starter run in this chat, or its page.
+function renderFeatures() {
+  const card = ({ attrs, stage, title, desc, go }) => `
+    <button type="button" class="ns-door hero-feature" ${attrs}>
+      <span class="ns-door__stage hero-feature__stage" aria-hidden="true">${stage}</span>
+      <span class="ns-door__title">${title}</span>
+      <span class="ns-door__desc">${desc}</span>
+      <span class="ap-link standalone ns-door__go">${go}<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
+    </button>`;
+  const sheet = (icon, lines = 3) =>
+    `<span class="hero-feature__sheet"><i class="${icon}"></i>${"<b></b>".repeat(lines)}</span>`;
+  const cards = [
+    card({
+      attrs: starterAttrs("open-batch"),
+      stage: `<span class="hero-feature__file"><i class="ap-icon-file--pdf"></i>Q3 report.pdf</span>
+        <i class="ap-icon-arrow-right hero-feature__arrow"></i>
+        <span class="hero-feature__stack">${sheet("ap-icon-linkedin-official")}${sheet("ap-icon-x-official")}${sheet("ap-icon-instagram-official")}</span>`,
+      title: "Batch from a source",
+      desc: "Give me an article, a PDF or a page. I'll pull the strongest ideas and draft a set of posts across your networks.",
+      go: "Try it with a source",
+    }),
+    renderDoors({ brand: false })
+      .replace(/^\s*<div class="ns-doors">/, "")
+      .replace(/<\/div>\s*$/, ""),
+    card({
+      attrs: starterAttrs("open-top-posts"),
+      stage: `<span class="hero-feature__post">${sheet("ap-icon-linkedin-official", 2)}<span class="ap-status green no-dot">Top post · 1.2k reactions</span></span>
+        <i class="ap-icon-arrow-right hero-feature__arrow"></i>
+        <span class="hero-feature__stack">${sheet("ap-icon-linkedin-official")}${sheet("ap-icon-instagram-official")}</span>`,
+      title: "Repurpose a top post",
+      desc: "Pick one of your best-performing posts. I'll find what made it work and turn it into fresh drafts.",
+      go: "Pick a top post",
+    }),
+    card({
+      attrs: `data-hero-feature-href="#/topics"`,
+      stage: `<span class="hero-feature__topics">
+          <span class="hero-feature__topic"><span class="ap-status orange no-dot">Trending</span><b></b><b></b></span>
+          <span class="hero-feature__topic"><span class="ap-status grey no-dot">Competitors</span><b></b><b></b></span>
+        </span>`,
+      title: "Find what to post about",
+      desc: "I follow your industry, your competitors and the people you watch, and bring you topics worth a post.",
+      go: "Open Topic Feed",
+    }),
+  ].join("");
+  return `
+    <section class="empty-chat__features" id="heroFeatures" aria-labelledby="heroFeaturesTitle">
+      <h2 class="empty-chat__features-title" id="heroFeaturesTitle">What I can do</h2>
+      <p class="empty-chat__features-lede">Pick one to start, or just tell me what you need.</p>
+      <div class="ns-doors hero-features">${cards}</div>
+    </section>`;
+}
+
 // What's missing before my drafts can sound like the Brand, in the hero (flag
 // newChatHero): no Playbook yet, or networks still on the default voice. A
 // warning, not a use case (asked 2026-11-27: « cette boite, elle ressemble
