@@ -74,6 +74,105 @@
   list-style: disc;
 }
 
+/* A question card of the Playbook conversation (renderPbAskTurn, flag
+   newChatHero): in Archie's turn, the question by weight, « 2 of 5 » beside
+   it, then the run's own rows / URL field / answer box (welcome.css). Answered,
+   it folds to the question and a check + the answer. */
+.pb-ask {
+  display: grid;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card, 12px);
+  background: var(--ref-color-white);
+}
+
+/* One width for every open card, whatever it holds (a confirm is as wide as
+   a list of choices); an answered one fits its line. */
+.pb-ask:not(.is-resolved) {
+  width: 640px;
+  max-width: 100%;
+}
+
+.pb-ask__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+}
+
+.pb-ask__title {
+  font-size: var(--sys-text-style-h4-size);
+  line-height: var(--sys-text-style-h4-line-height);
+  font-weight: var(--sys-text-style-h4-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.pb-ask__step {
+  flex: none;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.pb-ask__sub,
+.pb-ask__or {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.pb-ask__or {
+  margin-top: var(--ref-spacing-xxs);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.pb-ask .welcome-flow__options,
+.pb-ask .welcome-flow__url {
+  margin-top: 0;
+}
+
+.pb-ask__form {
+  display: grid;
+  gap: var(--ref-spacing-xs);
+}
+
+.pb-ask__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* The answer leads on the right; Back and Skip stay on the left. */
+.pb-ask__actions > .pb-ask__primary {
+  margin-left: auto;
+}
+
+.pb-ask.is-resolved {
+  gap: var(--ref-spacing-xxs);
+  padding-block: var(--ref-spacing-xs);
+}
+
+.pb-ask.is-resolved .pb-ask__title {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.pb-ask__answer {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  color: var(--ref-color-grey-100);
+}
+
+.pb-ask__answer i {
+  flex: none;
+  margin-top: 2px;
+  color: var(--ref-color-green-100);
+}
+
 /* Generic object-selection echo — icon + title + meta chip shown when the user
    picks a dynamic object (source / idea / clip / …). Right-aligned like the
    other user-turn echoes (renderSelectionEchoTurn in screens/session.js). */

@@ -4,7 +4,7 @@
 // prompt) render here. The pure, dependency-free turns stay in thread-turns.js.
 // Moved out of session.js, unchanged.
 
-import { sessionPlaybookId } from "../../active-playbook.js?v=2951";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2955";
 import {
   renderExtractingNotice,
   renderSourceIntakeTurn,
@@ -14,26 +14,26 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2951";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2951";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2951";
-import { getTopPost } from "../../top-posts-store.js?v=2951";
-import { getTopicById } from "../../topics-store.js?v=2951";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2951";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2951";
-import { escapeHtml, formatDayLabel, formatTimeOfDay, plural } from "../../utils.js?v=2951";
-import { getIdeas } from "../../library.js?v=2951";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2951";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2951";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2951";
-import { getPlans } from "../../post-plan-store.js?v=2951";
-import { isFlagOn } from "../../feature-flags.js?v=2951";
-import { CURRENT_USER } from "../../org.js?v=2951";
-import { getContextById } from "../../contexts-store.js?v=2951";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2951";
-import { getFocusKey } from "../../components/right-panel.js?v=2951";
-import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2951";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2951";
+} from "./thread-turns.js?v=2955";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2955";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2955";
+import { getTopPost } from "../../top-posts-store.js?v=2955";
+import { getTopicById } from "../../topics-store.js?v=2955";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2955";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2955";
+import { escapeHtml, formatDayLabel, formatTimeOfDay, plural } from "../../utils.js?v=2955";
+import { getIdeas } from "../../library.js?v=2955";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2955";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2955";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2955";
+import { getPlans } from "../../post-plan-store.js?v=2955";
+import { isFlagOn } from "../../feature-flags.js?v=2955";
+import { CURRENT_USER } from "../../org.js?v=2955";
+import { getContextById } from "../../contexts-store.js?v=2955";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2955";
+import { getFocusKey } from "../../components/right-panel.js?v=2955";
+import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2955";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2955";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -230,6 +230,9 @@ function renderTurn(message, sessionId) {
   }
   if (message.role === "assistant" && message.variant === "playbook-learned") {
     return renderPlaybookLearnedTurn(message);
+  }
+  if (message.role === "assistant" && message.variant === "pb-ask") {
+    return renderPbAskTurn(message);
   }
 
   // Clip extraction — pending spinner pill that flips to a ready card with
@@ -502,6 +505,98 @@ function renderPlaybookLearnedTurn(message) {
         <span class="pb-learned__title">${escapeHtml(message.title || "")}</span>
         ${message.text ? `<p class="pb-learned__text">${escapeHtml(message.text)}</p>` : ""}
         ${facts ? `<dl class="pb-learned__facts">${facts}</dl>` : ""}
+      </div>`,
+  });
+}
+
+// A question card of the Playbook conversation (playbook-chat-flow.js, flag
+// newChatHero), in Archie's turn: the question, « 2 of 5 », then the run's own
+// controls — its option rows (.welcome-flow__option), its URL field, its answer
+// box. Events are delegated to handlePbAsk by session.js. Answered, it folds
+// to the question and the answer.
+function renderPbAskTurn(message) {
+  const a = message.ask || {};
+  const e = escapeHtml;
+  const head = `<header class="pb-ask__head">
+      <span class="pb-ask__title">${e(a.title || "")}</span>
+      ${a.step ? `<span class="pb-ask__step">${e(a.step)}</span>` : ""}
+    </header>`;
+  if (message.resolved) {
+    return renderMessageBubble({
+      role: "assistant",
+      text: `<div class="pb-ask is-resolved">${head}${
+        message.answer
+          ? `<p class="pb-ask__answer"><i class="ap-icon-check" aria-hidden="true"></i><span>${e(message.answer)}</span></p>`
+          : ""
+      }</div>`,
+    });
+  }
+  const glyph = (it) =>
+    it.imgSrc
+      ? `<span class="welcome-flow__glyph"><img src="${e(it.imgSrc)}" alt="" /></span>`
+      : it.icon
+        ? `<span class="welcome-flow__glyph is-icon"><i class="${e(it.icon)}" aria-hidden="true"></i></span>`
+        : "";
+  const text = (it) => `<span class="welcome-flow__option-text">
+      <span class="welcome-flow__option-title">${e(it.title || "")}</span>
+      ${it.desc ? `<span class="welcome-flow__option-desc">${e(it.desc)}</span>` : ""}
+    </span>`;
+  const rows = (a.items || [])
+    .map((it) =>
+      a.kind === "checks"
+        ? `<li><label class="welcome-flow__option">
+            <span class="ap-checkbox-container"><input type="checkbox" name="answer" value="${e(it.value)}" /><i></i></span>
+            ${glyph(it)}${text(it)}
+          </label></li>`
+        : `<li><button type="button" class="welcome-flow__option" data-pb-pick="${e(it.value)}">
+            ${glyph(it)}${text(it)}<i class="ap-icon-arrow-right welcome-flow__option-add" aria-hidden="true"></i>
+          </button></li>`,
+    )
+    .join("");
+  const list = rows ? `<ul class="welcome-flow__options pb-ask__options">${rows}</ul>` : "";
+  const back = a.back
+    ? `<button type="button" class="ap-button ghost grey" data-pb-act="back"><i class="ap-icon-arrow-left"></i><span>Back</span></button>`
+    : "";
+  const skip = a.skipLabel
+    ? `<button type="button" class="ap-button ghost grey" data-pb-act="skip"><span>${e(a.skipLabel)}</span></button>`
+    : "";
+  const primary = (attrs) =>
+    `<button ${attrs} class="ap-button primary ${a.tone === "orange" ? "orange" : "blue"} pb-ask__primary"><span>${e(a.submitLabel || "Continue")}</span></button>`;
+  const actions = (main = "") =>
+    back || skip || main ? `<div class="pb-ask__actions">${back}${skip}${main}</div>` : "";
+  let body = "";
+  if (a.kind === "url") {
+    body = `<form class="welcome-flow__url pb-ask__url" novalidate>
+        <div class="ap-input-group welcome-flow__url-field">
+          <i class="ap-icon-link" aria-hidden="true"></i>
+          <input type="text" name="answer" placeholder="${e(a.placeholder || "")}" aria-label="${e(a.title || "")}" autocomplete="url" />
+        </div>
+        ${primary('type="submit"')}
+      </form>
+      ${a.orLabel ? `<p class="pb-ask__or">${e(a.orLabel)}</p>` : ""}${list}${actions()}`;
+  } else if (a.kind === "text") {
+    const field = a.short
+      ? `<div class="ap-input-group pb-ask__field"><input type="text" name="answer" placeholder="${e(a.placeholder || "")}" aria-label="${e(a.title || "")}" /></div>`
+      : `<div class="ap-textarea-field welcome-flow__textarea pb-ask__field"><textarea name="answer" rows="3" placeholder="${e(a.placeholder || "")}" aria-label="${e(a.title || "")}"></textarea></div>`;
+    body = `<form class="pb-ask__form" novalidate>${field}${actions(primary('type="submit"'))}</form>`;
+  } else if (a.kind === "checks") {
+    body = `<form class="pb-ask__form" novalidate>${list}${actions(primary('type="submit"'))}</form>`;
+  } else if (a.kind === "file") {
+    body = `<div class="pb-ask__file">
+        <button type="button" class="ap-button stroked grey" data-pb-act="files"><i class="ap-icon-upload"></i><span>${e(a.fileLabel || "Choose files")}</span></button>
+        <input type="file" hidden data-pb-file accept="${e(a.accept || "")}" ${a.multiple ? "multiple" : ""} />
+      </div>${actions()}`;
+  } else if (a.kind === "confirm") {
+    body = actions(primary('type="button" data-pb-act="confirm"'));
+  } else {
+    body = `${list}${actions()}`;
+  }
+  return renderMessageBubble({
+    role: "assistant",
+    text: `<div class="pb-ask" data-pb-ask="${e(message.id)}">
+        ${head}
+        ${a.subtitle ? `<p class="pb-ask__sub">${e(a.subtitle)}</p>` : ""}
+        ${body}
       </div>`,
   });
 }

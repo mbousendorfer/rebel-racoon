@@ -2,28 +2,30 @@
 // sur la card, ça devrait commencer une conversation et poser des questions pour
 // créer le playbook », then « les mêmes questions / step que dans "UP-Interactive
 // Playbook: the run first" mais en mode conversation, avec des cards de questions
-// comme dans Claude / ChatGPT »).
+// comme dans Claude / ChatGPT », then « ne pas utiliser le quickpicker … ces
+// questions sous forme de cards dans le flux de discussion directement »).
 //
 // The run's steps, in the run's order (flowSteps), with the run's words
-// (STEP_TEXT, OTHER_WAYS, VOICE_WAYS…), each asked as a question card: the
-// Quickpicker, at the foot in place of the composer. An answer leaves the
-// question and the answer in the thread. The Playbook is the run's draft
-// (context-builder.js), keyed by this chat, and saved the same way.
+// (STEP_TEXT, OTHER_WAYS, VOICE_WAYS…), each asked as a question card IN the
+// thread (variant `pb-ask`, renderPbAskTurn in thread-render.js): the run's own
+// option rows, URL field and answer box, inside an Archie turn. The composer
+// stays at the foot. Answered, a card folds to its question and the answer.
+// The Playbook is the run's draft (context-builder.js), keyed by this chat,
+// saved the same way.
 //
 // The chat onboarding deleted with connectFirst (2026-10-29) stays deleted: this
 // exists only under newChatHero, opened from its « No Playbook created yet »
 // card; everywhere else the run's screens make the Playbook.
 
-import * as inlineQuestion from "./inline-question.js?v=2951";
 import {
+  getThread,
+  refreshThread,
   postAssistantMessage,
-  postUserTurn,
-  postSelectionEcho,
   postVoiceTurn,
   startPending,
   updatePending,
   finishPending,
-} from "./assistant.js?v=2951";
+} from "./assistant.js?v=2955";
 import {
   createAltDraft,
   readAltWebsite,
@@ -36,12 +38,12 @@ import {
   getDraft,
   patchDraft,
   save,
-} from "./context-builder.js?v=2951";
-import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2951";
-import { LANGUAGE_OPTIONS } from "./languages.js?v=2951";
-import { connectors as connectorMocks } from "./mocks.js?v=2951";
-import { buildConnectedProfileItems } from "./social-profiles.js?v=2951";
-import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2951";
+} from "./context-builder.js?v=2955";
+import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2955";
+import { LANGUAGE_OPTIONS } from "./languages.js?v=2955";
+import { connectors as connectorMocks } from "./mocks.js?v=2955";
+import { buildConnectedProfileItems } from "./social-profiles.js?v=2955";
+import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2955";
 import {
   OTHER_WAYS,
   VOICE_WAYS,
@@ -49,8 +51,8 @@ import {
   DOC_READS,
   normalizeUrl,
   fallbackFor,
-} from "./screens/welcome-alt-steps.js?v=2951";
-import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2951";
+} from "./screens/welcome-alt-steps.js?v=2955";
+import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2955";
 
 // « 2 of 5 », counted on the run's own steps.
 function stepLabel(step) {
@@ -58,12 +60,97 @@ function stepLabel(step) {
   return `${steps.indexOf(step) + 1} of ${steps.length}`;
 }
 
-// An answer leaves the question and the answer in the thread, the way a
-// question card does once it's answered.
-function answered(sid, question, answer, echo = null) {
-  postAssistantMessage(sid, question);
-  if (echo) postSelectionEcho(sid, echo);
-  else postUserTurn(sid, answer);
+const way = (w) => ({ value: w.value, title: w.title, desc: w.desc, icon: w.icon });
+
+// ── The cards ──────────────────────────────────────────────────────────────
+// A card is a thread turn; its handlers wait here, by turn id, until answered.
+// Each card opens a group in `run.groups` (the card and any turn posted with
+// it), so Back can take the last two groups out of the thread and ask the
+// earlier step again.
+
+const handlersById = new Map();
+
+function ask(run, spec, handlers, { withIds = [] } = {}) {
+  const id = postVoiceTurn(run.sid, "pb-ask", { contextId: null, network: null, ask: spec });
+  handlersById.set(id, { run, handlers });
+  run.groups.push([...withIds, id]);
+  // The card's field takes the focus once the thread has painted it — and
+  // again after the hero's transition, which swaps the page late — unless
+  // the reader is already in another field.
+  const focus = () => {
+    if (document.activeElement && document.activeElement !== document.body) return;
+    document.querySelector(`[data-pb-ask="${id}"] :is(input[type=text], textarea)`)?.focus({ preventScroll: true });
+  };
+  window.setTimeout(focus, 60);
+  window.setTimeout(focus, 900);
+  return id;
+}
+
+// Fold a card to its question and the answer.
+function settle(sid, id, answer = "") {
+  const msg = getThread(sid).find((m) => m.id === id);
+  if (!msg) return;
+  msg.resolved = true;
+  msg.answer = answer;
+  handlersById.delete(id);
+  refreshThread(sid);
+}
+
+// Back: the current card and the one before it leave the thread; `again`
+// asks the earlier step anew.
+function goBack(run, again) {
+  const drop = [...(run.groups.pop() || []), ...(run.groups.pop() || [])];
+  const thread = getThread(run.sid);
+  for (const id of drop) {
+    handlersById.delete(id);
+    const i = thread.findIndex((m) => m.id === id);
+    if (i >= 0) thread.splice(i, 1);
+  }
+  refreshThread(run.sid);
+  again(run);
+}
+
+/**
+ * The cards' events, delegated by session.js (click, submit, change). Returns
+ * true when the event was a card's.
+ */
+export function handlePbAsk(event) {
+  const card = event.target.closest?.("[data-pb-ask]");
+  if (!card) return false;
+  const id = card.dataset.pbAsk;
+  const entry = handlersById.get(id);
+  if (!entry) return false;
+  const { run, handlers: h } = entry;
+  if (event.type === "submit") {
+    event.preventDefault();
+    const data = new FormData(event.target);
+    const text = String(data.get("answer") || "").trim();
+    if (h.onValues) h.onValues(data.getAll("answer").map(String), id);
+    else if (text) h.onText?.(text, id);
+    else event.target.querySelector("input, textarea")?.focus();
+    return true;
+  }
+  if (event.type === "change") {
+    if (!event.target.matches("[data-pb-file]")) return false;
+    const files = Array.from(event.target.files || []);
+    if (files.length) h.onFiles?.(files, id);
+    return true;
+  }
+  if (event.type !== "click") return false;
+  const pick = event.target.closest("[data-pb-pick]");
+  if (pick) {
+    event.preventDefault();
+    h.onPick?.(pick.dataset.pbPick, id);
+    return true;
+  }
+  const act = event.target.closest("[data-pb-act]")?.dataset.pbAct;
+  if (!act) return false;
+  event.preventDefault();
+  if (act === "back") goBack(run, h.onBack);
+  else if (act === "skip") h.onSkip?.(id);
+  else if (act === "files") card.querySelector("[data-pb-file]")?.click();
+  else h.onAct?.(act, id);
+  return true;
 }
 
 function readImages(files) {
@@ -81,12 +168,12 @@ function readImages(files) {
 }
 
 /**
- * Open the conversation in chat `sid`. `onSaved(ctx)` binds the chat to the
- * Playbook once it's saved.
+ * Open the conversation in chat `sid`. `onSaved(ctx, { open })` binds the chat
+ * to the Playbook once it's saved (or opens it, to fix it).
  */
 export function startPlaybookChat(sid, { onSaved = () => {} } = {}) {
   createAltDraft(sid);
-  const run = { sid, onSaved, turns: [] };
+  const run = { sid, onSaved, turns: [], groups: [] };
   postAssistantMessage(
     sid,
     "Let's build your Playbook together: a few questions, one at a time. I'll learn how you sound, who you speak to, and how you look.",
@@ -94,172 +181,178 @@ export function startPlaybookChat(sid, { onSaved = () => {} } = {}) {
   askWebsite(run);
 }
 
-// The step after `step` in the run's order.
+// The step after / before `step`, in the run's order.
+const ASK = {
+  url: (run) => askWebsite(run),
+  language: (run) => askLanguage(run),
+  documents: (run) => askDocuments(run),
+  voiceFrom: (run) => askVoiceFrom(run),
+  recap: (run) => review(run),
+  voice: (run) => checkVoice(run),
+};
 function next(run, step) {
   const steps = flowSteps();
-  const to = steps[steps.indexOf(step) + 1];
-  const ask = {
-    language: askLanguage,
-    documents: askDocuments,
-    voiceFrom: askVoiceFrom,
-    recap: review,
-    voice: checkVoice,
-  }[to];
-  (ask || review)(run);
+  (ASK[steps[steps.indexOf(step) + 1]] || ASK.recap)(run);
 }
-
-function back(run, step) {
+const previous = (step) => (run) => {
   const steps = flowSteps();
-  const to = steps[steps.indexOf(step) - 1];
-  const ask = {
-    url: askWebsite,
-    language: askLanguage,
-    documents: askDocuments,
-    voiceFrom: askVoiceFrom,
-    recap: review,
-  }[to];
-  (ask || askWebsite)(run);
-}
+  (ASK[steps[steps.indexOf(step) - 1]] || ASK.url)(run);
+};
 
 // ── 1 · The website, or another way ────────────────────────────────────────
 
 function askWebsite(run) {
   const { sid } = run;
-  inlineQuestion.ask(sid, {
-    title: STEP_TEXT.url.title,
-    subtitle: "I'll read your website to learn how you sound, who you speak to, and how you look.",
-    stepLabel: stepLabel("url"),
-    customFirst: true,
-    customIcon: "ap-icon-link",
-    customPlaceholder: "your-brand.com",
-    items: OTHER_WAYS.map((w) => ({ value: w.value, label: w.title, caption: w.desc, icon: w.icon })),
-    onCustom: (value) => {
-      const url = normalizeUrl(value);
-      if (!url) return askWebsite(run);
-      answered(sid, "What's your website?", url.replace(/^https?:\/\//i, "").replace(/\/$/, ""));
-      run.source = "website";
-      readAltWebsite(sid, url);
-      next(run, "url");
+  ask(
+    run,
+    {
+      kind: "url",
+      title: STEP_TEXT.url.title,
+      subtitle: "I'll read your website to learn how you sound, who you speak to, and how you look.",
+      step: stepLabel("url"),
+      placeholder: "your-brand.com",
+      submitLabel: "Read my website",
+      tone: "orange",
+      orLabel: "Or start another way",
+      items: OTHER_WAYS.map(way),
     },
-    onPick: (way) => {
-      if (way === "interview") return askInterview(run);
-      if (way === "files") return askFiles(run);
-      if (way === "manual") return askName(run);
+    {
+      onText: (value, id) => {
+        const url = normalizeUrl(value);
+        settle(sid, id, url.replace(/^https?:\/\//i, "").replace(/\/$/, ""));
+        readAltWebsite(sid, url);
+        run.source = "website";
+        next(run, "url");
+      },
+      onPick: (v, id) => {
+        settle(sid, id, OTHER_WAYS.find((w) => w.value === v)?.title || "");
+        if (v === "interview") askInterview(run);
+        else if (v === "files") askFiles(run);
+        else if (v === "manual") askName(run);
+      },
     },
-  });
+  );
 }
 
 function askFiles(run) {
   const { sid } = run;
-  const way = OTHER_WAYS.find((w) => w.value === "files");
-  inlineQuestion.ask(sid, {
-    title: way.title,
-    subtitle: way.desc,
-    stepLabel: stepLabel("url"),
-    customFile: true,
-    customFileMultiple: true,
-    customFileAccept: "image/*",
-    customFileLabel: "Choose your images",
-    customFileHint: "PNG · JPG · SVG",
-    onFile: async (files) => {
-      const list = await readImages([].concat(files).filter((f) => f.type?.startsWith("image/")));
-      if (!list.length) return askFiles(run);
-      answered(sid, "Which files should I start from?", "", {
-        icon: "ap-icon-image",
-        title: list.length > 1 ? `${list.length} images` : list[0].name,
-        meta: "To learn your brand from",
-      });
-      run.source = "documents";
-      readAltFiles(sid, list);
-      next(run, "url");
+  const w = OTHER_WAYS.find((x) => x.value === "files");
+  ask(
+    run,
+    {
+      kind: "file",
+      title: w.title,
+      subtitle: w.desc,
+      step: stepLabel("url"),
+      fileLabel: "Choose images",
+      accept: "image/*",
+      multiple: true,
+      back: true,
     },
-    onBack: () => askWebsite(run),
-  });
+    {
+      onFiles: async (files, id) => {
+        const list = await readImages(files.filter((f) => f.type?.startsWith("image/")));
+        if (!list.length) return;
+        settle(sid, id, list.length > 1 ? `${list.length} images` : list[0].name);
+        readAltFiles(sid, list);
+        run.source = "documents";
+        next(run, "url");
+      },
+      onBack: askWebsite,
+    },
+  );
 }
 
 // The run's interview, a card per question; a vague answer gets one follow-up.
+// Back goes to the question before, or to the website at the first.
 function askInterview(run) {
   const { sid } = run;
   const step = nextInterviewQuestion(run.turns);
   if (step.done) {
-    run.source = "interview";
     analyzeAltInterview(sid, run.turns);
+    run.source = "interview";
     return next(run, "url");
   }
-  const record = (turn) => {
+  const record = (id, answer, turn) => {
+    settle(sid, id, answer);
     run.turns.push({ topic: step.topic, question: step.question, ...turn });
     askInterview(run);
   };
-  inlineQuestion.ask(sid, {
-    title: step.question,
-    subtitle: step.followUp ? "One more detail and I'll have it." : `Question ${run.turns.length + 1}`,
-    stepLabel: stepLabel("url"),
-    customFirst: true,
-    customIcon: "ap-icon-pen",
-    customPlaceholder: "In your own words…",
-    items: [],
-    onCustom: (answer) => {
-      const text = String(answer || "").trim();
-      if (!text) return askInterview(run);
-      answered(sid, step.question, text);
-      record({ answer: text, ...(step.followUp ? { followUp: true } : {}) });
+  ask(
+    run,
+    {
+      kind: "text",
+      title: step.question,
+      subtitle: step.followUp ? "One more detail and I'll have it." : `Question ${run.turns.length + 1}`,
+      step: stepLabel("url"),
+      placeholder: "In your own words…",
+      submitLabel: "Continue",
+      skipLabel: step.optional ? "Skip this question" : "",
+      back: true,
     },
-    ...(step.optional
-      ? {
-          skipLabel: "Skip this question",
-          onSkip: () => {
-            answered(sid, step.question, "", { icon: "ap-icon-arrow-right", title: "Skipped" });
-            record({ answer: "", skipped: true });
-          },
-        }
-      : {}),
-    onBack: () => {
-      run.turns = [];
-      askWebsite(run);
+    {
+      onText: (text, id) => record(id, text, { answer: text, ...(step.followUp ? { followUp: true } : {}) }),
+      onSkip: (id) => record(id, "Skipped", { answer: "", skipped: true }),
+      onBack: (r) => {
+        if (!r.turns.length) return askWebsite(r);
+        r.turns.pop();
+        askInterview(r);
+      },
     },
-  });
+  );
 }
 
 // « Fill it in myself »: the name, then the Playbook page is the form.
 function askName(run) {
   const { sid } = run;
-  inlineQuestion.ask(sid, {
-    title: "What's your Brand called?",
-    subtitle: "I'll open an empty Playbook under that name for you to fill in.",
-    stepLabel: stepLabel("url"),
-    customFirst: true,
-    customIcon: "ap-icon-pen",
-    customPlaceholder: "Your Brand's name",
-    items: [],
-    onCustom: (value) => {
-      const name = String(value || "").trim();
-      if (!name) return askName(run);
-      answered(sid, "What's your Brand called?", name);
-      run.source = "manual";
-      writeAltManually(sid);
-      patchDraft(sid, { name });
-      next(run, "url");
+  ask(
+    run,
+    {
+      kind: "text",
+      title: "What's your Brand called?",
+      subtitle: "I'll open an empty Playbook under that name for you to fill in.",
+      step: stepLabel("url"),
+      placeholder: "Your Brand's name",
+      submitLabel: "Continue",
+      short: true,
+      back: true,
     },
-    onBack: () => askWebsite(run),
-  });
+    {
+      onText: (name, id) => {
+        settle(sid, id, name);
+        writeAltManually(sid);
+        patchDraft(sid, { name });
+        run.source = "manual";
+        next(run, "url");
+      },
+      onBack: askWebsite,
+    },
+  );
 }
 
 // ── 2 · Language (flag multilingualPlaybook) ───────────────────────────────
 
 function askLanguage(run) {
   const { sid } = run;
-  inlineQuestion.ask(sid, {
-    title: STEP_TEXT.language.title,
-    subtitle: STEP_TEXT.language.desc,
-    stepLabel: stepLabel("language"),
-    items: LANGUAGE_OPTIONS.map((l) => ({ value: l, label: l, icon: "ap-icon-web" })),
-    onPick: (lang) => {
-      answered(sid, "Which language should I write in?", "", { icon: "ap-icon-web", title: lang, meta: "Language" });
-      patchDraft(sid, { languages: [lang], primaryLanguage: lang, language: lang });
-      next(run, "language");
+  ask(
+    run,
+    {
+      kind: "choices",
+      title: STEP_TEXT.language.title,
+      subtitle: STEP_TEXT.language.desc,
+      step: stepLabel("language"),
+      items: LANGUAGE_OPTIONS.map((l) => ({ value: l, title: l, icon: "ap-icon-web" })),
+      back: true,
     },
-    onBack: () => back(run, "language"),
-  });
+    {
+      onPick: (lang, id) => {
+        settle(sid, id, lang);
+        patchDraft(sid, { languages: [lang], primaryLanguage: lang, language: lang });
+        next(run, "language");
+      },
+      onBack: previous("language"),
+    },
+  );
 }
 
 // ── 3 · Documents (flag connectors) ────────────────────────────────────────
@@ -267,133 +360,157 @@ function askLanguage(run) {
 function askDocuments(run) {
   const { sid } = run;
   const items = DOC_CONNECTORS.map((id) => connectorMocks.find((c) => c.id === id)).filter(Boolean);
-  inlineQuestion.ask(sid, {
-    title: "Anything else I should read?",
-    subtitle: "A brand book or guidelines help me get the details right. Optional: you can connect more later.",
-    stepLabel: stepLabel("documents"),
-    multi: true,
-    submitLabel: "Continue",
-    items: items.map((c) => ({ value: c.id, label: c.name, caption: DOC_READS[c.id], imgSrc: c.logo })),
-    onPick: (ids) => {
-      const names = items.filter((c) => ids.includes(c.id)).map((c) => c.name);
-      if (names.length)
-        answered(sid, "Anything else I should read?", "", {
-          icon: "ap-icon-link",
-          title: names.join(", "),
-          meta: "To read",
-        });
-      patchDraft(sid, { onboardingConnectors: ids });
-      next(run, "documents");
+  ask(
+    run,
+    {
+      kind: "checks",
+      title: "Anything else I should read?",
+      subtitle: "A brand book or guidelines help me get the details right. Optional: you can connect more later.",
+      step: stepLabel("documents"),
+      items: items.map((c) => ({ value: c.id, title: c.name, desc: DOC_READS[c.id], imgSrc: c.logo })),
+      submitLabel: "Continue",
+      skipLabel: "Skip for now",
+      back: true,
     },
-    skipLabel: "Skip for now",
-    onSkip: () => next(run, "documents"),
-    onBack: () => back(run, "documents"),
-  });
+    {
+      onValues: (ids, id) => {
+        settle(
+          sid,
+          id,
+          items
+            .filter((c) => ids.includes(c.id))
+            .map((c) => c.name)
+            .join(", ") || "Nothing for now",
+        );
+        patchDraft(sid, { onboardingConnectors: ids });
+        next(run, "documents");
+      },
+      onSkip: (id) => {
+        settle(sid, id, "Skipped");
+        next(run, "documents");
+      },
+      onBack: previous("documents"),
+    },
+  );
 }
 
 // ── 4 · How I learn the voice ──────────────────────────────────────────────
-
-const VOICE_QUESTION = "How should I learn your voice?";
 
 function askVoiceFrom(run) {
   const { sid } = run;
   const fallback = fallbackFor(sid);
   const ways = VOICE_WAYS.filter((w) => w.value !== "profile" || voiceAccounts().length);
   const rows = fallback ? [...ways, { ...fallback, value: "fallback" }] : ways;
-  inlineQuestion.ask(sid, {
-    title: VOICE_QUESTION,
-    subtitle: "Your voice is how your posts sound: the tone, the words, the length. Every draft I write follows it.",
-    stepLabel: stepLabel("voiceFrom"),
-    items: rows.map((w) => ({ value: w.value, label: w.title, caption: w.desc, icon: w.icon })),
-    onPick: (way) => {
-      if (way === "profile") return askVoiceAccount(run);
-      if (way === "document") return askVoiceDocument(run);
-      if (way === "custom") return askVoiceWords(run);
-      answered(sid, VOICE_QUESTION, "", { icon: fallback.icon, title: fallback.title, meta: "Voice" });
-      setAltVoiceSource(sid, null);
-      next(run, "voiceFrom");
+  ask(
+    run,
+    {
+      kind: "choices",
+      title: "How should I learn your voice?",
+      subtitle: "Your voice is how your posts sound: the tone, the words, the length. Every draft I write follows it.",
+      step: stepLabel("voiceFrom"),
+      items: rows.map(way),
+      skipLabel: fallback ? "" : "Skip for now",
+      back: true,
     },
-    ...(fallback
-      ? {}
-      : {
-          skipLabel: "Skip for now",
-          onSkip: () => {
-            setAltVoiceSource(sid, null);
-            next(run, "voiceFrom");
-          },
-        }),
-    onBack: () => back(run, "voiceFrom"),
-  });
+    {
+      onPick: (v, id) => {
+        settle(sid, id, rows.find((w) => w.value === v)?.title || "");
+        if (v === "profile") return askVoiceAccount(run);
+        if (v === "document") return askVoiceDocument(run);
+        if (v === "custom") return askVoiceWords(run);
+        setAltVoiceSource(sid, null);
+        next(run, "voiceFrom");
+      },
+      onSkip: (id) => {
+        settle(sid, id, "Skipped");
+        setAltVoiceSource(sid, null);
+        next(run, "voiceFrom");
+      },
+      onBack: previous("voiceFrom"),
+    },
+  );
 }
 
 function askVoiceAccount(run) {
   const { sid } = run;
   const ids = new Set(voiceAccounts().map((p) => p.id));
-  const items = buildConnectedProfileItems().filter((it) => ids.has(it.value));
-  inlineQuestion.ask(sid, {
-    title: "Which account should I learn from?",
-    subtitle: "I read its recent posts and learn your voice from them.",
-    stepLabel: stepLabel("voiceFrom"),
-    items,
-    onPick: (id) => {
-      const it = items.find((i) => i.value === id);
-      answered(sid, "Which account should I learn from?", "", {
-        icon: "ap-icon-user",
-        title: it?.label || "Account",
-        meta: "To learn your voice from",
-      });
-      setAltVoiceSource(sid, { kind: "profile", id });
-      next(run, "voiceFrom");
+  const items = buildConnectedProfileItems()
+    .filter((it) => ids.has(it.value))
+    .map((it) => ({
+      value: it.value,
+      title: it.label,
+      desc: it.caption,
+      imgSrc: it.avatar?.imageUrl,
+      icon: "ap-icon-user",
+    }));
+  ask(
+    run,
+    {
+      kind: "choices",
+      title: "Which account should I learn from?",
+      subtitle: "I read its recent posts and learn your voice from them.",
+      step: stepLabel("voiceFrom"),
+      items,
+      back: true,
     },
-    onBack: () => askVoiceFrom(run),
-  });
+    {
+      onPick: (pid, id) => {
+        settle(sid, id, items.find((i) => i.value === pid)?.title || "");
+        setAltVoiceSource(sid, { kind: "profile", id: pid });
+        next(run, "voiceFrom");
+      },
+      onBack: askVoiceFrom,
+    },
+  );
 }
 
 function askVoiceDocument(run) {
   const { sid } = run;
-  const way = VOICE_WAYS.find((w) => w.value === "document");
-  inlineQuestion.ask(sid, {
-    title: way.title,
-    subtitle: way.desc,
-    stepLabel: stepLabel("voiceFrom"),
-    customFile: true,
-    customFileAccept: ".pdf,.docx,.txt,.md,.markdown,application/pdf,text/plain,text/markdown",
-    customFileLabel: "Choose a document",
-    customFileHint: "PDF · DOCX · TXT · MD",
-    onFile: (file) => {
-      const f = [].concat(file)[0];
-      if (!f) return askVoiceDocument(run);
-      answered(sid, VOICE_QUESTION, "", {
-        icon: "ap-icon-file--text",
-        title: f.name,
-        meta: "To learn your voice from",
-      });
-      setAltVoiceSource(sid, { kind: "document", name: f.name });
-      next(run, "voiceFrom");
+  const w = VOICE_WAYS.find((x) => x.value === "document");
+  ask(
+    run,
+    {
+      kind: "file",
+      title: w.title,
+      subtitle: w.desc,
+      step: stepLabel("voiceFrom"),
+      fileLabel: "Choose a document",
+      accept: ".pdf,.docx,.txt,.md,.markdown,application/pdf,text/plain,text/markdown",
+      back: true,
     },
-    onBack: () => askVoiceFrom(run),
-  });
+    {
+      onFiles: ([f], id) => {
+        settle(sid, id, f.name);
+        setAltVoiceSource(sid, { kind: "document", name: f.name });
+        next(run, "voiceFrom");
+      },
+      onBack: askVoiceFrom,
+    },
+  );
 }
 
 function askVoiceWords(run) {
   const { sid } = run;
-  inlineQuestion.ask(sid, {
-    title: "Describe it in your own words",
-    subtitle: "I follow it exactly as you write it.",
-    stepLabel: stepLabel("voiceFrom"),
-    customFirst: true,
-    customIcon: "ap-icon-pen",
-    customPlaceholder: "e.g. Candid and specific. Short paragraphs, no jargon.",
-    items: [],
-    onCustom: (value) => {
-      const text = String(value || "").trim();
-      if (!text) return askVoiceWords(run);
-      answered(sid, VOICE_QUESTION, text);
-      setAltVoiceSource(sid, { kind: "custom", text });
-      next(run, "voiceFrom");
+  ask(
+    run,
+    {
+      kind: "text",
+      title: "Describe it in your own words",
+      subtitle: "I follow it exactly as you write it.",
+      step: stepLabel("voiceFrom"),
+      placeholder: "e.g. Candid and specific. Short paragraphs, no jargon. Confident but down-to-earth.",
+      submitLabel: "Continue",
+      back: true,
     },
-    onBack: () => askVoiceFrom(run),
-  });
+    {
+      onText: (text, id) => {
+        settle(sid, id, text);
+        setAltVoiceSource(sid, { kind: "custom", text });
+        next(run, "voiceFrom");
+      },
+      onBack: askVoiceFrom,
+    },
+  );
 }
 
 // ── 5 · The analysis, if it hasn't landed yet ──────────────────────────────
@@ -432,32 +549,42 @@ function review(run) {
     if (d.audience?.[0]) facts.push({ label: "Audience", text: d.audience[0] });
     if (d.objective?.length) facts.push({ label: "Goal", text: d.objective.slice(0, 2).join(", ") });
     if (d.tones?.length) facts.push({ label: "Tone", text: d.tones.slice(0, 3).join(", ") });
-    postVoiceTurn(sid, "playbook-learned", {
+    const learned = postVoiceTurn(sid, "playbook-learned", {
+      contextId: null,
+      network: null,
       intro: run.source === "manual" ? "Your Playbook is ready to fill in." : "Here's what I learned.",
       title: d.name || "Your Brand",
       text: d.businessSummary || "",
       facts,
     });
-    inlineQuestion.ask(sid, {
-      title: STEP_TEXT.recap.title,
-      subtitle: STEP_TEXT.recap.desc,
-      stepLabel: stepLabel("recap"),
-      items: [
-        { value: "ok", label: "Looks good", caption: "Next, your voice.", icon: "ap-icon-check" },
-        {
-          value: "fix",
-          label: "Fix it in the Playbook",
-          caption: "I save it, then open it for you.",
-          icon: "ap-icon-pen",
-        },
-      ],
-      onPick: (v) => {
-        if (v === "fix") return finish(run, { open: true });
-        postSelectionEcho(sid, { icon: "ap-icon-check", title: "Looks good", meta: STEP_TEXT.recap.title });
-        next(run, "recap");
+    ask(
+      run,
+      {
+        kind: "choices",
+        title: STEP_TEXT.recap.title,
+        subtitle: STEP_TEXT.recap.desc,
+        step: stepLabel("recap"),
+        items: [
+          { value: "ok", title: "Looks good", desc: "Next, your voice.", icon: "ap-icon-check" },
+          {
+            value: "fix",
+            title: "Fix it in the Playbook",
+            desc: "I save it, then open it for you.",
+            icon: "ap-icon-pen",
+          },
+        ],
+        back: true,
       },
-      onBack: () => back(run, "recap"),
-    });
+      {
+        onPick: (v, id) => {
+          settle(sid, id, v === "fix" ? "Fix it in the Playbook" : "Looks good");
+          if (v === "fix") return finish(run, { open: true });
+          next(run, "recap");
+        },
+        onBack: previous("recap"),
+      },
+      { withIds: [learned] },
+    );
   });
 }
 
@@ -470,7 +597,9 @@ function checkVoice(run) {
   const facts = [];
   if (rules(d.voiceAlways).length) facts.push({ label: "Always", list: rules(d.voiceAlways).slice(0, 3) });
   if (rules(d.voiceNever).length) facts.push({ label: "Never", list: rules(d.voiceNever).slice(0, 2) });
-  postVoiceTurn(sid, "playbook-learned", {
+  const learned = postVoiceTurn(sid, "playbook-learned", {
+    contextId: null,
+    network: null,
     intro: "And this is how you'll sound.",
     title: "Your voice",
     text:
@@ -478,15 +607,25 @@ function checkVoice(run) {
       (facts.length ? "" : "Not set yet. Describe it in the Playbook and every draft will follow it."),
     facts,
   });
-  inlineQuestion.ask(sid, {
-    title: STEP_TEXT.voice.title,
-    subtitle: STEP_TEXT.voice.desc,
-    stepLabel: stepLabel("voice"),
-    items: [],
-    actions: [{ value: "save", label: "Save my Playbook", primary: true }],
-    onPick: () => finish(run),
-    onBack: () => back(run, "voice"),
-  });
+  ask(
+    run,
+    {
+      kind: "confirm",
+      title: STEP_TEXT.voice.title,
+      subtitle: STEP_TEXT.voice.desc,
+      step: stepLabel("voice"),
+      submitLabel: "Save my Playbook",
+      back: true,
+    },
+    {
+      onAct: (_act, id) => {
+        settle(sid, id, "Saved");
+        finish(run);
+      },
+      onBack: (r) => review(r),
+    },
+    { withIds: [learned] },
+  );
 }
 
 // ── 8 · Save ───────────────────────────────────────────────────────────────
@@ -495,12 +634,11 @@ function finish(run, { open = false } = {}) {
   const { sid } = run;
   const saved = save(sid);
   if (!saved) return;
-  postSelectionEcho(sid, { icon: "ap-icon-target", title: saved.name, meta: "Playbook saved" });
   postAssistantMessage(
     sid,
     open
       ? `I saved ${saved.name}. Fix anything that's off in the Playbook, then come back and tell me what to post.`
-      : `Your Playbook is ready. Tell me what to post, or drop a link or a file, and I'll write it as ${saved.name}.`,
+      : `Your Playbook ${saved.name} is ready. Tell me what to post, or drop a link or a file, and I'll write it in your voice.`,
   );
   run.onSaved(saved, { open });
 }

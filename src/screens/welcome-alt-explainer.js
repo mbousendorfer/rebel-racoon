@@ -16,14 +16,14 @@
 // The ready screen paints once and moves by attributes (`is-lit`, `is-done`)
 // so its stages light the parts one by one without replaying the scene.
 
-import { escapeHtml } from "../utils.js?v=2951";
-import { networkIcon, networkLabel } from "../social-profiles.js?v=2951";
-import { playbookNetworks } from "../voice-parts.js?v=2951";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2951";
-import { tint, domainOf } from "./welcome-alt-shell.js?v=2951";
-import { styleArtSvg } from "../modules/image-studio/render/style-art.js?v=2951";
-import { resolvePalette } from "../modules/image-studio/render/palette.js?v=2951";
-import { svgToDataUrl } from "../modules/image-studio/render/visual.js?v=2951";
+import { escapeHtml } from "../utils.js?v=2955";
+import { networkIcon, networkLabel } from "../social-profiles.js?v=2955";
+import { playbookNetworks } from "../voice-parts.js?v=2955";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2955";
+import { tint, domainOf } from "./welcome-alt-shell.js?v=2955";
+import { styleArtSvg } from "../modules/image-studio/render/style-art.js?v=2955";
+import { resolvePalette } from "../modules/image-studio/render/palette.js?v=2955";
+import { svgToDataUrl } from "../modules/image-studio/render/visual.js?v=2955";
 
 const W = 560;
 const H = 540;

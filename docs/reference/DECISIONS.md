@@ -200,8 +200,8 @@ cards with a per-card « Looks good », and a wall of blocks under a Confirm hea
 makes the Playbook in the chat ([`playbook-chat-flow.js`](../../src/playbook-chat-flow.js)). It is the run,
 not the deleted chat onboarding: the same steps in the same order (`flowSteps()`), the same words
 (`STEP_TEXT`, `OTHER_WAYS`, `VOICE_WAYS`, exported from the run's screens), the same draft and save
-(context-builder), each step asked as a question card (the Quickpicker) instead of a screen, and still no
-accounts step. Everywhere else, New Start's door included, the screens make the Playbook. Asked: « au clic
+(context-builder), each step asked as a question card in the thread (the run's own rows and fields, not
+the Quickpicker) instead of a screen, and still no accounts step. Everywhere else, New Start's door included, the screens make the Playbook. Asked: « au clic
 sur la card, ça devrait commencer une conversation et poser des questions pour créer le playbook », then
 « les mêmes questions / step que dans "UP-Interactive Playbook: the run first" mais en mode conversation,
 avec des cards de questions comme dans Claude / ChatGPT ».
