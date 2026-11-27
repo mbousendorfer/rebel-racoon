@@ -17,9 +17,9 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2974";
-import { getFolders, addFolder } from "../folders-store.js?v=2974";
-import { escapeHtml } from "../utils.js?v=2974";
+} from "../modal-coordinator.js?v=2975";
+import { getFolders, addFolder } from "../folders-store.js?v=2975";
+import { escapeHtml } from "../utils.js?v=2975";
 
 const MODAL_ID = "saveFolder";
 

@@ -1,8 +1,8 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2974";
-import { conceptHint, conceptText } from "../concepts.js?v=2974";
-import { getPath, navigate } from "../router.js?v=2974";
-import { parseHashParams } from "../url-state.js?v=2974";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2974";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2975";
+import { conceptHint, conceptText } from "../concepts.js?v=2975";
+import { getPath, navigate } from "../router.js?v=2975";
+import { parseHashParams } from "../url-state.js?v=2975";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2975";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -18,37 +18,37 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=2974";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2974";
-import { contentCounts } from "./right-panel/overview-view.js?v=2974";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2974";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2974";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2974";
+} from "./right-panel.js?v=2975";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2975";
+import { contentCounts } from "./right-panel/overview-view.js?v=2975";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2975";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2975";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2975";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=2974";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2974";
-import { open as openRenameModal } from "./rename-modal.js?v=2974";
+} from "./conversation-status-card.js?v=2975";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2975";
+import { open as openRenameModal } from "./rename-modal.js?v=2975";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=2974";
-import { isFlagOn } from "../feature-flags.js?v=2974";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2974";
-import { findCadence } from "../topics-catalog.js?v=2974";
+} from "../contexts-store.js?v=2975";
+import { isFlagOn } from "../feature-flags.js?v=2975";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2975";
+import { findCadence } from "../topics-catalog.js?v=2975";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=2974";
+} from "../top-posts-flow.js?v=2975";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2974";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2975";
 
 // Persistent top bar.
 //
