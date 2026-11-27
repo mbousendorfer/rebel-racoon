@@ -662,15 +662,6 @@
 .admin-menu__toggle {
   flex-shrink: 0;
 }
-/* A connected-network row: the network's glyph before its name. */
-.admin-menu__network {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  min-width: 0;
-}
-
 /* Docs link row. */
 .admin-menu__doc {
   display: flex;
@@ -681,13 +672,6 @@
   border-radius: var(--app-radius-card);
   text-decoration: none;
   color: inherit;
-}
-button.admin-menu__doc {
-  width: 100%;
-  background: none;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
 }
 .admin-menu__doc:hover {
   border-color: var(--ref-color-electric-blue-100);

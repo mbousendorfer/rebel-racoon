@@ -237,6 +237,15 @@
   margin: -10px;
   flex-shrink: 0;
 }
+/* Same checkbox as a select option's: .ap-select-option-checkbox pins it to
+   16px, which the 10px padding above squeezes to nothing, and the box then
+   spills onto the option's icon or label. Give it back its padded size; the
+   margin above lays it out at 16px. */
+.ap-checkbox-container.ap-select-option-checkbox {
+  width: auto;
+  min-width: 0;
+  height: auto;
+}
 
 /* The DS .ap-link assumes an <a>. Buttons styled as links need their
    user-agent chrome (border / background / padding) reset so the

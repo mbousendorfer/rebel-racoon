@@ -28,11 +28,11 @@
 //             preset), transcript, segments (null = auto framing), texts[],
 //             brand (null = the Playbook's clip look) }
 
-import { newId } from "./utils.js?v=2929";
-import { seedVideos } from "./mocks.js?v=2929";
-import { isNewUser } from "./user-mode.js?v=2929";
-import { createNotifier } from "./store-utils.js?v=2929";
-import { getDefaultContext, getContextById } from "./contexts-store.js?v=2929";
+import { newId } from "./utils.js?v=2931";
+import { seedVideos } from "./mocks.js?v=2931";
+import { isNewUser } from "./user-mode.js?v=2931";
+import { createNotifier } from "./store-utils.js?v=2931";
+import { getDefaultContext, getContextById } from "./contexts-store.js?v=2931";
 
 const MIN_VIDEO_MS = 30 * 1000;
 const MAX_VIDEO_MS = 2 * 60 * 60 * 1000;
@@ -177,7 +177,7 @@ export function addVideo({
 // Two ways an analysis ends without clips, as in prod (clip-job.service):
 // « empty » (NO_SPEECH — the video, not the job: trying again changes nothing)
 // and « crash » (the job failed: Try again). The prototype never ends either
-// way on its own: Admin › Clips arms one.
+// way on its own; failNextAnalysis arms one (its Admin entry was removed).
 const ANALYSIS_ENDS = {
   empty: {
     kind: "empty",
