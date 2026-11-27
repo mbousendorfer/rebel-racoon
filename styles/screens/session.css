@@ -843,6 +843,25 @@ body.playbook-revoked .session__composer-card {
   margin-top: 0;
 }
 
+/* In the hero the Playbook door is the thing to do first, so it reads as an
+   alert: the status card's orange carried round the whole card (its border
+   orange-40, the card on orange-10, the stage white so the posts stand off
+   it). Hover stays the cards' blue border. New Start keeps its white door
+   (2026-11-27, asked: « cette card devrait être plus infoboxée, ptet le
+   contour en couleur … ça doit attirer l'attention de l'utilisateur »). */
+.empty-chat__asks + .ns-doors .ns-door--missing {
+  border-color: var(--ref-color-orange-40);
+  background: var(--ref-color-orange-10);
+}
+
+.empty-chat__asks + .ns-doors .ns-door--missing:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.empty-chat__asks + .ns-doors .ns-door--missing .ns-voice {
+  background: var(--ref-color-white);
+}
+
 /* « Finish your voices »: a DS warning infobox under
    the starters, in the composer's column. */
 .empty-chat__voices {
