@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { escapeHtml as esc, html, prettyUrl, raw } from "./utils.js?v=2979";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2979";
-import { conceptHint } from "./concepts.js?v=2979";
+import { escapeHtml as esc, html, prettyUrl, raw } from "./utils.js?v=2982";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2982";
+import { conceptHint } from "./concepts.js?v=2982";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2979";
-import { analyzeWebsite } from "./context-mock-analysis.js?v=2979";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2979";
-import { isFlagOn } from "./feature-flags.js?v=2979";
-import { clipLookOf } from "./videos-store.js?v=2979";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2979";
-import { parseHashParams } from "./url-state.js?v=2979";
+} from "./playbook-brand-kit.js?v=2982";
+import { analyzeWebsite } from "./context-mock-analysis.js?v=2982";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2982";
+import { isFlagOn } from "./feature-flags.js?v=2982";
+import { clipLookOf } from "./videos-store.js?v=2982";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2982";
+import { parseHashParams } from "./url-state.js?v=2982";
 import {
   isListPart,
   voiceParts,
@@ -56,33 +56,29 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2979";
-import { showToast } from "./components/toast.js?v=2979";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2979";
+} from "./voice-parts.js?v=2982";
+import { showToast } from "./components/toast.js?v=2982";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2982";
 import {
   voiceChoices,
   saveNetworkVoice,
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2979";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2979";
-import { consumeHandoff } from "./handoff.js?v=2979";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2979";
+} from "./network-voice-flow.js?v=2982";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2982";
+import { consumeHandoff } from "./handoff.js?v=2982";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2982";
 import {
   NETWORK_ICON_BY_PLATFORM,
-  NETWORK_LABEL,
   networkLabel,
   networkIcon,
   getConnectedProfiles,
   normalizeNetwork,
   NETWORKS,
-} from "./social-profiles.js?v=2979";
+} from "./social-profiles.js?v=2982";
 import {
   ROSTERS,
-  REF_NETWORKS,
-  hashStr,
-  hslToHex,
   rosterOf,
   rosterList,
   renderRosterPanel,
@@ -94,7 +90,7 @@ import {
   stopRosterScan,
   handleRosterClick,
   handleInfAddInput,
-} from "./playbook-rosters.js?v=2979";
+} from "./playbook-rosters.js?v=2982";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -211,8 +207,7 @@ const STAGE_MS = 2400;
 let mountTarget = null;
 let cfg = null;
 let editScope = null; // null (read) | "goals" | "voice" | "brand" | "competitors" | "influencers"
-let refModalIndex = null; // open reference-image detail modal (index) or null
-let refModalHost = null; // body-level portal node for the open detail modal
+let modalHost = null; // body-level portal node for the open competitor modal
 let snapshot = null; // deep copy of editable fields, for Cancel
 let editBaseline = null; // the same fields as JSON once the editor has painted — "anything changed?"
 let audienceCustom = false; // "Other…" picked in the Primary audience dropdown
@@ -360,11 +355,10 @@ export function mount(target, config) {
     target.removeEventListener("keydown", onKeydownH);
     target.removeEventListener("error", onErrorH, true);
     target.removeEventListener("toggle", onToggleH, true);
-    if (refModalHost) {
-      refModalHost.remove();
-      refModalHost = null;
+    if (modalHost) {
+      modalHost.remove();
+      modalHost = null;
     }
-    refModalIndex = null;
     closeRosterDialogs();
     mountTarget = null;
     cfg = null;
@@ -911,176 +905,6 @@ function renderCtaEditor(data) {
       <i class="ap-icon-plus"></i><span>Add link</span>
     </button>
   `;
-}
-
-// Reference-image gallery (#11) — up to 10 visual references, each with
-// optional usage guidance (a freeform note + target networks).
-const MAX_REF_IMAGES = 10;
-
-// Read-only network mini-badges (icons only) for an image's target networks.
-function renderRefNetBadges(networks) {
-  const nets = Array.isArray(networks) ? networks.filter((n) => NETWORK_ICON_BY_PLATFORM[n]) : [];
-  if (!nets.length) return "";
-  return `<span class="recap__refimg-nets">${nets
-    .map(
-      (n) =>
-        `<i class="${NETWORK_ICON_BY_PLATFORM[n]}" title="${esc(NETWORK_LABEL[n] || n)}" aria-label="${esc(NETWORK_LABEL[n] || n)}"></i>`,
-    )
-    .join("")}</span>`;
-}
-
-// Edit-mode network toggles — compact icon-only buttons (recognizable logos +
-// a selection ring) so they stay one tidy row at any panel width. The platform
-// name rides on title/aria-label.
-function renderRefNetChips(networks, i) {
-  const nets = Array.isArray(networks) ? networks : [];
-  return `<div class="recap__refedit-nets">${REF_NETWORKS.map((n) => {
-    const on = nets.includes(n);
-    const label = esc(NETWORK_LABEL[n] || n);
-    return `<button type="button" class="recap__refedit-net" aria-pressed="${on}" data-recap-refnet="${n}" data-recap-refimg-index="${i}" title="${label}" aria-label="${label}"><i class="${NETWORK_ICON_BY_PLATFORM[n]}" aria-hidden="true"></i></button>`;
-  }).join("")}</div>`;
-}
-
-// Deterministic mock "vision" read of an image — the indications Archie surfaces
-// (dominant colours + scene/subject tags). Stable per image (hashed from its
-// label/seed), since the prototype has no real image analysis.
-const REF_TAG_POOLS = [
-  [/ui|product|screen|app|dashboard/, ["Product UI", "Screens", "Tech"]],
-  [/team|people|candid|portrait|face|hiring/, ["People", "Candid", "Human"]],
-  [/brand|board|palette|logo|identity/, ["Brand", "Studio", "Graphic"]],
-  [/office|desk|work|laptop/, ["Workplace", "Indoor", "Lifestyle"]],
-  [/nature|outdoor|landscape|mountain|city|street|scene/, ["Outdoor", "Scene", "Editorial"]],
-];
-const REF_TAG_FALLBACK = ["Photographic", "Editorial", "Lifestyle", "Minimal", "Vibrant", "Muted", "Candid", "Studio"];
-
-// Deterministic mock signals for an image that has no stored tags/colours yet.
-function refImageSignals(img) {
-  const key = (img.label || img.id || img.url || "image").toLowerCase();
-  const h = hashStr(key);
-  const palette = [30, 50, 66, 82].map((lig, i) => {
-    const hue = (((h >> (i * 5)) % 360) + 360) % 360;
-    const sat = 42 + ((h >> (i * 3)) % 34);
-    return hslToHex(hue, sat, lig);
-  });
-  let tags = null;
-  for (const [re, t] of REF_TAG_POOLS) {
-    if (re.test(key)) {
-      tags = t;
-      break;
-    }
-  }
-  if (!tags) tags = [0, 1, 2].map((i) => REF_TAG_FALLBACK[(h >> (i * 4)) % REF_TAG_FALLBACK.length]);
-  return { palette, tags: [...new Set(tags)] };
-}
-
-// An image's tags / colours — stored on the image once edited, else the mock
-// signals (seeded lazily so the first edit has something to mutate).
-function refTags(img) {
-  return Array.isArray(img.tags) ? img.tags : refImageSignals(img).tags;
-}
-function refColors(img) {
-  return Array.isArray(img.colors) ? img.colors : refImageSignals(img).palette;
-}
-// Promote the mock signals onto the image so the first edit has arrays to mutate.
-function ensureRefTagsColors(img) {
-  if (!Array.isArray(img.tags)) img.tags = refImageSignals(img).tags.slice();
-  if (!Array.isArray(img.colors)) img.colors = refImageSignals(img).palette.slice();
-}
-
-// Per-image detail modal — big preview + Archie's extracted indications, then
-// the usage notes + target networks (editable in edit mode, read-only otherwise).
-function renderRefModal(data) {
-  if (refModalIndex == null) return "";
-  const imgs = Array.isArray(data.referenceImages) ? data.referenceImages : [];
-  const img = imgs[refModalIndex];
-  if (!img) return "";
-  const i = refModalIndex;
-  const edit = inEdit("brand"); // editable only while the Brand section is
-  const tags = refTags(img);
-  const colors = refColors(img);
-
-  const tagsBlock = edit
-    ? `<div class="recap__reftags">
-        ${tags
-          .map(
-            (t, ti) =>
-              `<span class="ap-tag grey"><span>${esc(t)}</span><button type="button" data-recap-reftag-remove data-recap-refimg-index="${i}" data-recap-tag-index="${ti}" aria-label="Remove ${esc(t)}"><i class="ap-icon-close"></i></button></span>`,
-          )
-          .join("")}
-        <input type="text" class="recap__reftag-input" data-recap-reftag-input data-recap-refimg-index="${i}" placeholder="Add tag…" aria-label="Add tag" />
-      </div>`
-    : `<div class="recap__reftags">${
-        tags.map((t) => `<span class="ap-tag grey"><span>${esc(t)}</span></span>`).join("") ||
-        `<span class="recap__refmodal-empty">None</span>`
-      }</div>`;
-
-  const colorsBlock = edit
-    ? `<div class="recap__refcolors">
-        ${colors
-          .map(
-            (c, ci) =>
-              `<span class="recap__refcolor"><input type="color" class="recap__refcolor-input" value="${esc(c)}" data-recap-refcolor data-recap-refimg-index="${i}" data-recap-color-index="${ci}" aria-label="Color ${ci + 1}" /><button type="button" class="recap__refcolor-x" data-recap-refcolor-remove data-recap-refimg-index="${i}" data-recap-color-index="${ci}" aria-label="Remove color"><i class="ap-icon-close"></i></button></span>`,
-          )
-          .join("")}
-        <button type="button" class="recap__refcolor-add" data-recap-refcolor-add data-recap-refimg-index="${i}" aria-label="Add color"><i class="ap-icon-plus"></i></button>
-      </div>`
-    : `<div class="recap__refcolors">${
-        colors
-          .map((c) => `<span class="recap__refmodal-dot" style="background:${esc(c)};" title="${esc(c)}"></span>`)
-          .join("") || `<span class="recap__refmodal-empty">None</span>`
-      }</div>`;
-
-  const notes = edit
-    ? `<div class="ap-textarea-field resizable">
-        <textarea data-recap-refnote data-recap-refimg-index="${i}" rows="3" placeholder="When to use this image, do's and don'ts, style notes" aria-label="Usage guidance">${esc(img.note || "")}</textarea>
-      </div>`
-    : img.note && img.note.trim()
-      ? `<p class="recap__refmodal-note">${esc(img.note)}</p>`
-      : `<p class="recap__refmodal-empty">No notes yet.</p>`;
-  const netsBlock = edit
-    ? renderRefNetChips(img.networks, i)
-    : renderRefNetBadges(img.networks) || `<span class="recap__refmodal-empty">Any network.</span>`;
-  const removeBtn = edit
-    ? `<button type="button" class="ap-button transparent grey" data-recap-refimg-remove="${i}"><i class="ap-icon-trash"></i><span>Remove image</span></button>`
-    : "";
-  // DS dialog chrome (.ap-dialog + header/close/content/footer) inside a
-  // centered .app-modal-backdrop scrim.
-  return `
-  <div class="app-modal-backdrop recap__refmodal-backdrop" data-recap-refmodal-backdrop>
-    <aside class="ap-dialog recap__refmodal" role="dialog" aria-modal="true" aria-label="Reference image">
-      <div class="ap-dialog-header"><span class="ap-dialog-title">Reference image</span></div>
-      <button type="button" class="ap-dialog-close" data-recap-refimg-close aria-label="Close"><i class="ap-icon-close"></i></button>
-      <div class="ap-dialog-content recap__refmodal-content">
-        <div class="recap__refmodal-grid">
-          <div class="recap__refmodal-preview"><img src="${esc(img.url)}" alt="${esc(img.label || "Reference image")}" /></div>
-          <div class="recap__refmodal-panel">
-            <div class="recap__refmodal-sec">
-              <span class="recap__refedit-flabel">Tags</span>
-              ${tagsBlock}
-            </div>
-            <div class="recap__refmodal-sec">
-              <span class="recap__refedit-flabel">Dominant colors</span>
-              ${colorsBlock}
-            </div>
-            <div class="recap__refmodal-sec">
-              <span class="recap__refedit-flabel">Usage notes</span>
-              ${notes}
-            </div>
-            <div class="recap__refmodal-sec">
-              <span class="recap__refedit-flabel">Best for</span>
-              ${netsBlock}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="ap-dialog-footer">
-        <div class="ap-dialog-footer-left">${removeBtn}</div>
-        <div class="ap-dialog-footer-right">
-          <button type="button" class="ap-button primary orange" data-recap-refimg-close><span>Done</span></button>
-        </div>
-      </div>
-    </aside>
-  </div>`;
 }
 
 // Static Archie brand mark (same glyph as the loader, sans the SMIL pop
@@ -2904,7 +2728,7 @@ function paint() {
         <div class="pb2__panel" role="tabpanel" id="pb2-panel" aria-labelledby="pb2-tab-${activeTab}">
           ${raw(renderActivePanel(data))}
         </div>
-        ${raw(renderRefModal(data))} ${raw(renderRosterModal(data, rosterCtx))} ${raw(renderInfluencerAddModal())}
+        ${raw(renderRosterModal(data, rosterCtx))} ${raw(renderInfluencerAddModal())}
       </div>
     </section>
   `;
@@ -2915,28 +2739,26 @@ function paint() {
   portalModal();
 }
 
-// The detail modals (reference image, competitor) are rendered inside the recap
-// body, but the recap scroll container / reveal transform stops their fixed
-// backdrop from covering the viewport. Move whichever one is open onto <body>
-// (like the app's real modals) and bind the same delegated handlers so its
-// controls keep working. Only one can be open at a time — refModalIndex and
-// rosterModal are mutually exclusive — so one host covers both.
+// The competitor detail modal is rendered inside the recap body, but the recap
+// scroll container / reveal transform stops its fixed backdrop from covering
+// the viewport. Move it onto <body> (like the app's real modals) and bind the
+// same delegated handlers so its controls keep working.
 function portalModal() {
-  if (refModalHost) {
-    refModalHost.remove();
-    refModalHost = null;
+  if (modalHost) {
+    modalHost.remove();
+    modalHost = null;
   }
-  const modalEl = mountTarget?.querySelector(".recap__refmodal-backdrop, .recap__cmpmodal-backdrop");
+  const modalEl = mountTarget?.querySelector(".recap__cmpmodal-backdrop");
   if (!modalEl) return;
-  refModalHost = document.createElement("div");
-  refModalHost.className = "recap__refmodal-host";
-  refModalHost.appendChild(modalEl);
-  refModalHost.addEventListener("click", onClick);
-  refModalHost.addEventListener("input", onInput);
-  refModalHost.addEventListener("change", onChange);
-  refModalHost.addEventListener("keydown", onKeydown);
-  refModalHost.addEventListener("error", onLoadError, true);
-  document.body.appendChild(refModalHost);
+  modalHost = document.createElement("div");
+  modalHost.className = "recap__refmodal-host";
+  modalHost.appendChild(modalEl);
+  modalHost.addEventListener("click", onClick);
+  modalHost.addEventListener("input", onInput);
+  modalHost.addEventListener("change", onChange);
+  modalHost.addEventListener("keydown", onKeydown);
+  modalHost.addEventListener("error", onLoadError, true);
+  document.body.appendChild(modalHost);
 }
 
 // ── Section-nav scroll-spy ─────────────────────────────────────────────
@@ -3020,8 +2842,6 @@ const WRITE_HOOKS = [
   "[data-recap-cmp-discover]",
   "[data-recap-infadd-open]",
   "[data-recap-infadd-submit]",
-  "[data-recap-refimg-add]",
-  "[data-recap-refimg-remove]",
   "[data-recap-learn]",
   "[data-recap-look]",
   "[data-recap-kit-pick]",
@@ -3050,7 +2870,6 @@ function resetEdit() {
   snapshot = null;
   editBaseline = null;
   editScope = null;
-  refModalIndex = null;
   closeRosterDialogs();
   audienceCustom = false;
 }
@@ -3486,81 +3305,6 @@ function onClick(event) {
     return;
   }
 
-  // Reference images — open the file picker / open the detail modal / close it /
-  // remove a thumbnail.
-  if (event.target.closest("[data-recap-refimg-add]")) {
-    mountTarget?.querySelector("[data-recap-refimg-input]")?.click();
-    return;
-  }
-  const refOpen = event.target.closest("[data-recap-refimg-open]");
-  if (refOpen) {
-    refModalIndex = Number(refOpen.dataset.recapRefimgOpen);
-    repaint();
-    return;
-  }
-  // Close the modal (× / Done button, or a click on the backdrop itself).
-  // Reference-image edits are part of the Brand section's Save/Cancel flow — no
-  // separate commit here.
-  if (event.target.closest("[data-recap-refimg-close]") || event.target.matches?.("[data-recap-refmodal-backdrop]")) {
-    refModalIndex = null;
-    repaint();
-    return;
-  }
-  const refImgRemove = event.target.closest("[data-recap-refimg-remove]");
-  if (refImgRemove) {
-    const idx = Number(refImgRemove.dataset.recapRefimgRemove);
-    if (Array.isArray(data.referenceImages)) data.referenceImages = data.referenceImages.filter((_, i) => i !== idx);
-    refModalIndex = null; // the open image may be gone / indices shifted
-    repaint();
-    return;
-  }
-  // Reference image — toggle a target network on/off (in place, no page jump).
-  const refNet = event.target.closest("[data-recap-refnet]");
-  if (refNet) {
-    const idx = Number(refNet.dataset.recapRefimgIndex);
-    const net = refNet.dataset.recapRefnet;
-    const img = data.referenceImages?.[idx];
-    if (img) {
-      const nets = Array.isArray(img.networks) ? img.networks : [];
-      const on = nets.includes(net);
-      img.networks = on ? nets.filter((n) => n !== net) : [...nets, net];
-      refNet.setAttribute("aria-pressed", String(!on));
-    }
-    return;
-  }
-  // Reference image — remove a detected tag.
-  const tagRm = event.target.closest("[data-recap-reftag-remove]");
-  if (tagRm) {
-    const img = data.referenceImages?.[Number(tagRm.dataset.recapRefimgIndex)];
-    if (img) {
-      ensureRefTagsColors(img);
-      img.tags.splice(Number(tagRm.dataset.recapTagIndex), 1);
-      repaint();
-    }
-    return;
-  }
-  // Reference image — remove / add a dominant colour.
-  const colorRm = event.target.closest("[data-recap-refcolor-remove]");
-  if (colorRm) {
-    const img = data.referenceImages?.[Number(colorRm.dataset.recapRefimgIndex)];
-    if (img) {
-      ensureRefTagsColors(img);
-      img.colors.splice(Number(colorRm.dataset.recapColorIndex), 1);
-      repaint();
-    }
-    return;
-  }
-  const colorAdd = event.target.closest("[data-recap-refcolor-add]");
-  if (colorAdd) {
-    const img = data.referenceImages?.[Number(colorAdd.dataset.recapRefimgIndex)];
-    if (img) {
-      ensureRefTagsColors(img);
-      img.colors.push("#3b4a6b");
-      repaint();
-    }
-    return;
-  }
-
   // Footer / header actions (mode-specific) — Save and start / Start chat / etc.
   cfg.onFooter?.(event);
 }
@@ -3596,15 +3340,6 @@ function onInput(event) {
   if (handleKitInput(event, data)) return;
   if (t.matches("[data-recap-summary]")) {
     data.businessSummary = t.value;
-  } else if (t.matches("[data-recap-refnote]")) {
-    const idx = Number(t.dataset.recapRefimgIndex);
-    if (data.referenceImages?.[idx]) data.referenceImages[idx].note = t.value;
-  } else if (t.matches("[data-recap-refcolor]")) {
-    const img = data.referenceImages?.[Number(t.dataset.recapRefimgIndex)];
-    if (img) {
-      ensureRefTagsColors(img);
-      img.colors[Number(t.dataset.recapColorIndex)] = t.value;
-    }
   } else if (t.matches("[data-recap-text]")) {
     (t.dataset.recapText === "voiceSummary" ? voiceTarget(data) : data)[t.dataset.recapText] = t.value;
   } else if (t.matches("[data-recap-typo]")) {
@@ -3645,7 +3380,6 @@ function onInput(event) {
   }
 }
 
-let refImgCounter = 0;
 let brandLogoCounter = 0;
 
 function onChange(event) {
@@ -3687,31 +3421,7 @@ function onChange(event) {
     });
     return;
   }
-  // Reference-image upload — read each picked image as a data URL and append,
-  // capped at MAX_REF_IMAGES. Part of the Brand section's Save flow.
-  if (event.target.matches("[data-recap-refimg-input]")) {
-    const picked = Array.from(event.target.files || []).filter((f) => f.type.startsWith("image/"));
-    if (!picked.length) return;
-    if (!Array.isArray(data.referenceImages)) data.referenceImages = [];
-    const room = Math.max(0, MAX_REF_IMAGES - data.referenceImages.length);
-    Promise.all(
-      picked.slice(0, room).map(
-        (f) =>
-          new Promise((res) => {
-            const reader = new FileReader();
-            refImgCounter += 1;
-            const id = `ref-${refImgCounter}`;
-            reader.onload = () => res({ id, label: f.name, url: reader.result, networks: [] });
-            reader.onerror = () => res(null);
-            reader.readAsDataURL(f);
-          }),
-      ),
-    ).then((loaded) => {
-      loaded.filter(Boolean).forEach((img) => data.referenceImages.push(img));
-      repaint();
-    });
-    return;
-  }
+
   if (event.target.matches("[data-recap-primary-language]")) {
     const val = event.target.value;
     const langs = contextLanguages(data);
@@ -3758,18 +3468,5 @@ function onKeydown(event) {
   } else if (event.target.matches("[data-recap-chip-input]") && event.key === "Enter") {
     event.preventDefault();
     addChip(event.target.dataset.recapChipInput);
-  } else if (event.target.matches("[data-recap-reftag-input]") && event.key === "Enter") {
-    event.preventDefault();
-    const value = event.target.value.trim();
-    if (!value) return;
-    const data = cfg.getData();
-    const img = data?.referenceImages?.[Number(event.target.dataset.recapRefimgIndex)];
-    if (img) {
-      ensureRefTagsColors(img);
-      if (!img.tags.includes(value)) img.tags.push(value);
-      repaint();
-      // Re-focus the (fresh) tag input so the user can keep adding.
-      refModalHost?.querySelector("[data-recap-reftag-input]")?.focus();
-    }
   }
 }

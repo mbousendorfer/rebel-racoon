@@ -1,20 +1,20 @@
-import { escapeAttr, html, raw } from "../utils.js?v=2979";
-import { conceptText } from "../concepts.js?v=2979";
-import { renderTopbar, setTopbarActions } from "../components/topbar.js?v=2979";
+import { escapeAttr, html, raw } from "../utils.js?v=2982";
+import { conceptText } from "../concepts.js?v=2982";
+import { renderTopbar, setTopbarActions } from "../components/topbar.js?v=2982";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=2979";
-import { navigate } from "../router.js?v=2979";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2979";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2979";
-import { visibleContexts, isMine } from "../playbook-access.js?v=2979";
-import { voicesToFinish } from "../voice-parts.js?v=2979";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2979";
-import { showToast } from "../components/toast.js?v=2979";
-import { renderContextCard, renderContextsEmpty, renderGhostCard } from "./home/lists.js?v=2979";
+} from "../contexts-store.js?v=2982";
+import { navigate } from "../router.js?v=2982";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2982";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2982";
+import { visibleContexts, isMine } from "../playbook-access.js?v=2982";
+import { voicesToFinish } from "../voice-parts.js?v=2982";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2982";
+import { showToast } from "../components/toast.js?v=2982";
+import { renderContextCard, renderContextsEmpty, renderGhostCard } from "./home/lists.js?v=2982";
 
 // The Playbooks catalogue (`/contexts`).
 //

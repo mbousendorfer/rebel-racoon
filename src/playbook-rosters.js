@@ -8,9 +8,9 @@
 // What only the rosters use (the open detail modal, the scan, the add
 // dialog's draft) lives here.
 
-import { escapeHtml as esc, hostname } from "./utils.js?v=2979";
-import { discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2979";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2979";
+import { escapeHtml as esc, hostname } from "./utils.js?v=2982";
+import { discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2982";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2982";
 
 let rosterModal = null; // open competitor/influencer detail modal: { kind, index } or null
 let rosterScanning = null; // roster whose "Discover" scan is in flight ("competitors") or null — Influencers has no Discover
@@ -36,15 +36,15 @@ export function closeRosterDialogs() {
 // Shared with the reference images (playbook-view imports them back): the
 // networks an image or a competitor can target, and the hash + HSL maths of
 // the deterministic tints.
-export const REF_NETWORKS = ["facebook", "instagram", "linkedin", "x", "tiktok", "youtube"];
+const REF_NETWORKS = ["facebook", "instagram", "linkedin", "x", "tiktok", "youtube"];
 
-export function hashStr(s) {
+function hashStr(s) {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
   return h;
 }
 
-export function hslToHex(h, s, l) {
+function hslToHex(h, s, l) {
   s /= 100;
   l /= 100;
   const k = (n) => (n + h / 30) % 12;
