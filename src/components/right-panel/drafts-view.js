@@ -4,8 +4,8 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { sessionPlaybookId } from "../../active-playbook.js?v=2959";
-import { NETWORK_LABEL, networkMeta } from "../../social-profiles.js?v=2959";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2960";
+import { NETWORK_LABEL, networkMeta } from "../../social-profiles.js?v=2960";
 import {
   getPosts,
   removePost,
@@ -14,26 +14,26 @@ import {
   attachImageToDraft,
   attachCarouselToDraft,
   undoRevision,
-} from "../../posts-store.js?v=2959";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2959";
-import { renderPostCard } from "../post-card.js?v=2959";
-import { isPostValid } from "../../post-validation.js?v=2959";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2959";
-import { html, raw } from "../../utils.js?v=2959";
-import { isFlagOn } from "../../feature-flags.js?v=2959";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2959";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2959";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2959";
-import { open as openAssignModal } from "../assign-modal.js?v=2959";
-import { showToast } from "../toast.js?v=2959";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2959";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2959";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2959";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2959";
-import { navigate } from "../../router.js?v=2959";
-import { giveNetworkVoice } from "../../network-voice-flow.js?v=2959";
-import { startRewrite } from "../../draft-rewrite.js?v=2959";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2959";
+} from "../../posts-store.js?v=2960";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2960";
+import { renderPostCard } from "../post-card.js?v=2960";
+import { isPostValid } from "../../post-validation.js?v=2960";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2960";
+import { html, raw } from "../../utils.js?v=2960";
+import { isFlagOn } from "../../feature-flags.js?v=2960";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2960";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2960";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2960";
+import { open as openAssignModal } from "../assign-modal.js?v=2960";
+import { showToast } from "../toast.js?v=2960";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2960";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2960";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2960";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2960";
+import { navigate } from "../../router.js?v=2960";
+import { giveNetworkVoice } from "../../network-voice-flow.js?v=2960";
+import { startRewrite } from "../../draft-rewrite.js?v=2960";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2960";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -552,7 +552,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2959"), import("../../folders-store.js?v=2959")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2960"), import("../../folders-store.js?v=2960")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -981,7 +981,7 @@ export function handleDraftsClick(event) {
     if (!ref || !ref.sourceId || !ref.clipId) return true;
     const source = getStreamSources(sid).find((s) => s.id === ref.sourceId);
     if (!source) return true;
-    import("../../screens/clips/open-in-clips.js?v=2959").then(({ openInClips }) =>
+    import("../../screens/clips/open-in-clips.js?v=2960").then(({ openInClips }) =>
       openInClips(sid, source, ref.clipId),
     );
     return true;

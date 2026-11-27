@@ -21,8 +21,8 @@
 // video door is the clips starter. What is local (the rotation, the typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2959";
-import { escapeHtml } from "../../utils.js?v=2959";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2960";
+import { escapeHtml } from "../../utils.js?v=2960";
 
 const esc = escapeHtml;
 
@@ -101,7 +101,7 @@ const FRAME = `<span class="ns-cut__frame"><svg viewBox="0 0 90 160" preserveAsp
 // once there is a Playbook (only the hero has that case). `hero`: the door is
 // named for what is missing, the status card keeps only the cost (asked:
 // « Sound like your brand devrait plutôt s'appeler "no Playbook created yet" »).
-// `voices` (the hero, once a Playbook exists): { ctxId, net, label, list,
+// `voices` (the hero, once a Playbook exists): { ctxId, nets, label, list,
 // count } — the networks still on the default voice. It takes the Playbook
 // door's place, with the same anatomy: the orange status card on top, a stage
 // that plays the default voice becoming the network's, the way to add them
@@ -110,7 +110,9 @@ const FRAME = `<span class="ns-cut__frame"><svg viewBox="0 0 90 160" preserveAsp
 // façon que pour le playbook manquant »).
 function voicesDoor(v) {
   return `
-        <button type="button" class="ns-door ns-door--missing" data-finish-voices="${esc(v.ctxId)}" data-finish-voices-net="${esc(v.net)}" data-ns-reveal style="--i: 1">
+        <!-- Starts the Voice step in this chat, network after network
+             (finishNetworkVoices, network-voice-flow.js). -->
+        <button type="button" class="ns-door ns-door--missing" data-starter="finish-voices" data-starter-action="finish-voices" data-starter-prompt="Help me finish my voices" data-voices-ctx="${esc(v.ctxId)}" data-voices-nets="${esc(v.nets.join(","))}" data-ns-reveal style="--i: 1">
           ${SKEL.door}
           <span class="ap-status-card orange ns-door__status">
             <span class="upper">

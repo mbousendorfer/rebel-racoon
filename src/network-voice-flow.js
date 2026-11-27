@@ -21,6 +21,7 @@
 // Public API:
 //   requireNetworkVoices(sessionId, networks, onReady, contextId?)
 //   giveNetworkVoice(sessionId, ctxId, net)  — « Give X its own voice »
+//   finishNetworkVoices(sessionId, ctxId, nets) — « Finish your voices »
 //   answerVoiceAsk(sessionId, turnId, choice)       — a tile of the Voice step
 //   answerLearnedVoice(sessionId, turnId, "use" | "edit")
 // Shared with the dialogs:
@@ -33,7 +34,7 @@
 // onReady() runs IMMEDIATELY when every network already has a voice, so
 // callers wrap unconditionally.
 
-import { sessionPlaybookId } from "./active-playbook.js?v=2959";
+import { sessionPlaybookId } from "./active-playbook.js?v=2960";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -43,13 +44,13 @@ import {
   postVoiceTurn,
   resolveTurn,
   getThread,
-} from "./assistant.js?v=2959";
-import { getContextById, updateContext } from "./contexts-store.js?v=2959";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2959";
-import { setHandoff } from "./handoff.js?v=2959";
-import { navigate } from "./router.js?v=2959";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2959";
-import { getPosts } from "./posts-store.js?v=2959";
+} from "./assistant.js?v=2960";
+import { getContextById, updateContext } from "./contexts-store.js?v=2960";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2960";
+import { setHandoff } from "./handoff.js?v=2960";
+import { navigate } from "./router.js?v=2960";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2960";
+import { getPosts } from "./posts-store.js?v=2960";
 import {
   networkVoice,
   canLearnFrom,
@@ -57,7 +58,7 @@ import {
   brandVoiceAsIs,
   voiceNetworks,
   adaptNetworkVoice,
-} from "./voice-parts.js?v=2959";
+} from "./voice-parts.js?v=2960";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;
@@ -212,6 +213,37 @@ export function giveNetworkVoice(sessionId, ctxId, net) {
   );
 }
 
+// « Finish your voices » from the new chat's hero (flag newChatHero, asked
+// 2026-11-27: « Yes, in the chat »): the same Voice step, one network after the
+// other, for every network still on the default voice. Nothing waits on it, so
+// no default-voice answer; « Not now » leaves the others for later.
+export function finishNetworkVoices(sessionId, ctxId, nets) {
+  if (!nets?.length) return;
+  const names = nets.map(networkLabel);
+  const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+  postAssistantMessage(
+    sessionId,
+    nets.length === 1
+      ? `Let's give ${list} its own voice.`
+      : `Let's give each network its own voice: ${list}. One at a time.`,
+  );
+  askVoice(
+    sessionId,
+    ctxId,
+    nets,
+    () =>
+      postAssistantMessage(
+        sessionId,
+        "Your voices are set. Tell me what to post, and I'll write each network in its own voice.",
+      ),
+    {
+      giving: true,
+      line: (net) => `${networkLabel(net)} still uses your default voice, so its drafts may miss what works there.`,
+      cancelLine: "OK. The others keep your default voice for now. You can finish them anytime in your Voice profile.",
+    },
+  );
+}
+
 // The proposals waiting for an answer: turn id → { ctxId, net, voice, go }.
 const awaiting = new Map();
 
@@ -258,8 +290,11 @@ export function answerVoiceAsk(sessionId, turnId, choice) {
 // missing, what rules for the network cover, the ways to add them as tiles,
 // the best one recommended — then « Use my default voice » and « Not now ».
 // `giving`: from « Add rules for X » — nothing waits, so no default voice.
-// `line`: the block's sentence, when the default one doesn't fit (no drafts).
-function askVoice(sessionId, ctxId, nets, onReady, { giving = false, line = null } = {}) {
+// `line`: the block's sentence, when the default one doesn't fit (no drafts) —
+// a string, or (net) => string for each network. `cancelLine`: what « Not now »
+// answers. The options carry over to the next network.
+function askVoice(sessionId, ctxId, nets, onReady, opts = {}) {
+  const { giving = false, line = null, cancelLine = "OK, I won't write anything for now." } = opts;
   const [net, ...rest] = nets;
   const label = networkLabel(net);
   const { items } = voiceChoices(net, { needed: !giving });
@@ -268,9 +303,9 @@ function askVoice(sessionId, ctxId, nets, onReady, { giving = false, line = null
     network: net,
     choices: items,
     giving,
-    line,
+    line: typeof line === "function" ? line(net) : line,
   });
-  const go = () => (rest.length ? askVoice(sessionId, ctxId, rest, onReady) : onReady());
+  const go = () => (rest.length ? askVoice(sessionId, ctxId, rest, onReady, opts) : onReady());
   // The block keeps its tiles until a choice goes through (a dismissed
   // document dialog leaves it to pick again).
   const answered = (echo) => {
@@ -303,7 +338,7 @@ function askVoice(sessionId, ctxId, nets, onReady, { giving = false, line = null
   asking.set(turnId, (choice) => {
     if (choice === "cancel") {
       answered("Not now");
-      return postAssistantMessage(sessionId, `OK, I won't write anything for now.`);
+      return postAssistantMessage(sessionId, cancelLine);
     }
     const item = items.find((i) => i.value === choice);
     if (!item) return;
