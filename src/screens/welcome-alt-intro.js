@@ -8,14 +8,11 @@
 // this list too), then the review. Right, the scene that teaches what a
 // Playbook changes (welcome-alt-explainer.js).
 
-import { startDemo } from "../demo-flow.js?v=2928";
-import { isFlagOn } from "../feature-flags.js?v=2928";
-import { html, raw } from "../utils.js?v=2928";
-import { navigate } from "../router.js?v=2928";
-import { setHandoff } from "../handoff.js?v=2928";
-import { flowSteps, startFlow, STEP_TEXT, tint } from "./welcome-alt-shell.js?v=2928";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2928";
-import { paintExplainer } from "./welcome-alt-explainer.js?v=2928";
+import { html, raw } from "../utils.js?v=2929";
+import { navigate } from "../router.js?v=2929";
+import { flowSteps, startFlow, STEP_TEXT, tint } from "./welcome-alt-shell.js?v=2929";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2929";
+import { paintExplainer } from "./welcome-alt-explainer.js?v=2929";
 
 // What a Playbook holds, shown rather than told: its parts, under their
 // Playbook names, glyphs and tints.
@@ -73,11 +70,6 @@ export function renderWelcomeAltIntro(_params, target) {
               <i class="ap-icon-arrow-right"></i>
             </button>
             <span class="welcome-intro__time">${steps.length} steps · about 3 min</span>
-            ${isFlagOn("demoMode")
-              ? raw(
-                  `<button type="button" class="ap-button stroked grey" data-welcome-demo>Try it with a demo brand</button>`,
-                )
-              : ""}
           </div>
           <!-- Clips first (2026-10-29): cutting clips needs no Playbook, and
                nothing blocks the drafts after — the Playbook only makes them
@@ -107,11 +99,9 @@ export function renderWelcomeAltIntro(_params, target) {
   if (sceneEl) paintExplainer(sceneEl, "intro", null);
 
   const onClick = (event) => {
-    if (event.target.closest("[data-welcome-demo]")) return startDemo();
     if (event.target.closest("[data-welcome-clips]")) {
       // The same way in as the « Extract video clips » starter.
-      setHandoff("pendingStartClipStudio", {});
-      return navigate(`/session/clip-studio-${Date.now().toString(36)}`);
+      return navigate("/clips");
     }
     if (!event.target.closest("[data-welcome-begin]")) return;
     startFlow();

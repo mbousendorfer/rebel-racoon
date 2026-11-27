@@ -16,8 +16,7 @@
  * element's `color` (the SVG paints with `currentColor`).
  *
  * Colour: brand orange by default, overridable per context via
- * `--archie-loader-color` (e.g. white on filled CTA buttons, white on
- * the dark clip-studio thumbnails). Size: the bounding-box width, driven
+ * `--archie-loader-color` (e.g. white on filled CTA buttons). Size: the bounding-box width, driven
  * by `--archie-loader-size`.
  *
  * These loader selectors are also (historically) given rotating-border
@@ -30,7 +29,6 @@
 .ap-loader.size-16,
 .ap-loader.size-24,
 .chat-bubble-source-intake__spinner,
-.extracting-notice__spinner,
 .drafts-card__spinner,
 .session__composer-thinking-spinner,
 .source-card__spinner,
@@ -58,7 +56,6 @@
 .archie-loader > svg,
 .ap-loader > svg,
 .chat-bubble-source-intake__spinner > svg,
-.extracting-notice__spinner > svg,
 .drafts-card__spinner > svg,
 .session__composer-thinking-spinner > svg,
 .source-card__spinner > svg,
@@ -82,7 +79,6 @@
 .schedule-modal__spinner {
   --archie-loader-size: 20px;
 }
-.extracting-notice__spinner,
 .source-card__spinner,
 .ap-loader.size-16 {
   --archie-loader-size: 22px;

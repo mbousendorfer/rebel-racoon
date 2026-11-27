@@ -4,8 +4,8 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { sessionPlaybookId } from "../../active-playbook.js?v=2928";
-import { NETWORK_LABEL, networkMeta } from "../../social-profiles.js?v=2928";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2929";
+import { NETWORK_LABEL, networkMeta } from "../../social-profiles.js?v=2929";
 import {
   getPosts,
   removePost,
@@ -13,30 +13,27 @@ import {
   updatePostContent,
   attachImageToDraft,
   attachCarouselToDraft,
-  updatePostClip,
   undoRevision,
-} from "../../posts-store.js?v=2928";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2928";
-import { renderPostCard } from "../post-card.js?v=2928";
-import { isPostValid } from "../../post-validation.js?v=2928";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2928";
-import { html, raw } from "../../utils.js?v=2928";
-import { isFlagOn } from "../../feature-flags.js?v=2928";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2928";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2928";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2928";
-import { open as openAssignModal } from "../assign-modal.js?v=2928";
-import { showToast } from "../toast.js?v=2928";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2928";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2928";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2928";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2928";
-import { blockInDemo } from "../../demo-flow.js?v=2928";
-import { navigate } from "../../router.js?v=2928";
-import { giveNetworkVoice } from "../../network-voice-flow.js?v=2928";
-import { startRewrite } from "../../draft-rewrite.js?v=2928";
-import { getSources as getStreamSources, updateSourceClips } from "../../sources-stream.js?v=2928";
-import { open as openVideoClipsModal } from "../video-clips-modal.js?v=2928";
+} from "../../posts-store.js?v=2929";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2929";
+import { renderPostCard } from "../post-card.js?v=2929";
+import { isPostValid } from "../../post-validation.js?v=2929";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2929";
+import { html, raw } from "../../utils.js?v=2929";
+import { isFlagOn } from "../../feature-flags.js?v=2929";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2929";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2929";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2929";
+import { open as openAssignModal } from "../assign-modal.js?v=2929";
+import { showToast } from "../toast.js?v=2929";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2929";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2929";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2929";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2929";
+import { navigate } from "../../router.js?v=2929";
+import { giveNetworkVoice } from "../../network-voice-flow.js?v=2929";
+import { startRewrite } from "../../draft-rewrite.js?v=2929";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2929";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -364,7 +361,6 @@ function renderDraftsEmpty() {
 // "New SM" flag: the redesigned modal, or the previous one kept for
 // comparison. Same call shape; the legacy one ignores `playbookId`.
 function openScheduleModal(opts) {
-  if (blockInDemo()) return;
   return isFlagOn("newScheduleModal") ? openNewScheduleModal(opts) : openLegacyScheduleModal(opts);
 }
 
@@ -556,7 +552,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2928"), import("../../folders-store.js?v=2928")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2929"), import("../../folders-store.js?v=2929")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -973,10 +969,8 @@ export function handleDraftsClick(event) {
     onPostImageRemove(imageRemoveBtn.dataset.postImageRemove);
     return true;
   }
-  // "Edit clip" on a draft generated from a video clip — reopen the source
-  // clip in the Video Clips modal (single-clip, subtitles tab). Saving
-  // persists to the source AND re-syncs this draft's PIP (trim / format /
-  // subtitle style) so the card reflects the edit.
+  // "Edit clip" on a draft generated from a video clip — the clip opens in
+  // the Clips space's editor.
   const postClipEditBtn = event.target.closest("[data-post-clip-edit]");
   if (postClipEditBtn) {
     const pid = postClipEditBtn.dataset.postClipEdit;
@@ -987,29 +981,9 @@ export function handleDraftsClick(event) {
     if (!ref || !ref.sourceId || !ref.clipId) return true;
     const source = getStreamSources(sid).find((s) => s.id === ref.sourceId);
     if (!source) return true;
-    // flag clipsSpace: one editor — the clip opens in the Clips space's.
-    if (isFlagOn("clipsSpace")) {
-      import("../../screens/clips/open-in-clips.js?v=2928").then(({ openInClips }) =>
-        openInClips(sid, source, ref.clipId),
-      );
-      return true;
-    }
-    openVideoClipsModal(source, {
-      editingClipId: ref.clipId,
-      captionsTab: true,
-      clipOverrides: { format: post.format },
-      onSaveClips: (srcId, nextClips) => {
-        updateSourceClips(srcId, nextClips);
-        const edited = (nextClips || []).find((c) => c.id === ref.clipId);
-        if (!edited) return;
-        updatePostClip(sid, pid, {
-          start: edited.start,
-          end: edited.end,
-          format: edited.format || null,
-          subtitleStyle: edited.captionsOn ? edited.captionStyle : "none",
-        });
-      },
-    });
+    import("../../screens/clips/open-in-clips.js?v=2929").then(({ openInClips }) =>
+      openInClips(sid, source, ref.clipId),
+    );
     return true;
   }
   return false;

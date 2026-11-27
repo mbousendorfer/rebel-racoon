@@ -70,20 +70,19 @@ la carte (`hideCard()`) si **n'importe laquelle** de ces gardes est vraie :
 
 1. Flag `conversationStatusCard` OFF.
 2. Pas sur une route `/session/:id`.
-3. Session `clip-studio-*` (flow full-page).
-4. Préférence user désactivée — `isEnabled()` lit
+3. Préférence user désactivée — `isEnabled()` lit
    `localStorage["archie-status-card-visible"]` (défaut **ON** ; `"0"` = masqué),
    togglée par le bouton info de la topbar. Sous `contentPanel` ni le toggle ni
    cette garde n'existent : la carte se montre dès que le panel est fermé.
-5. **Un right-panel est ouvert** (n'importe quel mode) → la carte cède la
+4. **Un right-panel est ouvert** (n'importe quel mode) → la carte cède la
    colonne au panel. La préférence n'est pas touchée : à la fermeture du panel,
    `subscribeRightPanel` re-render et la carte réapparaît si activée.
-6. **Chat vide** — aucune source, idée, clip, draft ni travail en cours
+5. **Chat vide** — aucune source, idée, clip, draft ni travail en cours
    (`isEmptyChat`). Le toggle topbar est masqué en lockstep.
 
 Sinon : `rootEl.hidden = false` + `setShellLayout(true)`.
 
-> **Carte et right-panel ne s'affichent jamais ensemble** (garde 5). Les règles
+> **Carte et right-panel ne s'affichent jamais ensemble** (garde 4). Les règles
 > à 4 colonnes de `conversation-status-card.css` (carte 296px + panel
 > `max(380px, (100vw − sidebar) / 2)` en `grid-column: 4`) ne sont donc jamais
 > atteintes depuis que le mode `context-brief` a disparu.

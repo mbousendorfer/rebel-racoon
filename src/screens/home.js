@@ -1,122 +1,38 @@
-import { escapeAttr, html, newChatPath, raw } from "../utils.js?v=2928";
-import { conceptText } from "../concepts.js?v=2928";
-import { renderTopbar, setTopbarActions } from "../components/topbar.js?v=2928";
+import { escapeAttr, html, raw } from "../utils.js?v=2929";
+import { conceptText } from "../concepts.js?v=2929";
+import { renderTopbar, setTopbarActions } from "../components/topbar.js?v=2929";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=2928";
-import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=2928";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2928";
-import { closePanel as closeRightPanel } from "../components/right-panel.js?v=2928";
-import { navigate, getPath } from "../router.js?v=2928";
-import { isFlagOn } from "../feature-flags.js?v=2928";
-import { setHandoff } from "../handoff.js?v=2928";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2928";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2928";
-import { visibleContexts, usableContexts, isMine } from "../playbook-access.js?v=2928";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2928";
-import { voicesToFinish } from "../voice-parts.js?v=2928";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2928";
-import { installMoreMenu } from "../components/more-menu.js?v=2928";
-import { showToast } from "../components/toast.js?v=2928";
-import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=2928";
-import {
-  chatPlaybook,
-  renderChatsTab,
-  renderContextCard,
-  renderContextsEmpty,
-  renderGhostCard,
-  renderPlaybooksTable,
-} from "./home/lists.js?v=2928";
+} from "../contexts-store.js?v=2929";
+import { navigate } from "../router.js?v=2929";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2929";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2929";
+import { visibleContexts, isMine } from "../playbook-access.js?v=2929";
+import { voicesToFinish } from "../voice-parts.js?v=2929";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2929";
+import { showToast } from "../components/toast.js?v=2929";
+import { renderContextCard, renderContextsEmpty, renderGhostCard } from "./home/lists.js?v=2929";
 
-// The account HOME — and the Playbooks catalogue it merged with.
+// The Playbooks catalogue (`/contexts`).
 //
-// ── Two levels, two homes ─────────────────────────────────────────────────
-// `/` is the home of the active BRAND: a pure redirect to its most recent chat
-// (dashboard.js). This is the home of the ACCOUNT — the level above the
-// workspaces, where the two things that exist at that level live: the catalogue
-// of brands, and every chat, all brands. A hero on top turns it from a place
-// that only manages into a place you start from: type, pick a Playbook, Enter.
-//
-// ⚠️ NOT the front page that was deleted. `frontPage` made `/` a magazine fed by
-// listening, and that arbitration is closed (CLAUDE.md § The Topic Feed). The
-// test that separates them: the front page was a page of what Archie PROPOSES;
-// this is a page of what you HAVE. No Topic, no topics-store read, and `/` is
-// untouched.
-//
-// ── Two routes, one module ────────────────────────────────────────────────
-//   /home      → renderHome          the hero + the two tabs   (workspace mode)
-//   /contexts  → renderContextsRoute the catalogue on its own   (flag OFF)
-// Each gates itself and bounces, the way /topics and /insights do, so a stale
-// deep link lands somewhere real instead of rendering a dead screen. The
-// catalogue path is byte-for-byte what it was: flag OFF, nothing here changed.
-//
-// ⚠️ The names still say `contexts` — the classes (`.contexts-view__*`,
-// `.contexts-card*`) and the stylesheet (styles/screens/contexts.css). Renaming
-// them would touch a stylesheet and every card selector for something no user
-// can see; same call as the `.isv2-` prefix in the Image Studio.
-
-// ── The row's overflow menu — one open at a time (shared behaviour) ───────
-// The row lists its verbs in a kebab instead of the tile's hover toolbar. Two
-// reasons: a toolbar whose width depends on my rights (four buttons or two)
-// makes the whole right-hand cluster start at a different x on every row, which
-// is the one thing a list is for; and a hover-only control is a poor primary on
-// a row whose body is now a navigation. Installed once at module scope, like
-// source-card and idea-card do — it binds document listeners.
-installMoreMenu({
-  menuSelector: ".home-playbooks__more-menu",
-  triggerSelector: "[data-playbook-more]",
-  closeAfterSelectors: [
-    "[data-contexts-share]",
-    "[data-contexts-edit]",
-    "[data-contexts-duplicate]",
-    "[data-contexts-delete]",
-  ],
-});
+// ⚠️ The file is still called home.js: it also held the account home (`/home`,
+// flag `playbookWorkspace`), deleted on 2026-11-27. The names still say
+// `contexts` — the classes (`.contexts-view__*`, `.contexts-card*`) and the
+// stylesheet (styles/screens/contexts.css).
 
 let unsubs = [];
 // Where this screen paints — the router's #app. Held at module level because
-// every repaint path (a store notify, Clear search, a tab switch) has to reach
-// it, and bind() is handed the SECTION, not this.
+// every repaint path (a store notify, Clear search) has to reach it, and bind()
+// is handed the SECTION, not this.
 let mountTarget = null;
 // `owner` — the catalogue's sort by ownership (all · mine · shared), flag
 // playbookSharing only: without the flag every Playbook is mine.
-export let pageState = { query: "", pickedPlaybookId: null, owner: "all" };
-// Which of the two surfaces this mount is. Module-level rather than threaded
-// through every renderer: the search's partial repaint needs it too.
-let isHome = false;
-
-export function renderHome(_params, target) {
-  // No level above the work without the workspace model — so no home either.
-  if (!isWorkspaceMode()) {
-    replaceHash("/");
-    return;
-  }
-  return mountScreen(target, true);
-}
+let pageState = { query: "", owner: "all" };
 
 export function renderContextsRoute(_params, target) {
-  // In workspace mode the catalogue IS the home's Playbooks tab. Kept as a
-  // route so every stale deep link and every inbound navigate still lands — on
-  // that TAB, since `/contexts` meant the catalogue and the home opens on Chats.
-  if (isWorkspaceMode()) {
-    replaceHash(catalogueRoute());
-    return;
-  }
-  return mountScreen(target, false);
-}
-
-// `replace`, not navigate(): a redirect that writes a history entry gives the
-// reader a Back button that lands on the route it just left and bounces again —
-// a Back that does nothing. Same call dashboard.js makes for the same reason.
-function replaceHash(path) {
-  window.location.replace(window.location.href.split("#")[0] + "#" + path);
-}
-
-function mountScreen(target, home) {
-  isHome = home;
   mountTarget = target;
   renderTopbar();
   drainSubs();
@@ -124,25 +40,17 @@ function mountScreen(target, home) {
   // FIND-B: tear the subscriptions down on route change so off-route
   // notifications don't repaint a target that no longer holds this view.
   unsubs.push(subscribeContexts(() => paint()));
-  // The Chats tab has to move when a chat is renamed, pinned or deleted
-  // somewhere else — the rail's ⋮ menu, mostly.
-  if (home) unsubs.push(subscribeSessions(() => paint()));
   // The topbar lives outside the section, so its Create needs its own listener.
-  if (!home) {
-    const topbar = document.getElementById("topbar");
-    const onTopbarClick = (event) => {
-      if (event.target.closest("[data-contexts-topbar] [data-contexts-new]")) openNewPlaybookFlow(catalogueRoute());
-    };
-    topbar?.addEventListener("click", onTopbarClick);
-    unsubs.push(() => topbar?.removeEventListener("click", onTopbarClick));
-  }
+  const topbar = document.getElementById("topbar");
+  const onTopbarClick = (event) => {
+    if (event.target.closest("[data-contexts-topbar] [data-contexts-new]")) openNewPlaybookFlow("/contexts");
+  };
+  topbar?.addEventListener("click", onTopbarClick);
+  unsubs.push(() => topbar?.removeEventListener("click", onTopbarClick));
   return () => {
     drainSubs();
-    if (!home) setTopbarActions(null);
-    // Switching tab is a query-only change, which re-runs this handler: the
-    // path is already the NEW one here, so a tab switch keeps the search box
-    // and leaving the surface forgets it.
-    if (getPath() !== "/home") pageState = { query: "", pickedPlaybookId: null, owner: "all" };
+    setTopbarActions(null);
+    pageState = { query: "", owner: "all" };
   };
 }
 
@@ -154,34 +62,21 @@ function drainSubs() {
 function paint() {
   const target = mountTarget;
   if (!target) return;
-  target.innerHTML = html`<section class="screen contexts-view" data-home-root>${raw(renderPage())}</section>`;
+  target.innerHTML = html`<section class="screen contexts-view" data-contexts-root>${raw(renderPage())}</section>`;
   // The catalogue's primary rides the topbar (DS Top bar: actions on the
   // right). None while there is nothing yet: the empty state's « Create your
   // first Playbook » is then the one next step.
-  if (!isHome) {
-    setTopbarActions(
-      "/contexts",
-      visibleContexts().length ? `<div data-contexts-topbar>${renderCreateButton()}</div>` : null,
-    );
-  }
+  setTopbarActions(
+    "/contexts",
+    visibleContexts().length ? `<div data-contexts-topbar>${renderCreateButton()}</div>` : null,
+  );
   // ⚠️ Bind to the SECTION, not to `target`. `target` is #app, which paint()
   // never replaces — so every repaint (a store notify, Clear search) stacked
   // another pair of listeners on it, and after two paints one click on the
   // ghost card minted two sessions. The section's innerHTML IS replaced, so
   // its listeners die with the node. `querySelector` rather than
   // firstElementChild: the html`` template can leave a leading text node.
-  bind(target.querySelector("[data-home-root]"));
-}
-
-// Which list the home is showing. In the URL, like every other screen state
-// here (`?tab=` on a session, `?pb=` on the feed): the two lists are then
-// linkable and the browser's Back moves between them. An unknown value falls
-// back rather than rendering nothing.
-function activeTab() {
-  // Chats first, and the default: the home's subject is the work, and the
-  // catalogue is what you open to switch, create or manage. An unknown value
-  // falls back rather than rendering nothing.
-  return parseHashParams().get("tab") === "playbooks" ? "playbooks" : "chats";
+  bind(target.querySelector("[data-contexts-root]"));
 }
 
 // Above the Playbooks (2026-10-29, asked: « un encart tout en haut des playbooks
@@ -206,41 +101,19 @@ function renderPage() {
   // What I'm allowed to see, not what the store holds — a colleague's private
   // Playbook is in the store and must not be in this grid.
   const all = visibleContexts();
-  const totalChats = all.reduce((sum, c) => sum + (c.usedIn || 0), 0);
-
-  // Flag OFF — the catalogue on its own, header and all, exactly as before.
-  if (!isHome) {
-    return html`
-      <div class="contexts-view__page">
-        <!-- No drawn <h1>: the topbar names the route and carries the page's
-             primary (DS Top bar, page-patterns P1/P2) — the Topic Feed and
-             Connectors already work this way. The concept sentence leads the
-             page, then the owner tabs (P4), then the toolbar, search first on
-             the left (P3). -->
-        <!-- With no Playbook, the empty state explains it, so the sentence would say it twice. -->
-        ${all.length
-          ? raw(`<p class="concept-lead contexts-view__lead">${escapeAttr(conceptText("playbook"))}</p>`)
-          : ""}
-        ${raw(renderOwnerTabs(all))}
-        ${raw(all.length ? `<div class="contexts-view__toolbar">${renderSearchField()}</div>` : "")}
-        ${raw(voicesWarning(all))}
-        <div class="contexts-view__body">${raw(renderTabBody())}</div>
-      </div>
-    `;
-  }
-
-  // The home. No `h1 Playbooks` and no count sub-line up here: the hero owns
-  // the page's only h1, and a heading reading "Playbooks" forty pixels under a
-  // tab reading "Playbooks 8" is the same word twice with the same number
-  // beside it. What the sub-line said that the tab doesn't survives in the
-  // toolbar under it.
-  const tab = activeTab();
   return html`
     <div class="contexts-view__page">
-      ${raw(renderHomeHero())} ${raw(renderHomeWorkflows())}
-      ${raw(renderHomeTabs(all.length, getSessions().length, tab))} ${raw(renderHomeToolbar(tab, totalChats))}
-      ${tab === "playbooks" ? raw(voicesWarning(all)) : ""}
-      <div class="contexts-view__body">${raw(renderTabBody())}</div>
+      <!-- No drawn <h1>: the topbar names the route and carries the page's
+           primary (DS Top bar, page-patterns P1/P2) — the Topic Feed and
+           Connectors already work this way. The concept sentence leads the
+           page, then the owner tabs (P4), then the toolbar, search first on
+           the left (P3). -->
+      <!-- With no Playbook, the empty state explains it, so the sentence would say it twice. -->
+      ${all.length ? raw(`<p class="concept-lead contexts-view__lead">${escapeAttr(conceptText("playbook"))}</p>`) : ""}
+      ${raw(renderOwnerTabs(all))}
+      ${raw(all.length ? `<div class="contexts-view__toolbar">${renderSearchField()}</div>` : "")}
+      ${raw(voicesWarning(all))}
+      <div class="contexts-view__body">${raw(renderBody())}</div>
     </div>
   `;
 }
@@ -251,33 +124,23 @@ function renderPage() {
 // the page reads visibleContexts() (so typing surfaced a colleague's private
 // Playbook) and it forgot the ghost card (which vanished on the first
 // keystroke). Two callers, one function: they cannot drift again.
-function renderTabBody() {
-  if (isHome && activeTab() === "chats") return renderChatsTab();
+function renderBody() {
   const all = visibleContexts();
   const visible = filter(byOwner(all, pageState.owner), pageState);
   if (visible.length === 0) return renderContextsEmpty(all, pageState);
-  // On the home the Playbooks tab is a LIST of full-width rows, not a grid of
-  // tiles. Two reasons, and the second is the one that matters: the numbers
-  // (chats, audiences, competitors, influencers) line up in a column you can read down —
-  // a 3-up grid scatters them across nine positions — and a row is the shape
-  // of the thing it now is, a door into a workspace, sitting beside the Chats
-  // tab's own rows. Flag OFF the catalogue keeps its grid: it is a page for
-  // browsing fiches, and its cards are the object, not a door.
-  if (isHome) return renderPlaybooksTable(visible);
   // No « Create a Playbook » ghost among other people's: a new one is mine.
   const ghost = pageState.owner === "shared" ? "" : renderGhostCard();
   return `<div class="contexts-view__grid">${visible.map(renderContextCard).join("")}${ghost}</div>`;
 }
 
 function renderSearchField() {
-  const chats = isHome && activeTab() === "chats";
   return `
     <div class="ap-input-group contexts-view__search">
       <i class="ap-icon-search"></i>
       <input
         type="search"
-        placeholder="${chats ? "Search chats…" : "Search Playbooks…"}"
-        aria-label="${chats ? "Search chats" : "Search Playbooks"}"
+        placeholder="Search Playbooks…"
+        aria-label="Search Playbooks"
         value="${escapeAttr(pageState.query)}"
         data-contexts-search
       />
@@ -291,61 +154,6 @@ function renderCreateButton() {
       <i class="ap-icon-plus"></i>
       <span>Create a Playbook</span>
     </button>
-  `;
-}
-
-// ── The two lists ─────────────────────────────────────────────────────────
-// Real DS tabs (.ap-tabs ships in ds/css-ui). /topics dropped its tabs because
-// only one list was ever on screen there; here there are genuinely two, which
-// is the case the component is for. Counters are safe on both: each counts
-// THINGS, so "Chats 12" reads as twelve chats.
-function renderHomeTabs(playbookCount, chatCount, tab) {
-  const item = (id, icon, label, count) => {
-    const on = tab === id;
-    return `
-      <button
-        type="button"
-        class="ap-tabs-tab${on ? " active" : ""}"
-        role="tab"
-        aria-selected="${on ? "true" : "false"}"
-        data-home-tab="${id}"
-      >
-        <i class="${icon}" aria-hidden="true"></i>
-        <span>${label}</span>
-        <span class="ap-counter normal ${on ? "blue" : "grey"}">${count}</span>
-      </button>
-    `;
-  };
-  return `
-    <div class="ap-tabs">
-      <div class="ap-tabs-nav" role="tablist" aria-label="Playbooks and chats">
-        ${item("chats", "ap-icon-single-chat-bubble", "Chats", chatCount)}
-        ${item("playbooks", "ap-icon-target", "Playbooks", playbookCount)}
-      </div>
-    </div>
-  `;
-}
-
-// Under the tabs rather than beside them: the DS nav owns its full-width rule,
-// and hanging a search field inside a [role=tablist] would put a non-tab in it.
-function renderHomeToolbar(tab, totalChats) {
-  // No chat yet: the empty state explains a chat, and a search over nothing is noise.
-  if (tab === "chats" && !getSessions().length) return "";
-  // No Playbook yet: the empty state below explains it, so no hint here.
-  const hint =
-    tab === "playbooks"
-      ? visibleContexts().length
-        ? `<p class="home-toolbar__hint concept-lead">${escapeAttr(conceptText("playbook"))}</p>`
-        : ""
-      : `<p class="home-toolbar__hint concept-lead">${escapeAttr(conceptText("chat"))}</p>`;
-  return `
-    <div class="home-toolbar">
-      ${hint}
-      <div class="home-toolbar__actions">
-        ${tab === "playbooks" ? renderOwnerSelect(visibleContexts()) : ""} ${renderSearchField()}
-        ${tab === "playbooks" ? renderCreateButton() : ""}
-      </div>
-    </div>
   `;
 }
 
@@ -389,41 +197,6 @@ function renderOwnerTabs(all) {
   `;
 }
 
-// The same sort on the home's Playbooks tab, as a DS single-select in the
-// toolbar: the page's tabs already say Chats / Playbooks, and a second row of
-// tabs under them would be tabs in tabs.
-function renderOwnerSelect(all) {
-  const shared = byOwner(all, "shared").length;
-  if (!shared) return "";
-  const options = [
-    ["all", "All Playbooks", all.length],
-    ["mine", "Mine", all.length - shared],
-    ["shared", "Shared with me", shared],
-  ];
-  const current = options.find(([id]) => id === pageState.owner) || options[0];
-  const opts = options
-    .map(([id, label, n]) => {
-      const on = id === current[0];
-      return `
-      <div class="ap-select-option${on ? " selected" : ""}" role="option" tabindex="0" aria-selected="${on}" data-contexts-owner="${id}">
-        <span class="ap-select-option-text"><span class="ap-select-option-title">${label} (${n})</span></span>
-        ${on ? '<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>' : ""}
-      </div>`;
-    })
-    .join("");
-  return `
-    <details class="ap-select home-toolbar__owner" data-home-owner>
-      <summary class="ap-select-trigger" aria-label="Sort Playbooks by owner">
-        <span class="ap-select-value">${current[1]}</span>
-        <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-      </summary>
-      <div class="ap-select-dropdown" role="listbox"><div class="ap-select-options">${opts}</div></div>
-    </details>
-  `;
-}
-
-// ── The three pieces both shapes must say the same way ───────────────────
-
 function filter(list, { query }) {
   const q = (query || "").trim().toLowerCase();
   if (!q) return list;
@@ -450,87 +223,6 @@ function deleteBody(ctx) {
 
 function bind(root) {
   root.addEventListener("click", (event) => {
-    // The hero's two menus don't close themselves on an outside click. Before
-    // the dispatch guards, so a click on empty page space shuts them. No
-    // document listener — paint() recreates these nodes, and a document
-    // listener would outlive them.
-    for (const open of root.querySelectorAll("[data-home-pb][open], [data-home-owner][open]")) {
-      if (!open.contains(event.target)) open.removeAttribute("open");
-    }
-    if (!event.target.closest(".home-hero__add")) closeAddMenu(root);
-
-    // Add — the same menu the composer carries, launching instead of staging.
-    if (event.target.closest("[data-home-add-toggle]")) {
-      event.preventDefault();
-      const menu = root.querySelector("[data-home-add-menu]");
-      const toggle = root.querySelector("[data-home-add-toggle]");
-      if (menu) {
-        menu.hidden = !menu.hidden;
-        toggle?.setAttribute("aria-expanded", menu.hidden ? "false" : "true");
-      }
-      return;
-    }
-    const addItem = event.target.closest("[data-home-add]");
-    if (addItem) {
-      event.preventDefault();
-      closeAddMenu(root);
-      startFromHomeAdd(root, addItem.dataset.homeAdd);
-      return;
-    }
-    const addConnector = event.target.closest("[data-home-add-connector]");
-    if (addConnector) {
-      event.preventDefault();
-      closeAddMenu(root);
-      startFromHomeAdd(root, "connector", addConnector.dataset.homeAddConnector);
-      return;
-    }
-
-    // Tabs — the state lives in the URL, so the router repaints and Back works.
-    const tabBtn = event.target.closest("[data-home-tab]");
-    if (tabBtn) {
-      event.preventDefault();
-      const next = tabBtn.dataset.homeTab;
-      if (next !== activeTab()) setHashQuery("/home", { tab: next });
-      return;
-    }
-
-    // Picking a brand in the hero writes NOTHING but the pick. The scope moves
-    // on Send, which is the explicit commit — a picker that silently re-scoped
-    // the app is the exact failure active-playbook.js's header describes.
-    // Repaint only the picker: the textarea beside it holds what the reader
-    // typed, and a full paint would throw it away.
-    const pbPick = event.target.closest("[data-home-pb-pick]");
-    if (pbPick) {
-      event.preventDefault();
-      pageState.pickedPlaybookId = pbPick.dataset.homePbPick;
-      const host = root.querySelector("[data-home-pb]");
-      if (host) host.outerHTML = renderHeroPicker(pickedPlaybook(), usableContexts());
-      return;
-    }
-
-    // A workflow card. Same three actions the chat's hero dispatches, minus the
-    // session it has and this page hasn't.
-    const starter = event.target.closest("[data-starter-action]");
-    if (starter) {
-      event.preventDefault();
-      startFromStarter(starter.dataset.starterAction);
-      return;
-    }
-
-    if (event.target.closest("[data-home-send]")) {
-      event.preventDefault();
-      submitHomePrompt(root);
-      return;
-    }
-
-    // A chat row. Opening a chat from up here has to re-scope: otherwise the
-    // reader lands on a conversation the rail beside it doesn't list.
-    const chatRow = event.target.closest("[data-home-chat]");
-    if (chatRow) {
-      openChatFromHome(chatRow.dataset.homeChat);
-      return;
-    }
-
     const shareBtn = event.target.closest("[data-contexts-share]");
     if (shareBtn) {
       event.stopPropagation();
@@ -549,20 +241,13 @@ function bind(root) {
       return;
     }
     if (event.target.closest("[data-contexts-new]")) {
-      openNewPlaybookFlow(catalogueRoute());
+      openNewPlaybookFlow("/contexts");
       return;
     }
     const ownerTab = event.target.closest("[data-contexts-owner]");
     if (ownerTab) {
       pageState.owner = ownerTab.dataset.contextsOwner;
       paint();
-      return;
-    }
-    // The Chats tab's first run: the box above is where a chat starts.
-    if (event.target.closest("[data-home-focus-prompt]")) {
-      const field = root.querySelector("[data-home-prompt]");
-      field?.scrollIntoView({ behavior: "smooth", block: "center" });
-      field?.focus({ preventScroll: true });
       return;
     }
     if (event.target.closest("[data-contexts-clear-query]")) {
@@ -604,204 +289,32 @@ function bind(root) {
       });
       return;
     }
-    // The kebab and its menu are not the card: without this the trigger would
-    // fall through to the card fallback below and enter the workspace.
-    // more-menu.js owns the toggle itself, on the document.
-    if (event.target.closest("[data-playbook-more]") || event.target.closest(".home-playbooks__more-menu")) {
-      return;
-    }
-    // Card click — anywhere outside the action buttons. On the home it enters
-    // the workspace (see renderContextCard); flag OFF it opens the fiche for
-    // inspection, as it always did. The action buttons stop propagation so
-    // they win over this fallback.
+    // Card click — anywhere outside the action buttons opens the fiche. The
+    // action buttons stop propagation so they win over this fallback.
     const card = event.target.closest("[data-contexts-card]");
-    if (card) {
-      enterWorkspace(card.dataset.contextsCard);
-      return;
-    }
+    if (card) navigate(`/playbook/${card.dataset.contextsCard}`);
   });
 
   root.addEventListener("input", (event) => {
     if (event.target.matches("[data-contexts-search]")) {
       pageState.query = event.target.value || "";
       // Repaint the body in place so empty <-> grid transitions both work
-      // without losing the search field's focus — through renderTabBody(), the
+      // without losing the search field's focus — through renderBody(), the
       // one renderer the full paint also uses.
       const body = root.querySelector(".contexts-view__body");
-      if (body) body.innerHTML = renderTabBody();
-      return;
-    }
-    // Typing in the hero: the only thing that changes is whether Send can fire.
-    // Patched by hand, never repainted — a repaint would take the caret with it.
-    if (event.target.matches("[data-home-prompt]")) {
-      const send = root.querySelector("[data-home-send]");
-      if (send) send.disabled = !event.target.value.trim();
+      if (body) body.innerHTML = renderBody();
     }
   });
 
   root.addEventListener("keydown", (event) => {
-    // The owner select's options are divs (the DS markup): Enter / Space pick.
-    if (
-      event.target.matches(".ap-select-option[data-contexts-owner]") &&
-      (event.key === "Enter" || event.key === " ")
-    ) {
-      event.preventDefault();
-      event.target.click();
-      return;
-    }
-    // Enter sends, Shift+Enter is a newline — the composer's contract, because
-    // this is the same gesture one screen earlier.
-    if (event.target.matches("[data-home-prompt]") && event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      submitHomePrompt(root);
-      return;
-    }
-    // Neither a <tr role="button"> nor an <article role="button"> is natively
-    // activatable, and both are now this page's primary targets.
+    // An <article> is not natively activatable.
     if (event.key !== "Enter" && event.key !== " ") return;
-    const chatRow = event.target.closest("[data-home-chat]");
-    if (chatRow) {
-      event.preventDefault();
-      openChatFromHome(chatRow.dataset.homeChat);
-      return;
-    }
     // The tile's actions (Edit, Duplicate, Delete) are buttons of their own.
     if (event.target.closest("[data-contexts-card-actions]")) return;
     const card = event.target.closest("[data-contexts-card]");
     if (card) {
       event.preventDefault();
-      enterWorkspace(card.dataset.contextsCard);
+      navigate(`/playbook/${card.dataset.contextsCard}`);
     }
   });
-}
-
-// A Playbook card, activated. In workspace mode that means: work in this brand
-// — switch the scope, then open a fresh chat bound to it, the same landing
-// "Start a chat" gives on the fiche. `?contextId=` rather than `/`, which would
-// resolve to whatever chat the brand last had: this page is a launcher, and the
-// gesture is "start", not "resume". Flag OFF, there is no workspace to enter and
-// the card keeps opening the fiche.
-function enterWorkspace(id) {
-  if (!id) return;
-  if (!isWorkspaceMode()) {
-    navigate(`/playbook/${id}`);
-    return;
-  }
-  setActivePlaybook(id);
-  closeRightPanel();
-  navigate(`${newChatPath()}?contextId=${encodeURIComponent(id)}`);
-}
-
-// ── Starting a chat from the home ─────────────────────────────────────────
-//
-// The Playbook and the chat's NAME ride in the URL, because session.js resolves
-// `?contextId=` and `?title=` as it mints a `new-*` session — so the chat is
-// bound and named on its first paint. Only the text needs a bridge, and a
-// single-use handoff is that bridge.
-//
-// setActivePlaybook BEFORE navigate, like every other switch here: the other
-// order is what leaves the rail naming one brand above another's page.
-function submitHomePrompt(root) {
-  const field = root.querySelector("[data-home-prompt]");
-  const text = (field?.value || "").trim();
-  // Send is disabled while the field is empty; this is the keyboard's guard.
-  // sendMessage() itself returns early on empty text, so an empty submit would
-  // open a chat and post nothing — which reads as a bug.
-  if (!text) return;
-  const picked = pickedPlaybook();
-  if (!picked) return;
-  setActivePlaybook(picked.id);
-  setHandoff("pendingHomePrompt", { text });
-  const params = new URLSearchParams({ contextId: picked.id, title: chatNameFromPrompt(text) });
-  navigate(`${newChatPath()}?${params.toString()}`);
-}
-
-// A workflow, launched from the home. Batch and Clip Studio each run in their
-// own transient session and already read `playbookForNewWork()` when they
-// start — which is the ACTIVE Playbook — so switching first is what binds them
-// to the brand picked in the hero. Their handoffs are the ones session.js
-// consumes synchronously on a `batch-*` / `clip-studio-*` id, unchanged.
-//
-// Top posts has no session of its own: it runs IN a chat, so the home mints one
-// and rides `pendingHomeAdd` — with the studio kind, `startTopPostsFlow`, which
-// is what the card opens in the hero (the Add menu's row is the inline variant;
-// both exist in the chat too).
-function startFromStarter(action) {
-  const picked = pickedPlaybook();
-  if (!picked) return;
-  setActivePlaybook(picked.id);
-  closeRightPanel();
-  const stamp = Date.now().toString(36);
-  if (action === "open-batch") {
-    setHandoff("pendingStartBatch", {});
-    navigate(`/session/batch-${stamp}`);
-    return;
-  }
-  if (action === "open-video-clips") {
-    // flag clipsSpace: the starter leads to the Clips space, video first.
-    if (isFlagOn("clipsSpace")) {
-      navigate("/clips");
-      return;
-    }
-    setHandoff("pendingStartClipStudio", {});
-    navigate(`/session/clip-studio-${stamp}`);
-    return;
-  }
-  if (action === "open-top-posts") {
-    setHandoff("pendingHomeAdd", { kind: "top-posts-studio", connectorId: null });
-    navigate(`/session/new-${stamp}?contextId=${encodeURIComponent(picked.id)}`);
-  }
-}
-
-function closeAddMenu(root) {
-  const menu = root.querySelector("[data-home-add-menu]");
-  if (menu && !menu.hidden) {
-    menu.hidden = true;
-    root.querySelector("[data-home-add-toggle]")?.setAttribute("aria-expanded", "false");
-  }
-}
-
-// An Add item, launched. Same two beats as Send — switch, then mint the chat —
-// with the intent riding across in `pendingHomeAdd` for session.js to dispatch.
-// "Browse connectors" is the exception: a gallery is a page, not a chat.
-//
-// Anything already typed comes ALONG: the reader wrote it, and dropping it
-// because they then reached for Add would be the worst kind of quiet loss.
-function startFromHomeAdd(root, kind, connectorId) {
-  if (kind === "connectors") {
-    navigate("/connectors");
-    return;
-  }
-  const picked = pickedPlaybook();
-  if (!picked) return;
-  const field = root.querySelector("[data-home-prompt]");
-  const text = (field?.value || "").trim();
-  setActivePlaybook(picked.id);
-  setHandoff("pendingHomeAdd", { kind, connectorId: connectorId || null });
-  if (text) setHandoff("pendingHomePrompt", { text });
-  const params = new URLSearchParams({ contextId: picked.id });
-  if (text) params.set("title", chatNameFromPrompt(text));
-  closeRightPanel();
-  navigate(`${newChatPath()}?${params.toString()}`);
-}
-
-// The chat's name IS the ask, truncated on a word. No shared helper to reuse:
-// session.js's own is private and dates the chat ("Chat · Jun 3, 14:20"), which
-// says less than the sentence the reader just typed.
-function chatNameFromPrompt(text) {
-  const line = String(text).split("\n")[0].trim();
-  if (line.length <= 60) return line;
-  return `${line.slice(0, 59).replace(/\s+\S*$/, "")}…`;
-}
-
-function openChatFromHome(sessionId) {
-  const session = getSessionById(sessionId);
-  if (!session) return;
-  // A chat with no Playbook — or one whose fiche I can't open — is left alone:
-  // it lives in every workspace by construction, and switching to a brand I
-  // cannot view would break the scope's own guarantee.
-  const ctx = chatPlaybook(session);
-  if (ctx) setActivePlaybook(ctx.id);
-  closeRightPanel();
-  navigate(`/session/${session.id}`);
 }

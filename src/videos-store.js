@@ -1,4 +1,4 @@
-// Videos — the Clips space's library (flag clipsSpace).
+// Videos — the Clips space's library.
 //
 // A Video belongs to a Playbook, not to a chat: it is worked BEFORE any post
 // exists, the way a Topic exists before the chat that takes it in (CONCEPTS §3,
@@ -28,11 +28,11 @@
 //             preset), transcript, segments (null = auto framing), texts[],
 //             brand (null = the Playbook's clip look) }
 
-import { newId } from "./utils.js?v=2928";
-import { seedVideos } from "./mocks.js?v=2928";
-import { isNewUser } from "./user-mode.js?v=2928";
-import { createNotifier } from "./store-utils.js?v=2928";
-import { getDefaultContext, getContextById } from "./contexts-store.js?v=2928";
+import { newId } from "./utils.js?v=2929";
+import { seedVideos } from "./mocks.js?v=2929";
+import { isNewUser } from "./user-mode.js?v=2929";
+import { createNotifier } from "./store-utils.js?v=2929";
+import { getDefaultContext, getContextById } from "./contexts-store.js?v=2929";
 
 const MIN_VIDEO_MS = 30 * 1000;
 const MAX_VIDEO_MS = 2 * 60 * 60 * 1000;
@@ -543,7 +543,7 @@ export function importFromSource({ sessionId, source, contextId }) {
   return video;
 }
 
-// A chat shows its video's clips (flag clipsSpace): the video is the one truth,
+// A chat shows its video's clips: the video is the one truth,
 // `source.clips` its mirror (sources-stream). The chat keeps the ids it knew
 // (`fromClipId`), and plays this video's footage.
 const chatKey = (c) => c.fromClipId || c.id;
@@ -562,7 +562,7 @@ export function chatClipOf(video, c) {
   };
 }
 
-// The chat's edits (delete, Undo, the modal, the Clip Studio) come back here.
+// The chat's edits (delete, Undo) come back here.
 // A clip the chat drops goes to `removed` (as removeClip), so its Undo brings it
 // back whole, review and editing included.
 export function syncClipsFromChat(videoId, chatClips) {

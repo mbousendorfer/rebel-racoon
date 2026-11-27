@@ -13,15 +13,13 @@
 // Empty in new-alt mode — a brand-new user has no published history yet, so the
 // "Use top performing posts" flow shows an empty-state message instead.
 
-import { topPosts as seed, DEMO_TOP_POSTS } from "./mocks.js?v=2928";
-import { isDemo } from "./demo-mode.js?v=2928";
-import { isNewUser } from "./user-mode.js?v=2928";
+import { topPosts as seed } from "./mocks.js?v=2929";
+import { isNewUser } from "./user-mode.js?v=2929";
 
 let posts = null;
 
 function ensureSeeded() {
-  // The demo brand (flag demoMode) brings its pretend accounts' best posts.
-  if (posts === null) posts = isNewUser() ? (isDemo() ? DEMO_TOP_POSTS.slice() : []) : seed.slice();
+  if (posts === null) posts = isNewUser() ? [] : seed.slice();
   return posts;
 }
 

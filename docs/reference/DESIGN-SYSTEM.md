@@ -61,7 +61,6 @@ styles/
   layout.css        — app shell (sidebar / topbar / content / panel chrome)
   ds-patches.css    — la seule place légitime pour toucher .ap-*
   chat.css          — composer + thread chrome
-  chat-legacy.css   — le fil d'avant newConversationStyles (body:not(.conv-new))
   screens/          — un fichier par écran (analyse, clips, home, insights-*, playbook-v2, topics, welcome…)
   components/       — un fichier par composant partagé (right-panel, sidebar, topic-card, draft-changes…)
 src/modules/image-studio/styles/imst-*.css — les feuilles de l'Image Generator

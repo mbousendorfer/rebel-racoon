@@ -46,12 +46,12 @@
   animation: ap-status-working 1.2s ease-in-out infinite;
 }
 
-/* Flag newConversationStyles only — OFF, a done pill keeps its dot (Monday). */
-body.conv-new .ap-status.mermaid:not(.is-working)::before {
+/* Done, a mermaid pill drops its dot: nothing left to report but its words. */
+.ap-status.mermaid:not(.is-working)::before {
   display: none;
 }
 
-/* New conversation styles (flag newConversationStyles): while Archie works,
+/* The thread in two sides: while Archie works,
    his avatar is the loader — so the pill drops its breathing dot (one moving
    part, not two) and keeps its butter. */
 .e-turn .ap-status.is-working::before {
@@ -445,8 +445,8 @@ button.ap-link {
   font-weight: var(--sys-text-style-caption-weight);
 }
 
-/* Large — the full-bleed studio upload surfaces (Clip Studio, Batch
- * Studio). Fills its column and reserves vertical room. */
+/* Large — the full-bleed studio upload surface (Batch Studio). Fills its
+ * column and reserves vertical room. */
 .ap-dropzone--lg {
   flex: 1;
   min-height: 200px;

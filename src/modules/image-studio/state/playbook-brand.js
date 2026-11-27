@@ -17,17 +17,12 @@ import {
   getContexts,
   subscribe as subscribeContexts,
   updateContext,
-} from "../../../contexts-store.js?v=2928";
-import { createStyle } from "../model/schema.js?v=2928";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=2928";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=2928";
-import {
-  getActivePlaybookId,
-  isWorkspaceMode,
-  playbookForNewWork,
-  subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=2928";
-import { storageService as storage } from "../services/index.js?v=2928";
+} from "../../../contexts-store.js?v=2929";
+import { createStyle } from "../model/schema.js?v=2929";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=2929";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=2929";
+import { playbookForNewWork } from "../../../active-playbook.js?v=2929";
+import { storageService as storage } from "../services/index.js?v=2929";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -112,17 +107,11 @@ export function getBrand(id) {
 }
 
 /**
- * The Playbook the generator works for. In workspace mode it is THE active
- * Playbook (the rail's switcher is the only control, and it is always visible).
- * Otherwise it is the generator's own pick, remembered in its storage, falling
- * back to the Playbook new work goes to.
+ * The Playbook the generator works for: its own pick, remembered in its
+ * storage, falling back to the Playbook new work goes to.
  */
 export function getActiveBrandId() {
   const usable = new Set(usableContexts().map((c) => c.id));
-  if (isWorkspaceMode()) {
-    const id = getActivePlaybookId();
-    return usable.has(id) ? id : null;
-  }
   const picked = storage.getMeta().activePlaybookId;
   if (picked && usable.has(picked)) return picked;
   const fallback = playbookForNewWork()?.id;
@@ -235,14 +224,9 @@ export function setPlaybookFormat(id, network, shapeId) {
   return true;
 }
 
-/** Repaint when a Playbook changes or the active one does. */
+/** Repaint when a Playbook changes. */
 export function subscribeBrands(fn) {
-  const a = subscribeContexts(fn);
-  const b = subscribeActive(fn);
-  return () => {
-    a();
-    b();
-  };
+  return subscribeContexts(fn);
 }
 
 // "Use the Playbook" off: the same brand id (its styles and history stay

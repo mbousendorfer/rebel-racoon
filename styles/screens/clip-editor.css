@@ -574,8 +574,7 @@
 
 /* The Subtitles tabs (caption-editor.js) follow the inspector: no second
    inset (the body already gives one), field labels in body ink, group titles
-   in h3 like every other section. Scoped to this host: the Video Clips modal
-   keeps caption-editor.css as it is. */
+   in h3 like every other section. Scoped to this host. */
 .nle-captabs {
   padding: var(--ref-spacing-sm) 0 0;
 }

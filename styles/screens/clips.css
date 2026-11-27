@@ -1,4 +1,4 @@
-/* The Clips space (flag clipsSpace) — library, project, editor.
+/* The Clips space — library, project, editor.
    mode: html-prototype · design-guidelines · DS: @agorapulse/ui-theme (jsDelivr @latest)
    Ink grey-80…100, every hairline grey-20, blue only on what you can act on,
    card hover = blue border. The space is the light DS; only the footage sits
@@ -117,15 +117,6 @@
 
 .clips-box__drop:hover {
   border-color: var(--ref-color-electric-blue-100);
-}
-
-.clips-box__drop[aria-disabled="true"] {
-  cursor: default;
-  opacity: 0.6;
-}
-
-.clips-box__drop[aria-disabled="true"]:hover {
-  border-color: var(--ref-color-grey-20);
 }
 
 /* Find with nothing added: the dropzone is where to go. */
@@ -1260,7 +1251,7 @@
 }
 
 /* ── The clip editor ─────────────────────────────────────────────────
-   Full-bleed like body.account-scope: the rail steps aside, the topbar stays
+   Full-bleed: the rail steps aside, the topbar stays
    (it carries the way back, the title and Save). Transcript · stage · panel ·
    tool rail, one timeline under the stage. */
 

@@ -8,19 +8,18 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=2928";
-import { renderTopPostCard } from "../../components/top-post-card.js?v=2928";
-import { getContexts } from "../../contexts-store.js?v=2928";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2928";
-import { progressBar } from "./charts.js?v=2928";
-import { signedPct } from "./model.js?v=2928";
+import { escapeHtml as esc } from "../../utils.js?v=2929";
+import { renderTopPostCard } from "../../components/top-post-card.js?v=2929";
+import { getContexts } from "../../contexts-store.js?v=2929";
+import { progressBar } from "./charts.js?v=2929";
+import { signedPct } from "./model.js?v=2929";
 
 // ── The page's head — the scope, worn as the heading ─────────────────────
 //
 // Insights reads ONE Playbook, and its head is where you change which. That is
-// not a decoration: the rail's own scope switcher is parked (see the commented
-// block in sidebar.js), so this is the only door to the scope anywhere in the
-// app, and a dashboard you cannot re-point is a dashboard of one brand.
+// not a decoration: the rail has no scope switcher (the workspace one was
+// deleted with `playbookWorkspace`), so this is the only door to the scope
+// anywhere in the app, and a dashboard you cannot re-point is a dashboard of one brand.
 //
 // So the heading IS the scope: the Playbook's name at the h2 rung with a
 // chevron after it, opening the DS select's own option list. Every layout puts
@@ -41,20 +40,11 @@ import { signedPct } from "./model.js?v=2928";
  * The Playbook picker, as the section's heading. One Playbook → a plain
  * heading: a select with a single option cannot be used.
  *
- * ⚠️ In WORKSPACE MODE it renders NOTHING, and the hosts treat the empty string
- * as "no band". The rail carries the brand permanently, one row above the
- * topbar's own title, so a page that re-prints it spends its first 87px saying
- * what the chrome already said — and the page's own subject (`Objectives`, or
- * the objective being read) never gets the top of the screen. The hosts put
- * that subject there instead: `pageTitle()` below.
- *
- * It still renders the PICKER when the flag is off: outside workspace mode this
- * heading is the only door to the scope in the whole app, and a page with no
- * way to re-point itself is a dead end (shell.js § Empty states).
+ * This heading is the only door to the scope in the whole app, and a page with
+ * no way to re-point itself is a dead end (shell.js § Empty states).
  */
 export function playbookTitle(ctx) {
   const all = getContexts();
-  if (isWorkspaceMode()) return "";
   if (all.length < 2) {
     return `<h2 class="ins-pbtitle__name ins-pbtitle__name--static">${esc(ctx.name)}</h2>`;
   }
@@ -88,19 +78,6 @@ export function playbookTitle(ctx) {
       <div class="ap-select-options">${rows}</div>
     </div>
   </details>`;
-}
-
-/**
- * The page's own title, for the hosts whose band is gone.
- *
- * It takes the rung the brand name had — h2 type, `<h2>` element, since the
- * topbar owns the document's `<h1>` ("Insights") — so promoting the subject
- * changes the WORD at the top of the page and not the page's rhythm. The
- * counter is the same `.ap-counter` the section titles carry; the word and the
- * rung are declared here once, because two hosts print them.
- */
-export function pageTitle(label, { count = null } = {}) {
-  return `<h2 class="ins-pagetitle">${esc(label)}${count != null ? ` <span class="ap-counter normal grey">${count}</span>` : ""}</h2>`;
 }
 
 /**

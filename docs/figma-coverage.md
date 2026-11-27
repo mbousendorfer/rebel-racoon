@@ -33,22 +33,22 @@ côte à côte. Le réutilisable transverse reste sur `💠 Components`.
 
 ## Écrans (routes)
 
-| Route                      | App                                    | Figma                           | État                                        |
-| -------------------------- | -------------------------------------- | ------------------------------- | ------------------------------------------- |
-| `/`                        | redirect seul, aucun rendu             | —                               | n/a                                         |
-| `/session/:id`             | chat                                   | `UI › Session`                  | ✅                                          |
-| `/session/:id` (hero vide) | new chat                               | `UI › Session — New chat`       | ✅                                          |
-| `/contexts`                | Playbooks                              | `UI › Playbooks`                | ✅                                          |
-| `/playbook/:id`            | fiche                                  | `UI › Playbook detail`          | ✅                                          |
-| `/connectors`              | galerie                                | `UI › Connectors`               | ⚠️ frame présente, non resynchro (flag OFF) |
-| `/welcome-alt`             | onboarding                             | `UI › Welcome-alt`              | ✅                                          |
-| `/welcome-alt/recap`       | recap du Playbook construit            | `UI › Welcome-alt — Recap`      | ✅                                          |
-| `/home`                    | home compte (flag `playbookWorkspace`) | `UI › Home (account)`           | ✅                                          |
-| `/insights` — Cockpit      | vue par défaut (flag `insightsHub`)    | `Insights › Insights — Cockpit` | ✅                                          |
-| `/insights` — Mob · Index  | 2e vue                                 | —                               | ❌                                          |
-| `/insights` — Mob · Side   | 3e vue                                 | —                               | ❌                                          |
-| `/topics`                  | Topic Feed (flag `topicFeed`)          | `Topic Feed › Topic Feed`       | ✅                                          |
-| `/topics/settings`         | réglages du feed                       | `Topic Feed › Feed settings`    | ✅                                          |
+| Route                      | App                                                | Figma                           | État                                        |
+| -------------------------- | -------------------------------------------------- | ------------------------------- | ------------------------------------------- |
+| `/`                        | redirect seul, aucun rendu                         | —                               | n/a                                         |
+| `/session/:id`             | chat                                               | `UI › Session`                  | ✅                                          |
+| `/session/:id` (hero vide) | new chat                                           | `UI › Session — New chat`       | ✅                                          |
+| `/contexts`                | Playbooks                                          | `UI › Playbooks`                | ✅                                          |
+| `/playbook/:id`            | fiche                                              | `UI › Playbook detail`          | ✅                                          |
+| `/connectors`              | galerie                                            | `UI › Connectors`               | ⚠️ frame présente, non resynchro (flag OFF) |
+| `/welcome-alt`             | onboarding                                         | `UI › Welcome-alt`              | ✅                                          |
+| `/welcome-alt/recap`       | recap du Playbook construit                        | `UI › Welcome-alt — Recap`      | ✅                                          |
+| `/home`                    | supprimée le 2026-11-27 (flag `playbookWorkspace`) | `UI › Home (account)`           | ⚠️ frame d'une route supprimée, à retirer   |
+| `/insights` — Cockpit      | vue par défaut (flag `insightsHub`)                | `Insights › Insights — Cockpit` | ✅                                          |
+| `/insights` — Mob · Index  | 2e vue                                             | —                               | ❌                                          |
+| `/insights` — Mob · Side   | 3e vue                                             | —                               | ❌                                          |
+| `/topics`                  | Topic Feed (flag `topicFeed`)                      | `Topic Feed › Topic Feed`       | ✅                                          |
+| `/topics/settings`         | réglages du feed                                   | `Topic Feed › Feed settings`    | ✅                                          |
 
 ## Studios & étapes de flow
 

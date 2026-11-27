@@ -8,22 +8,21 @@
 // The state machine timers live here (not inside the modal) so uploads
 // continue in background after the user closes the modal.
 
-import { newId, prettyUrl } from "./utils.js?v=2928";
-import { sourcesBySession as seedByCsesssion, DEMO_CLIPS } from "./mocks.js?v=2928";
-import { isDemo } from "./demo-mode.js?v=2928";
-import { isFlagOn } from "./feature-flags.js?v=2928";
-import { isNewUser } from "./user-mode.js?v=2928";
-import { createNotifier } from "./store-utils.js?v=2928";
-import { detectUrlService } from "./url-services.js?v=2928";
-import { showToast } from "./components/toast.js?v=2928";
+import { newId, prettyUrl } from "./utils.js?v=2929";
+import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=2929";
+import { isFlagOn } from "./feature-flags.js?v=2929";
+import { isNewUser } from "./user-mode.js?v=2929";
+import { createNotifier } from "./store-utils.js?v=2929";
+import { detectUrlService } from "./url-services.js?v=2929";
+import { showToast } from "./components/toast.js?v=2929";
 import {
   getVideo,
   importFromSource,
   chatClipOf,
   syncClipsFromChat,
   subscribe as subscribeVideos,
-} from "./videos-store.js?v=2928";
-import { sessionPlaybookId } from "./active-playbook.js?v=2928";
+} from "./videos-store.js?v=2929";
+import { sessionPlaybookId } from "./active-playbook.js?v=2929";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.
@@ -82,9 +81,8 @@ const EXTRACTED_CLIPS_TEMPLATE = [
 
 // Stable ids derived from the source id so downstream stores can
 // reference clips reliably.
-export function buildClipsForSource(sourceId) {
-  // The demo brand's sample video (flag demoMode) has its own moments.
-  return (isDemo() ? DEMO_CLIPS : EXTRACTED_CLIPS_TEMPLATE).map((c, i) => ({
+function buildClipsForSource(sourceId) {
+  return EXTRACTED_CLIPS_TEMPLATE.map((c, i) => ({
     ...c,
     id: `clip_${sourceId}_${i}`,
   }));
@@ -145,7 +143,7 @@ function findSourceOwner(sourceId) {
   return null;
 }
 
-// ─── One truth for clips (flag clipsSpace) ───────────────────────────────
+// ─── One truth for clips ─────────────────────────────────────────────────
 // A chat's video with clips lives in its Playbook's Clips library: the video
 // (videos-store) holds the clips, `source.clips` is their mirror, so every chat
 // reader stays as it was. Edits from the chat go back through updateSourceClips.
@@ -167,7 +165,7 @@ function mirrorVideoClips(src) {
 // into its video (the mirror brings them back); an unlinked one takes them,
 // then joins the library if it now has clips.
 function writeClips(sessionId, src, clips) {
-  if (isFlagOn("clipsSpace") && src.fromVideo && getVideo(src.fromVideo)) {
+  if (src.fromVideo && getVideo(src.fromVideo)) {
     syncClipsFromChat(src.fromVideo, clips);
     return;
   }
@@ -176,19 +174,17 @@ function writeClips(sessionId, src, clips) {
 }
 
 function linkToVideo(sessionId, src) {
-  if (!isFlagOn("clipsSpace") || !src.clips?.length || src.fromVideo) return;
+  if (!src.clips?.length || src.fromVideo) return;
   src.fromVideo = importFromSource({ sessionId, source: src, contextId: sessionPlaybookId(sessionId) }).id;
   mirrorVideoClips(src);
 }
 
-if (isFlagOn("clipsSpace")) {
-  for (const [sid, list] of sourcesBySession) for (const src of list) linkToVideo(sid, src);
-  subscribeVideos(() => {
-    for (const [sid, list] of sourcesBySession) {
-      if (list.map(mirrorVideoClips).some(Boolean)) notifySources(sid);
-    }
-  });
-}
+for (const [sid, list] of sourcesBySession) for (const src of list) linkToVideo(sid, src);
+subscribeVideos(() => {
+  for (const [sid, list] of sourcesBySession) {
+    if (list.map(mirrorVideoClips).some(Boolean)) notifySources(sid);
+  }
+});
 
 // ─── Public API ──────────────────────────────────────────────────────────
 
@@ -450,20 +446,11 @@ const CLIP_EXTRACTION_STAGES = [
   { from: 0.65, label: "Cutting your clips…" },
   { from: 0.85, label: "Rendering your clips…" },
 ];
-// Flag newConversationStyles OFF: the stage labels as of Monday 2026-10-05.
-const CLIP_EXTRACTION_STAGES_MONDAY = [
-  { from: 0, label: "Transcribing audio" },
-  { from: 0.2, label: "Detecting highlights & hooks" },
-  { from: 0.45, label: "Scoring moments" },
-  { from: 0.7, label: "Cutting clips" },
-  { from: 0.9, label: "Generating captions" },
-];
 const CLIP_EXTRACTION_MS = 7500;
 
 function clipStageFor(progress) {
-  const stages = isFlagOn("newConversationStyles") ? CLIP_EXTRACTION_STAGES : CLIP_EXTRACTION_STAGES_MONDAY;
-  const stage = [...stages].reverse().find((s) => progress >= s.from);
-  return stage ? stage.label : stages[0].label;
+  const stage = [...CLIP_EXTRACTION_STAGES].reverse().find((s) => progress >= s.from);
+  return stage ? stage.label : CLIP_EXTRACTION_STAGES[0].label;
 }
 
 // Drive the extracting source through its stages every 200ms, then attach the
@@ -725,7 +712,7 @@ export function addReadySource(
     // A video from the Clips space carries its clips (clips, durationSec, fromVideo).
     ...extra,
   });
-  if (isFlagOn("clipsSpace")) mirrorVideoClips(list[0]); // the space sent it: all the video's clips
+  mirrorVideoClips(list[0]); // the space sent it: all the video's clips
   notifySources(sessionId);
   return id;
 }
@@ -790,8 +777,8 @@ export function cancelUpload(uploadId) {
   notifyUploads();
 }
 
-// Replace a source's clips array (used by the Video Clips modal after the
-// user trims/edits/deletes/adds clips). Mutates in place so existing
+// Replace a source's clips array (the chat's clip edits: delete, undo, the
+// gallery's reset). Mutates in place so existing
 // references keep working, then notifies the owning session.
 export function updateSourceClips(sourceId, nextClips) {
   const sessionId = findSourceOwner(sourceId);

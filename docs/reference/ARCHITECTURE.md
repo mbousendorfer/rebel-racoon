@@ -21,7 +21,7 @@
    - match le path (query stripped)
    - appelle `cleanup` retourné par le précédent handler (si défini) — `#app` n'est pas vidé par le router : chaque screen écrit son propre contenu dans `target`
    - appelle le handler du nouveau path : `renderXxx(params, target)`
-4. `setAfterRender` (dans `app.js`) re-render la sidebar + la `conversation-status-card` après chaque route change, toggle les classes de `<body>` — `onboarding` (le run welcome-alt hors création intégrée, full-bleed), `account-scope` (`isAccountScope(path)`), `clips-editing` (l'éditeur de clip) — et ouvre au besoin l'intro des voix (`maybeOpenVoiceIntro`).
+4. `setAfterRender` (dans `app.js`) re-render la sidebar + la `conversation-status-card` après chaque route change, toggle les classes de `<body>` — `onboarding` (le run welcome-alt hors création intégrée, full-bleed), `clips-editing` (l'éditeur de clip) — et ouvre au besoin l'intro des voix (`maybeOpenVoiceIntro`).
 
 ## Topologie de l'app shell
 
@@ -56,12 +56,9 @@ src/
   user-mode.js          — "returning" vs "new-alt" mode (localStorage: archie-user-mode)
   feature-flags.js      — flag get/set (localStorage); ff-catalog.js is the flag list
   org.js                — CONFIG: who I am, my org, its members, my role (localStorage: archie-org-role)
-  active-playbook.js   — the ACTIVE Playbook: the app-wide scope behind the flag
-                          `playbookWorkspace` (localStorage: archie-active-playbook), plus the
-                          three functions every scoped surface reads — isWorkspaceMode() /
-                          playbookForNewWork() / scopeSessions() — and isAccountScope(path),
-                          which marks the routes that live ABOVE the workspaces. Insights
-                          reads it flag or no flag.
+  active-playbook.js   — which Playbook a surface works for: the ACTIVE one Insights reads
+                          (localStorage: archie-active-playbook), playbookForNewWork() (the
+                          default, for new work) and sessionPlaybookId() (a chat's)
   playbook-access.js    — who may view/use/edit/share a Playbook; the store never filters
   playbook-brand-kit.js — the Playbook's brand-kit rows, called by playbook-view and the Image Generator
   brand-cover.js — the palette cover + the voice as a sentence, shared by the catalogue card and the fiche header
@@ -83,10 +80,9 @@ src/
   mocks/                — ALL seed data, one file per domain: sessions, top-posts,
                           sources, ideas, playbooks, topics, posts, threads,
                           schedule, connectors, social, objectives, videos, mentions,
-                          translations, voice-networks, demo-brand. Self-contained: no file
+                          translations, voice-networks. Self-contained: no file
                           under mocks/ reads a sibling.
   concepts.js           — what each object IS, said once to the user (the sentence each host page shows)
-  demo-mode.js / demo-flow.js — flag `demoMode`: the state (a leaf the stores read) / what the demo does
 
   # Stores (per-session Map + subscribers, seed from mocks unless new-alt mode)
   sessions-store.js     — chat sessions list (pin / rename / delete)
@@ -106,7 +102,7 @@ src/
                           statuses, signals (CONFIG, like ff-catalog)
   composer-mentions.js  — per-session @mention pills in the composer
   composer-connector.js — per-session: the connector a chat is asking (flag `connectors`)
-  videos-store.js       — GLOBAL per Playbook: the Clips space's videos (flag `clipsSpace`)
+  videos-store.js       — GLOBAL per Playbook: the Clips space's videos
   post-plan-store.js    — per-session: the post plans of a chat with no source (prod update_post_brief)
 
   # Conversational flow orchestrators (drive the assistant thread + pickers)
@@ -144,7 +140,6 @@ src/
 
   # Studios (full-panel takeovers) + newer surfaces (not exhaustive — see docs/reference/FEATURES.md)
   batch-studio.js       — batch-of-posts studio (upload/analyse → review)
-  clip-studio.js        — full-screen video clip extraction + editing studio
   top-posts-flow.js / top-posts-store.js — published-posts "winners" board + repurpose entry
   folders-store.js      — save-to-folder store; feedback-store.js — feedback submissions
   languages.js          — language catalog for multilingual Playbooks
@@ -162,15 +157,14 @@ src/
     welcome-alt-steps.js (one screen per step) · welcome-alt-explainer.js (each step's scene) ·
     welcome-alt-ready.js (the end of the run) · welcome-alt-recap.js (/recap + /voice, the
     run's sessionStorage helpers) · welcome-alt-review.js (the two reviews' shared screen)
-      home.js             — the account home (flag `playbookWorkspace`) AND the Playbooks
-                            catalogue, one module, two gated routes (/home + /contexts).
-                            Its classes + stylesheet still say `contexts` on purpose.
-    home/                 hero.js (prompt + Add + Playbook picker + starters) · lists.js
-                          (the catalogue + the Chats tab)
+      home.js             — /contexts, the Playbooks catalogue (the name is what is left of
+                            the account home, deleted 2026-11-27). Its classes + stylesheet
+                            say `contexts`.
+    home/                 lists.js (the catalogue's card, ghost card, empty states, first run)
     insights/             /insights (flag `insightsHub`): shell (topbar, clicks, doors) · model ·
                           views (the layout switch) · layouts/{cockpit, mob_index, mob_side} ·
                           read · pieces · charts (Highcharts, vendored)
-    clips/                the Clips space (flag `clipsSpace`): library (/clips) · project (/clips/:id) ·
+    clips/                the Clips space: library (/clips) · project (/clips/:id) ·
                           editor (/clips/:id/edit/:clipId: editor.js the core, editor-timeline.js the
                           tracks, editor-panels.js the library + inspector) · shared · open-in-clips
     _analyse-common.js  — shared "chat bubble + numbered picker bar" wizard primitives
@@ -182,7 +176,6 @@ src/
       composer.js         — the composer, its Add menu, the connector chip, the status banner
       draft-questions.js  — language / profile / repurpose / angle / count / video-intake questions
       empty-hero.js       — a new chat's hero + « Topics to review »
-      clip-studio-view.js — the Clip Studio's stages and handlers
       batch-studio-view.js — the Batch studio's screen and its replay into a chat
       top-posts-view.js   — the Top posts repurpose screen
       workflow-flow.js    — the "How it works" block both studios share
@@ -196,11 +189,9 @@ src/
     topbar.js             persistent header: route title (rename on session) + on a session the side
                           panel's tabs (flag `contentPanel`) or the Sources / Ideas / Drafts pills +
                           status-card toggle; the back control (backTargetFor)
-    sidebar.js            left rail: brand, New chat, Search, nav (under `playbookWorkspace`:
-                          `Playbook`, singular, = the active brand's fiche), footer popmenu
+    sidebar.js            left rail: brand, New chat, Search, nav, footer popmenu
                           (feedback/bug/shortcuts + Admin menu)
-    sidebar/              playbook-switcher.js (flag `playbookWorkspace`) · recent-chats.js
-                          (Sort & group, rows, pin / rename / delete)
+    sidebar/              recent-chats.js (Sort & group, rows, pin / rename / delete)
     right-panel.js        sliding panel shell: open / close / resize / URL state + the delegated listeners
     right-panel/          drafts-view.js (Drafts: feed, filters, actions + their clicks, handleDraftsClick, inline editor) ·
                           sources-view.js · ideas-view.js (Ideas + Clips) · overview-view.js (Overview, flag `contentPanel`)
@@ -210,7 +201,7 @@ src/
                           only imports contentState + rerenderContentWorkspaceBody (kept, pending the user's call)
     source-card.js, idea-card.js, idea-card-compact.js, post-card.js, clip-card.js, empty-state.js
     topic-card.js         one Topic: the feed's card, the picker's card, the in-chat row
-    starter-card.js       one workflow starter, two hosts: the new chat's hero + the account home
+    starter-card.js       the workflow starters of the new chat's hero
     social-post-card.js   someone ELSE's published post, as evidence (not top-post-card)
     top-post-card.js      MY published post that performed — the Repurpose board's card
     more-menu.js          installMoreMenu(): the shared ⋯ popover on source / idea / clip cards
@@ -227,7 +218,7 @@ src/
     topic-picker-modal.js one dialog, two views — the picker's list, and the article
     topic-ignore-modal.js "Why did this Topic miss the mark?" — the reason, kept
     topic-history-modal.js the Topic's two-sided trail: the scan's, then the reader's
-    video-clips-modal.js (+ video-clips-modal/editor-pane.js), schedule-modal.js
+    schedule-modal.js
                           (+ schedule-modal-legacy.js behind `newScheduleModal`),
     connect-account-modal.js the network's consent dialog
     assign-modal.js       assign drafts for review (one reviewer, due date, comment)

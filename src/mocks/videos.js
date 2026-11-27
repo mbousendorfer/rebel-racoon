@@ -1,4 +1,4 @@
-// Clips space (flag clipsSpace) — the seeded video library.
+// Clips space — the seeded video library.
 //
 // Two real videos from the BETA test workspace (org 888 / ws 885), the same ones
 // prod's crop-editor playground uses (content/studio/playgrounds/crop-editor/

@@ -7,9 +7,9 @@
 // as the muted caption, and a DS avatar carrying the brand photo plus a
 // corner network badge.
 
-import { socialAccounts, demoManyProfiles, DEMO_ACCOUNTS } from "./mocks.js?v=2928";
-import { escapeHtml } from "./utils.js?v=2928";
-import { createNotifier } from "./store-utils.js?v=2928";
+import { socialAccounts, demoManyProfiles } from "./mocks.js?v=2929";
+import { escapeHtml } from "./utils.js?v=2929";
+import { createNotifier } from "./store-utils.js?v=2929";
 
 // THE network table — every surface that names, badges, counts or colours a
 // network reads it, so a network is spelled one way everywhere. It replaced
@@ -221,9 +221,7 @@ const brandAccountsOn = (network) => socialAccounts.filter((p) => p.platform ===
 // own accounts, one per network. demoManyProfiles stays out: those ~36 exist to
 // exercise the picker's search on an established account, not to be connected
 // one by one.
-// The demo brand's pretend accounts (flag demoMode) are known here so they can
-// be connected, but never offered: getConnectableAccounts reads socialAccounts.
-const ALL_ACCOUNTS = [...socialAccounts, ...demoManyProfiles, ...DEMO_ACCOUNTS];
+const ALL_ACCOUNTS = [...socialAccounts, ...demoManyProfiles];
 
 function ensureSeeded() {
   if (connectedIds) return connectedIds;

@@ -1,8 +1,7 @@
 /* Batch Studio — dedicated "Batch from a source" intake screen.
    Single stage: a scrollable upload column (AI badge + marketing title + dashed
    dropzone + "or" + URL/connector row + staged-source list) above a sticky bar
-   carrying the Playbook picker and the "Start drafting" CTA. Reuses the Clip
-   Studio visual language (see clip-studio.css) but is self-contained.
+   carrying the Playbook picker and the "Start drafting" CTA. Self-contained.
    Root: `.session__assistant.batch-studio.batch-studio--upload`. */
 
 .session__assistant.batch-studio {

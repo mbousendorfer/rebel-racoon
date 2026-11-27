@@ -147,11 +147,11 @@ Une **source live MCP-queryable** (Notion, Slite, Google Drive, Slack, …) que 
 
 ### Studio (⚠️ deux sens)
 
-**« Studio » seul = le produit en prod côté Agorapulse.** L'atelier, lui, se nomme toujours en entier : **Image Studio**, **Clip Studio**, **Batch Studio** — un plein écran dédié à **un artefact**, dont on ressort en le rattachant à un draft, et où rien ne survit qui ne soit commité. Ne jamais écrire « le Studio » pour un atelier. Le module `modules/image-studio/` s'appelle « Image Generator » dans le code et les docs, mais **Image Studio** dans l'UI (arbitré le 2026-10-16 ; ni « Image Generator » ni « Image Studio v2 » à l'écran). Voir [`CONCEPTS.md` §5](CONCEPTS.md#5-les-studios--un-atelier-plein-écran-pour-un-artefact).
+**« Studio » seul = le produit en prod côté Agorapulse.** L'atelier, lui, se nomme toujours en entier : **Image Studio**, **Batch Studio** — un plein écran dédié à **un artefact**, dont on ressort en le rattachant à un draft, et où rien ne survit qui ne soit commité. Ne jamais écrire « le Studio » pour un atelier. Le module `modules/image-studio/` s'appelle « Image Generator » dans le code et les docs, mais **Image Studio** dans l'UI (arbitré le 2026-10-16 ; ni « Image Generator » ni « Image Studio v2 » à l'écran). Voir [`CONCEPTS.md` §5](CONCEPTS.md#5-les-studios--un-atelier-plein-écran-pour-un-artefact).
 
 ### Clip
 
-Un extrait d'une vidéo. Dans un chat, les clips sont portés par leur **source vidéo** (`clips[]`, [`sources-stream.js`](../../src/sources-stream.js)) — un clip n'est pas une Source à lui seul ; dans l'espace Clips (flag `clipsSpace`), par la **Video** de la bibliothèque du Playbook ([`videos-store.js`](../../src/videos-store.js)). Un clip peut ensuite devenir un draft.
+Un extrait d'une vidéo. Dans un chat, les clips sont portés par leur **source vidéo** (`clips[]`, [`sources-stream.js`](../../src/sources-stream.js)) — un clip n'est pas une Source à lui seul ; dans l'espace Clips, par la **Video** de la bibliothèque du Playbook ([`videos-store.js`](../../src/videos-store.js)). Un clip peut ensuite devenir un draft.
 
 ### Batch
 
@@ -200,7 +200,7 @@ Switch UI : panneau Admin (⇧D). Un reload est forcé pour que les stores re-se
 | "Project"                              | "Session" / "Chat" / "Conversation" | "Project" est un terme historique probable-spoon, supprimé                              |
 | "Composer"                             | "Archie"                            | "Composer" était un nom interne pré-rebrand                                             |
 | "Studio"                               | "Archie" (proto) / "Studio" (prod)  | "Studio" est le label prod côté Agorapulse — le proto reste "Archie standalone"         |
-| "le Studio" pour un atelier            | "l'Image Studio", "le Clip Studio"  | Collision avec le nom du produit prod — toujours nommer l'atelier en entier             |
+| "le Studio" pour un atelier            | "l'Image Studio", "le Batch Studio" | Collision avec le nom du produit prod — toujours nommer l'atelier en entier             |
 | "posts" comme terme parapluie          | "content"                           | "post" veut dire trois choses (draft / publié / post d'un tiers) — voir plus haut       |
 | "Connected sources" pour un connecteur | "Connectors"                        | Une Source vit dans un chat ; un connecteur est interrogé en direct                     |
 | "channel", "profile" (qui publie)      | "account"                           | Le compte social qui publie ; le réseau reste "network"                                 |

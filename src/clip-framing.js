@@ -1,4 +1,4 @@
-// Clip framing — the reframe engine of the Clips space (flag clipsSpace).
+// Clip framing — the reframe engine of the Clips space.
 //
 // A port of prod's crop-editor playground (content/studio/playgrounds/
 // crop-editor/index.html), minus its DOM: the auto framing the backend computed

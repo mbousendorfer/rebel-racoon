@@ -32,7 +32,7 @@ export function dropzoneHTML({
   large = false,
   withInput = true,
   inputId = "",
-  // Extra attributes spliced onto the root (e.g. "data-clip-studio-dropzone").
+  // Extra attributes spliced onto the root (e.g. "data-batch-dropzone").
   rootAttrs = "",
   // Overrides the default aria-label (built from `lead`).
   ariaLabel = "",

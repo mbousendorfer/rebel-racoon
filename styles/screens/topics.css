@@ -687,8 +687,8 @@
    the middle of a full-width white block and was then replaced by a two-column
    reader — the layout jumping is exactly what a skeleton exists to prevent.
 
-   The sheen is the shared `app-shimmer` (base.css), like the thread's and the
-   Clip Studio's skeletons. */
+   The sheen is the shared `app-shimmer` (base.css), like the thread's
+   skeletons. */
 .topic-ghost {
   display: flex;
   flex-direction: column;

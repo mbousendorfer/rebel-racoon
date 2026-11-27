@@ -1,7 +1,7 @@
 // Embeddable caption editor — a subtitle-editing surface ported from
 // platform-studio's video-editor playground, adapted to archie's vanilla JS +
-// DS conventions. Mounted INSIDE the clips modal (the "Subtitles" tab of the
-// clip editor), not as a separate full-screen surface.
+// DS conventions. Mounted INSIDE the Clips space's clip editor, not as a
+// separate full-screen surface.
 //
 // Layout: three panes inside the host container —
 //   • Left   : flowing word-level transcript (click a word to seek, double-
@@ -17,7 +17,7 @@
 //       captionStyle, captions } so the hosting modal's draft stays in sync.
 //   unmount() — stop playback, drop listeners, clear the host.
 //
-// Hosted by the Clips space's unified clip editor (flag clipsSpace), it runs
+// Hosted by the Clips space's unified clip editor, it runs
 // on the HOST's clock: `opts.clock` = { seek(sec), toggle() } drives the
 // footage, and the host pushes the playhead back with setTime(sec, playing) —
 // the clip is a window of a long source, so the editor can't own the video.
@@ -28,7 +28,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock, plural } from "./utils.js?v=2928";
+import { escapeHtml, formatClock, plural } from "./utils.js?v=2929";
 import {
   PRESETS,
   presetById,
@@ -43,7 +43,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=2928";
+} from "./clip-captions.js?v=2929";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -132,8 +132,8 @@ function deriveSimpleCaptions() {
 
 // ── Rendering model ──────────────────────────────────────────────────
 //
-// The caption editor no longer owns a self-contained layout. The video-clips
-// modal renders a persistent editor shell — rail · options panel · stage ·
+// The caption editor no longer owns a self-contained layout. The host
+// renders a persistent editor shell — rail · options panel · stage ·
 // timeline — with all the data-ce-* hooks already in place (stage hooks in the
 // preview, control hooks in the left options panel). mount() takes that shell
 // as its root and renders into the existing hooks, so the preview + timeline
@@ -726,10 +726,6 @@ function syncTime() {
   const frac = duration ? currentTime / duration : 0;
   const fill = $("[data-ce-scrub-fill]");
   if (fill) fill.style.width = `${frac * 100}%`;
-  // Keep the timeline's playhead in lock-step with the transport scrub — both
-  // visualize the same playback position.
-  const ph = $("[data-vc-protrim-playhead]");
-  if (ph) ph.style.left = `${frac * 100}%`;
   renderCaptionFrame();
   updateActiveWord();
 }
@@ -1234,17 +1230,6 @@ export function refreshControls() {
 export function repaintStage() {
   if (!mounted) return;
   repaintAll();
-}
-
-// External playback sync — the modal's timeline playhead/track drives these so
-// the two scrubbers stay in lock-step. frac is 0..1 of the clip.
-export function seekFraction(frac) {
-  if (!mounted) return;
-  seek(Math.max(0, Math.min(1, frac)) * duration);
-}
-
-export function getFraction() {
-  return duration ? currentTime / duration : 0;
 }
 
 export function mount(hostEl, c, src, opts = {}) {

@@ -12,29 +12,27 @@
 // The intake card lives OUTSIDE [data-batch-rest]; staging-loader ticks repaint
 // only the rest (list + commit), so the field is never clobbered mid-typing.
 
-import { isDemo } from "../../demo-mode.js?v=2928";
-import { renderDemoSample } from "../../demo-flow.js?v=2928";
-import * as batchStudio from "../../batch-studio.js?v=2928";
-import { isFlagOn } from "../../feature-flags.js?v=2928";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2928";
-import { escapeHtml, html, raw } from "../../utils.js?v=2928";
-import { dropzoneHTML } from "../../components/dropzone.js?v=2928";
-import { getContextById } from "../../contexts-store.js?v=2928";
-import { renderSourceCard } from "../../components/source-card.js?v=2928";
-import { isWorkspaceMode, playbookForNewWork } from "../../active-playbook.js?v=2928";
-import { usableContexts } from "../../playbook-access.js?v=2928";
+import * as batchStudio from "../../batch-studio.js?v=2929";
+import { isFlagOn } from "../../feature-flags.js?v=2929";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2929";
+import { escapeHtml, html, raw } from "../../utils.js?v=2929";
+import { dropzoneHTML } from "../../components/dropzone.js?v=2929";
+import { getContextById } from "../../contexts-store.js?v=2929";
+import { renderSourceCard } from "../../components/source-card.js?v=2929";
+import { playbookForNewWork } from "../../active-playbook.js?v=2929";
+import { usableContexts } from "../../playbook-access.js?v=2929";
 import {
   classifyFile,
   startFileUpload,
   startUrlImport,
   startTextImport,
   startConnectorImport,
-} from "../../sources-stream.js?v=2928";
-import { showToast } from "../../components/toast.js?v=2928";
-import { setHashQuery } from "../../url-state.js?v=2928";
-import { navigate } from "../../router.js?v=2928";
-import { dotColorVar } from "../session.js?v=2928";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=2928";
+} from "../../sources-stream.js?v=2929";
+import { showToast } from "../../components/toast.js?v=2929";
+import { setHashQuery } from "../../url-state.js?v=2929";
+import { navigate } from "../../router.js?v=2929";
+import { dotColorVar } from "../session.js?v=2929";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=2929";
 
 // Origin sub-line for a staged batch source, shown in the source-card's meta row
 // (in place of the usual "N ideas · Processed · Added X").
@@ -76,8 +74,6 @@ function buildBatchStudioSteps() {
 }
 
 export function renderBatchStudio(session) {
-  // The demo (flag demoMode) takes demo content only: its own ways in are off.
-  const off = isDemo() ? "disabled" : "";
   const st = batchStudio.getState(session.id);
   if (!st) return "";
 
@@ -136,19 +132,18 @@ export function renderBatchStudio(session) {
                 withInput: false,
                 rootAttrs: "data-batch-dropzone",
                 ariaLabel: "Add files from your computer",
-                // The demo (flag demoMode) takes demo content only.
-                action: { label: "Browse files", attrs: isDemo() ? "disabled" : "" },
+                action: { label: "Browse files" },
               }),
             )}
             <div class="batch-studio__dropzone-extra">
               <span class="batch-studio__dropzone-extra-label">Or add another way</span>
-              <button type="button" class="ap-button stroked grey batch-studio__method" data-batch-link ${raw(off)}>
+              <button type="button" class="ap-button stroked grey batch-studio__method" data-batch-link>
                 <i class="ap-icon-link" aria-hidden="true"></i><span>Add link</span>
               </button>
-              <button type="button" class="ap-button stroked grey batch-studio__method" data-batch-paste ${raw(off)}>
+              <button type="button" class="ap-button stroked grey batch-studio__method" data-batch-paste>
                 <i class="ap-icon-file--text" aria-hidden="true"></i><span>Paste text</span>
               </button>
-              ${raw(isDemo() ? "" : connectorMenu)} ${raw(renderDemoSample("batch"))}
+              ${raw(connectorMenu)}
             </div>
             <div class="batch-studio__dropzone-overlay" aria-hidden="true">
               <i class="ap-icon-upload" aria-hidden="true"></i><span>Drop files to add them</span>
@@ -209,22 +204,11 @@ function renderBatchRest(session) {
   `;
 }
 
-// ⚠️ In workspace mode the in-flow Playbook pickers render NOTHING.
-//
-// Batch, Clip Studio and the repurpose board each asked "which Playbook governs
-// these drafts?" in their own select. The rail answered it before the flow
-// started, so the question is gone — and so is the control. It was a disabled
-// trigger for one commit, on the theory that the flow should still SAY which
-// brand: a greyed-out field that repeats what the rail prints two inches away
-// is chrome the reader has to rule out, not information. The commit rows are
-// `justify-content: flex-end`, so the CTA simply keeps its place.
-
 // Playbook picker for the Batch Studio commit group — same DS form-select shape
 // as the composer's renderPlaybookControl, but full-width and its picks route
 // through the `data-batch-playbook-pick` delegate (→ batchStudio.setContext)
 // instead of mutating session.contextId.
 function renderBatchPlaybookControl(ctx) {
-  if (isWorkspaceMode()) return "";
   const playbooks = usableContexts();
   const items = playbooks
     .map((c) => {

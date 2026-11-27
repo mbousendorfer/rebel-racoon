@@ -1,17 +1,16 @@
-import { escapeAttr as escapeHtmlAttr, escapeHtml, html, raw } from "../utils.js?v=2928";
-import { conceptHint } from "../concepts.js?v=2928";
-import { navigate } from "../router.js?v=2928";
-import { setImageLook } from "../modules/image-studio/index.js?v=2928";
-import { IMAGE_LOOK_CHAT_HANDOFF, startImageLookChat } from "../draft-image-flow.js?v=2928";
-import { answerLearnedVoice, answerVoiceAsk } from "../network-voice-flow.js?v=2928";
-import { renderTopbar } from "../components/topbar.js?v=2928";
-import { connectorDocs } from "../mocks.js?v=2928";
-import { getConnectedProfiles } from "../social-profiles.js?v=2928";
-import { getSessionById, getSessions } from "../sessions-store.js?v=2928";
-import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=2928";
-import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=2928";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=2928";
-import { isNewUser } from "../user-mode.js?v=2928";
+import { escapeAttr as escapeHtmlAttr, escapeHtml, html, raw } from "../utils.js?v=2929";
+import { conceptHint } from "../concepts.js?v=2929";
+import { navigate } from "../router.js?v=2929";
+import { setImageLook } from "../modules/image-studio/index.js?v=2929";
+import { IMAGE_LOOK_CHAT_HANDOFF, startImageLookChat } from "../draft-image-flow.js?v=2929";
+import { answerLearnedVoice, answerVoiceAsk } from "../network-voice-flow.js?v=2929";
+import { renderTopbar } from "../components/topbar.js?v=2929";
+import { connectorDocs } from "../mocks.js?v=2929";
+import { getSessionById, getSessions } from "../sessions-store.js?v=2929";
+import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=2929";
+import { playbookForNewWork } from "../active-playbook.js?v=2929";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=2929";
+import { isNewUser } from "../user-mode.js?v=2929";
 import {
   getThread,
   sendMessage,
@@ -28,44 +27,41 @@ import {
   answerTopPostsWidget,
   toggleTopicsWidgetPick,
   answerTopicsWidget,
-} from "../assistant.js?v=2928";
-import { subscribe as subscribePostPlans } from "../post-plan-store.js?v=2928";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=2928";
-import { getSources, getIdeas } from "../library.js?v=2928";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=2928";
+} from "../assistant.js?v=2929";
+import { subscribe as subscribePostPlans } from "../post-plan-store.js?v=2929";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=2929";
+import { getSources, getIdeas } from "../library.js?v=2929";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=2929";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=2928";
-import { setSubtitleStyle, subscribe as subscribePosts } from "../posts-store.js?v=2928";
-import { executeDraft } from "../draft-flow.js?v=2928";
-import * as topPostsFlow from "../top-posts-flow.js?v=2928";
-import { renderTopPostsBoard } from "../components/top-post-card.js?v=2928";
-import * as sidebarWizard from "../sidebar-wizard.js?v=2928";
-import * as inlineQuestion from "../inline-question.js?v=2928";
-import { onPostImage } from "../components/right-panel/drafts-view.js?v=2928";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2928";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2928";
-import * as clipStudio from "../clip-studio.js?v=2928";
-import * as batchStudio from "../batch-studio.js?v=2928";
-import { askConnector } from "../connector-ask.js?v=2928";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=2928";
-import { renderConnectorLogo } from "../connectors-view.js?v=2928";
+} from "../composer-mentions.js?v=2929";
+import { setSubtitleStyle, subscribe as subscribePosts } from "../posts-store.js?v=2929";
+import { executeDraft } from "../draft-flow.js?v=2929";
+import * as topPostsFlow from "../top-posts-flow.js?v=2929";
+import { renderTopPostsBoard } from "../components/top-post-card.js?v=2929";
+import * as sidebarWizard from "../sidebar-wizard.js?v=2929";
+import * as inlineQuestion from "../inline-question.js?v=2929";
+import { onPostImage } from "../components/right-panel/drafts-view.js?v=2929";
+import * as batchStudio from "../batch-studio.js?v=2929";
+import { askConnector } from "../connector-ask.js?v=2929";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=2929";
+import { renderConnectorLogo } from "../connectors-view.js?v=2929";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=2928";
-import { isFlagOn } from "../feature-flags.js?v=2928";
-import { setChatGalleryHost } from "./session/chat-gallery.js?v=2928";
-import * as contextBuilder from "../context-builder.js?v=2928";
-import { renderPicker } from "./_analyse-common.js?v=2928";
-import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=2928";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=2928";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=2928";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=2928";
+} from "../composer-connector.js?v=2929";
+import { isFlagOn } from "../feature-flags.js?v=2929";
+import { setChatGalleryHost } from "./session/chat-gallery.js?v=2929";
+import * as contextBuilder from "../context-builder.js?v=2929";
+import { renderPicker } from "./_analyse-common.js?v=2929";
+import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=2929";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=2929";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=2929";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=2929";
 import {
   classifyFile,
   startFileUpload,
@@ -74,10 +70,9 @@ import {
   subscribeUploads,
   pushScriptedSource,
   completeScriptedSource,
-  updateSourceClips,
-} from "../sources-stream.js?v=2928";
-import { onFeedbackClick } from "../components/feedback-control.js?v=2928";
-import { showToast } from "../components/toast.js?v=2928";
+} from "../sources-stream.js?v=2929";
+import { onFeedbackClick } from "../components/feedback-control.js?v=2929";
+import { showToast } from "../components/toast.js?v=2929";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -86,41 +81,31 @@ import {
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=2928";
-import { setHandoff, consumeHandoff } from "../handoff.js?v=2928";
-import { isDemo, isDemoDone } from "../demo-mode.js?v=2928";
-import { answerAfterDemo, trackDemoSession, demoSampleFile, addDemoSource } from "../demo-flow.js?v=2928";
-import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=2928";
-import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=2928";
-import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=2928";
-import { openTopicArticle } from "../components/topic-picker-modal.js?v=2928";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2928";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=2928";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=2928";
-import { attachClipsToChat } from "../clips-chat.js?v=2928";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=2928";
-import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=2928";
-import {
-  clipsToChat,
-  finalizeClipStudio,
-  handleClipStudioFile,
-  handleClipStudioUrl,
-  openClipStudioEditor,
-  renderClipStudio,
-} from "./session/clip-studio-view.js?v=2928";
+} from "../components/right-panel.js?v=2929";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=2929";
+import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=2929";
+import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=2929";
+import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=2929";
+import { openTopicArticle } from "../components/topic-picker-modal.js?v=2929";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2929";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=2929";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=2929";
+import { attachClipsToChat } from "../clips-chat.js?v=2929";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=2929";
+import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=2929";
 import {
   handleBatchFiles,
   renderBatchStudio,
   repaintBatchRest,
   replayBatchSources,
   startBatchChat,
-} from "./session/batch-studio-view.js?v=2928";
+} from "./session/batch-studio-view.js?v=2929";
 import {
   askRepurposeProfiles,
   askSourceUse,
   startIdeaDraft,
   startRepurposeFlow,
-} from "./session/draft-questions.js?v=2928";
+} from "./session/draft-questions.js?v=2929";
 import {
   extractionVerdict,
   extractionWhyOpen,
@@ -128,7 +113,7 @@ import {
   renderThread,
   repaintExtractionCard,
   watchTurnAvatars,
-} from "./session/thread-render.js?v=2928";
+} from "./session/thread-render.js?v=2929";
 import {
   animateBannerIn,
   animateBannerOut,
@@ -140,17 +125,17 @@ import {
   renderComposer,
   renderComposerConnector,
   renderComposerStatus,
-} from "./session/composer.js?v=2928";
-import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=2928";
-import { renderEmptyHero } from "./session/empty-hero.js?v=2928";
-import { routeTypedAsk, askSwitchPostPlan, openPlanInModal } from "./session/drafts-asks.js?v=2928";
+} from "./session/composer.js?v=2929";
+import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=2929";
+import { renderEmptyHero } from "./session/empty-hero.js?v=2929";
+import { routeTypedAsk, askSwitchPostPlan, openPlanInModal } from "./session/drafts-asks.js?v=2929";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
 // sessionId → how many Batch Studio sources are still to arrive in this chat.
 const batchArrivals = new Map();
 // sessionId → what a workflow starter already said the next source is for
-// ("ideas" | "clips"), so "What should I do with it?" isn't asked a second time.
+// ("ideas"), so "What should I do with it?" isn't asked a second time.
 const starterUse = new Map();
 
 export const COMPOSER_DEFAULT_PLACEHOLDER = "Ask a follow-up, or refine a draft…";
@@ -248,20 +233,9 @@ export function renderSession(params, target) {
     previousSessionId = session.id;
   }
 
-  // Clip Studio — a dedicated full-page "Extract video clips" flow runs in its
-  // own `clip-studio-*` session. Start the upload stage SYNCHRONOUSLY here (on
-  // first render, before innerHTML below) so the upload box paints with zero
-  // flicker. GATE on the one-shot handoff so a re-render AFTER the flow exits
-  // (e.g. openDrafts writing a URL param → router re-runs renderSession) does
-  // NOT relaunch the studio.
-  if (session.id.startsWith("clip-studio-") && !clipStudio.isActive(session.id)) {
-    if (consumeHandoff("pendingStartClipStudio"))
-      clipStudio.start(session.id, { contextId: playbookForNewWork()?.id || null });
-  }
-
   // Batch Studio — dedicated "Batch from a source" intake in its own `batch-*`
-  // session. Same one-shot-handoff gate as Clip Studio so a re-render after the
-  // user navigates away doesn't relaunch it. Pre-selects the default Playbook.
+  // session. Gated on a one-shot handoff so a re-render after the user
+  // navigates away doesn't relaunch it. Pre-selects the default Playbook.
   if (session.id.startsWith("batch-") && !batchStudio.isActive(session.id)) {
     if (consumeHandoff("pendingStartBatch"))
       batchStudio.start(session.id, { contextId: playbookForNewWork()?.id || null });
@@ -319,7 +293,7 @@ export function renderSession(params, target) {
   // Switching to a different chat: briefly show skeleton bubbles where the
   // conversation will land, so the swap reads as "loading this chat" rather
   // than an instant content pop. Only for a started conversation in the normal
-  // layout (the helper self-skips the empty hero / wizard / clip-studio).
+  // layout (the helper self-skips the empty hero / wizard / studios).
   if (isSessionSwitch) showSwitchSkeleton(target);
 
   // FIND-B: return a cleanup so the router tears down per-screen state on
@@ -361,7 +335,7 @@ function isThreadStarted(messages) {
 // Render the skeleton into the thread, then restore the real content after a
 // short delay. Synchronous innerHTML swap (before the browser paints) means the
 // real thread never flashes first. Self-skips when there's no started thread to
-// cover (empty hero, wizard, clip-studio — those layouts have no
+// cover (empty hero, wizard, studios — those layouts have no
 // `.session__assistant-thread`, or carry the hero instead of a thread).
 function showSwitchSkeleton(root) {
   const threadEl = root.querySelector(".session__assistant-thread[data-assistant-thread]");
@@ -382,12 +356,6 @@ function showSwitchSkeleton(root) {
 function renderAssistantPanel(session, attachedContext) {
   const thread = getThread(session.id);
 
-  // Clip Studio — dedicated full-page "Extract video clips" flow (upload →
-  // analyzing → clips). Must precede the wizard / inline-question branches so
-  // it owns the panel while active.
-  if (clipStudio.isActive(session.id)) {
-    return renderClipStudio(session, attachedContext);
-  }
   // Batch Studio — dedicated full-page "Batch from a source" intake (upload 1+
   // sources + pick a Playbook → new chat). Owns the panel while active.
   if (batchStudio.isActive(session.id)) {
@@ -399,7 +367,7 @@ function renderAssistantPanel(session, attachedContext) {
     return renderAssistantPanelWizard(session);
   }
   // Top-posts milker — the winner-selection grid takes over the panel (like
-  // Batch / Clip Studio) before any inline-question step kicks in.
+  // Batch) before any inline-question step kicks in.
   if (topPostsFlow.isPickerActive(session.id)) {
     return renderTopPostsPickerScreen(session);
   }
@@ -438,11 +406,9 @@ function renderAssistantPanel(session, attachedContext) {
   `;
 }
 
-// ─── Clip Studio / Batch studio ───────────────────────────────────────────
-// Full-page stages rooted on `.session__assistant` (+ a `clip-studio--{stage}`
-// modifier) so drag/drop binding and the refreshAssistantAside node-swap keep
-// working. The Clip Studio's stages live in session/clip-studio-view.js; its
-// state in clip-studio.js.
+// ─── Batch studio ─────────────────────────────────────────────────────────
+// A full-page stage rooted on `.session__assistant` so drag/drop binding and
+// the refreshAssistantAside node-swap keep working.
 
 // context.color → DS color token for the pill dot. A Playbook's « blue » is
 // data, and electric blue is the interactive colour: it takes soft blue, like
@@ -461,15 +427,8 @@ export function dotColorVar(colorName) {
 //     through the delegated [data-playbook-pick] handler in bindSession.
 //   • static (active conversation) → a non-interactive .ap-select-trigger
 //     in disabled state. No dropdown.
-//   • workspace mode (flag playbookWorkspace) → nothing at all: the rail's
-//     switcher is the one place the brand is named and chosen.
 // Returns "" when there are no playbooks at all on a locked chat.
 export function renderPlaybookControl(ctx, selectable) {
-  // Workspace mode: nothing. The rail names the brand permanently, one row of
-  // chrome above this one, so a pill in the composer toolbar would be the same
-  // sentence twice — and it could only ever be the disabled half of the
-  // control, since the question is answered before the chat exists.
-  if (isWorkspaceMode()) return "";
   // Static indicator on active chats — only when a playbook is attached.
   if (!selectable) {
     if (!ctx) return "";
@@ -1020,12 +979,6 @@ function bindDragAndDrop(aside, session) {
     dragDepth = 0;
     aside.classList.remove("is-drop-target");
     const files = Array.from(event.dataTransfer.files);
-    // Clip Studio upload stage — route the dropped video into the studio flow
-    // instead of the normal source intake (no "what to do with this video?").
-    if (clipStudio.isActive(session.id) && clipStudio.getState(session.id)?.stage === "upload") {
-      if (files[0]) handleClipStudioFile(session, files[0]);
-      return;
-    }
     // Batch Studio upload screen — stage dropped files (multi) instead of the
     // normal in-session source intake.
     if (batchStudio.isActive(session.id)) {
@@ -1189,13 +1142,9 @@ function wireAssistantPanel(root, session, attachedContext) {
     const wizardChat = root.querySelector("#inlineQuestionChat, .session__assistant-wizard-chat");
     if (wizardChat) wizardChat.scrollTop = wizardChat.scrollHeight;
     updateLoadingWatchdog(session.id);
-    // In Clip Studio's clips stage the composer is already locked
-    // (selectable=false) and a full aside re-render would rebuild the clip
-    // grid + thread, fighting this subscription's in-place thread repaint.
-    // Skip the first-start refresh there.
     if (!threadStartedSeen && isThreadStarted(messages)) {
       threadStartedSeen = true;
-      if (!clipStudio.isActive(session.id)) refreshAssistantAside();
+      refreshAssistantAside();
     }
     const latestDraft = [...messages].reverse().find((m) => m.variant === "draft");
     if (latestDraft && latestDraft.id !== lastDraftMessageId) {
@@ -1341,18 +1290,6 @@ function wireAssistantPanel(root, session, attachedContext) {
     if (root.querySelector("[data-empty-chat] .empty-chat__topics")) refreshAssistantAside();
   });
   const offTopPosts = topPostsFlow.subscribePicker(session.id, refreshTopPostsBoard);
-  // Clip Studio — every stage transition + analyzing ticker tick re-renders the
-  // whole assistant aside (mirrors the wizard subscription).
-  const offClipStudio = clipStudio.subscribe(session.id, () => {
-    // Analysis finished ("done") → hand the generated clips straight to the
-    // conversational chat: no review grid, no profiles screen. clipsToChat
-    // exits the studio, so this branch won't re-fire for the same session.
-    if (clipStudio.isActive(session.id) && clipStudio.getState(session.id)?.stage === "done") {
-      clipsToChat(session);
-      return;
-    }
-    refreshAssistantAside();
-  });
   // Batch Studio — re-render the aside on every staged-source / Playbook change.
   // Batch Studio — staging changes repaint only the list + commit (the intake
   // card stays put so the field isn't clobbered mid-typing). start/exit
@@ -1386,7 +1323,7 @@ function wireAssistantPanel(root, session, attachedContext) {
   // accounts question — see open-in-clips.js.
   const fromSpace = attachClipsToChat(session.id);
   if (fromSpace)
-    import("./session/clip-draft-flow.js?v=2928").then(({ startClipDraftFromSpace }) =>
+    import("./session/clip-draft-flow.js?v=2929").then(({ startClipDraftFromSpace }) =>
       setTimeout(() => startClipDraftFromSpace(session.id, fromSpace), 150),
     );
 
@@ -1402,21 +1339,15 @@ function wireAssistantPanel(root, session, attachedContext) {
       syncComposerStatus();
     },
     // Every new source waits for "What should I do with it?" — one question
-    // per arrival. Clip Studio owns its own video source + UI — never pop the
-    // generic question for a studio session.
+    // per arrival.
     onSourcesReady: (sourceIds) => {
-      if (clipStudio.isActive(session.id)) return;
       // Sources replayed from the Batch Studio were sent with « Extract ideas »:
       // the question was answered there, so it isn't asked again.
       const fromBatch = Math.min(batchArrivals.get(session.id) || 0, sourceIds.length);
       if (fromBatch) batchArrivals.set(session.id, (batchArrivals.get(session.id) || 0) - fromBatch);
-      // A starter's answer holds for one arrival; clips only fit a single video.
-      let fromStarter = starterUse.get(session.id) || null;
+      // A starter's answer holds for one arrival.
+      const fromStarter = starterUse.get(session.id) || null;
       starterUse.delete(session.id);
-      if (fromStarter === "clips") {
-        const only = sourceIds.length === 1 && getSources(session.id).find((s) => s.id === sourceIds[0]);
-        if (only?.kind !== "Video") fromStarter = null;
-      }
       askSourceUse(session.id, sourceIds, {
         onAsk: (src) => askWhatToKnow(session.id, src.filename, src.id),
         answer: fromBatch === sourceIds.length ? "ideas" : fromStarter,
@@ -1478,41 +1409,6 @@ function wireAssistantPanel(root, session, attachedContext) {
     setTimeout(() => attachTopicToChat(session.id, pendingTopic.topicId), 100);
   }
 
-  // Hand-off from the account home's hero: the reader typed the first message
-  // up there, so post it as if they had typed it here. The Playbook and the
-  // chat's name rode in the URL (?contextId= / ?title=) — only the text needed
-  // a bridge, and consumeHandoff is single-use, so reloading this URL does not
-  // re-post it.
-  const pendingHomePrompt = consumeHandoff("pendingHomePrompt");
-  if (pendingHomePrompt?.text) {
-    setTimeout(
-      () => routeTypedAsk(session, pendingHomePrompt.text) || sendMessage(session.id, pendingHomePrompt.text),
-      100,
-    );
-  }
-
-  // Hand-off from the account home's Add menu. The home can't run an intake —
-  // uploads, processing and replay are per-session and it has none — so it
-  // launches instead: it minted this chat and named the flow it wanted, and the
-  // dispatch below calls the SAME functions the composer's own Add menu calls.
-  // After the prompt above (150 vs 100 ms) so a message typed on the home lands
-  // in the thread before a modal opens over it.
-  const pendingAdd = consumeHandoff("pendingHomeAdd");
-  if (pendingAdd?.kind) {
-    setTimeout(() => {
-      const kind = pendingAdd.kind;
-      if (kind === "connector" && pendingAdd.connectorId) askConnector(session.id, pendingAdd.connectorId);
-      else if (kind === "top-posts") topPostsFlow.startTopPostsInline(session.id);
-      // The home's workflow CARD opens the full board, the way the hero's card
-      // does; its Add menu's row is the inline variant. Both exist in the chat.
-      else if (kind === "top-posts-studio") topPostsFlow.startTopPostsFlow(session.id);
-      else if (kind === "topic") startTopicPickerInline(session.id, session);
-      else if (kind === "text" && !isDemo()) openAddSourceModal({ tab: "pasteText", currentSessionId: session.id });
-      else if (kind === "url" && !isDemo()) openAddSourceModal({ tab: "url", currentSessionId: session.id });
-      else startPillFromKind(root, session, kind);
-    }, 150);
-  }
-
   // Hand-off from a source card's "Ask" button on the dashboard or another
   // session — open the askWhatToKnow inline question in this freshly mounted
   // chat.
@@ -1528,9 +1424,6 @@ function wireAssistantPanel(root, session, attachedContext) {
     setTimeout(() => askConnector(session.id, pendingAskConnector.connectorId), 200);
   }
 
-  // Every chat of the demo (flag demoMode) counts toward its one wave.
-  if (isDemo()) trackDemoSession(session.id);
-
   bindDragAndDrop(root.querySelector(".session__assistant"), session);
   const offTurnAvatars = watchTurnAvatars(root);
 
@@ -1544,7 +1437,6 @@ function wireAssistantPanel(root, session, attachedContext) {
     offInlineQuestion();
     offTopics();
     offTopPosts();
-    offClipStudio();
     offBatchStudio();
     offComposerSources();
     offPostPlans();
@@ -1552,12 +1444,6 @@ function wireAssistantPanel(root, session, attachedContext) {
     unsubMentions();
     unsubConnector();
     stopThinkingTimer();
-    // NOTE: we deliberately do NOT clipStudio.exit() here. The router re-runs
-    // this cleanup on every hashchange (including query-only changes within the
-    // same session), so exiting would wipe the flow on, e.g., a Drafts-panel URL
-    // write. State persists per session id instead; if the user truly navigates
-    // away mid-analyzing, the ticker self-completes and notifies a now-empty
-    // subscriber set (harmless no-op).
   };
 }
 
@@ -1620,8 +1506,6 @@ const SCRIPTED_KINDS = {
 };
 
 function startPillFromKind(_root, session, kind) {
-  // The demo brand (flag demoMode) hands over its own demo content.
-  if (isDemo()) return addDemoSource(session.id, kind);
   const spec = SCRIPTED_KINDS[kind];
   if (!spec) return;
   const sessionId = session.id;
@@ -1679,32 +1563,6 @@ function bindSession(root, session) {
     { capture: true, signal },
   );
 
-  // The demo (flag demoMode): the sample files the
-  // studios hand over, and — once the wave is in — every way to produce more
-  // answered with the end card instead.
-  document.addEventListener(
-    "click",
-    (event) => {
-      if (!isDemo()) return;
-      const sample = event.target.closest("[data-demo-sample]");
-      if (sample) {
-        event.preventDefault();
-        event.stopPropagation();
-        const kind = sample.dataset.demoSample;
-        if (kind === "clip") handleClipStudioFile(session, demoSampleFile("clip"));
-        else handleBatchFiles(session, [demoSampleFile("batch")]);
-        return;
-      }
-      if (!isDemoDone()) return;
-      if (!event.target.closest(`${GENERATE_HOOKS},[data-add-source],[data-topic-use]`)) return;
-      event.preventDefault();
-      event.stopPropagation();
-      root.querySelector("[data-assistant-attach-menu]")?.setAttribute("hidden", "");
-      answerAfterDemo(session.id);
-    },
-    { capture: true, signal },
-  );
-
   // Library actions (selection toggles, bulk Extract/Delete, per-row "…"
   // menu) are wired through the shared library-actions module so the
   // dashboard and the in-session Content tab behave identically.
@@ -1731,9 +1589,7 @@ function bindSession(root, session) {
     // live source (simulated MCP) instead of the normal assistant thread, then
     // detaches itself so the next message is a normal follow-up.
     const activeConnector = getActiveConnector(session.id);
-    if (isDemoDone()) {
-      answerAfterDemo(session.id, text);
-    } else if (!activeConnector && routeTypedAsk(session, text)) {
+    if (!activeConnector && routeTypedAsk(session, text)) {
       // handled in the chat: a question, a plan or a confirm
     } else if (activeConnector) {
       sendConnectorMessage(session.id, activeConnector, text);
@@ -1819,8 +1675,8 @@ function bindSession(root, session) {
       root.querySelectorAll("[data-voice-ask-more][open]").forEach((d) => {
         if (!d.contains(event.target)) d.removeAttribute("open");
       });
-      // Shared "how's this?" feedback control — wires the clip thumbs/reasons
-      // rendered in the Clip Studio review grid (renderClipCard). Handled first
+      // Shared "how's this?" feedback control — wires the thumbs/reasons
+      // rendered in the thread (renderClipCard and the rest). Handled first
       // so the in-place thumb/chip/Send updates bail before other handlers.
       if (onFeedbackClick(event)) return;
       // Extraction-turn idea cards use the shared compact idea card
@@ -2259,8 +2115,7 @@ function bindSession(root, session) {
       //
       // Starters can opt into a direct action instead of text injection by
       // setting `action` on the mock. The "open-video-clips" action opens the
-      // dedicated Clip Studio in a fresh `clip-studio-*` session (upload →
-      // analyzing → clips), mirroring the welcome-alt dedicated-session pattern.
+      // Clips space, video first.
       // The new chat's « Finish your voices » starter: the Playbook's Voice tab,
       // on the first network to finish.
       const openPlaybook = event.target.closest("[data-open-playbook]");
@@ -2278,8 +2133,7 @@ function bindSession(root, session) {
         return;
       }
       const starterBtn = event.target.closest("[data-starter]");
-      // flag clipsSpace: the video starter leads to the Clips space, video first.
-      if (starterBtn?.dataset.starterAction === "open-video-clips" && isFlagOn("clipsSpace")) {
+      if (starterBtn?.dataset.starterAction === "open-video-clips") {
         navigate("/clips");
         return;
       }
@@ -2301,15 +2155,12 @@ function bindSession(root, session) {
             topPostsFlow.startTopPostsInline(session.id);
             return;
           }
-          const clips = action === "open-video-clips";
-          starterUse.set(session.id, clips ? "clips" : "ideas");
+          starterUse.set(session.id, "ideas");
           postAssistantMessage(
             session.id,
-            clips
-              ? "Add the video. I'll find its best moments and cut them into clips."
-              : "Add your source: a file, a link or some text. I'll pull the strongest ideas from it.",
+            "Add your source: a file, a link or some text. I'll pull the strongest ideas from it.",
           );
-          openAddSourceModal({ tab: clips ? "upload" : undefined, currentSessionId: session.id });
+          openAddSourceModal({ currentSessionId: session.id });
         }, 500);
         return;
       }
@@ -2426,140 +2277,6 @@ function bindSession(root, session) {
         }
       }
 
-      // --- Clip Studio (dedicated video-clips flow) ---
-      if (clipStudio.isActive(session.id)) {
-        // Upload stage: open the file picker from the dropzone or Browse button.
-        if (event.target.closest("[data-clip-studio-browse]") || event.target.closest("[data-clip-studio-dropzone]")) {
-          root.querySelector("[data-clip-studio-file]")?.click();
-          return;
-        }
-        // Pick the Playbook governing the drafts' voice.
-        const clipPb = event.target.closest("[data-clip-playbook-pick]");
-        if (clipPb) {
-          clipStudio.setContext(session.id, clipPb.dataset.clipPlaybookPick);
-          root.querySelector("[data-clip-playbook]")?.removeAttribute("open");
-          return;
-        }
-        // Config toggle controls (output-format cards + caption-style cards).
-        const cfgBtn = event.target.closest("[data-clip-config][data-value]");
-        if (cfgBtn) {
-          clipStudio.setConfig(session.id, { [cfgBtn.dataset.clipConfig]: cfgBtn.dataset.value });
-          // On the review step the format/caption controls re-bake the clips so
-          // the trimmer + resulting drafts reflect the pick (config stays the
-          // source of truth either way — see finalizeClipStudio).
-          if (clipStudio.getState(session.id)?.stage === "clips") {
-            clipStudio.applyConfigToClips(session.id);
-          }
-          return;
-        }
-        // "Surprise me" — prefill the instructions field with a canned hint.
-        if (event.target.closest("[data-clip-surprise]")) {
-          clipStudio.setConfig(session.id, {
-            instructions: "Lead with the strongest hook, keep clips punchy, and skip the intro.",
-          });
-          return;
-        }
-        // "Create clips" → leave config for the clips grid (or the loader if the
-        // background analysis is still running).
-        if (event.target.closest("[data-clip-create]")) {
-          clipStudio.createClips(session.id);
-          return;
-        }
-        // Reused DS clip card → "Why this clip" collapsible (in-place toggle).
-        const csWhy = event.target.closest("[data-rpanel-clip-why-toggle]");
-        if (csWhy) {
-          event.preventDefault();
-          const section = csWhy.closest(".rpanel-ideas__why");
-          if (section) {
-            const next = section.getAttribute("data-why-open") !== "true";
-            section.setAttribute("data-why-open", next ? "true" : "false");
-            csWhy.setAttribute("aria-expanded", next ? "true" : "false");
-            const body = document.getElementById(csWhy.getAttribute("aria-controls"));
-            if (body) body.hidden = !next;
-            const chev = csWhy.querySelector(".rpanel-ideas__why-chevron");
-            if (chev) {
-              chev.classList.toggle("ap-icon-chevron-down", !next);
-              chev.classList.toggle("ap-icon-chevron-up", next);
-            }
-          }
-          return;
-        }
-        // Clips review: edit/recut a clip, or add a new one (trimmer modal).
-        // Reused DS clip card → Edit (thumb + kebab) opens the trimmer modal.
-        const editClip = event.target.closest("[data-clip-edit]");
-        if (editClip) {
-          openClipStudioEditor(session, { editingClipId: editClip.dataset.clipEdit });
-          return;
-        }
-        // Reused DS clip card → Remove (kebab) deletes the clip from the source.
-        const rmClip = event.target.closest("[data-clip-remove]");
-        if (rmClip) {
-          const src = clipStudio.currentSource(session.id);
-          if (src) {
-            updateSourceClips(
-              src.id,
-              (src.clips || []).filter((c) => c.id !== rmClip.dataset.clipRemove),
-            );
-            clipStudio.refresh(session.id);
-          }
-          return;
-        }
-        if (event.target.closest("[data-clip-add-studio]")) {
-          openClipStudioEditor(session, { startAddClip: true });
-          return;
-        }
-        // Back to the config screen (from the extraction loader or clips review).
-        if (event.target.closest("[data-clip-back-config]")) {
-          clipStudio.backToConfig(session.id);
-          return;
-        }
-        // Continue → seed the profiles step from the config (networks + their
-        // chosen formats), then go to it.
-        if (event.target.closest("[data-clip-continue]")) {
-          const cur = clipStudio.getState(session.id);
-          if (!cur.profileSelection) {
-            clipStudio.setProfileSelection(
-              session.id,
-              getConnectedProfiles().map((p) => p.id),
-            );
-          }
-          clipStudio.goToProfiles(session.id);
-          return;
-        }
-        // Connect step (no account yet): a network card opens its dialog; the
-        // account it hands back is preselected so Create N drafts lights up.
-        const clipConnect = event.target.closest("[data-clip-connect]");
-        if (clipConnect) {
-          const platform = clipConnect.dataset.clipConnect;
-          openConnectAccountModal({
-            network: platform,
-            preselected: accountIdsForNetwork(platform),
-            onConfirm: (accounts) => {
-              if (!accounts.length) return;
-              clipStudio.setProfileSelection(
-                session.id,
-                accounts.map((a) => a.id),
-              );
-            },
-          });
-          return;
-        }
-        // Profiles step: back, per-network format override, finalize.
-        if (event.target.closest("[data-clip-back]")) {
-          clipStudio.backToClips(session.id);
-          return;
-        }
-        const netFmt = event.target.closest("[data-clip-netfmt]");
-        if (netFmt) {
-          clipStudio.setNetworkFormat(session.id, netFmt.dataset.clipNetfmt, netFmt.dataset.value);
-          return;
-        }
-        if (event.target.closest("[data-clip-finalize]")) {
-          finalizeClipStudio(session);
-          return;
-        }
-      }
-
       // Prompt-injection starters carry a `data-starter-prompt`. Coming-soon
       // teasers are non-interactive (no prompt, aria-disabled) — ignore clicks.
       if (starterBtn && starterBtn.dataset.starterPrompt != null) {
@@ -2664,12 +2381,10 @@ function bindSession(root, session) {
       const openClipsBtn = event.target.closest("[data-clip-card-open]");
       if (openClipsBtn) {
         event.preventDefault();
-        // flag clipsSpace: the clips open in the Clips space, the chat keeps them.
-        const src = isFlagOn("clipsSpace")
-          ? getSources(session.id).find((s) => s.id === openClipsBtn.dataset.clipCardOpen)
-          : null;
+        // The clips open in the Clips space, the chat keeps them.
+        const src = getSources(session.id).find((s) => s.id === openClipsBtn.dataset.clipCardOpen);
         if (src) {
-          import("./clips/open-in-clips.js?v=2928").then(({ openInClips }) => openInClips(session.id, src));
+          import("./clips/open-in-clips.js?v=2929").then(({ openInClips }) => openInClips(session.id, src));
           return;
         }
         openClipsPanel();
@@ -2897,10 +2612,9 @@ function bindSession(root, session) {
         // detection + the "connect this service first" prompt live, so adding
         // a link from the composer routes through it too. The scripted kinds
         // (pdf / video) still attach a demo source inline.
-        if (kind === "text" && !isDemo()) {
+        if (kind === "text") {
           openAddSourceModal({ tab: "pasteText", currentSessionId: session.id });
-        } else if (kind === "url" && !isDemo()) {
-          // The demo (flag demoMode) adds the brand's own page instead.
+        } else if (kind === "url") {
           openAddSourceModal({ tab: "url", currentSessionId: session.id });
         } else {
           startPillFromKind(root, session, kind);
@@ -3107,28 +2821,6 @@ function bindSession(root, session) {
       if (event.target.matches("[data-inline-question-search]")) {
         inlineQuestion.setSearch(session.id, event.target.value);
       }
-      // Clip Studio — instructions textarea. Store silently (mutate state
-      // without notify) so typing doesn't trigger a full aside re-render.
-      if (event.target.matches('[data-clip-config="instructions"]')) {
-        const cs = clipStudio.getState(session.id);
-        if (cs) cs.config.instructions = event.target.value;
-      }
-      // Clip Studio — profiles-step live search. Filter the rendered rows in
-      // place (no re-render → the field keeps focus); persist the query in
-      // state so a checkbox-toggle re-render re-applies it.
-      if (event.target.matches("[data-clip-profile-search]")) {
-        clipStudio.setProfileSearch(session.id, event.target.value);
-        const q = event.target.value.trim().toLowerCase();
-        const list = root.querySelector(".clip-studio__profiles");
-        let visible = 0;
-        list?.querySelectorAll("[data-search]").forEach((row) => {
-          const match = !q || row.dataset.search.includes(q);
-          row.classList.toggle("is-hidden", !match);
-          if (match) visible += 1;
-        });
-        const empty = list?.querySelector(".clip-studio__profiles-empty");
-        if (empty) empty.hidden = visible !== 0;
-      }
     },
     { signal },
   );
@@ -3139,42 +2831,10 @@ function bindSession(root, session) {
         contentState.sort = event.target.value;
         rerenderContentWorkspace(root, session);
       }
-      // Clip Studio — a video picked via the upload-stage file input.
-      if (event.target.matches("[data-clip-studio-file]") && event.target.files?.length) {
-        handleClipStudioFile(session, event.target.files[0]);
-      }
       // Batch Studio — one or more files picked via the upload file input.
       if (event.target.matches("[data-batch-file]") && event.target.files?.length) {
         handleBatchFiles(session, event.target.files);
         event.target.value = ""; // allow re-picking the same file
-      }
-      // Clip Studio — clip duration select.
-      if (event.target.matches('[data-clip-config="duration"]')) {
-        clipStudio.setConfig(session.id, { duration: event.target.value });
-      }
-      // Clip Studio — clip selection checkbox (review grid).
-      const selCb = event.target.closest("[data-clip-select]");
-      if (selCb) {
-        clipStudio.toggleClip(session.id, selCb.dataset.clipSelect);
-      }
-      // Clip Studio — profile selection checkbox (profiles step).
-      const profCb = event.target.closest("[data-clip-profile]");
-      if (profCb) {
-        clipStudio.toggleProfile(session.id, profCb.dataset.clipProfile);
-      }
-    },
-    { signal },
-  );
-
-  // Clip Studio — the upload-stage "Paste a URL" form submit.
-  root.addEventListener(
-    "submit",
-    (event) => {
-      if (event.target.closest("[data-clip-studio-url-form]")) {
-        event.preventDefault();
-        const input = root.querySelector("[data-clip-studio-url]");
-        const url = (input?.value || "").trim();
-        if (url) handleClipStudioUrl(session, url);
       }
     },
     { signal },

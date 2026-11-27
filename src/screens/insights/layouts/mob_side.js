@@ -13,20 +13,16 @@
 // navigation is not, because navigation for three items is a dropdown.
 //
 // The head is two lines, Monarch's own: the brand above, the objective below.
-// The Playbook's name is not decoration there — outside workspace mode
-// `playbookTitle` is the ONLY door to the scope in the whole app (pieces.js), so
-// a lecture that dropped it would make its brand unchangeable.
-//
-// In workspace mode that line renders nothing and the head is one line: the
-// objective's name, which is this page's real subject. Nothing to branch on —
-// the empty string just leaves the column.
+// The Playbook's name is not decoration there — `playbookTitle` is the ONLY
+// door to the scope in the whole app (pieces.js), so a lecture that dropped it
+// would make its brand unchangeable.
 //
 // The verbs stay in the head, never in the column: a 300px column grows
 // full-width buttons, and a button is never full-width here.
 
-import { playbookTitle, objectiveTitle, objectiveActions, esc } from "../pieces.js?v=2928";
-import { mountCharts } from "../charts.js?v=2928";
-import { readLede, readNotice, readMeasures, readPosts, readFacts } from "../read.js?v=2928";
+import { playbookTitle, objectiveTitle, objectiveActions, esc } from "../pieces.js?v=2929";
+import { mountCharts } from "../charts.js?v=2929";
+import { readLede, readNotice, readMeasures, readPosts, readFacts } from "../read.js?v=2929";
 
 export const id = "mob_side";
 export const label = "Mob · Side";

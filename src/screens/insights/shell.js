@@ -31,27 +31,27 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=2928";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2928";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=2928";
+import { html, raw } from "../../utils.js?v=2929";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2929";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=2929";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=2928";
-import { getPath, navigate } from "../../router.js?v=2928";
-import { isFlagOn } from "../../feature-flags.js?v=2928";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2928";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2928";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=2928";
-import { openNewPlaybookFlow } from "../../context-builder.js?v=2928";
-import { renderAvatar } from "../../social-profiles.js?v=2928";
-import { firstRunText, FIRST_RUN_BRAND } from "../home/lists.js?v=2928";
-import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=2928";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=2928";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=2928";
-import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=2928";
+} from "../../active-playbook.js?v=2929";
+import { getPath, navigate } from "../../router.js?v=2929";
+import { isFlagOn } from "../../feature-flags.js?v=2929";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2929";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2929";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=2929";
+import { openNewPlaybookFlow } from "../../context-builder.js?v=2929";
+import { renderAvatar } from "../../social-profiles.js?v=2929";
+import { firstRunText, FIRST_RUN_BRAND } from "../home/lists.js?v=2929";
+import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=2929";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=2929";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=2929";
+import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=2929";
 
 // ── Module state ──────────────────────────────────────────────────────────
 
@@ -90,10 +90,7 @@ let boundTarget = null;
 // brand with an empty Insights was a dead end: nothing on screen could re-point
 // the page off it.
 function renderEmptyPage(ctx) {
-  // `playbookTitle` is empty in workspace mode (pieces.js) — the rail is the
-  // switcher there, so the band has nothing to carry and an empty one would be
-  // a white 56px strip with a rule under it. The empty state carries its own
-  // title, so nothing takes its place.
+  // No Playbook, no band: the empty state carries its own title.
   const brand = ctx ? playbookTitle(ctx) : "";
   const head = brand ? `<header class="insights__band"><div class="insights__band-inner">${brand}</div></header>` : "";
   return head + renderEmpty(ctx);

@@ -12,21 +12,20 @@
 // objective, contentAction, ctaLinks, language, color, suggestions, editingId,
 // onComplete }.
 
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2928";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2928";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2929";
 import {
   analyzeWebsite,
   analyzeSocialProfiles,
   analyzeDocument,
   analyzeBrandFiles,
   analyzeInterview,
-} from "./context-mock-analysis.js?v=2928";
-import { cloneItems, ownNetworkVoices, voiceHasRules } from "./voice-parts.js?v=2928";
-import { markIntroSeen } from "./components/voice-intro-modal.js?v=2928";
-import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2928";
-import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2928";
-import { isFlagOn } from "./feature-flags.js?v=2928";
-import { createSessionNotifier } from "./store-utils.js?v=2928";
+} from "./context-mock-analysis.js?v=2929";
+import { cloneItems, ownNetworkVoices, voiceHasRules } from "./voice-parts.js?v=2929";
+import { markIntroSeen } from "./components/voice-intro-modal.js?v=2929";
+import { getConnectedProfiles, getConnectedProfileById } from "./social-profiles.js?v=2929";
+import { cloneVoiceByLanguage, DEFAULT_LANGUAGE } from "./languages.js?v=2929";
+import { isFlagOn } from "./feature-flags.js?v=2929";
+import { createSessionNotifier } from "./store-utils.js?v=2929";
 
 const drafts = new Map(); // sessionId → draft
 const notifier = createSessionNotifier("context-builder");
@@ -545,10 +544,6 @@ export function save(sessionId) {
   payload.voiceByLanguage = baseVbl;
 
   const saved = d.editingId ? updateContext(d.editingId, payload) : addContext(payload);
-  // A brand you just created is the brand you are in. Only on creation: editing
-  // the fiche you are already scoped to must not re-point the app, and editing
-  // another one from /contexts is not a request to switch.
-  if (!d.editingId && isWorkspaceMode() && saved) setActivePlaybook(saved.id);
   const onComplete = d.onComplete;
   drafts.delete(sessionId);
   notify(sessionId);
@@ -557,8 +552,7 @@ export function save(sessionId) {
 }
 
 // "Create a Playbook" from a screen of the app shell: the same run as a
-// first-time user's, straight to the brand (the intro and the demo are for the
-// first time); the recap hands back to `returnTo`.
+// first-time user's, straight to the brand (the intro is for the first time); the recap hands back to `returnTo`.
 export function openNewPlaybookFlow(returnTo) {
   window.location.hash = `#/welcome-alt/brand?new=${encodeURIComponent(returnTo || "/")}`;
 }

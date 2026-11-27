@@ -17,10 +17,10 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=2928";
-import { parseHashParams } from "../url-state.js?v=2928";
-import { escapeHtml as esc, newChatPath, prettyUrl } from "../utils.js?v=2928";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2928";
+import { navigate, getPath } from "../router.js?v=2929";
+import { parseHashParams } from "../url-state.js?v=2929";
+import { escapeHtml as esc, newChatPath, prettyUrl } from "../utils.js?v=2929";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2929";
 import {
   getContextById,
   getContexts,
@@ -28,15 +28,14 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=2928";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2928";
-import { mount, snapshotEditable, learnNetworkVoiceInline } from "../playbook-view.js?v=2928";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2928";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2928";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2928";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2928";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2928";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=2928";
+} from "../contexts-store.js?v=2929";
+import { mount, snapshotEditable, learnNetworkVoiceInline } from "../playbook-view.js?v=2929";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2929";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2929";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2929";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2929";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2929";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=2929";
 import {
   canView,
   canEdit,
@@ -48,11 +47,11 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=2928";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2928";
-import { showToast } from "../components/toast.js?v=2928";
-import { learnNetworkVoice } from "../voice-parts.js?v=2928";
-import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2928";
+} from "../playbook-access.js?v=2929";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2929";
+import { showToast } from "../components/toast.js?v=2929";
+import { learnNetworkVoice } from "../voice-parts.js?v=2929";
+import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2929";
 
 const AUTOFILL_MS = 1500;
 
@@ -83,9 +82,7 @@ function toast(msg) {
 // fiche's own header with its facts line, not in the bar's avatar + main-text
 // slot — the facts line alone under the bar didn't hold as a header.
 function buildTopbarLeft() {
-  const back = isWorkspaceMode() ? catalogueRoute() : "/contexts";
-  const backLabel = isWorkspaceMode() ? "Back to all Playbooks" : "Back to Playbooks";
-  return renderIconBack(back, backLabel);
+  return renderIconBack("/contexts", "Back to Playbooks");
 }
 
 function buildTopbarActions(ctx) {
@@ -162,7 +159,7 @@ export function renderPlaybook(params, target) {
   // A Playbook that isn't mine and isn't shared is not a 404 — it exists, I
   // just can't be here. Same exit either way.
   if (!guard || !canView(guard)) {
-    navigate(catalogueRoute());
+    navigate("/contexts");
     return () => {};
   }
 
@@ -322,7 +319,7 @@ export function renderPlaybook(params, target) {
         if (ctx && !isMine(ctx)) toast(`${ownerName(ctx)} will be notified.`);
         deleteContext(id);
         toast("Playbook deleted");
-        navigate(catalogueRoute());
+        navigate("/contexts");
       },
     });
   }
@@ -385,12 +382,6 @@ export function renderPlaybook(params, target) {
 
     if (event.target.closest("[data-playbook-start]")) {
       closeMenus();
-      // In workspace mode, starting a chat from a fiche is also the shortest
-      // way to change brand — the chat would otherwise belong to a Playbook the
-      // rail says you are not in, and the two would contradict each other on
-      // screen. So the switch happens first; the `?contextId=` then merely
-      // restates it.
-      if (isWorkspaceMode()) setActivePlaybook(id);
       navigate(`${newChatPath()}?contextId=${id}`);
       return true;
     }
@@ -404,7 +395,7 @@ export function renderPlaybook(params, target) {
         // allowed to be here.
         onDone: () => {
           const ctx = getContextById(id);
-          if (!ctx || !canView(ctx)) navigate(catalogueRoute());
+          if (!ctx || !canView(ctx)) navigate("/contexts");
           else remount();
         },
       });

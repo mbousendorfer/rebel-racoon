@@ -1,24 +1,22 @@
 // The Top posts repurpose screen as the session hosts it: its steps, the
 // winners picker, and its Playbook control. Moved out of session.js, unchanged.
 
-import { isWorkspaceMode } from "../../active-playbook.js?v=2928";
-import { usableContexts } from "../../playbook-access.js?v=2928";
-import { escapeHtml, html, raw } from "../../utils.js?v=2928";
-import * as topPostsFlow from "../../top-posts-flow.js?v=2928";
-import { renderEmptyState } from "../../components/empty-state.js?v=2928";
-import { profileForNetwork } from "../../social-profiles.js?v=2928";
-import { renderPicker } from "../_analyse-common.js?v=2928";
-import * as inlineQuestion from "../../inline-question.js?v=2928";
-import { getContextById } from "../../contexts-store.js?v=2928";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=2928";
-import { TOP_POSTS_LIMIT, renderTopPostsBoard } from "../../components/top-post-card.js?v=2928";
-import { dotColorVar } from "../session.js?v=2928";
+import { usableContexts } from "../../playbook-access.js?v=2929";
+import { escapeHtml, html, raw } from "../../utils.js?v=2929";
+import * as topPostsFlow from "../../top-posts-flow.js?v=2929";
+import { renderEmptyState } from "../../components/empty-state.js?v=2929";
+import { profileForNetwork } from "../../social-profiles.js?v=2929";
+import { renderPicker } from "../_analyse-common.js?v=2929";
+import * as inlineQuestion from "../../inline-question.js?v=2929";
+import { getContextById } from "../../contexts-store.js?v=2929";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=2929";
+import { TOP_POSTS_LIMIT, renderTopPostsBoard } from "../../components/top-post-card.js?v=2929";
+import { dotColorVar } from "../session.js?v=2929";
 
 // Playbook picker for the top-posts step 1 (account screen) — the chosen
 // Playbook governs the voice of the repurposed drafts. Mirrors the batch / clip
 // playbook controls; routes through the `data-topposts-playbook-pick` delegate.
 function renderTopPostsPlaybookControl(ctx) {
-  if (isWorkspaceMode()) return "";
   const playbooks = usableContexts();
   const items = playbooks
     .map((c) => {

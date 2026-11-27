@@ -52,18 +52,13 @@
 // gets for free, and a link still lands straight on a fiche.
 //
 // The brand switcher lives on the INDEX only, deliberately. `playbookTitle` is
-// the app's only door to the scope outside workspace mode (pieces.js), and the
+// the app's only door to the scope (pieces.js), and the
 // fiche is one permanently visible crumb away from it — the same escape Asana
 // and Monarch give their goal pages. A second switcher on the fiche would be two
 // controls that can disagree, which is the failure that note warns about.
-//
-// In workspace mode there is no switcher here at all — the rail is the door —
-// so the band goes with it and `Objectives` takes the top of the page. See the
-// two-heads note in `renderIndex`.
 
 import {
   playbookTitle,
-  pageTitle,
   tierCounts,
   statusPill,
   originMark,
@@ -71,9 +66,9 @@ import {
   trendGlyph,
   postsMovedLine,
   esc,
-} from "../pieces.js?v=2928";
-import { trendSpec, mountCharts } from "../charts.js?v=2928";
-import { readHero, readNotice, readMeasures, readPosts } from "../read.js?v=2928";
+} from "../pieces.js?v=2929";
+import { trendSpec, mountCharts } from "../charts.js?v=2929";
+import { readHero, readNotice, readMeasures, readPosts } from "../read.js?v=2929";
 
 export const id = "mob_index";
 export const label = "Mob · Index";
@@ -183,41 +178,19 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
   // cards below them, so they belong to the row that names those cards
   // ("Objectives 4") rather than to the row that names the brand.
   //
-  // ⚠️ TWO HEADS, and which one is on screen is the WORKSPACE FLAG's answer.
-  //
-  // Flag ON — no band at all. `playbookTitle` renders nothing (pieces.js): the
-  // rail carries the brand permanently, so a white 87px strip re-printing it
-  // above the topbar's own "Insights" pushed the page's actual subject below
-  // the fold of attention. So `Objectives` IS the page title — the h2 rung the
-  // brand name had, with the counts beside it and the rollup's one sentence
-  // under it, the way a title carries a description.
-  //
-  // Flag OFF — the band stays exactly as it was, because the brand name in it
-  // is the only Playbook switcher the app has outside workspace mode, and
-  // `Objectives` goes back to being a section title over the list.
-  //
-  // Either way: NOT a KPI strip — no tile, no new figure, nothing restated.
-  const brand = playbookTitle(ctx);
-  const head = brand
-    ? `<header class="insights__band">
+  // The band carries the brand name — the only Playbook switcher the app has —
+  // and `Objectives` is a section title over the list. NOT a KPI strip — no
+  // tile, no new figure, nothing restated.
+  const head = `<header class="insights__band">
       <div class="insights__band-inner">
-        ${brand}
+        ${playbookTitle(ctx)}
         ${postsMovedLine(rollup)}
       </div>
-    </header>`
-    : "";
-  const listhead = brand
-    ? `<div class="ins-mob_index__listhead">
+    </header>`;
+  const listhead = `<div class="ins-mob_index__listhead">
           <h3 class="ins-section-title">Objectives <span class="ap-counter normal grey">${entries.length}</span></h3>
           ${tierCounts(rollup)}
-        </div>`
-    : `<header class="ins-mob_index__pagehead">
-          <div class="ins-mob_index__listhead">
-            ${pageTitle("Objectives", { count: entries.length })}
-            ${tierCounts(rollup)}
-          </div>
-          ${postsMovedLine(rollup)}
-        </header>`;
+        </div>`;
 
   return `${head}
     <div class="ins-mob_index">
@@ -239,8 +212,7 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
 //
 // ⚠️ THE CRUMB IS IN THE TOPBAR. It used to be the first line of this band — a
 // ghost `‹ Objectives` button, on the argument that the topbar carried no back
-// control. It does: `/playbook`, `/topics/settings` and the account-scope routes
-// all lead with one, and the repurposing board's `‹ Change profile` is the same
+// control. It does: `/playbook` and `/topics/settings` both lead with one, and the repurposing board's `‹ Change profile` is the same
 // treatment. So this reading's way back is declared where the app keeps every
 // other way back (`backTargetFor` in topbar.js, keyed off `?objective=`), and
 // the page's first line is the objective's name — the subject, not the exit.

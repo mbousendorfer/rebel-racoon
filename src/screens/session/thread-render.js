@@ -4,7 +4,7 @@
 // prompt) render here. The pure, dependency-free turns stay in thread-turns.js.
 // Moved out of session.js, unchanged.
 
-import { sessionPlaybookId } from "../../active-playbook.js?v=2928";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2929";
 import {
   renderExtractingNotice,
   renderSourceIntakeTurn,
@@ -14,26 +14,26 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2928";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2928";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2928";
-import { getTopPost } from "../../top-posts-store.js?v=2928";
-import { getTopicById } from "../../topics-store.js?v=2928";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2928";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2928";
-import { escapeHtml, formatDayLabel, formatTimeOfDay, plural } from "../../utils.js?v=2928";
-import { getIdeas } from "../../library.js?v=2928";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2928";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2928";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2928";
-import { getPlans } from "../../post-plan-store.js?v=2928";
-import { isFlagOn } from "../../feature-flags.js?v=2928";
-import { CURRENT_USER } from "../../org.js?v=2928";
-import { getContextById } from "../../contexts-store.js?v=2928";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2928";
-import { getFocusKey } from "../../components/right-panel.js?v=2928";
-import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2928";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2928";
+} from "./thread-turns.js?v=2929";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2929";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2929";
+import { getTopPost } from "../../top-posts-store.js?v=2929";
+import { getTopicById } from "../../topics-store.js?v=2929";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2929";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2929";
+import { escapeHtml, formatDayLabel, formatTimeOfDay, plural } from "../../utils.js?v=2929";
+import { getIdeas } from "../../library.js?v=2929";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2929";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2929";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2929";
+import { getPlans } from "../../post-plan-store.js?v=2929";
+import { isFlagOn } from "../../feature-flags.js?v=2929";
+import { CURRENT_USER } from "../../org.js?v=2929";
+import { getContextById } from "../../contexts-store.js?v=2929";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2929";
+import { getFocusKey } from "../../components/right-panel.js?v=2929";
+import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2929";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2929";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -53,11 +53,10 @@ function contentCard({ kind, key, ids, title, sub, cta, icon }) {
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
-  if (isFlagOn("newConversationStyles")) return renderTwoSides(turns);
-  return turns.map(([, html]) => html).join("");
+  return renderTwoSides(turns);
 }
 
-// ─── New conversation styles (flag newConversationStyles) ───────────────────
+// ─── The thread in two sides ────────────────────────────────────────────────
 // Figma "Conversation styles" § E. An avatar column, mirrored: Archie's disc
 // on the left, yours on the right, each on the first line of its turn, the
 // content beside it — one content edge per side, whatever the turn (text,
@@ -148,7 +147,6 @@ function alignTurnAvatars(scope) {
 }
 
 export function watchTurnAvatars(root) {
-  if (!isFlagOn("newConversationStyles")) return () => {};
   let pending = false;
   let live = true;
   const schedule = () => {
@@ -738,15 +736,13 @@ function renderClipExtractionTurn(message, sessionId) {
   if (!isReady) {
     // Live stage label from the extraction ticker (sources-stream); falls back
     // to a generic line before the first tick lands.
-    const convNew = isFlagOn("newConversationStyles");
-    const stage = source.clipStage || (convNew ? "Cutting your clips…" : "Cutting your clips");
+    const stage = source.clipStage || "Cutting your clips…";
     return `
       <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
         ${renderResultCard({
           state: "pending",
           busyLabel: stage,
-          // OFF (Monday): the stage carries no ellipsis, the title adds it.
-          title: convNew ? stage : `${stage}…`,
+          title: stage,
           sub: "Turning your video into clips. You can keep chatting meanwhile.",
         })}
       </div>
@@ -773,7 +769,7 @@ function renderClipExtractionTurn(message, sessionId) {
     <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
       ${renderResultCard({
         state: "ready",
-        icon: isFlagOn("newConversationStyles") ? "ap-icon-video" : undefined,
+        icon: "ap-icon-video",
         title: titleLabel,
         sub: `From <span class="drafts-card__sub-quote">${filename}</span>`,
         cta: { label: "Open clips" },
@@ -796,7 +792,7 @@ function renderIdeaExtractionTurn(message, sessionId) {
         ${renderResultCard({
           state: "pending",
           busyLabel: "Reading video for ideas",
-          title: isFlagOn("newConversationStyles") ? "Extracting ideas from content…" : "Reading the video for ideas…",
+          title: "Extracting ideas from content…",
           sub: "About 15s. You can keep chatting.",
         })}
       </div>

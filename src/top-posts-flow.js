@@ -32,10 +32,10 @@ import {
   postUserTurn,
   postUserProfilesTurn,
   reportDraftFailure,
-} from "./assistant.js?v=2928";
-import { getTopPosts, getTopPost } from "./top-posts-store.js?v=2928";
-import { addPostDraft } from "./posts-store.js?v=2928";
-import { addReadySource } from "./sources-stream.js?v=2928";
+} from "./assistant.js?v=2929";
+import { getTopPosts, getTopPost } from "./top-posts-store.js?v=2929";
+import { addPostDraft } from "./posts-store.js?v=2929";
+import { addReadySource } from "./sources-stream.js?v=2929";
 import {
   getConnectedProfiles,
   BRAND_INITIALS,
@@ -45,13 +45,13 @@ import {
   networkMeta,
   normalizeNetwork,
   getConnectedProfileById,
-} from "./social-profiles.js?v=2928";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2928";
-import { requireNetworkVoices } from "./network-voice-flow.js?v=2928";
-import { withPendingChip } from "./draft-flow.js?v=2928";
-import { SORTS, PERIODS } from "./components/top-post-card.js?v=2928";
-import * as inlineQuestion from "./inline-question.js?v=2928";
-import { playbookForNewWork } from "./active-playbook.js?v=2928";
+} from "./social-profiles.js?v=2929";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2929";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2929";
+import { withPendingChip } from "./draft-flow.js?v=2929";
+import { SORTS, PERIODS } from "./components/top-post-card.js?v=2929";
+import * as inlineQuestion from "./inline-question.js?v=2929";
+import { playbookForNewWork } from "./active-playbook.js?v=2929";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;
@@ -331,10 +331,8 @@ export function startTopPostsFlow(sessionId) {
     requireConnectedProfiles(sessionId, { stepLabel: "Account", onReady: () => startTopPostsFlow(sessionId) });
     return;
   }
-  // Pre-select the Playbook the drafts will be written in — the active one in
-  // workspace mode, the default otherwise. Step 1's account screen lets the
-  // user switch it (setContext) only in the latter: with a rail switcher the
-  // brand was already chosen, and the screen just names it.
+  // Pre-select the Playbook the drafts will be written in — the default. Step
+  // 1's account screen lets the user switch it (setContext).
   repurposeContexts.set(sessionId, playbookForNewWork()?.id || null);
   // Step 1 is the full-page profile chooser: pick a connected profile → load its
   // winners → a board scoped to that profile.

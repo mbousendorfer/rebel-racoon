@@ -6,16 +6,16 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { newId } from "./utils.js?v=2928";
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2928";
-import { findConnector } from "./connectors-store.js?v=2928";
-import { createSessionNotifier } from "./store-utils.js?v=2928";
-import { addPostDraft } from "./posts-store.js?v=2928";
-import { showToast } from "./components/toast.js?v=2928";
-import { isFlagOn, isNewStartOn } from "./feature-flags.js?v=2928";
-import { getContexts } from "./contexts-store.js?v=2928";
-import { offerMentions } from "./mention-flow.js?v=2928";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2928";
+import { newId } from "./utils.js?v=2929";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2929";
+import { findConnector } from "./connectors-store.js?v=2929";
+import { createSessionNotifier } from "./store-utils.js?v=2929";
+import { addPostDraft } from "./posts-store.js?v=2929";
+import { showToast } from "./components/toast.js?v=2929";
+import { isFlagOn, isNewStartOn } from "./feature-flags.js?v=2929";
+import { getContexts } from "./contexts-store.js?v=2929";
+import { offerMentions } from "./mention-flow.js?v=2929";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2929";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -110,12 +110,12 @@ export function sendMessage(sessionId, text, options = {}) {
   thread.push({
     id: reasoningId,
     role: "system",
-    // Flag newConversationStyles: the prod copy, past tense once done. OFF = Monday.
-    meta: isFlagOn("newConversationStyles") ? "Thinking…" : "Thinking",
+    // The prod copy, past tense once done.
+    meta: "Thinking…",
     variant: "mermaid",
-    // Flag ON: the duration only, nothing to unfold — prod doesn't ask the
+    // The duration only, nothing to unfold — prod doesn't ask the
     // model for its thoughts (cost, raw English, internal tool names).
-    text: isFlagOn("newConversationStyles") ? "" : "Analyzing your request and sources…",
+    text: "",
     open: false,
     status: "loading",
     createdAt: Date.now(),
@@ -136,12 +136,10 @@ export function sendMessage(sessionId, text, options = {}) {
     const reply = mockAiReply({ prompt: text, sessionId });
     const reasoning = thread.find((m) => m.id === reasoningId);
     if (reasoning) {
-      if (!isFlagOn("newConversationStyles")) reasoning.text = reply.reasoning;
       reasoning.status = "ready";
       // Present tense while working, past tense once done — the same pair as
       // "Extracting" → "Extracted 2 ideas".
-      if (reasoning.meta === "Thinking…" && isFlagOn("newConversationStyles"))
-        reasoning.meta = `Thought for ${Math.round(delay / 1000)}s`;
+      if (reasoning.meta === "Thinking…") reasoning.meta = `Thought for ${Math.round(delay / 1000)}s`;
       reasoning.open = false; // collapse after the answer lands
     }
     const replyMsg = thread.find((m) => m.id === replyId);
@@ -220,7 +218,7 @@ export function sendConnectorMessage(sessionId, connectorId, text) {
     if (reasoning) {
       reasoning.text = reply.reasoning;
       reasoning.status = "ready";
-      if (isFlagOn("newConversationStyles")) reasoning.meta = `Searched ${connector.name}`;
+      reasoning.meta = `Searched ${connector.name}`;
       reasoning.open = false;
     }
     const replyMsg = thread.find((m) => m.id === replyId);
@@ -248,10 +246,10 @@ export function postAssistantMessage(sessionId, text, { meta = "Archie" } = {}) 
   notify(sessionId);
 }
 
-// A job Archie couldn't finish (draft generation threw). With the new
-// conversation styles it stays in the thread as a failed card — what failed,
-// what it means, Retry — instead of a toast that vanishes after 6s. Retry is a
-// closure, so it lives beside the thread, keyed by the turn id.
+// A job Archie couldn't finish (draft generation threw). It stays in the
+// thread as a failed card — what failed, what it means, Retry — instead of a
+// toast that vanishes after 6s. Retry is a closure, so it lives beside the
+// thread, keyed by the turn id.
 const failedRetries = new Map();
 
 // What failed, when it's known. When it isn't (the backend's bare "unexpected
@@ -265,14 +263,6 @@ export const GENERIC_FAILURE = { title: "Something went wrong on my side", text:
 export function reportDraftFailure(sessionId, err, retry, source = "draft-flow", copy = DRAFT_FAILURE) {
   // eslint-disable-next-line no-console
   console.error(`${source}: draft generation failed`, err);
-  if (!isFlagOn("newConversationStyles")) {
-    showToast(`${copy.title}.`, {
-      variant: "error",
-      duration: 6000,
-      action: { label: "Retry", onClick: retry },
-    });
-    return;
-  }
   const id = newId("m");
   failedRetries.set(id, retry);
   getThread(sessionId).push({
@@ -414,11 +404,11 @@ export function postExtractionResult(sessionId, { filename, ideas }) {
 export function startPending(sessionId, meta = null, tools = null) {
   const thread = getThread(sessionId);
   const id = newId("m");
-  // New conversation styles: the work shows the tools it runs, the way the prod
+  // The work shows the tools it runs, the way the prod
   // thread does (chat-thread.component toActivityGroup) — "Extracting ideas…"
   // while it runs, "Extracted ideas · 2s" / "Ran 2 tools · 3s" once done, and
   // the activity stays in the thread. Otherwise the transient pending marker.
-  if (tools && isFlagOn("newConversationStyles")) {
+  if (tools) {
     tools = tools.filter((tool) => TOOL_LABELS[tool]);
     // Only hidden steps: nothing to show, the caller's finishPending no-ops.
     if (!tools.length) return id;
@@ -463,9 +453,8 @@ export function finishPending(sessionId, id) {
 }
 
 // A config step the prod logs as a finished tool at once ("Set Angle Mix ·
-// 0.0s", "Set Publishing Accounts · 0.0s"). Nothing to show without the flag.
+// 0.0s", "Set Publishing Accounts · 0.0s").
 export function postActivity(sessionId, tools) {
-  if (!isFlagOn("newConversationStyles")) return;
   finishPending(sessionId, startPending(sessionId, null, tools));
 }
 
@@ -735,23 +724,21 @@ export function postClipExtractionTurn(sessionId, { sourceId, filename }) {
     status: "ready",
     createdAt: Date.now(),
   });
-  // New conversation styles: ready, the card arrives at the bottom of the
-  // thread — where it was running — as a new turn, not back up where the work
-  // was launched (the user kept chatting; that spot is out of view).
-  if (isFlagOn("newConversationStyles")) {
-    const isReady = () => getSources(sessionId).find((s) => s.id === sourceId)?.clipExtractionStatus === "ready";
-    if (!isReady()) {
-      const stop = subscribeSources(sessionId, () => {
-        if (!isReady()) return;
-        stop();
-        const i = thread.findIndex((m) => m.id === id);
-        if (i < 0) return;
-        const [turn] = thread.splice(i, 1);
-        turn.createdAt = Date.now();
-        thread.push(turn);
-        notify(sessionId);
-      });
-    }
+  // Ready, the card arrives at the bottom of the thread — where it was running
+  // — as a new turn, not back up where the work was launched (the user kept
+  // chatting; that spot is out of view).
+  const isReady = () => getSources(sessionId).find((s) => s.id === sourceId)?.clipExtractionStatus === "ready";
+  if (!isReady()) {
+    const stop = subscribeSources(sessionId, () => {
+      if (!isReady()) return;
+      stop();
+      const i = thread.findIndex((m) => m.id === id);
+      if (i < 0) return;
+      const [turn] = thread.splice(i, 1);
+      turn.createdAt = Date.now();
+      thread.push(turn);
+      notify(sessionId);
+    });
   }
   notify(sessionId);
   return id;
@@ -924,14 +911,6 @@ function notify(sessionId) {
 }
 
 function seedThread(sessionId) {
-  // Clip Studio sessions (clip-studio-*) own their own full-page flow and open
-  // empty above the grid, whichever read (topbar / status card / panel)
-  // triggers the seed first.
-  if (sessionId.startsWith("clip-studio-")) {
-    threads.set(sessionId, []);
-    return;
-  }
-
   // Demo sessions ship with a scripted thread so opening one looks like
   // a real, mid-flight conversation (source intakes + extractions +
   // user prompt + draft result). Materialised lazily on first read:

@@ -1,4 +1,4 @@
-// /clips — the Clips space's library (flag clipsSpace): the active Playbook's
+// /clips — the Clips space's library: the active Playbook's
 // videos, and the way in, adding one. The flow starts with the video; the
 // clips page comes next (screens/clips/project.js).
 //
@@ -9,14 +9,12 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2928";
-import { isFlagOn } from "../../feature-flags.js?v=2928";
-import { renderTopbar } from "../../components/topbar.js?v=2928";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2928";
-import { isDemo } from "../../demo-mode.js?v=2928";
-import { getPosts } from "../../posts-store.js?v=2928";
-import { escapeHtml, plural } from "../../utils.js?v=2928";
-import { renderAvatar } from "../../social-profiles.js?v=2928";
+import { navigate } from "../../router.js?v=2929";
+import { renderTopbar } from "../../components/topbar.js?v=2929";
+import { playbookForNewWork } from "../../active-playbook.js?v=2929";
+import { getPosts } from "../../posts-store.js?v=2929";
+import { escapeHtml, plural } from "../../utils.js?v=2929";
+import { renderAvatar } from "../../social-profiles.js?v=2929";
 import {
   getVideos,
   exampleVideo,
@@ -26,7 +24,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2928";
+} from "../../videos-store.js?v=2929";
 import {
   fmtMs,
   previewMarkup,
@@ -39,7 +37,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2928";
+} from "./shared.js?v=2929";
 
 let target = null;
 let disposeShowcase = null;
@@ -47,10 +45,6 @@ let signature = "";
 const disposers = [];
 
 export function renderClipsLibrary(_params, el) {
-  if (!isFlagOn("clipsSpace")) {
-    navigate("/");
-    return undefined;
-  }
   renderTopbar();
   target = el;
   paint();
@@ -64,7 +58,7 @@ export function renderClipsLibrary(_params, el) {
   el.addEventListener("drop", onDrop);
   el.addEventListener("pointerover", onHover);
   el.addEventListener("pointerout", onHover);
-  disposers.push(subscribeVideos(onStore), subscribeScope(paint), bindSelectDismiss(el));
+  disposers.push(subscribeVideos(onStore), bindSelectDismiss(el));
   return () => {
     el.removeEventListener("click", onClick);
     el.removeEventListener("submit", onSubmit);
@@ -149,8 +143,6 @@ const ready = () => !!add.file || !!add.url.trim();
 // alone in the left corner went unseen) and the CTA. The CTA is never a pale disabled button:
 // clicked with nothing added, it says so under the box.
 function renderAddBox() {
-  const demo = isDemo();
-  const off = demo ? "disabled" : "";
   const f = add.file;
   const body = f
     ? `<div class="clips-box__staged">
@@ -159,18 +151,18 @@ function renderAddBox() {
         <button type="button" class="ap-button ghost grey" data-clips-unstage><i class="ap-icon-close" aria-hidden="true"></i><span>Remove</span></button>
       </div>`
     : `<div class="clips-box__ways">
-        <div class="clips-box__drop" data-clips-browse${demo ? ' aria-disabled="true"' : ""}>
+        <div class="clips-box__drop" data-clips-browse>
           <i class="ap-icon-upload clips-box__drop-icon" aria-hidden="true"></i>
           <span class="clips-box__drop-text">
             <span class="clips-box__drop-title">Drop your video here</span>
             <span class="clips-box__rules">${RULES}</span>
           </span>
-          <button type="button" class="ap-button stroked grey" data-clips-browse ${off}><span>Upload a video</span></button>
+          <button type="button" class="ap-button stroked grey" data-clips-browse><span>Upload a video</span></button>
         </div>
         <div class="clips-box__or" aria-hidden="true"><span>or</span></div>
         <div class="clips-box__yt">
           <div class="ap-input-group clips-box__link"><i class="ap-icon-youtube-official" aria-hidden="true"></i>
-            <input id="clipsUrl" type="url" data-clips-url aria-label="YouTube link" placeholder="Paste a YouTube link" value="${escapeHtml(add.url)}" ${off} /></div>
+            <input id="clipsUrl" type="url" data-clips-url aria-label="YouTube link" placeholder="Paste a YouTube link" value="${escapeHtml(add.url)}" /></div>
           <p class="clips-box__rules" data-clips-rights ${add.url.trim() ? "" : "hidden"}>Using a video you don't own may violate copyright laws. By continuing, you confirm this is your own content.</p>
         </div>
       </div>`;
@@ -216,15 +208,14 @@ function renderAddBox() {
       <input type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" data-clips-file hidden />
       ${specific}
       <p class="ap-form-message error clips-hero__error" id="clipsAddError" role="alert" hidden></p>
-      ${demo ? `<p class="clips-box__rules">The demo works with its own videos: adding one of yours is off.</p>` : ""}
       ${
         add.specific
           ? ""
           : `<footer class="clips-box__foot">
         <span class="clips-box__hint">One clip per 2 minutes of video, 3 to 10 clips.</span>
         <span class="clips-box__foot-end">
-          <button type="button" class="ap-button stroked grey" data-clips-specific="on" ${off}><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Looking for something specific?</span></button>
-          <button type="button" class="ap-button primary orange" data-clips-start ${off}>
+          <button type="button" class="ap-button stroked grey" data-clips-specific="on"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Looking for something specific?</span></button>
+          <button type="button" class="ap-button primary orange" data-clips-start>
             <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Find the best moments</span></button>
         </span>
       </footer>`
@@ -702,8 +693,7 @@ function clearAddError() {
 
 function onClick(e) {
   const t = e.target;
-  if (t.closest("[data-clips-browse]"))
-    return isDemo() ? undefined : target.querySelector("[data-clips-file]")?.click();
+  if (t.closest("[data-clips-browse]")) return target.querySelector("[data-clips-file]")?.click();
   if (t.closest("[data-clips-unstage]")) {
     add.file = null;
     return paintBox();
@@ -781,7 +771,7 @@ function onSubmit(e) {
 
 function onDragOver(e) {
   const zone = e.target.closest("[data-clips-drop]");
-  if (!zone || isDemo()) return;
+  if (!zone) return;
   e.preventDefault();
   zone.classList.add("is-dragover");
 }
@@ -792,7 +782,7 @@ function onDragLeave(e) {
 
 function onDrop(e) {
   const zone = e.target.closest("[data-clips-drop]");
-  if (!zone || isDemo()) return;
+  if (!zone) return;
   e.preventDefault();
   zone.classList.remove("is-dragover");
   const file = [...(e.dataTransfer?.files || [])].find((f) => f.type.startsWith("video/"));

@@ -1,29 +1,22 @@
-import { html, newChatPath, raw } from "../utils.js?v=2928";
-import { navigate, getPath } from "../router.js?v=2928";
-import { open as openBugReportModal } from "./bug-report-modal.js?v=2928";
-import { open as openFeedbackModal } from "./feedback-modal.js?v=2928";
-import { open as openSearchModal } from "./search-modal.js?v=2928";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2928";
-import { subscribe as subscribeSessions } from "../sessions-store.js?v=2928";
-import { isFlagOn } from "../feature-flags.js?v=2928";
-import { subscribe as subscribeContexts } from "../contexts-store.js?v=2928";
-import {
-  getActivePlaybook,
-  isWorkspaceMode,
-  playbookForNewWork,
-  catalogueRoute,
-  subscribe as subscribeScope,
-} from "../active-playbook.js?v=2928";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2928";
+import { html, newChatPath, raw } from "../utils.js?v=2929";
+import { navigate, getPath } from "../router.js?v=2929";
+import { open as openBugReportModal } from "./bug-report-modal.js?v=2929";
+import { open as openFeedbackModal } from "./feedback-modal.js?v=2929";
+import { open as openSearchModal } from "./search-modal.js?v=2929";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2929";
+import { subscribe as subscribeSessions } from "../sessions-store.js?v=2929";
+import { isFlagOn } from "../feature-flags.js?v=2929";
+import { subscribe as subscribeContexts } from "../contexts-store.js?v=2929";
+import { playbookForNewWork } from "../active-playbook.js?v=2929";
 // A Playbook nobody shared with me must not surface here either — the store
 // still holds it (see playbook-access.js), the sidebar just doesn't name it.
-import { visibleContexts } from "../playbook-access.js?v=2928";
-import { voicesToFinish } from "../voice-parts.js?v=2928";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2928";
-import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=2928";
-import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=2928";
-import { getVideos } from "../videos-store.js?v=2928";
-import { closePanel as closeRightPanel } from "./right-panel.js?v=2928";
+import { visibleContexts } from "../playbook-access.js?v=2929";
+import { voicesToFinish } from "../voice-parts.js?v=2929";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2929";
+import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=2929";
+import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=2929";
+import { getVideos } from "../videos-store.js?v=2929";
+import { closePanel as closeRightPanel } from "./right-panel.js?v=2929";
 import {
   deleteSidebarSession,
   matchSessionId,
@@ -31,9 +24,7 @@ import {
   renderRecentLists,
   startRenameSidebar,
   togglePinSidebar,
-} from "./sidebar/recent-chats.js?v=2928";
-import { renderPlaybookSwitcher, switchPlaybook } from "./sidebar/playbook-switcher.js?v=2928";
-import { renderDemoCard, confirmExitDemo } from "../demo-flow.js?v=2928";
+} from "./sidebar/recent-chats.js?v=2929";
 
 // Global app sidebar — Brand / + New conversation / Recent chats / User footer.
 // Rendered once at boot into #sidebar; re-rendered on every route change so the
@@ -115,10 +106,6 @@ export function setSidebarCollapsed(collapsed, { auto = false } = {}) {
   renderSidebar();
 }
 
-function closePlaybookSwitcher() {
-  document.querySelector("[data-pb-switcher][open]")?.removeAttribute("open");
-}
-
 function toggleSidebar() {
   setSidebarCollapsed(!isSidebarCollapsed());
 }
@@ -172,22 +159,8 @@ export function initSidebar() {
   if (shell && isSidebarCollapsed()) shell.classList.add("is-sidebar-collapsed");
 
   el.addEventListener("click", (event) => {
-    if (event.target.closest("[data-demo-exit]")) {
-      confirmExitDemo();
-      return;
-    }
     if (event.target.closest("[data-sidebar-toggle]")) {
       toggleSidebar();
-      return;
-    }
-    // The wordmark, in workspace mode, is the door to the level ABOVE the
-    // work: the account home — every brand, every chat, and a box to start
-    // from. Before the switcher there was no such level, which is why it used
-    // to mint a chat like the row under it; that is still the flag-OFF path
-    // below, and "New chat" keeps that job in both modes.
-    if (isWorkspaceMode() && event.target.closest("[data-sidebar-home]")) {
-      closeRightPanel();
-      navigate("/home");
       return;
     }
     if (event.target.closest("[data-sidebar-home]") || event.target.closest("[data-sidebar-new]")) {
@@ -206,33 +179,6 @@ export function initSidebar() {
     // the Search row intentionally isn't a route.
     if (event.target.closest("[data-sidebar-search-open]")) {
       openSearchModal();
-      return;
-    }
-    // Playbook switcher — pick a brand, or the two footer verbs. The <details>
-    // is closed by hand: picking re-renders the whole rail anyway, but
-    // "Manage" / "Create" navigate away and a re-render on arrival would
-    // otherwise bring the open dropdown back with it.
-    const pbPick = event.target.closest("[data-pb-switch-pick]");
-    if (pbPick) {
-      event.preventDefault();
-      closePlaybookSwitcher();
-      switchPlaybook(pbPick.dataset.pbSwitchPick);
-      return;
-    }
-    if (event.target.closest("[data-pb-switch-manage]")) {
-      event.preventDefault();
-      closePlaybookSwitcher();
-      // The catalogue is the home's Playbooks TAB in this mode — through the
-      // helper, which carries it, rather than a bare `/home` that would open on
-      // Chats under a control labelled "All playbooks".
-      navigate(catalogueRoute());
-      return;
-    }
-    if (event.target.closest("[data-pb-switch-create]")) {
-      // Same run as /contexts' "New Playbook", handing back to the library.
-      event.preventDefault();
-      closePlaybookSwitcher();
-      openNewPlaybookFlow(catalogueRoute());
       return;
     }
     const navItem = event.target.closest("[data-sidebar-nav]");
@@ -332,21 +278,10 @@ export function initSidebar() {
     }
   });
 
-  // A <details> doesn't close itself on an outside click, and this one is the
-  // one dropdown in the rail that survives a click on the page (the row menus
-  // are re-rendered away by navigation).
-  document.addEventListener("click", (event) => {
-    const open = el.querySelector("[data-pb-switcher][open]");
-    if (open && !open.contains(event.target)) open.removeAttribute("open");
-  });
-
   // Live-rerender on store mutations so the nav counters and any context
   // colors used by session rows stay in sync without waiting for the next
   // route change.
   subscribeContexts(() => renderSidebar());
-  // The switcher prints the active brand and the list under it is scoped to
-  // that brand, so a scope change repaints the whole rail.
-  subscribeScope(() => renderSidebar());
   subscribeSessions(() => renderSidebar());
   subscribeConnectors(() => renderSidebar());
   // A Topic used or ignored anywhere has to move the unread mark immediately —
@@ -458,8 +393,6 @@ export function renderSidebar() {
         </button>
       </div>
 
-      ${raw(renderPlaybookSwitcher({ collapsed: true }))}
-
       <nav class="app-sidebar__nav" aria-label="Main navigation">${raw(renderNav(path))}</nav>
 
       <div class="app-sidebar__list-spacer"></div>
@@ -488,8 +421,6 @@ export function renderSidebar() {
       </button>
     </div>
 
-    ${raw(renderPlaybookSwitcher({ collapsed: false }))}
-
     <nav class="app-sidebar__nav" aria-label="Main navigation">${raw(renderNav(path))}</nav>
 
     ${raw(renderOrganizeHeader())}
@@ -497,7 +428,6 @@ export function renderSidebar() {
     <div class="app-sidebar__list" aria-label="Recent chats">${raw(renderRecentLists(activeSessionId))}</div>
 
     <div class="app-sidebar__foot">
-      ${raw(renderDemoCard())}
       <div class="app-sidebar__user">
         <div class="ap-avatar size-32">MB</div>
         <div class="app-sidebar__user-meta">
@@ -619,10 +549,6 @@ const NAV = [
     count: () => visibleContexts().reduce((n, c) => n + voicesToFinish(c).length, 0),
     tone: "orange",
   },
-  // ⚠️ In workspace mode that row is REPLACED, not kept — see workspaceNav().
-  // "Playbooks 8" was the only row in a one-brand rail whose destination talked
-  // about the seven others, and a second door to them beside the switcher —
-  // one that didn't admit it changed scope.
   {
     path: "/connectors",
     icon: "ap-icon-view-grid",
@@ -640,9 +566,9 @@ const NAV = [
   // Scoped to the default Playbook rather than summed across every one, because
   // the feed itself is scoped: a count that spans four brands would send the
   // reader to a screen showing one of them. Which Playbook that is comes from
-  // playbookForNewWork(): the active one in workspace mode, the default
-  // otherwise — the same resolution the feed itself uses, so the count and the
-  // screen it sends you to can never name two different brands.
+  // playbookForNewWork(), the default — the same resolution the feed itself
+  // uses, so the count and the screen it sends you to can never name two
+  // different brands.
   // Insights — the one analytics surface you walk to. NO COUNTER, deliberately:
   // the row above reads "Playbooks 7" — a count of THINGS — so an identically
   // styled "Insights 5" gets read as five insights rather than five objectives
@@ -655,7 +581,7 @@ const NAV = [
     flag: "insightsHub",
     match: (p) => p.startsWith("/insights"),
   },
-  // Clips (flag clipsSpace) — the brand's video library. A count of THINGS,
+  // Clips — the brand's video library. A count of THINGS,
   // like Playbooks: the videos of the Playbook the space is scoped to.
   {
     path: "/clips",
@@ -663,7 +589,6 @@ const NAV = [
     label: "Clips",
     hint: "Turn a long video into clips, framed and subtitled, then into drafts",
     countLabel: (n) => `${n} video${n === 1 ? "" : "s"}`,
-    flag: "clipsSpace",
     match: (p) => p === "/clips" || p.startsWith("/clips/"),
     count: () => getVideos(playbookForNewWork()?.id).length,
   },
@@ -683,36 +608,6 @@ const NAV = [
     },
   },
 ];
-
-// The nav, in workspace mode: the catalogue row becomes THIS brand's fiche.
-//
-// Singular, no counter — a count of one is noise, and the 8 it used to print
-// was the cross-brand leak. It is also the honest frequency: while you work you
-// open the fiche of the brand you are in (voice, audience, brand) far more often
-// than the list of all of them, which you open to switch, create or delete. The
-// list moved up to the switcher's footer ("All playbooks"), the one control that
-// announces it changes scope.
-//
-// No active Playbook (new-alt, nothing created yet) → no row at all: the
-// switcher is already rendering the offer to create the first one.
-function workspaceNav(items) {
-  if (!isWorkspaceMode()) return items;
-  const active = getActivePlaybook();
-  const fiche = active ? `/playbook/${active.id}` : null;
-  return items
-    .map((item) => {
-      if (item.path !== "/contexts") return item;
-      if (!fiche) return null;
-      return {
-        path: fiche,
-        icon: "ap-icon-target",
-        label: "Playbook",
-        hint: "This Brand's voice, audience, and look",
-        match: (p) => p === fiche,
-      };
-    })
-    .filter(Boolean);
-}
 
 function renderNav(path) {
   // Action rows at the top of the nav group: New conversation + Search.
@@ -747,7 +642,7 @@ function renderNav(path) {
     </button>
   `;
 
-  const routeItems = workspaceNav(NAV.filter((item) => !item.flag || [item.flag].flat().every(isFlagOn)))
+  const routeItems = NAV.filter((item) => !item.flag || [item.flag].flat().every(isFlagOn))
     .map((item) => {
       const count = item.count ? item.count() : 0;
       const counter =

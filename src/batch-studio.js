@@ -1,12 +1,12 @@
 // Batch Studio — a dedicated, full-page "Batch from a source" intake that runs
-// in its own `batch-*` session. Unlike Clip Studio, it has a single stage: an
+// in its own `batch-*` session. It has a single stage: an
 // upload screen where the user stages one OR MORE sources (files from their
 // computer, a public/Drive link, or a connected source) and picks the Playbook
 // for the chat. The primary CTA then creates a NEW chat bound to that Playbook
 // and replays the staged sources through the classic source → idea-extraction
 // workflow.
 //
-// Mirrors the per-session state pattern of clip-studio.js: a module-local
+// Per-session state: a module-local
 // Map(sessionId → state) + a per-session notifier (store-utils), with
 // notify() fanning out to re-render the assistant panel.
 //
@@ -15,9 +15,9 @@
 // in-memory `pendingBatch` slot — the SPA never reloads between the two
 // navigations, so a module-level variable is the safe bridge.
 
-import { prettyUrl } from "./utils.js?v=2928";
-import { pastedTextName } from "./sources-stream.js?v=2928";
-import { createSessionNotifier } from "./store-utils.js?v=2928";
+import { prettyUrl } from "./utils.js?v=2929";
+import { pastedTextName } from "./sources-stream.js?v=2929";
+import { createSessionNotifier } from "./store-utils.js?v=2929";
 
 const states = new Map(); // sessionId → state
 const notifier = createSessionNotifier("batch-studio");

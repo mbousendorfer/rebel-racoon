@@ -15,10 +15,7 @@
 //
 // ONE Playbook at a time, scoped by `?pb=` — the same param the feed filters on,
 // so filtering the feed to a brand and opening settings lands on that brand, and
-// the topbar's back carries it home again. Under `playbookWorkspace` the rail
-// owns the scope instead: `?pb=` is not read, the page's own Playbook select
-// states the brand rather than offering the others, and nothing writes the param
-// any more. Stacking a block per Playbook was the
+// the topbar's back carries it home again. Stacking a block per Playbook was the
 // first shape this page ever had and it does not scale: at twenty Playbooks that
 // is 160 switches with each of the eight descriptions repeated twenty times, and
 // it is the descriptions, not the switches, that make such a page explode.
@@ -29,29 +26,22 @@
 // now does — and a row cannot without turning the list into a form. No save bar:
 // every control commits immediately through updateFeed.
 
-import { html, raw } from "../utils.js?v=2928";
-import { navigate } from "../router.js?v=2928";
-import { parseHashParams } from "../url-state.js?v=2928";
-import { renderTopbar } from "../components/topbar.js?v=2928";
-import { renderEmptyState } from "../components/empty-state.js?v=2928";
-import { getContextById, getDefaultContext } from "../contexts-store.js?v=2928";
-import {
-  getActivePlaybook,
-  isWorkspaceMode,
-  catalogueRoute,
-  subscribe as subscribeScope,
-} from "../active-playbook.js?v=2928";
-import { editableContexts, visibleContexts, canEdit } from "../playbook-access.js?v=2928";
-import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2928";
-import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=2928";
-import { open as openFeedback } from "../components/feedback-modal.js?v=2928";
+import { html, raw } from "../utils.js?v=2929";
+import { navigate } from "../router.js?v=2929";
+import { parseHashParams } from "../url-state.js?v=2929";
+import { renderTopbar } from "../components/topbar.js?v=2929";
+import { renderEmptyState } from "../components/empty-state.js?v=2929";
+import { getContextById, getDefaultContext } from "../contexts-store.js?v=2929";
+import { editableContexts, visibleContexts, canEdit } from "../playbook-access.js?v=2929";
+import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2929";
+import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=2929";
+import { open as openFeedback } from "../components/feedback-modal.js?v=2929";
 
 // Above this many Playbooks the picker earns a search field. Below it, a search
 // box over four rows is just noise.
 const PB_SEARCH_THRESHOLD = 8;
 
 let unsubscribeFeeds = null;
-let unsubscribeScope = null;
 let boundTarget = null;
 let boundClick = null;
 let boundChange = null;
@@ -67,14 +57,6 @@ let boundKeydown = null;
 // at someone else's shared Playbook falls back rather than showing switches that
 // would refuse to commit.
 function activePlaybookId() {
-  // Workspace mode: the page configures the feed of the brand you are IN, and
-  // `?pb=` is not read — the rail is the only scope. The canEdit guard still
-  // applies: a Playbook I can't edit can't be configured either.
-  if (isWorkspaceMode()) {
-    const active = getActivePlaybook();
-    if (active && canEdit(active)) return active.id;
-    return editableContexts()[0]?.id || null;
-  }
   const wanted = parseHashParams().get("pb");
   if (wanted && canEdit(getContextById(wanted))) return wanted;
   const fallback = getDefaultContext();
@@ -90,9 +72,6 @@ export function renderTopicsSettings(_params, target) {
   // Every control writes through updateFeed, so the store's notify is what
   // repaints — there is no local draft state to keep in sync.
   unsubscribeFeeds = subscribeFeeds(() => paint(target));
-  // A brand switched in the rail re-points this page in place — the switches
-  // shown are the ones of the feed you are now in.
-  unsubscribeScope = subscribeScope(() => paint(target));
   return teardown;
 }
 
@@ -100,10 +79,6 @@ function teardown() {
   if (unsubscribeFeeds) {
     unsubscribeFeeds();
     unsubscribeFeeds = null;
-  }
-  if (unsubscribeScope) {
-    unsubscribeScope();
-    unsubscribeScope = null;
   }
   if (boundTarget && boundClick) boundTarget.removeEventListener("click", boundClick);
   if (boundTarget && boundChange) boundTarget.removeEventListener("change", boundChange);
@@ -164,11 +139,9 @@ function renderPage() {
   const onCount = TOPIC_SOURCES.filter((s) => enabled.has(s.id)).length;
 
   const mine = feedKey(ctx);
-  // "N other Playbooks listen to different sources" was the picker's companion:
-  // a reason to open it and compare. In workspace mode there is no picker here
-  // and the other brands are out of scope, so the line points at something this
-  // page can no longer reach — it goes, and "Open the Playbook" stands alone.
-  const differing = isWorkspaceMode() ? 0 : playbooks.filter((c) => c.id !== ctx.id && feedKey(c) !== mine).length;
+  // "N other Playbooks listen to different sources" is the picker's companion:
+  // a reason to open it and compare.
+  const differing = playbooks.filter((c) => c.id !== ctx.id && feedKey(c) !== mine).length;
 
   const live = TOPIC_SOURCES.filter((s) => isLiveSource(s.id));
   const soon = TOPIC_SOURCES.filter((s) => !isLiveSource(s.id));
@@ -209,9 +182,7 @@ function renderPage() {
                   <span aria-hidden="true">·</span>`
               : "",
           )}
-          <button type="button" class="ap-link" data-settings-playbook="${ctx.id}">
-            ${isWorkspaceMode() ? `Open ${ctx.name}` : "Open Playbook"}
-          </button>
+          <button type="button" class="ap-link" data-settings-playbook="${ctx.id}">Open Playbook</button>
         </p>
       </header>
 
@@ -247,13 +218,6 @@ function renderPage() {
 // DS caption, so you can compare Playbooks without leaving the page — most of
 // what the stacked layout was actually good for.
 function renderPlaybookSelect(playbooks, active) {
-  // ⚠️ Workspace mode: no select at all. The rail owns the scope, so this one
-  // could only be a disabled restatement of it — and this page has real
-  // switches, next to which a greyed-out field reads as one more thing that
-  // refuses to move. What the page loses is the brand's NAME in the bar; the
-  // "Open the Playbook" link below picks it up (see renderPage), which keeps
-  // the name on a control that still does something.
-  if (isWorkspaceMode()) return "";
   const options = playbooks
     .map((c) => {
       const feed = getFeedForPlaybook(c.id);
@@ -537,7 +501,7 @@ function bind(target) {
       return;
     }
 
-    if (event.target.closest("[data-settings-playbooks]")) navigate(catalogueRoute());
+    if (event.target.closest("[data-settings-playbooks]")) navigate("/contexts");
   };
   target.addEventListener("click", boundClick);
 

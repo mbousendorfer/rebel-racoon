@@ -22,8 +22,8 @@
 // chart the headline measure and leave the others as 96px sparklines in the
 // table, which meant an objective's second measure had no curve anywhere.
 
-import { readingFor } from "../model.js?v=2928";
-import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=2928";
+import { readingFor } from "../model.js?v=2929";
+import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=2929";
 import {
   tierCounts,
   statusPill,
@@ -38,9 +38,8 @@ import {
   objectiveActions,
   figure,
   playbookTitle,
-  pageTitle,
   esc,
-} from "../pieces.js?v=2928";
+} from "../pieces.js?v=2929";
 
 export const id = "cockpit";
 export const label = "Cockpit";
@@ -92,15 +91,9 @@ function renderRail(entries, rollup, selected, ctx) {
   // (pieces.js). The word "Objectives" moved to the list's own label: the rows
   // under the counts are what it named, and a screen reader gets it there.
   //
-  // ⚠️ In workspace mode the name is gone (the rail above carries the brand), so
-  // the word comes BACK as the head's title — the rail is a list of objectives,
-  // and a column that opens on three counts and no noun says nothing. The pane
-  // keeps the page's h1: the objective being read is the subject, this is its
-  // index.
-  const brand = playbookTitle(ctx);
   return `<aside class="ins-cockpit-rail">
     <header class="ins-cockpit-rail__head">
-      ${brand || pageTitle("Objectives")}
+      ${playbookTitle(ctx)}
       ${tierCounts(rollup)}
     </header>
     <ul class="ins-cockpit-rail__list" aria-label="Objectives">${rows}</ul>

@@ -12,18 +12,17 @@
 //
 // Lives in its own module rather than in the 5.5k-line session screen so the
 // right panel (the only external caller) imports just this flow instead of the
-// whole screen. clipContext is exported alongside because the clip-studio
-// finalize path in session.js builds the same generationContext object.
+// whole screen.
 
-import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2928";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2928";
+import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2929";
+import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2929";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "../../social-profiles.js?v=2928";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2928";
-import { requireNetworkVoices } from "../../network-voice-flow.js?v=2928";
+} from "../../social-profiles.js?v=2929";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2929";
+import { requireNetworkVoices } from "../../network-voice-flow.js?v=2929";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -34,14 +33,13 @@ import {
   startPending,
   finishPending,
   GENERATION_TOOLS,
-} from "../../assistant.js?v=2928";
-import * as inlineQuestion from "../../inline-question.js?v=2928";
-import { addPostDraft } from "../../posts-store.js?v=2928";
+} from "../../assistant.js?v=2929";
+import * as inlineQuestion from "../../inline-question.js?v=2929";
+import { addPostDraft } from "../../posts-store.js?v=2929";
 
 // The generationContext a clip-derived draft carries — the "why this draft
-// exists" header shown on the post card. Shared with session.js's clip-studio
-// finalize path so both routes label a clip draft identically.
-export function clipContext(clip, sourceName) {
+// exists" header shown on the post card.
+function clipContext(clip, sourceName) {
   return {
     kind: "clip",
     headline: { icon: "ap-icon-video", text: `Clip · ${clip.title}` },
@@ -178,7 +176,7 @@ function askClipAccounts(sessionId, entries, format, style) {
 
 // Generate one post draft per (clip × account), then post the result card.
 // Each draft's clipRef carries sourceId + clipId so the post can later open
-// the source clip back in the Video Clips modal for editing.
+// the source clip in the Clips space's editor.
 function generateClipDrafts(sessionId, entries, accounts, format, style) {
   const pendingId = startPending(sessionId, "Generating post drafts…", GENERATION_TOOLS);
   setTimeout(() => {

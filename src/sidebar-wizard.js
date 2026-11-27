@@ -29,10 +29,9 @@
 // `body` is HTML (chat turns) and `picker` is the standard picker shape from
 // _analyse-common.js (items + handler + optional customPlaceholder).
 
-import { chatTurn, bulletsBlock, fieldsBlock } from "./screens/_analyse-common.js?v=2928";
-import { voiceAnalysis, strategyBrief, brandTheme } from "./mocks.js?v=2928";
-import { createSessionNotifier } from "./store-utils.js?v=2928";
-import { isFlagOn } from "./feature-flags.js?v=2928";
+import { chatTurn, bulletsBlock, fieldsBlock } from "./screens/_analyse-common.js?v=2929";
+import { voiceAnalysis, strategyBrief, brandTheme } from "./mocks.js?v=2929";
+import { createSessionNotifier } from "./store-utils.js?v=2929";
 
 // ---- State -----------------------------------------------------------------
 
@@ -251,12 +250,7 @@ function analyzingNoticeHtml() {
   return `
     <div class="chat-turn chat-turn--ai chat-turn--extracting">
       <div class="extracting-notice">
-        ${
-          isFlagOn("newConversationStyles")
-            ? `<span class="ap-status mermaid is-working">Analyzing</span>`
-            : `<span class="extracting-notice__spinner" aria-hidden="true"></span>
-        <span class="ap-status mermaid">Analyzing</span>`
-        }
+        <span class="ap-status mermaid is-working">Analyzing</span>
       </div>
     </div>
   `;

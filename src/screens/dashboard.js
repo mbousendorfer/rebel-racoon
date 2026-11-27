@@ -1,8 +1,7 @@
-import { getSessions } from "../sessions-store.js?v=2928";
-import { scopeSessions } from "../active-playbook.js?v=2928";
-import { getContexts } from "../contexts-store.js?v=2928";
-import { isNewUser } from "../user-mode.js?v=2928";
-import { isNewStartOn } from "../feature-flags.js?v=2928";
+import { getSessions } from "../sessions-store.js?v=2929";
+import { getContexts } from "../contexts-store.js?v=2929";
+import { isNewUser } from "../user-mode.js?v=2929";
+import { isNewStartOn } from "../feature-flags.js?v=2929";
 
 // Dashboard route — pure redirect surface.
 //
@@ -18,12 +17,6 @@ import { isNewStartOn } from "../feature-flags.js?v=2928";
 // six, section chips. That went out with the Topics magazine it was built on
 // (see the Topic Feed § in CLAUDE.md). If a front page comes back, it comes back
 // on top of the Topic Feed's own data, not as a second reader of a second store.
-//
-// ⚠️ The account home is NOT that page: `/home` (screens/home.js, flag
-// `playbookWorkspace`) is a page of what you HAVE — your Playbooks and your
-// chats — while the front page was a page of what Archie PROPOSES. `/` is still
-// only a redirect, and it resolves the active BRAND's home; `/home` is the
-// account's. Two levels, two homes.
 
 export function renderDashboard(_params, _target) {
   // Branch 1 — first-time user without a Playbook → onboarding.
@@ -35,12 +28,8 @@ export function renderDashboard(_params, _target) {
     return;
   }
 
-  // Branch 2 — normal redirect, THROUGH the scope. In workspace mode `/` is
-  // "the home of the brand I'm in": landing on another brand's chat would put a
-  // conversation on screen that the rail beside it doesn't list. It is also the
-  // one definition of that destination — the rail's switcher and the way back
-  // from the catalogue both come here rather than each computing their own.
-  const recent = scopeSessions(getSessions())[0];
+  // Branch 2 — normal redirect: the most recent chat.
+  const recent = getSessions()[0];
   const targetPath = isNewUser() || !recent ? "/session/new" : `/session/${recent.id}`;
   window.location.replace(window.location.href.split("#")[0] + "#" + targetPath);
 }

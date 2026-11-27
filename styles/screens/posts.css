@@ -508,7 +508,7 @@
   background: var(--ref-color-white);
 }
 
-/* ── Video clip player (drafts from Video Clips modal) ──────────────
+/* ── Video clip player (drafts from a video clip) ───────────────────
  * Renders in place of the image / placeholder when post.clipRef exists.
  * The frame itself is a gradient from clip.hue (set inline) — these
  * rules handle layout, the play overlay, the duration chip, the
@@ -619,8 +619,8 @@
   transform: translate(-50%, -50%) scale(1.06);
 }
 
-/* "Edit clip" affordance — reopens the source clip in the Video Clips editor
- * (subtitles tab). Bottom-left so it clears the source bezel (top-left), the
+/* "Edit clip" affordance — opens the source clip in the Clips space's
+ * editor. Bottom-left so it clears the source bezel (top-left), the
  * play overlay (center) and the duration chip (bottom-right) even on narrow
  * portrait players. Same glassy chrome as the duration chip. */
 .posts__card-clip-edit {

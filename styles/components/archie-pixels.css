@@ -56,7 +56,7 @@ archie-pixels > :not(.archie-pixels__label) {
 }
 
 /* The narration: the conversation's working status pill — the DS shape
-   (.ap-status), no breathing dot (as in the new conversation styles), an
+   (.ap-status), no breathing dot (as in the thread), an
    orange sheen through its words (chat.css, `.e-turn .ap-status.is-working`:
    the same `e-sheen` keyframes) — but on navy, the Agorapulse ink, with words
    in Archie's butter: the sheen stands out far more than on a butter pill

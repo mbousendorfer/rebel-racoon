@@ -1,11 +1,11 @@
 /* Full-screen caption editor (src/caption-editor.js).
  *
- * Shared by the Clips editor and the Video Clips modal. The chrome is the
- * light DS (tokens and .ap-* components); caption DISPLAY colors are literal
- * (they read over arbitrary video frames, not DS chrome).
+ * Hosted by the Clips editor. The chrome is the light DS (tokens and .ap-*
+ * components); caption DISPLAY colors are literal (they read over arbitrary
+ * video frames, not DS chrome).
  */
 
-/* Embedded inside the clips modal's Subtitles tab — fills the host. */
+/* Embedded in the Clips editor's panels — fills the host. */
 .cap-ed {
   display: flex;
   flex-direction: column;
@@ -16,60 +16,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.cap-ed__left-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ref-spacing-xs);
-}
-
-/* ── Icon button (transport play / pause) ─────────────────────────── */
-
-.cap-ed__icon-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--app-radius-button-sm);
-  border: 0;
-  background: transparent;
-  color: var(--ref-color-grey-80);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--ref-animation-short);
-}
-
-.cap-ed__icon-btn:hover {
-  background: var(--ref-color-grey-05);
-  color: var(--ref-color-grey-100);
-}
-
-.cap-ed__meta {
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-  white-space: nowrap;
-}
-
 /* ── Left: transcript ─────────────────────────────────────────────── */
-
-/* « Speech cleanup » is a DS stroked button (blue while on, see
-   renderCleanupBar); it only keeps its count chip. */
-.cap-ed__cleanup-btn {
-  align-self: flex-start;
-}
-
-/* Cleanup bar — sits under the Speech-cleanup button, merged with the
-   transcript editing area (no separate right-panel tab). */
-.cap-ed__cleanup-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  background: rgba(255, 170, 70, 0.1);
-  border: 1px solid rgba(255, 170, 70, 0.3);
-  border-radius: var(--app-radius-button-sm);
-}
 
 .cap-ed-cleanup-bar__count {
   font-size: var(--sys-text-style-caption-size);
@@ -85,26 +32,6 @@
   display: inline-flex;
   gap: var(--ref-spacing-xxs);
   flex-shrink: 0;
-}
-
-.cap-ed__cleanup-count {
-  margin-left: auto;
-  background: var(--ref-color-orange-100);
-  color: var(--ref-color-white);
-  border-radius: var(--app-radius-circle);
-  min-width: 16px;
-  height: 16px;
-  padding: 0 var(--ref-spacing-xxxs);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-}
-
-.cap-ed__hint {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
 }
 
 .cap-ed__transcript {
@@ -196,34 +123,6 @@
 .cap-ed-pause.is-removed {
   text-decoration: line-through;
   opacity: 0.5;
-}
-
-/* Real footage fills the stage, behind dead-zones / caption / play glyph. */
-.cap-ed__video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.cap-ed__playicon {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255, 255, 255, 0.9);
-  pointer-events: none;
-  transition: opacity var(--ref-animation-short);
-}
-
-.cap-ed__playicon.is-hidden {
-  opacity: 0;
-}
-
-.cap-ed__playicon svg {
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
 }
 
 /* Caption box (port of .caption-box) — draggable for free positioning. */
@@ -390,87 +289,6 @@
   color: var(--ref-color-white);
   font-size: var(--sys-text-style-caption-size);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-}
-
-.cap-ed__transport {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  width: min(100%, 480px);
-  flex-shrink: 0;
-}
-
-/* Play / pause is the primary control — a filled accent circle. */
-.cap-ed__transport .cap-ed__icon-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-electric-blue-100);
-  color: var(--ref-color-white);
-  flex-shrink: 0;
-}
-
-.cap-ed__transport .cap-ed__icon-btn:hover {
-  background: var(--ref-color-electric-blue-150);
-  color: var(--ref-color-white);
-}
-
-/* Skip back / forward — quiet ghost buttons flanking the primary play. */
-.cap-ed__transport .cap-ed__icon-btn--ghost {
-  width: 30px;
-  height: 30px;
-  background: transparent;
-  color: var(--ref-color-grey-80);
-}
-
-.cap-ed__transport .cap-ed__icon-btn--ghost:hover {
-  background: var(--ref-color-grey-05);
-  color: var(--ref-color-grey-100);
-}
-
-.cap-ed__time {
-  font-size: var(--sys-text-style-caption-bold-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  font-variant-numeric: tabular-nums;
-  color: var(--ref-color-grey-80);
-  white-space: nowrap;
-}
-
-.cap-ed__scrub {
-  flex: 1;
-  height: 5px;
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-grey-05);
-  border: 1px solid var(--ref-color-grey-20);
-  cursor: pointer;
-  position: relative;
-  transition: height var(--ref-animation-short);
-}
-
-.cap-ed__scrub:hover {
-  height: 7px;
-}
-
-.cap-ed__scrub-fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 0;
-  background: var(--ref-color-electric-blue-100);
-  border-radius: var(--app-radius-circle);
-}
-
-/* Playhead knob at the fill's leading edge. */
-.cap-ed__scrub-fill::after {
-  content: "";
-  position: absolute;
-  right: -5px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 11px;
-  height: 11px;
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-white);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* ── Right: tabs + panel ──────────────────────────────────────────── */

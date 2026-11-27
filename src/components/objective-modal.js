@@ -21,12 +21,12 @@
 // Replaces objective-editor-modal (the field-stack editor): the sentence form
 // is the editor now. Body-level, modal-coordinator, closes on route change.
 
-import { escapeHtml as esc, newId } from "../utils.js?v=2928";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2928";
-import { getContexts } from "../contexts-store.js?v=2928";
-import { getActivePlaybookId } from "../active-playbook.js?v=2928";
-import { createCatalogFlow, searchSelectorFor } from "./objective-catalog-panel.js?v=2928";
-import { renderScopeField, scopeFromClick } from "./measure-scope-field.js?v=2928";
+import { escapeHtml as esc, newId } from "../utils.js?v=2929";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2929";
+import { getContexts } from "../contexts-store.js?v=2929";
+import { getActivePlaybookId } from "../active-playbook.js?v=2929";
+import { createCatalogFlow, searchSelectorFor } from "./objective-catalog-panel.js?v=2929";
+import { renderScopeField, scopeFromClick } from "./measure-scope-field.js?v=2929";
 import {
   resolveObjectives,
   materializeMeasureEntries,
@@ -35,7 +35,7 @@ import {
   scopedBaselineFor,
   proposeTargetFrom,
   WINDOWS,
-} from "../objective-measures.js?v=2928";
+} from "../objective-measures.js?v=2929";
 
 const MODAL_ID = "objectiveModal";
 
@@ -228,13 +228,10 @@ function canSave() {
 
 // ⚠️ NO `for <Playbook>` CLAUSE. An objective is created in the Playbook the
 // surface that opened this dialog is scoped to — `/insights` reads ONE Playbook
-// and names it permanently (the rail's switcher in workspace mode, the page's
-// own heading otherwise), and the shell passes that id in. Asking again is the
-// fault this repo keeps removing: a control restating the scope the chrome
-// already prints is a control the reader has to rule out, and two places that
-// can answer "which Playbook" are two answers that can disagree. Same reason
-// the composer's, the feed's, the batch's, the clip's and the repurpose board's
-// own Playbook selects are gone (CLAUDE.md § The Playbook scope).
+// and names it permanently in the page's own heading, and the shell passes that
+// id in. Asking again would be a control restating the scope the page already
+// prints, and two places that can answer "which Playbook" are two answers that
+// can disagree.
 //
 // The modal is not left guessing: `open()` falls back to the active Playbook,
 // so a caller that passes nothing still produces a saveable draft.

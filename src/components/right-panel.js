@@ -1,28 +1,27 @@
-import { html, raw, escapeHtml } from "../utils.js?v=2928";
-import { conceptText } from "../concepts.js?v=2928";
-import { subscribe as subscribeThread } from "../assistant.js?v=2928";
-import { subscribe as subscribeContexts } from "../contexts-store.js?v=2928";
-import { getPath } from "../router.js?v=2928";
-import { parseHashParams } from "../url-state.js?v=2928";
-import { attachImageToDraft, subscribe as subscribePostsStore } from "../posts-store.js?v=2928";
-import { onFeedbackClick } from "./feedback-control.js?v=2928";
+import { html, raw, escapeHtml } from "../utils.js?v=2929";
+import { conceptText } from "../concepts.js?v=2929";
+import { subscribe as subscribeThread } from "../assistant.js?v=2929";
+import { subscribe as subscribeContexts } from "../contexts-store.js?v=2929";
+import { getPath } from "../router.js?v=2929";
+import { parseHashParams } from "../url-state.js?v=2929";
+import { attachImageToDraft, subscribe as subscribePostsStore } from "../posts-store.js?v=2929";
+import { onFeedbackClick } from "./feedback-control.js?v=2929";
 // Shared compact idea card — same component the standalone Ideas page uses.
-import { open as openVideoClipsModal } from "./video-clips-modal.js?v=2928";
-import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=2928";
+import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=2929";
 import {
   getSources as getStreamSources,
   subscribeSources,
   updateSourceClips,
   removeSources,
   renameSource,
-} from "../sources-stream.js?v=2928";
-import { open as openAddSourceModal } from "./add-source-modal.js?v=2928";
-import { open as openRenameModal } from "./rename-modal.js?v=2928";
-import { askConnector } from "../connector-ask.js?v=2928";
-import { open as openConnectorsModal } from "./connectors-modal.js?v=2928";
-import { addMention as addComposerMention } from "../composer-mentions.js?v=2928";
-import { getIdeas, removeIdeasForSources } from "../library.js?v=2928";
-import { isFlagOn } from "../feature-flags.js?v=2928";
+} from "../sources-stream.js?v=2929";
+import { open as openAddSourceModal } from "./add-source-modal.js?v=2929";
+import { open as openRenameModal } from "./rename-modal.js?v=2929";
+import { askConnector } from "../connector-ask.js?v=2929";
+import { open as openConnectorsModal } from "./connectors-modal.js?v=2929";
+import { addMention as addComposerMention } from "../composer-mentions.js?v=2929";
+import { getIdeas, removeIdeasForSources } from "../library.js?v=2929";
+import { isFlagOn } from "../feature-flags.js?v=2929";
 
 // The ideas of the chat the panel is looking at.
 //
@@ -37,18 +36,18 @@ export function sessionIdeas() {
   const sid = activeSessionId();
   return sid ? getIdeas(sid) : [];
 }
-import { open as openConfirmModal } from "./confirm-modal.js?v=2928";
-import { showToast } from "./toast.js?v=2928";
-import { isOverlayEscape } from "../modal-coordinator.js?v=2928";
-import { closeAllSourceMenus, renderSourcesView } from "./right-panel/sources-view.js?v=2928";
-import { contentCounts, renderOverviewView } from "./right-panel/overview-view.js?v=2928";
+import { open as openConfirmModal } from "./confirm-modal.js?v=2929";
+import { showToast } from "./toast.js?v=2929";
+import { isOverlayEscape } from "../modal-coordinator.js?v=2929";
+import { closeAllSourceMenus, renderSourcesView } from "./right-panel/sources-view.js?v=2929";
+import { contentCounts, renderOverviewView } from "./right-panel/overview-view.js?v=2929";
 import {
   collectAllClips,
   renderIdeasView,
   toggleClipWhyInPlace,
   toggleIdeaFeedback,
   toggleWhyOpen,
-} from "./right-panel/ideas-view.js?v=2928";
+} from "./right-panel/ideas-view.js?v=2929";
 import {
   cancelEdit,
   commitEdit,
@@ -63,7 +62,7 @@ import {
   setDraftsNetwork,
   setNetworkSelection,
   visibleNetworkPosts,
-} from "./right-panel/drafts-view.js?v=2928";
+} from "./right-panel/drafts-view.js?v=2929";
 
 // Global Right Panel — slides in from the right edge of the viewport, overlays
 // the session workspace, hosts two modes:
@@ -619,10 +618,7 @@ export function init() {
       }
       return;
     }
-    // Kebab → View clips — open the Video Clips modal in browse mode for this
-    // source: every clip cut from the video + "Add clip" to create one
-    // manually. Saving persists to the source; "Draft posts" hands the picked
-    // clips to the conversational draft flow (ratio → subtitles → profiles).
+    // Kebab → Open in Clips — the video's project in the Clips space.
     const sourceClipsBtn = event.target.closest("[data-rpanel-source-clips]");
     if (sourceClipsBtn) {
       const sid = activeSessionId();
@@ -630,21 +626,7 @@ export function init() {
       if (!sid) return;
       const src = getStreamSources(sid).find((s) => s.id === sourceClipsBtn.dataset.rpanelSourceClips);
       if (!src) return;
-      if (isFlagOn("clipsSpace")) {
-        import("../screens/clips/open-in-clips.js?v=2928").then(({ openInClips }) => openInClips(sid, src));
-        return;
-      }
-      openVideoClipsModal(src, {
-        onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
-        onUseClips: (selectedClips, source) => {
-          import("../screens/session/clip-draft-flow.js?v=2928").then(({ startClipDraftFlow }) => {
-            startClipDraftFlow(
-              sid,
-              selectedClips.map((clip) => ({ clip, sourceName: source.filename, sourceId: source.id })),
-            );
-          });
-        },
-      });
+      import("../screens/clips/open-in-clips.js?v=2929").then(({ openInClips }) => openInClips(sid, src));
       return;
     }
     // Kebab → Reanalyze (prototype stub — confirms via toast).
@@ -742,8 +724,7 @@ export function init() {
     // Clip selection toggle is a DS checkbox — handled in the `change`
     // delegate below (mirrors the Drafts per-card checkbox), not on click.
     // Clip-card "Edit" affordance (kebab menu item or thumbnail click).
-    // Opens the video-clips modal pre-positioned on the target clip so
-    // the user lands directly on the trim/preview surface.
+    // Opens the clip in the Clips space's editor.
     const clipEditBtn = event.target.closest("[data-clip-edit]");
     if (clipEditBtn) {
       const cid = clipEditBtn.getAttribute("data-clip-edit");
@@ -751,15 +732,9 @@ export function init() {
       const entry = collectAllClips().find(({ clip }) => clip.id === cid);
       if (entry && sid) {
         const source = getStreamSources(sid).find((s) => s.id === entry.sourceId);
-        if (source && isFlagOn("clipsSpace")) {
-          // The one editor: the clip opens in the Clips space.
-          import("../screens/clips/open-in-clips.js?v=2928").then(({ openInClips }) => openInClips(sid, source, cid));
-        } else if (source) {
-          openVideoClipsModal(source, {
-            editingClipId: cid,
-            onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
-          });
-        }
+        // The one editor: the clip opens in the Clips space.
+        if (source)
+          import("../screens/clips/open-in-clips.js?v=2929").then(({ openInClips }) => openInClips(sid, source, cid));
       }
       return;
     }
@@ -811,7 +786,7 @@ export function init() {
       const sid = activeSessionId();
       if (!sid || !entry) return;
       const { clip, sourceName, sourceId } = entry;
-      import("../screens/session/clip-draft-flow.js?v=2928").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=2929").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, [{ clip, sourceName, sourceId }]);
       });
       return;
@@ -829,7 +804,7 @@ export function init() {
       if (picked.length === 0) return;
       clipSelection = new Set();
       renderPanel();
-      import("../screens/session/clip-draft-flow.js?v=2928").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=2929").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, picked);
       });
       return;
@@ -1365,7 +1340,7 @@ function useIdea(ideaId) {
   if (!idea) return;
   const sid = activeSessionId();
   if (!sid) return;
-  import("../screens/session/draft-questions.js?v=2928").then(({ askAngleQuestion }) => {
+  import("../screens/session/draft-questions.js?v=2929").then(({ askAngleQuestion }) => {
     askAngleQuestion(sid, ideaId);
   });
 }

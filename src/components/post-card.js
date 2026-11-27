@@ -19,21 +19,21 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2928";
-import { isPortraitFormat } from "../clip-formats.js?v=2928";
-import { presetById } from "../clip-captions.js?v=2928";
-import { renderFeedbackControl } from "./feedback-control.js?v=2928";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2929";
+import { isPortraitFormat } from "../clip-formats.js?v=2929";
+import { presetById } from "../clip-captions.js?v=2929";
+import { renderFeedbackControl } from "./feedback-control.js?v=2929";
 import {
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=2928";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2928";
-import { REVEAL_MS } from "../archie-pixels.js?v=2928";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2928";
-import { languageOf } from "../draft-rewrite.js?v=2928";
+} from "../social-profiles.js?v=2929";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2929";
+import { REVEAL_MS } from "../archie-pixels.js?v=2929";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2929";
+import { languageOf } from "../draft-rewrite.js?v=2929";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -823,7 +823,7 @@ function serializeBody(post) {
 const PORTRAIT_NETWORKS = new Set(["tiktok", "instagram"]);
 
 const SUBTITLE_LABEL = {
-  // Legacy light styles (Video Clips modal caption tab).
+  // Legacy light styles (older drafts).
   bold: "Bold",
   clean: "Clean",
   caption: "Caption",
@@ -839,8 +839,8 @@ const SUBTITLE_LABEL = {
 };
 
 // Resolve a subtitle style id to a human label. The conversational draft flow
-// uses the light bold/clean/caption set; editing a clip in the Video Clips
-// modal can set any caption preset id (karaoke, …) — fall back to the preset
+// uses the light bold/clean/caption set; editing a clip in the Clips editor
+// can set any caption preset id (karaoke, …) — fall back to the preset
 // catalog's label so the badge stays accurate after an edit.
 function subtitleLabelFor(style) {
   if (!style || style === "none") return null;

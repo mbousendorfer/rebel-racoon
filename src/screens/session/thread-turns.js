@@ -3,14 +3,9 @@
 // `message`-shaped object (or opts) and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2928";
-import { isFlagOn } from "../../feature-flags.js?v=2928";
-import { iconFor } from "../../file-kinds.js?v=2928";
-import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2928";
-
-// The thread's restyle since Monday 2026-10-05 (flag newConversationStyles).
-// OFF renders the Monday markup; styles/chat-legacy.css holds its values.
-const convNew = () => isFlagOn("newConversationStyles");
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2929";
+import { iconFor } from "../../file-kinds.js?v=2929";
+import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2929";
 
 // Chat-switch skeleton — shown for ~340ms inside .session__assistant-thread
 // when switching chats, then swapped for the real thread.
@@ -44,34 +39,19 @@ export function renderMessageBubble(message) {
   `;
 }
 
-// Right-aligned "Source intake" turn. With the new conversation styles it is
-// prod's one-line source chip (kind glyph + filename, then a trailing status
-// slot); OFF, Monday's navy chip. The backing
+// Right-aligned "Source intake" turn: prod's one-line source chip (kind glyph
+// + filename, then a trailing status slot). The backing
 // source is resolved by the caller (session.js reads sources-stream) and passed
 // in as `source` so this stays a pure renderer; pass `null` for the unresolved
 // case. Trailing states are driven by (status loading, ideaCount, clips).
 // `focusable` (flag contentPanel): the file itself is a button to that source
 // in the side panel; `active` while the panel was opened from this echo.
 export function renderSourceIntakeTurn(message, source = null, { focusable = false, active = false } = {}) {
-  const kindKey = (message.kind || "").toLowerCase();
   // A source may carry its own glyph (a Topic keeps its listening source's icon,
   // set by topic-flow's attachTopicToChat); that wins over the kind icon
   // (file-kinds, case-insensitive).
   const icon = source?.iconClass || iconFor(message.kind);
   const isLoading = message.status === "loading";
-  // The line under the filename — the same words a picked source's echo uses.
-  const kindLabels = {
-    pdf: "PDF",
-    video: "Video",
-    url: "Link",
-    word: "Document",
-    text: "Document",
-    image: "Image",
-    audio: "Audio",
-    topic: "Topic",
-  };
-  const kindLabel = `${kindLabels[kindKey] || "File"} source`;
-
   // A recognised link (YouTube, Drive, Notion, …) shows the service logo
   // instead of the generic link glyph. Falls back to the kind icon.
   const src = source;
@@ -84,16 +64,13 @@ export function renderSourceIntakeTurn(message, source = null, { focusable = fal
   // v2 single-line layout (see styles/chat.css and handoff §2). State lives in
   // a trailing slot with these variants driven by (isLoading, ideaCount > 0,
   // clips > 0):
-  //   loading        → "Uploading…" + bar, then "Extracting…" (flag ON);
-  //                    "Adding…" with the loader (OFF)
+  //   loading        → "Uploading…" + bar, then "Extracting…"
   //   ready + ideas  → blue pill "N ideas ›" → Ideas panel
   //   ready + clips  → second pill "M clips ›" → Clips panel (Video only)
   //   ready, none    → bare green check icon
-  const pillClass = convNew()
-    ? "chat-bubble-source-intake__pill source-chip__action"
-    : "chat-bubble-source-intake__pill";
+  const pillClass = "chat-bubble-source-intake__pill source-chip__action";
   let trailing;
-  if (isLoading && convNew()) {
+  if (isLoading) {
     // The prod chip's two waits (studio-mfe source-intake-chip): "Uploading…"
     // with its bar (the bar says how far — no percentage) while the source is processed, then "Extracting…" until the
     // turn flips ready. Where prod spins its refresh icon, "Extracting…" is led
@@ -112,13 +89,6 @@ export function renderSourceIntakeTurn(message, source = null, { focusable = fal
             <span class="source-chip__status-text">Uploading…</span>
           </span>`
         : `<span class="source-chip__status" role="status">${spinner}<span class="source-chip__status-text">Extracting…</span></span>`;
-  } else if (isLoading) {
-    trailing = `
-      <span class="chat-bubble-source-intake__loading" role="status" aria-label="Adding">
-        <span class="chat-bubble-source-intake__spinner" aria-hidden="true"></span>
-        <span>Adding…</span>
-      </span>
-    `;
   } else if (message.sourceId) {
     const ideas = src?.ideaCount || 0;
     const clips = Array.isArray(src?.clips) ? src.clips.length : 0;
@@ -169,12 +139,11 @@ export function renderSourceIntakeTurn(message, source = null, { focusable = fal
   const intakeAttrs = `data-intake-status="${message.status || "ready"}"${
     message.sourceId ? ` data-intake-source="${escapeHtmlAttr(message.sourceId)}"` : ""
   }`;
-  // New conversation styles: prod's one-line source chip — file glyph + name,
-  // then where it stands (styles/chat.css .source-chip). The file is a button
-  // to the source in the side panel when `focusable`.
-  if (convNew()) {
-    const file = `${kindIcon}<span class="source-chip__name" title="${escapeHtmlAttr(filename)}">${escapeHtml(filename)}</span>`;
-    return `
+  // Prod's one-line source chip — file glyph + name, then where it stands
+  // (styles/chat.css .source-chip). The file is a button to the source in the
+  // side panel when `focusable`.
+  const file = `${kindIcon}<span class="source-chip__name" title="${escapeHtmlAttr(filename)}">${escapeHtml(filename)}</span>`;
+  return `
     <div class="chat-turn chat-turn--user">
       <span class="chat-turn-role">${message.meta || "You"}</span>
       <div class="source-chip${canFocus ? " is-focusable" : ""}${canFocus && active ? " is-active" : ""}" ${intakeAttrs}>
@@ -183,35 +152,6 @@ export function renderSourceIntakeTurn(message, source = null, { focusable = fal
             ? `<button type="button" class="source-echo__open source-chip__file" data-source-focus="${escapeHtmlAttr(message.sourceId)}" title="Show in Sources">${file}</button>`
             : `<span class="source-chip__file">${file}</span>`
         }
-        ${trailing}
-      </div>
-    </div>
-  `;
-  }
-  if (canFocus) {
-    const echoClass = "selection-echo selection-echo--intake";
-    return `
-    <div class="chat-turn chat-turn--user">
-      <span class="chat-turn-role">${message.meta || "You"}</span>
-      <div class="${echoClass} is-focusable${active ? " is-active" : ""}" ${intakeAttrs}>
-        <button type="button" class="source-echo__open" data-source-focus="${escapeHtmlAttr(message.sourceId)}" title="Show in Sources">
-          <span class="selection-echo__icon">${kindIcon}</span>
-          <span class="selection-echo__body">
-            <span class="selection-echo__title" title="${escapeHtmlAttr(filename)}">${escapeHtml(filename)}</span>
-            <span class="selection-echo__meta">${kindLabel}</span>
-          </span>
-        </button>
-        <span class="selection-echo__trailing">${trailing}</span>
-      </div>
-    </div>
-  `;
-  }
-  return `
-    <div class="chat-turn chat-turn--user">
-      <span class="chat-turn-role">${message.meta || "You"}</span>
-      <div class="chat-bubble chat-bubble--source-intake" data-intake-status="${message.status || "ready"}">
-        ${kindIcon}
-        <span class="chat-bubble-source-intake__name" title="${filename}">${filename}</span>
         ${trailing}
       </div>
     </div>
@@ -290,8 +230,7 @@ export function renderChoiceTurn(message) {
   `;
 }
 
-// A job Archie couldn't finish (assistant.reportDraftFailure, flag
-// newConversationStyles): the DS error infobox — title, what it means, Retry as
+// A job Archie couldn't finish (assistant.reportDraftFailure): the DS error infobox — title, what it means, Retry as
 // its action. Stays in the thread until retried, unlike the toast it replaces.
 export function renderFailedTurn(message) {
   return `
@@ -331,7 +270,7 @@ export function renderNotice({
   const variantClass = variant === "mermaid" ? " assistant-notice--mermaid" : "";
   const loadingClass = loading ? " is-loading" : "";
   const openAttr = open ? " open" : "";
-  const statusClass = `${variant === "mermaid" ? "ap-status mermaid" : "ap-status grey"}${loading && convNew() ? " is-working" : ""}`;
+  const statusClass = `${variant === "mermaid" ? "ap-status mermaid" : "ap-status grey"}${loading ? " is-working" : ""}`;
   return `
     <details class="assistant-notice${variantClass}${loadingClass}"${openAttr}>
       <summary class="assistant-notice__toggle">
@@ -361,15 +300,6 @@ export function renderExtractingNotice(label) {
   // The prod's progress copy (studio i18n, chat.tool.progress.*): the flow
   // names what it is doing ("Generating post drafts…"); the default is the
   // extraction's.
-  if (!convNew())
-    return `
-    <div class="chat-turn chat-turn--ai chat-turn--extracting">
-      <div class="extracting-notice" role="status" aria-label="Extracting ideas from this source">
-        <span class="extracting-notice__spinner" aria-hidden="true"></span>
-        <span class="ap-status mermaid">Extracting</span>
-      </div>
-    </div>
-  `;
   const text = escapeHtml(label || "Extracting ideas from content…");
   return `
     <div class="chat-turn chat-turn--ai chat-turn--extracting">

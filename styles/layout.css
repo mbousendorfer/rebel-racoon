@@ -104,29 +104,6 @@ body.onboarding .app-content {
   grid-column: 1;
 }
 
-/* ---------- Account scope (flag playbookWorkspace) ----------
-   `body.account-scope` (set in app.js) marks the routes that live ABOVE the
-   workspaces: the Playbooks catalogue, and another brand's fiche opened from
-   it. The rail goes — a page about eight brands must not be framed by the
-   chrome of one — and the content takes the whole width.
-
-   The TOPBAR stays, unlike onboarding mode which drops both: it is what carries
-   the way back in ("‹ Back to Acme · Q2 marketing"), so it is the one piece of
-   chrome this state actually needs. */
-
-body.account-scope .app-sidebar {
-  display: none;
-}
-
-body.account-scope .app-shell {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-body.account-scope .app-topbar,
-body.account-scope .app-content {
-  grid-column: 1;
-}
-
 /* ---------- Empty-chat full-bleed ----------
    A fresh chat (the empty-state hero) drops the topbar and reclaims its row
    so the welcome view stays as simple as possible — just the sidebar + the
@@ -144,16 +121,6 @@ body.account-scope .app-content {
 .app-shell:has(.empty-chat) .app-sidebar,
 .app-shell:has(.empty-chat) .app-content {
   grid-row: 1;
-}
-
-/* ---------- Clip Studio (all stages) ----------
-   The dedicated "Extract video clips" flow (config → analyzing → clips
-   review → profiles) keeps the app topbar (Sources / Ideas / Drafts) like
-   the Batch studio, so the two workflows read identically. Only the
-   floating in-progress status card is dropped — the studio has its own
-   headers + sticky action bars. */
-.app-shell:has(.clip-studio) #conversationStatusCard {
-  display: none;
 }
 
 /* ---------- Top bar ---------- */
@@ -307,17 +274,4 @@ button.app-topbar__title--rename:focus-visible .app-topbar__title-pen {
   line-height: var(--sys-text-style-h3-line-height);
   font-weight: var(--sys-text-style-h3-weight);
   color: var(--ref-color-grey-100);
-}
-
-/* ---------- Demo mode (flag demoMode) ---------- */
-/* No Playbook is created, duplicated or deleted in the demo: one brand, made up. */
-body.demo [data-contexts-new],
-body.demo [data-playbook-create],
-body.demo [data-pb-switch-create],
-body.demo [data-contexts-duplicate],
-body.demo [data-playbook-duplicate],
-body.demo [data-playbook-delete],
-body.demo [data-contexts-delete],
-body.demo .ap-select-footer:has([data-playbook-create]) {
-  display: none;
 }

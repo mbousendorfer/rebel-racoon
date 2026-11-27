@@ -1,22 +1,19 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2928";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2928";
-import { getContextById, getContexts } from "../../contexts-store.js?v=2928";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2928";
-import { renderTopicCard } from "../../components/topic-card.js?v=2928";
-import { findTopicSource } from "../../topics-catalog.js?v=2928";
-import { html, raw } from "../../utils.js?v=2928";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2928";
-import { renderStarterCards } from "../../components/starter-card.js?v=2928";
-import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2928";
-import { isDemo } from "../../demo-mode.js?v=2928";
-import { voicesToFinish } from "../../voice-parts.js?v=2928";
-import { networkLabel } from "../../social-profiles.js?v=2928";
-import { parseHashParams } from "../../url-state.js?v=2928";
-import "../../archie-pixels.js?v=2928";
-import { renderNewStart } from "./new-start.js?v=2928";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2929";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2929";
+import { getContextById, getContexts } from "../../contexts-store.js?v=2929";
+import { renderTopicCard } from "../../components/topic-card.js?v=2929";
+import { findTopicSource } from "../../topics-catalog.js?v=2929";
+import { html, raw } from "../../utils.js?v=2929";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2929";
+import { renderStarterCards } from "../../components/starter-card.js?v=2929";
+import { isNewStartOn } from "../../feature-flags.js?v=2929";
+import { voicesToFinish } from "../../voice-parts.js?v=2929";
+import { networkLabel } from "../../social-profiles.js?v=2929";
+import { parseHashParams } from "../../url-state.js?v=2929";
+import { renderNewStart } from "./new-start.js?v=2929";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -68,44 +65,20 @@ export function renderTopicPickerRow() {
 //
 // Renders nothing at all when there is nothing to say, so a hero with no Topics
 // is byte-for-byte the hero this app has always had.
-//
-// `staged` (flag newChatHero): ONE row of three, the scope and the way out in a
-// header line instead of a footer, so the whole hero holds in a 900px laptop
-// viewport — the feed is one click away for the other five.
-function renderFreshTopics(session, { staged = false } = {}) {
+
+function renderFreshTopics(session) {
   const pbId = session?.contextId || null;
   const feed = pbId ? getFeedForPlaybook(pbId) : null;
   if (!feed) return "";
-  const topics = getFreshTopics(feed.id).slice(0, staged ? 3 : undefined);
+  const topics = getFreshTopics(feed.id);
   if (!topics.length) return "";
   const total = countFresh(feed.id);
   const pb = getContextById(pbId);
-  const scopeHref = isWorkspaceMode() ? "#/topics" : `#/topics?pb=${encodeURIComponent(pbId)}`;
+  const scopeHref = `#/topics?pb=${encodeURIComponent(pbId)}`;
 
   const cards = topics
-    .map((t) =>
-      renderTopicCard(t, { source: findTopicSource(t.sourceId), variant: "picker", withUse: true, useAsLink: staged }),
-    )
+    .map((t) => renderTopicCard(t, { source: findTopicSource(t.sourceId), variant: "picker", withUse: true }))
     .join("");
-
-  if (staged) {
-    return html`
-      <section class="empty-chat__topics empty-chat__topics--staged" aria-labelledby="freshTopicsLabel">
-        <header class="empty-chat__topics-head">
-          <div>
-            <h2 class="empty-chat__topics-title" id="freshTopicsLabel">Topics to review</h2>
-            <p class="empty-chat__topics-lede">
-              ${topics.length} of ${total} from this week's listening${pb ? ` for ${pb.name}` : ""}.
-            </p>
-          </div>
-          <a class="ap-link standalone small" href="${raw(scopeHref)}"
-            >Open Topic Feed<i class="ap-icon-arrow-right" aria-hidden="true"></i
-          ></a>
-        </header>
-        <div class="empty-chat__topics-grid">${raw(cards)}</div>
-      </section>
-    `;
-  }
 
   return html`
     <h2 class="empty-chat__starter-label" id="freshTopicsLabel">
@@ -152,42 +125,11 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
     (s) => (s.kind || "").toLowerCase() === "video" && s.status === "Processed" && typeof s.durationSec === "number",
   );
   const videoLabel = firstVideo ? `"${firstVideo.filename}"` : "your video";
-  // The three cards come from components/starter-card.js — the home renders the
-  // same ones, so there is one renderer and two hosts.
-  // Flag newChatHero: the same wordmark + sub-line, the composer, then the
-  // three workflows as rows under it (they share the composer's 740px column).
-  // Flag newChatHero: the same wordmark + sub-line, the composer, then the
-  // three workflows as rows under it (they share the composer's 740px column).
-  if (isFlagOn("newChatHero")) {
-    return html`
-      <div class="empty-chat empty-chat--rows" data-empty-chat>
-        ${raw(playbookReadyBlock(session))}
-        <span class="empty-chat__logo" role="img" aria-label="Archie">
-          <img class="empty-chat__logo-word empty-chat__logo-word--a" src="assets/logos/archie-wordmark.svg" alt="" />
-          <img class="empty-chat__logo-mono" src="assets/logos/archie-mono.svg" alt="" />
-          <img
-            class="empty-chat__logo-word empty-chat__logo-word--b"
-            src="assets/logos/archie-alt-wordmark.svg"
-            alt=""
-          />
-        </span>
-        <div class="empty-chat__sub">${heroSub()}</div>
-        <div class="empty-chat__lead">
-          <!-- The FUX's pixel field without its box: pale, masked into the
-               ground, a wide halo on both sides of the composer. -->
-          <archie-pixels class="empty-chat__pixels" data-quiet data-ripple aria-hidden="true"></archie-pixels>
-          ${raw(composerMarkup)}
-        </div>
-        <div class="starter-rows" role="group" aria-label="Start from a workflow">
-          ${raw(renderStarterCards({ sourceLabel, videoLabel, rows: true }))}
-        </div>
-        ${raw(finishVoicesRow(session))} ${raw(renderFreshTopics(session, { staged: true }))}
-      </div>
-    `;
-  }
+  // The three cards come from components/starter-card.js.
   const cards = renderStarterCards({ sourceLabel, videoLabel });
   return html`
     <div class="empty-chat" data-empty-chat>
+      ${raw(playbookReadyBlock(session))}
       <span class="empty-chat__logo" role="img" aria-label="Archie">
         <img class="empty-chat__logo-word empty-chat__logo-word--a" src="assets/logos/archie-wordmark.svg" alt="" />
         <img class="empty-chat__logo-mono" src="assets/logos/archie-mono.svg" alt="" />
@@ -203,13 +145,11 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
            Topics cost two rows instead of six and nothing is hidden. -->
       <h2 class="empty-chat__starter-label" id="starterGridLabel">Turn a source, a video, or a top post into drafts</h2>
       <div class="starter-grid" role="group" aria-labelledby="starterGridLabel">${raw(cards)}</div>
-      ${raw(renderFreshTopics(session))}
+      ${raw(finishVoicesRow(session))} ${raw(renderFreshTopics(session))}
     </div>
   `;
 }
 
-// In the demo the promise is said with the brand and a first move: a made-up
-// roaster, the workflow that shows the most in one click, nothing posted.
 // A nudge among the starters while the chat's Playbook has network voices to
 // finish (2026-10-29, asked: « quand des voice sont incomplètes … un bloc sur la
 // home avec un nudge », then « Un starter de plus »). It goes when they're all
@@ -266,7 +206,5 @@ function playbookReadyBlock(session) {
 }
 
 function heroSub() {
-  return isDemo()
-    ? "A demo with Bramble & Bean, a coffee roaster I made up. Try Batch from a source: I'll draft from its files in seconds. Nothing gets posted."
-    : "Drop a source and I'll turn it into drafts ready to schedule, all in this chat.";
+  return "Drop a source and I'll turn it into drafts ready to schedule, all in this chat.";
 }

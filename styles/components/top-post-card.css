@@ -14,11 +14,10 @@
   max-width: 980px;
 }
 
-/* The studios' intro header — Top posts, Batch, Clip Studio share one frame,
-   Archie badge and title, so each reads as a first-class workflow. */
+/* The studios' intro header — Top posts and Batch share one frame, Archie
+   badge and title, so each reads as a first-class workflow. */
 .top-posts-intro,
-.batch-studio__intro,
-.clip-studio__intro {
+.batch-studio__intro {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -27,8 +26,7 @@
 }
 
 .top-posts-intro__badge,
-.batch-studio__ai-badge,
-.clip-studio__ai-badge {
+.batch-studio__ai-badge {
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
@@ -42,15 +40,13 @@
 }
 
 .top-posts-intro__badge i,
-.batch-studio__ai-badge i,
-.clip-studio__ai-badge i {
+.batch-studio__ai-badge i {
   font-size: var(--sys-icon-css-xs);
   color: var(--app-archie-mark);
 }
 
 .top-posts-intro__title,
-.batch-studio__title,
-.clip-studio__title {
+.batch-studio__title {
   margin: 0;
   font-family: var(--ref-font-family);
   font-size: var(--sys-text-style-marketing-size);

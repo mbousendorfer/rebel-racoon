@@ -46,7 +46,7 @@
 
 /* ── Head ───────────────────────────────────────────────────────────────────
    Two lines, Monarch's own: the brand above, the objective below. The Playbook
-   line is not decoration — outside workspace mode `playbookTitle` is the ONLY
+   line is not decoration — `playbookTitle` is the ONLY
    door to the scope in the whole app, so a lecture that dropped it would make
    its brand unchangeable (pieces.js). The verbs sit on the right of the row,
    never in the facts column. */

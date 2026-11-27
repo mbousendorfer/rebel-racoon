@@ -58,14 +58,13 @@ Full source tree and lifecycle: [`ARCHITECTURE.md`](docs/reference/ARCHITECTURE.
 | ----------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `/`                                       | `dashboard.js`                    | A redirect only: the active brand's most recent chat in scope, else a new one                     |
 | `/session/:id`                            | `session.js` + `session/`         | The chat: thread, composer, per-session flows, the studios                                        |
-| `/home`                                   | `home.js` + `home/`               | The account home (flag `playbookWorkspace`): Chats / Playbooks tabs; flag OFF → `/`               |
-| `/contexts`                               | `home.js`                         | The Playbooks catalogue; in workspace mode `replace`s to `/home?tab=playbooks`                    |
+| `/contexts`                               | `home.js`                         | The Playbooks catalogue                                                                           |
 | `/playbook/:id`                           | `playbook.js`                     | A Playbook's fiche (`?tab=`)                                                                      |
 | `/playbook/:id/styles/new`, `…/:styleId`  | `modules/image-studio/`           | The brand's image-style creator                                                                   |
 | `/insights` (`/insights/:tab` → redirect) | `insights/shell.js`               | The active Playbook's objectives (flag `insightsHub`)                                             |
 | `/connectors`                             | `connectors.js`                   | Connectors gallery, detail in a modal (flag `connectors`)                                         |
 | `/topics`, `/topics/settings`             | `topics.js`, `topics-settings.js` | The Topic Feed and its listening config, one Playbook at a time                                   |
-| `/clips`, `/clips/:id`, `…/edit/:clipId`  | `screens/clips/`                  | The Clips space (flag `clipsSpace`): library, one video's project, the clip editor                |
+| `/clips`, `/clips/:id`, `…/edit/:clipId`  | `screens/clips/`                  | The Clips space: library, one video's project, the clip editor                                    |
 | `/welcome-alt/*`                          | `welcome-alt*.js`                 | First-time onboarding as screens: `intro` → `brand` → … → `ready` → `recap` (the Brief) → `voice` |
 
 There is **no `/settings` route**. The prototype controls live in the hidden **Admin** panel, ⇧D only (`admin-panel.js`): a Settings tab (`admin-menu.js` — user mode, feature flags) and a Preview in chat tab (`chat-gallery.js`). Nothing in the UI points at it.
@@ -93,12 +92,12 @@ Never hand-edit a `?v=`. ⚠️ A cached entry point pins the whole old import g
 
 - **[Settings must not aggregate](docs/reference/DECISIONS.md#a-settings-surface-must-not-aggregate)** — three global settings pages reverted (drawer, Connectors section, `/settings`).
 - **[Playbook sharing](docs/reference/DECISIONS.md#playbook-sharing-the-store-holds-the-facts-playbook-access-holds-the-rights)** (flag `playbookSharing`) — `contexts-store` never filters, `playbook-access.js` is the only gate; `canEdit` = owner only, a manager gets `canGovern`, never content.
-- **[The Playbook scope](docs/reference/DECISIONS.md#the-playbook-scope--pb-by-default-a-workspace-behind-playbookworkspace)** (flag `playbookWorkspace`) — the flag short-circuits in `active-playbook.js` only. Never re-point a surface at `getDefaultContext()` nor add a `?pb=` producer outside those functions.
+- **[The Playbook scope](docs/reference/DECISIONS.md#the-playbook-scope--pb-and-a-per-chat-playbook)** — `?pb=` and a per-chat Playbook; the workspace variant (rail switcher, `/home`) was deleted on 2026-11-27. Never re-point a surface at `getDefaultContext()` nor add a `?pb=` producer outside `active-playbook.js`.
 - **[The Image Studio](docs/reference/DECISIONS.md#the-image-studio-is-split-by-subject-and-the-engine-holds-no-dom)** — `src/modules/image-studio/`, state in `state/`, re-render via `paint()`, prompt built at generate time; a confirm inside it is its own `confirmDialog`. Five class families are built by concatenation — a rename breaks them silently.
 - **[Connectors](docs/reference/DECISIONS.md#connectors-as-live-mcp-queryable-sources)** (flag `connectors`) — a live source asked in chat (simulated MCP), managed only on `/connectors`.
 - **[The Topic Feed](docs/reference/DECISIONS.md#the-topic-feed--the-one-place-archie-proposes-instead-of-waiting)** — a triage queue; `status` / `kind` / `isTrending` / `isUpdated` stay [four fields](docs/reference/DECISIONS.md#the-invariant-four-separate-fields-one-visual-vocabulary); [two verbs only](docs/reference/DECISIONS.md#two-verbs-and-only-two) (Use in chat, Ignore); [one article renderer, three hosts](docs/reference/DECISIONS.md#one-article-three-hosts); in [the master–detail the list shrinks](docs/reference/DECISIONS.md#the-masterdetail-the-list-shrinks) (`@container`, never a media query); [one listening feed per Playbook](docs/reference/DECISIONS.md#the-listening-config-left-the-playbook), never deletable.
 - **[Connecting an account](docs/reference/DECISIONS.md#connecting-an-account-asked-in-the-flow-never-as-a-prerequisite)** — asked in the flow, never as a prerequisite: `requireConnectedProfiles()` wraps every path that produces a draft. A picker never renders empty.
-- **[The Clips space](docs/reference/DECISIONS.md#the-clips-space-the-video-first-one-editor)** (flag `clipsSpace`) — a Video belongs to the Playbook's library, not a chat; one clip editor (library · viewer · inspector that follows the selection · four-track timeline that trims); a chat's clips ARE its video's, kept in sync. Light DS only, footage on a black well.
+- **[The Clips space](docs/reference/DECISIONS.md#the-clips-space-the-video-first-one-editor)** — a Video belongs to the Playbook's library, not a chat; one clip editor (library · viewer · inspector that follows the selection · four-track timeline that trims); a chat's clips ARE its video's, kept in sync. Light DS only, footage on a black well.
 - **[One voice per network](docs/reference/DECISIONS.md#une-voix-par-réseau--une-seule-règle-partout)** (baked ON) — the **default voice** is generic; each network has its own voice or uses the default. What Archie learns is a proposal, saved only on « Add to Voice profile ». A voice change never rewrites a draft. Copy: default voice · X voice · Add to Voice profile — never « rules for X » nor « voice learned ». Full model: [`FEATURES.md`](docs/reference/FEATURES.md) §9.
 - **[The DS ports live in ds-patches.css](docs/reference/DECISIONS.md#the-ds-ports-live-in-ds-patchescss)** — transcriptions of Angular-only DS components, waiting for the DS to publish them.
 
@@ -106,11 +105,12 @@ Never hand-edit a `?v=`. ⚠️ A cached entry point pins the whole old import g
 
 - Any global settings page; the Topics _magazine_ and its front page.
 - Image Studio: the _classic_ / _auto-brief_ arrangements, the Generate | Edit tabs, an Advanced tab.
-- Clips: the tool rail, the « preview first » editor, a dark mode (2026-10-26), an Audio track (prod has none).
-- New chat: a « What are we posting today? » headline, the pixel stage boxing the composer, workflows as tile-cards (they stay rows); the eight HOME-1…8 homes; New Start #1–3 (pixel halo, blank-page top, wall of posts).
-- Onboarding: the chat onboarding and its accounts step, the connect and networks screens, the Skip dialog, the review as a stack of cards.
+- Clips: the Clip Studio and the Video Clips modal (deleted 2026-11-27, the Clips space is the only place), the tool rail, the « preview first » editor, a dark mode (2026-10-26), an Audio track (prod has none).
+- New chat: a « What are we posting today? » headline, the pixel stage boxing the composer, workflows as tile-cards, then as rows under a pixel halo (`newChatHero`, deleted 2026-11-27: the three cards stay); the eight HOME-1…8 homes; New Start #1–3 (pixel halo, blank-page top, wall of posts).
+- The Playbook as a workspace: one active Playbook in a rail switcher, everything scoped under it, the account home `/home` (`playbookWorkspace`, deleted 2026-11-27).
+- Onboarding: the « Try it with a demo brand » demo on Bramble & Bean (`demoMode`, deleted 2026-11-27), the chat onboarding and its accounts step, the connect and networks screens, the Skip dialog, the review as a stack of cards.
 - Voice: « A few questions » as a separate way, a « LinkedIn · Default » first-network model, a « chosen default » state, « Use my default voice for X » / « Remove the X voice ».
-- Removed flags, never to come back as toggles: `draftChanges`, `voicePerNetwork`, `connectFirst`, `reviewScroll`, `draftInlineEdit`, `topicFeed`, `playbook2`, `sexySquirrel`, `skipConnectProfiles`, `playbookNoWebsite`, `playbookCompetitors`, `playbookColors`, `manyProfiles`, `statusActionSnackbars` (all baked ON); `homeOneInput`…`homeDrawer`, `chatPreviewTool`, `newStart`…`newStart3`, `brandTintedPresets`, `playbookDefault`, `imageStudioAutoBrief`, `imageStudioSetupFirst`, `imageStudioV2`, `frontPage`, `topics` (deleted).
+- Removed flags, never to come back as toggles: `clipsSpace`, `newConversationStyles`, `draftChanges`, `voicePerNetwork`, `connectFirst`, `reviewScroll`, `draftInlineEdit`, `topicFeed`, `playbook2`, `sexySquirrel`, `skipConnectProfiles`, `playbookNoWebsite`, `playbookCompetitors`, `playbookColors`, `manyProfiles`, `statusActionSnackbars` (all baked ON); `playbookWorkspace`, `newChatHero`, `emptyStateGround`, `demoMode`, `homeOneInput`…`homeDrawer`, `chatPreviewTool`, `newStart`…`newStart3`, `brandTintedPresets`, `playbookDefault`, `imageStudioAutoBrief`, `imageStudioSetupFirst`, `imageStudioV2`, `frontPage`, `topics` (deleted).
 
 ## Admin, user mode, feature flags
 
@@ -119,20 +119,14 @@ User mode (`user-mode.js`): `"returning"` (populated mocks, default) or `"new-al
 | Flag                     | Default | Gates                                                                                                                                            |
 | ------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `insightsHub`            | OFF     | the whole `/insights` section                                                                                                                    |
-| `playbookWorkspace`      | OFF     | the Playbook as the level above the work: rail switcher, scoped surfaces, `/home`                                                                |
 | `connectors`             | OFF     | the connectors feature, onboarding's documents step included                                                                                     |
-| `clipsSpace`             | OFF     | the Clips space; OFF = the Clip Studio and the Video Clips modal                                                                                 |
 | `conversationStatusCard` | OFF     | the floating status card; with it, the panel has no Overview tab (`hasOverview()`)                                                               |
 | `contentPanel`           | **ON**  | the pills become the side panel's tabs (Overview │ Sources › Ideas, Clips › Drafts); results in the thread open the panel, it never opens itself |
 | `multilingualPlaybook`   | OFF     | languages per Playbook, voice per language                                                                                                       |
 | `playbookSharing`        | OFF     | ownership, three scopes, governance, the profile gate; its demo data seeds only under the flag                                                   |
 | `newScheduleModal`       | **ON**  | the redesigned schedule modal; OFF = `schedule-modal-legacy.js`, deleted once the comparison ends                                                |
 | `draftMentions`          | OFF     | « mention Notion in the LinkedIn post » from the chat (`mention-flow.js`)                                                                        |
-| `newConversationStyles`  | **ON**  | the « two sides » thread; OFF = the Monday 2026-10-05 thread (`chat-legacy.css` + `isFlagOn` branches — delete them all when baked)              |
 | `uiIdeaCard`             | OFF     | the clearer compact idea card (`renderClearIdeaCard`)                                                                                            |
-| `emptyStateGround`       | OFF     | the home's first-run empty states on the Playbook creation's warm ground                                                                         |
-| `newChatHero`            | **ON**  | a new chat shows the three workflow starters as rows, then three Topics                                                                          |
-| `demoMode`               | OFF     | « Try it with a demo brand » (`demo-flow.js`, `demo-mode.js`, `isDemo()`)                                                                        |
 | `newStart4`              | OFF     | a first-time user with no Playbook lands on a chat that introduces Archie (`session/new-start.js`)                                               |
 
 ## Design System — read first before UI/CSS work

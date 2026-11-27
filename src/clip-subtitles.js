@@ -3,7 +3,7 @@
 // gallery render the exact same set. Values line up with the rich caption
 // presets in clip-captions.js (karaoke, deep-diver, …) so a draft's stored
 // subtitleStyle resolves to a real preset when the clip is later opened in the
-// Video Clips editor. Each item carries a `preview` — trusted HTML that
+// Clips editor. Each item carries a `preview` — trusted HTML that
 // CSS-renders a "Make it Pop" mock in that style
 // (styles/components/subtitle-style.css).
 

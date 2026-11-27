@@ -4,21 +4,18 @@
 // session.js, unchanged; the mention picker stays there, since bindSession
 // writes its highlight state.
 
-import { isFlagOn } from "../../feature-flags.js?v=2928";
-import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2928";
-import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2928";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2928";
-import { getSources, getIdeas } from "../../library.js?v=2928";
-import * as clipStudio from "../../clip-studio.js?v=2928";
-import { getThread } from "../../assistant.js?v=2928";
-import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2928";
-import { revokedContextFor } from "../../playbook-access.js?v=2928";
-import { getSessionById } from "../../sessions-store.js?v=2928";
-import { catalogueRoute } from "../../active-playbook.js?v=2928";
-import { getActiveConnector } from "../../composer-connector.js?v=2928";
-import { isDemo } from "../../demo-mode.js?v=2928";
-import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=2928";
-import { renderTopicPickerRow } from "./empty-hero.js?v=2928";
+import { isFlagOn } from "../../feature-flags.js?v=2929";
+import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2929";
+import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2929";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2929";
+import { getSources, getIdeas } from "../../library.js?v=2929";
+import { getThread } from "../../assistant.js?v=2929";
+import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2929";
+import { revokedContextFor } from "../../playbook-access.js?v=2929";
+import { getSessionById } from "../../sessions-store.js?v=2929";
+import { getActiveConnector } from "../../composer-connector.js?v=2929";
+import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=2929";
+import { renderTopicPickerRow } from "./empty-hero.js?v=2929";
 
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the
@@ -93,10 +90,6 @@ export function ideaBannerFlowInner(count) {
   return `<span>${count} idea${count === 1 ? "" : "s"} ready</span>`;
 }
 
-function withEllipsis(s) {
-  return /…$/.test(s) ? s : `${s}…`;
-}
-
 // In-progress label for a loading thread message (adapted from the rule in
 // conversation-status-card.js; duplicated to keep the version cascade small).
 // Returns null for messages that aren't a distinct user-facing task. source-
@@ -107,20 +100,12 @@ function humanizeLoadingMessage(m) {
   // reasoning pill — count the pill, not the empty answer slot, so a single
   // reply reads "Thinking…" rather than "2 tasks running…".
   if (m.hidden) return null;
-  // With the new conversation styles a reply's status is its own pill in the
-  // thread, right above the composer: the bar named it a second time
-  // (« Thinking… » twice, 2026-10-30). It keeps the background work.
-  if (isFlagOn("newConversationStyles") && ["assistant", "pending", "system", "system-notice"].includes(m.role))
-    return null;
+  // A reply's status is its own pill in the thread, right above the composer:
+  // the bar would name it a second time (« Thinking… » twice, 2026-10-30). It
+  // keeps the background work.
+  if (["assistant", "pending", "system", "system-notice"].includes(m.role)) return null;
   if (m.role === "idea-extraction") return `Extracting ideas from ${m.filename || "source"}…`;
   if (m.role === "clip-extraction") return `Extracting clips from ${m.filename || "source"}…`;
-  if (m.role === "assistant") return withEllipsis(m.meta && m.meta !== "Archie" ? m.meta : "Thinking");
-  if (m.role === "system" || m.role === "system-notice") {
-    return withEllipsis(m.meta && m.meta !== "Update" ? m.meta : m.text || "Working");
-  }
-  // Generic busy marker (startPending) — drafts/ideas flows pass a meta label
-  // ("Extracting ideas from content…", "Generating post drafts…"); fall back to "Working".
-  if (m.role === "pending") return withEllipsis(m.meta || "Working");
   return "Working…";
 }
 
@@ -140,11 +125,6 @@ export function computeComposerStatus(sessionId) {
   // truth (the matching source-intake thread turns are skipped below).
   for (const s of getSources(sessionId)) {
     if (s.status === "Processing") labels.push(`Analyzing ${s.filename || "source"}…`);
-  }
-  // Video clip extraction (when a normal composer is present).
-  const clip = clipStudio.getState(sessionId);
-  if (clip && clip.stage === "analyzing") {
-    labels.push(clip._stageLabel ? `${clip._stageLabel}…` : "Analyzing video…");
   }
   // Other loading thread turns: idea/clip extraction, draft generation, replies.
   for (const m of getThread(sessionId)) {
@@ -326,8 +306,6 @@ export function animateBannerOut(el, done) {
 // are delegated on #app, so the same markup works in both positions
 // without re-wiring.
 export function renderComposer(attachedContext, session, selectable) {
-  // The demo (flag demoMode) hands over the brand's own files: say so.
-  const demo = isDemo();
   // Nothing to @mention until the session has at least one ready source or
   // extracted idea — disable the trigger so it doesn't open an empty picker.
   const hasMentionable =
@@ -391,7 +369,7 @@ export function renderComposer(attachedContext, session, selectable) {
                   <i class="ap-icon-file--pdf"></i>
                   <div class="ap-action-dropdown-item-text">
                     <div class="ap-action-dropdown-item-label-container">
-                      <span class="ap-action-dropdown-item-label">Add ${demo ? "demo " : ""}PDF</span>
+                      <span class="ap-action-dropdown-item-label">Add PDF</span>
                     </div>
                   </div>
                 </button>
@@ -399,7 +377,7 @@ export function renderComposer(attachedContext, session, selectable) {
                   <i class="ap-icon-file--video"></i>
                   <div class="ap-action-dropdown-item-text">
                     <div class="ap-action-dropdown-item-label-container">
-                      <span class="ap-action-dropdown-item-label">Add ${demo ? "demo " : ""}video</span>
+                      <span class="ap-action-dropdown-item-label">Add video</span>
                     </div>
                   </div>
                 </button>
@@ -407,7 +385,7 @@ export function renderComposer(attachedContext, session, selectable) {
                   <i class="ap-icon-link"></i>
                   <div class="ap-action-dropdown-item-text">
                     <div class="ap-action-dropdown-item-label-container">
-                      <span class="ap-action-dropdown-item-label">Add ${demo ? "demo " : ""}URL</span>
+                      <span class="ap-action-dropdown-item-label">Add URL</span>
                     </div>
                   </div>
                 </button>
@@ -415,7 +393,7 @@ export function renderComposer(attachedContext, session, selectable) {
                   <i class="ap-icon-file--text"></i>
                   <div class="ap-action-dropdown-item-text">
                     <div class="ap-action-dropdown-item-label-container">
-                      <span class="ap-action-dropdown-item-label">${demo ? "Add demo text" : "Paste text"}</span>
+                      <span class="ap-action-dropdown-item-label">Paste text</span>
                     </div>
                   </div>
                 </button>
@@ -467,13 +445,8 @@ export function renderComposer(attachedContext, session, selectable) {
         <div class="session__composer-hint">
           ${
             revoked
-              ? `Save or schedule the drafts above, or <a class="ap-link" href="#${catalogueRoute()}">pick a Playbook you have access to</a>.`
-              : selectable && isFlagOn("newChatHero")
-                ? // A new chat (flag newChatHero): the keyboard line is noise
-                  // before the first word. (The admin link that sat here moved
-                  // to the Admin panel, ⇧D.)
-                  ""
-                : `<kbd>Enter</kbd> to send · <kbd>Shift</kbd>+<kbd>Enter</kbd> for new line · Drop a file to attach a source`
+              ? `Save or schedule the drafts above, or <a class="ap-link" href="#/contexts">pick a Playbook you have access to</a>.`
+              : `<kbd>Enter</kbd> to send · <kbd>Shift</kbd>+<kbd>Enter</kbd> for new line · Drop a file to attach a source`
           }
         </div>
       </div>

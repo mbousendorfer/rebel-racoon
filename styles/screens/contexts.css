@@ -150,30 +150,6 @@
   animation: pb-first-in 800ms ease-out both;
 }
 
-/* Flag emptyStateGround: the Playbook creation's ground (welcome.css, the
-   run's .welcome-intro__stage), lighter — every stop at about a third of its
-   strength, so the scene's white cards still read without a lift. `local`
-   makes it span the scrolled height: the orange corner sits at the foot of
-   the content, not of the viewport. The dot field becomes the run's square
-   pixels, kept around the scene (its own radial fade). */
-body.empty-state-ground .contexts-view:has(.pb-first) {
-  background:
-    radial-gradient(55% 40% at 95% 100%, color-mix(in srgb, var(--app-archie-mark) 30%, transparent), transparent),
-    radial-gradient(80% 50% at 60% 100%, color-mix(in srgb, var(--ref-color-orange-80) 18%, transparent), transparent),
-    radial-gradient(85% 70% at 0% 100%, color-mix(in srgb, var(--app-butter) 70%, transparent), transparent),
-    radial-gradient(60% 45% at 100% 0%, color-mix(in srgb, var(--ref-color-orange-20) 30%, transparent), transparent),
-    var(--ref-color-white);
-  background-attachment: local;
-}
-body.empty-state-ground .pb-first__stage::before {
-  background: conic-gradient(
-      from 270deg at 4px 4px,
-      color-mix(in srgb, var(--ref-color-orange-100) 30%, transparent) 25%,
-      transparent 0
-    )
-    26px 26px / 28px 28px;
-}
-
 /* ── The Playbook: the catalogue card's anatomy, filled ── */
 .pb-first__sheet {
   background: var(--app-surface);
@@ -525,37 +501,7 @@ body.empty-state-ground .pb-first__stage::before {
   }
 }
 
-/* ── First run, Chats tab: the same stage, told for a chat ──
-   One example chat (you ask, a file rides along, I answer), then what it
-   holds, named like the table's columns: sources · ideas · drafts, each lit in
-   turn. The wires, mark and outputs keep the timeline above; the chat's own
-   (ms): sheet 100 · your words 400 + 45 each · file 900 · my words 1300 + 45
-   each · loop from 4400, 6 s, 2 s per output. */
-.pb-first--chats {
-  --pb-loop: 6s;
-  --pb-loop-start: 4400ms;
-}
-.chat-first__chat {
-  display: grid;
-  align-content: start;
-}
-.chat-first__head {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-sm);
-  border-bottom: 1px solid var(--ref-color-grey-20);
-}
-.chat-first__name {
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-}
+/* The « Example » tag on the first-run scenes of the Topic Feed and Insights. */
 .chat-first__example {
   padding: 0 var(--ref-spacing-xxs);
   border-radius: var(--ref-border-radius-sm);
@@ -563,91 +509,6 @@ body.empty-state-ground .pb-first__stage::before {
   color: var(--ref-color-grey-80);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
-}
-.chat-first__thread {
-  display: grid;
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-sm);
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-}
-/* Two sides, like the thread: yours on the right, mine on the left. */
-.chat-first__bubble {
-  justify-self: end;
-  max-width: 85%;
-  margin: 0;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border-radius: var(--app-radius-card);
-  background: var(--ref-color-grey-05);
-}
-.chat-first__bubble .pb-first__word {
-  animation-delay: calc(400ms + var(--w) * 45ms);
-}
-.chat-first__file {
-  justify-self: end;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  margin-top: calc(-1 * var(--ref-spacing-xs));
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--ref-border-radius-sm);
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  animation: pb-first-pop 280ms var(--app-ease-out) 900ms both;
-}
-.chat-first__reply {
-  display: grid;
-  grid-template-columns: 16px 1fr;
-  align-items: start;
-  gap: var(--ref-spacing-xs);
-  margin: 0;
-}
-.chat-first__reply > i {
-  width: 16px;
-  height: 12px;
-  margin-top: 4px;
-  color: var(--app-archie-mark);
-  animation: pb-first-pop 240ms var(--app-ease-out) 1250ms both;
-}
-.chat-first__reply .pb-first__word {
-  animation-delay: calc(1300ms + var(--w) * 45ms);
-}
-
-.chat-first__out {
-  --pb-rest: var(--app-surface);
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  animation:
-    app-rise 420ms var(--app-ease-out) calc(2500ms + var(--k) * 250ms) both,
-    pb-first-spot var(--pb-loop) ease-in-out calc(var(--pb-loop-start) + var(--i) * 2s) infinite;
-}
-.chat-first__out-label {
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-}
-.chat-first__out-line {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  min-width: 0;
-  color: var(--ref-color-grey-80);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-}
-.chat-first__out-line > span {
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.chat-first__out-line > i {
-  flex: none;
-  font-size: var(--sys-icon-css-sm);
 }
 
 @keyframes pb-first-stroke {
@@ -853,6 +714,25 @@ body.empty-state-ground .pb-first__stage::before {
   border-radius: var(--ref-border-radius-md);
 }
 
+/* The DS avatar covers its images; a logo has to be CONTAINED or a wordmark
+   comes back cropped, and it sits on the tile's own white so a light-on-dark
+   mark still reads. */
+.contexts-card__thumb {
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+
+.contexts-card__thumb > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 3px;
+  background: var(--ref-color-white);
+  box-sizing: border-box;
+}
+
 .contexts-card__name {
   margin: 0;
   display: flex;
@@ -1028,10 +908,6 @@ body.empty-state-ground .pb-first__stage::before {
   flex-wrap: wrap;
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-xs) var(--ref-spacing-md) 0;
-}
-
-.contexts-card__current {
-  flex: 0 0 auto;
 }
 
 .contexts-card__owner {

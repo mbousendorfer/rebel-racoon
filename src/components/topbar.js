@@ -1,8 +1,8 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2928";
-import { conceptHint, conceptText } from "../concepts.js?v=2928";
-import { getPath, navigate } from "../router.js?v=2928";
-import { parseHashParams } from "../url-state.js?v=2928";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2928";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2929";
+import { conceptHint, conceptText } from "../concepts.js?v=2929";
+import { getPath, navigate } from "../router.js?v=2929";
+import { parseHashParams } from "../url-state.js?v=2929";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2929";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -18,38 +18,37 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=2928";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2928";
-import { contentCounts } from "./right-panel/overview-view.js?v=2928";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2928";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2928";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2928";
+} from "./right-panel.js?v=2929";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2929";
+import { contentCounts } from "./right-panel/overview-view.js?v=2929";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2929";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2929";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2929";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=2928";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2928";
-import { open as openRenameModal } from "./rename-modal.js?v=2928";
+} from "./conversation-status-card.js?v=2929";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2929";
+import { open as openRenameModal } from "./rename-modal.js?v=2929";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=2928";
-import { isFlagOn } from "../feature-flags.js?v=2928";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=2928";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2928";
-import { findCadence } from "../topics-catalog.js?v=2928";
+} from "../contexts-store.js?v=2929";
+import { isFlagOn } from "../feature-flags.js?v=2929";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2929";
+import { findCadence } from "../topics-catalog.js?v=2929";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=2928";
+} from "../top-posts-flow.js?v=2929";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2928";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2929";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -156,12 +155,11 @@ function renderTopPostsBack() {
   `;
 }
 
-// The Topic Feed's scope, resolved exactly as screens/topics.js does: the
-// active Playbook in workspace mode, otherwise `?pb=` when it names a real one
-// and the default when it doesn't. Duplicating the rule would be how the cog
-// ends up naming a different brand than the screen under it.
+// The Topic Feed's scope, resolved exactly as screens/topics.js does: `?pb=`
+// when it names a real one and the default when it doesn't. Duplicating the
+// rule would be how the cog ends up naming a different brand than the screen
+// under it.
 function topicsScopedPlaybook() {
-  if (isWorkspaceMode()) return getActivePlaybook();
   const wanted = parseHashParams().get("pb");
   return (wanted && getContextById(wanted)) || getDefaultContext() || getContexts()[0] || null;
 }
@@ -176,10 +174,7 @@ function renderTopicsSettings() {
   // Resolve the scope the same way the feed does — see topicsScopedPlaybook.
   const pb = topicsScopedPlaybook();
   const feed = pb ? getFeedForPlaybook(pb.id) : null;
-  // Workspace mode carries no `?pb=`: the settings page reads the rail like
-  // every other surface, so a link that pinned a brand into the URL would be a
-  // second scope waiting to disagree with it.
-  const href = `#/topics/settings${pb && !isWorkspaceMode() ? `?pb=${encodeURIComponent(pb.id)}` : ""}`;
+  const href = `#/topics/settings${pb ? `?pb=${encodeURIComponent(pb.id)}` : ""}`;
   const title = feed ? `Feed settings · refreshed ${findCadence(feed.cadence)?.adverb || "weekly"}` : "Feed settings";
   return `
     <a
@@ -559,34 +554,16 @@ function isSessionRoute() {
 // Routes that lead with a back control instead of a title, and where they go.
 function backTargetFor(path) {
   // The brand's style creator (Image Generator) is a page
-  // OF a Playbook: its way back is that fiche, named — in either model.
+  // OF a Playbook: its way back is that fiche, named.
   const pageOf = /^\/playbook\/([^/?]+)\/styles\//.exec(path);
   if (pageOf) {
     const id = decodeURIComponent(pageOf[1]);
     const name = getContextById(id)?.name;
     return { to: `/playbook/${pageOf[1]}`, label: name ? `Back to ${name}` : "Back to Playbook" };
   }
-  // Account scope (see active-playbook.js): these routes sit above the
-  // workspaces, so their back control leads back IN rather than to a sibling
-  // page — and it names the brand, because "Back" alone would not say what you
-  // are returning to. `/` resolves that brand's home (dashboard.js).
-  if (isAccountScope(path)) {
-    if (path === "/home" || path === "/contexts") {
-      const active = getActivePlaybook();
-      return { to: "/", label: active ? `Back to ${active.name}` : "Back to chats" };
-    }
-    // Another brand's fiche, opened from the home's Playbooks tab — back to
-    // that tab, not to the home's default list.
-    return { to: catalogueRoute(), label: "Back to all Playbooks" };
-  }
-  // The active brand's fiche too: a bare "Playbook" title repeated the rail's
-  // lit row and the page's own h1, and said nothing about where to go next. It
-  // stays IN the workspace (the rail stays); the back simply leads up to the
-  // catalogue, worded like the other fiches' in workspace mode.
-  if (/^\/playbook\//.test(path)) {
-    if (isWorkspaceMode()) return { to: catalogueRoute(), label: "Back to all Playbooks" };
-    return { to: "/contexts", label: "Back to Playbooks" };
-  }
+  // A fiche: a bare "Playbook" title repeated the page's own h1 and said
+  // nothing about where to go next. The back leads up to the catalogue.
+  if (/^\/playbook\//.test(path)) return { to: "/contexts", label: "Back to Playbooks" };
   // Insights' fiche is a LEVEL, not a route: `?objective=` is what opens it, and
   // `Mob · Index` is the only reading with two levels (Cockpit and Side keep the
   // whole list on screen, so they have no level to come back from — and their
@@ -640,9 +617,8 @@ function currentSessionId() {
 // the topbar title clickable.
 function currentTitle() {
   const path = getPath();
-  // Two homes, one word: `/` is the active brand's (a redirect that never
-  // renders), `/home` is the account's.
-  if (path === "/" || path === "/home") return "Home";
+  // `/` is a redirect that never renders.
+  if (path === "/") return "Home";
   if (path === "/contexts") return "Playbooks";
   if (path === "/connectors") return "Connectors";
   if (path === "/topics") return "Topic Feed";

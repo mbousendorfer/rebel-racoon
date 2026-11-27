@@ -3,16 +3,16 @@
 // the panel shell (open / close / resize / URL state / delegated listeners)
 // stays there.
 
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2928";
-import { isFlagOn } from "../../feature-flags.js?v=2928";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2928";
-import { escapeAttr, escapeText } from "../../utils.js?v=2928";
-import { iconFor } from "../../file-kinds.js?v=2928";
-import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2928";
-import { conceptText } from "../../concepts.js?v=2928";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2928";
-import { renderTopPostEcho } from "../top-post-card.js?v=2928";
-import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2928";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2929";
+import { isFlagOn } from "../../feature-flags.js?v=2929";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2929";
+import { escapeAttr, escapeText } from "../../utils.js?v=2929";
+import { iconFor } from "../../file-kinds.js?v=2929";
+import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2929";
+import { conceptText } from "../../concepts.js?v=2929";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2929";
+import { renderTopPostEcho } from "../top-post-card.js?v=2929";
+import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2929";
 
 // Sources mode view — list of source rows for the active session + a
 // trailing "+ Attach" button. Each row carries kind icon, filename,
@@ -218,16 +218,15 @@ function renderSourceRow(src) {
   // the document listeners in init). Always available — even while
   // processing.
   const menuId = `src-more-${src.id}`;
-  // Video sources expose a "View clips" entry that opens the Video Clips modal
-  // (browse mode) — every clip cut from this video, plus the "Add clip" CTA to
-  // create one manually. Count surfaced when clips already exist.
+  // Video sources expose an "Open in Clips" entry: the video's project in the
+  // Clips space. Count surfaced when clips already exist.
   const isVideo = src.kind === "Video";
   const viewClipsItem = isVideo
     ? `<button type="button" role="menuitem" class="ap-action-dropdown-item" data-rpanel-source-clips="${src.id}">
           <i class="ap-icon-video"></i>
           <div class="ap-action-dropdown-item-text">
             <div class="ap-action-dropdown-item-label-container">
-              <span class="ap-action-dropdown-item-label">${isFlagOn("clipsSpace") ? "Open in Clips" : "View clips"}${clipCount ? ` (${clipCount})` : ""}</span>
+              <span class="ap-action-dropdown-item-label">Open in Clips${clipCount ? ` (${clipCount})` : ""}</span>
             </div>
           </div>
         </button>`

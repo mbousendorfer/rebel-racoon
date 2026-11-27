@@ -14,15 +14,15 @@
 //   · Sound like your brand — a generic post rewritten in a brand's voice → the
 //     setup run (/welcome-alt), the one way a Playbook is made;
 //   · Turn a video into clips — the seeded podcast, wide, cut into three
-//     vertical clips → the clips starter (flag clipsSpace: /clips).
+//     vertical clips → the clips starter (/clips).
 //
 // Every door is an existing hook: a request is a `data-starter` with only a
 // prompt (session.js puts it in the box and focuses it, nothing is sent), the
 // video door is the clips starter. What is local (the rotation, the typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2928";
-import { escapeHtml } from "../../utils.js?v=2928";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2929";
+import { escapeHtml } from "../../utils.js?v=2929";
 
 const esc = escapeHtml;
 

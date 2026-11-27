@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml, fold } from "../../utils.js?v=2928";
-import { isFlagOn } from "../../feature-flags.js?v=2928";
+import { escapeHtml, fold } from "../../utils.js?v=2929";
+import { isFlagOn } from "../../feature-flags.js?v=2929";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -35,25 +35,25 @@ import {
   getThread,
   refreshThread,
   postVoiceTurn,
-} from "../../assistant.js?v=2928";
-import { getSources, getIdeas } from "../../library.js?v=2928";
-import { getPosts } from "../../posts-store.js?v=2928";
-import { getTopPosts } from "../../top-posts-store.js?v=2928";
-import { getConnectedProfiles } from "../../social-profiles.js?v=2928";
-import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2928";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2928";
-import { detectUrlService } from "../../url-services.js?v=2928";
-import * as inlineQuestion from "../../inline-question.js?v=2928";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=2928";
-import { startTopicPickerInline } from "../../topic-flow.js?v=2928";
-import { askConnector } from "../../connector-ask.js?v=2928";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2928";
-import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2928";
-import { sessionPlaybookId } from "../../active-playbook.js?v=2928";
-import { getContextById } from "../../contexts-store.js?v=2928";
-import { voiceNetworks, networkVoice, adaptNetworkVoice } from "../../voice-parts.js?v=2928";
-import { requireNetworkVoices, giveNetworkVoice } from "../../network-voice-flow.js?v=2928";
-import { offerVoiceUpdate } from "../../components/feedback-control.js?v=2928";
+} from "../../assistant.js?v=2929";
+import { getSources, getIdeas } from "../../library.js?v=2929";
+import { getPosts } from "../../posts-store.js?v=2929";
+import { getTopPosts } from "../../top-posts-store.js?v=2929";
+import { getConnectedProfiles } from "../../social-profiles.js?v=2929";
+import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2929";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2929";
+import { detectUrlService } from "../../url-services.js?v=2929";
+import * as inlineQuestion from "../../inline-question.js?v=2929";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=2929";
+import { startTopicPickerInline } from "../../topic-flow.js?v=2929";
+import { askConnector } from "../../connector-ask.js?v=2929";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2929";
+import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2929";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2929";
+import { getContextById } from "../../contexts-store.js?v=2929";
+import { voiceNetworks, networkVoice, adaptNetworkVoice } from "../../voice-parts.js?v=2929";
+import { requireNetworkVoices, giveNetworkVoice } from "../../network-voice-flow.js?v=2929";
+import { offerVoiceUpdate } from "../../components/feedback-control.js?v=2929";
 
 // The intake sample plays the real lifecycle — loading, then ready — under a
 // sample id no source owns, so intake-lifecycle leaves it alone.
@@ -97,15 +97,14 @@ const COMPONENTS = [
       sendMessage(sid, "Ranked the ideas by confidence and picked the most specific one.", {
         role: "system",
         variant: "mermaid",
-        // OFF (Monday): "Thinking", and it stays "Thinking" once done.
-        meta: isFlagOn("newConversationStyles") ? "Thinking…" : "Thinking",
+        meta: "Thinking…",
         status: "loading",
       });
       const msg = getThread(sid).at(-1);
-      if (isFlagOn("newConversationStyles")) msg.text = "";
+      msg.text = "";
       setTimeout(() => {
         msg.status = "ready";
-        if (isFlagOn("newConversationStyles")) msg.meta = "Thought for 3s";
+        msg.meta = "Thought for 3s";
         refreshThread(sid);
       }, 3000);
     },
@@ -162,7 +161,7 @@ const COMPONENTS = [
     id: "failed",
     label: "Failed card",
     icon: "ap-icon-warning",
-    hint: "A job I couldn't finish, with Retry (new conversation styles; a toast otherwise)",
+    hint: "A job I couldn't finish, with Retry",
     run: (sid) =>
       reportDraftFailure(sid, new Error("Sample failure"), () =>
         postAssistantMessage(sid, "That worked this time. Your drafts are in the Drafts tab."),

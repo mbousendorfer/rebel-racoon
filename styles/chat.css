@@ -212,24 +212,6 @@
   border-top-right-radius: 0;
 }
 
-/* Source intake = a selection echo (.selection-echo--intake): the same disc,
-   title and meta as any source you pick, plus a trailing status slot. A wider
-   cap than a plain echo, for the ideas / clips pills. */
-.selection-echo--intake {
-  max-width: 480px;
-}
-
-.selection-echo--intake > .selection-echo__body {
-  flex: 1 1 auto;
-}
-
-.selection-echo__trailing {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
-  flex-shrink: 0;
-}
-
 /* URL sources show their service logo (YouTube, Drive, …) in the disc. */
 .chat-bubble-source-intake__kind--logo {
   width: var(--sys-icon-css-sm);
@@ -237,34 +219,13 @@
   object-fit: contain;
 }
 
-/* Trailing slot — three states slot in here:
-   1. Loading: __loading pill (grey muted with inline dot)
-   2. Ready + ideas: __pill (navy, clickable, chevron nudges)
-   3. Ready, no ideas: __check (bare green check icon)
+/* Trailing slot — two ready states slot in here (while it loads, the
+   .source-chip__status below):
+   1. Ready + ideas: __pill (the blue pill, chevron nudges)
+   2. Ready, no ideas: __check (bare green check icon)
 */
 
-/* (1) Loading pill — uses the shared Archie loader (12-dot mermaid
-   gradient grid, see styles/components/archie-loader.css). The
-   .chat-bubble-source-intake__spinner selector is wired into the
-   loader's class list and sized to 14px (same scale as the composer
-   thinking spinner). */
-.chat-bubble-source-intake__loading {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  background: var(--app-surface-subtle);
-  color: var(--ref-color-grey-100);
-  /* The loader stays Archie's brand orange, whatever the surface. */
-  --archie-loader-color: var(--ref-color-orange-100);
-  border-radius: var(--app-radius-pill);
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  flex-shrink: 0;
-}
-
-/* (2) Ideas / clips — "N ideas ›" / "M clips ›". This rule only resets the
+/* (1) Ideas / clips — "N ideas ›" / "M clips ›". This rule only resets the
    <button> and keeps the chevron cue; its look is the prod's filled blue pill,
    .source-chip .source-chip__action below. */
 .chat-bubble-source-intake__pill {
@@ -295,7 +256,7 @@
   transform: translateX(2px);
 }
 
-/* (3) Standalone check (ready, no ideas) — minimal green confirmation */
+/* (2) Standalone check (ready, no ideas) — minimal green confirmation */
 .chat-bubble-source-intake__check {
   color: var(--ref-color-green-100);
   font-size: var(--sys-icon-css-sm);
@@ -1118,7 +1079,7 @@ span.chat-bubble-choice-chip {
   display: none;
 }
 
-/* ─── New conversation styles (flag newConversationStyles) ────────────────
+/* ─── The thread in two sides ─────────────────────────────────────────────
    Figma "Conversation styles" § E. renderTwoSides (thread-render.js) wraps
    every turn in an avatar column, mirrored: Archie's 24px disc on the left,
    yours on the right, on the first line of the turn, 8px from its content —
@@ -1428,14 +1389,6 @@ span.chat-bubble-choice-chip {
   color: var(--ref-color-grey-100);
 }
 
-/* What Archie made of it sits right and centred, like a result card's
-   "Open clips ›" — no divider, the same blue links. */
-.e-turn .selection-echo__trailing {
-  align-self: center;
-  gap: var(--ref-spacing-sm);
-  margin-left: var(--ref-spacing-xs);
-}
-
 /* Archie's result cards keep their butter, without their own mark: the
    avatar beside them already says Archie — and IS the loader while pending.
    A glyph that says WHAT the result is (the video of "5 clips to review")
@@ -1607,7 +1560,7 @@ span.chat-bubble-choice-chip {
   background: var(--ref-color-electric-blue-05);
 }
 
-/* Your source as it lands (renderSourceIntakeTurn, flag newConversationStyles):
+/* Your source as it lands (renderSourceIntakeTurn):
    prod's source chip (studio-mfe source-intake-chip), adapted to the thread —
    one line, the file glyph + its name, then where it stands. Your side's
    corner, like your bubble: radius md, the top-right squared. Ink stays in

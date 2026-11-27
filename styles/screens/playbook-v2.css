@@ -1205,7 +1205,7 @@
   margin-top: var(--ref-spacing-xs);
 }
 
-/* How your clips look (flag clipsSpace) — four settings, saved as they change. */
+/* How your clips look — four settings, saved as they change. */
 .pb2-cliplook {
   display: flex;
   flex-direction: column;

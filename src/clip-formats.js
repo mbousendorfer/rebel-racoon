@@ -1,4 +1,4 @@
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2928";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2929";
 
 // Shared aspect-ratio catalog for video clips.
 //
@@ -20,7 +20,7 @@ export const FORMATS = {
 };
 
 // Optimized formats per network — first entry is the recommended default.
-export const NETWORK_FORMATS = {
+const NETWORK_FORMATS = {
   facebook: ["1:1", "4:5", "9:16", "4:3", "16:9"],
   instagram: ["9:16", "4:5", "1:1"],
   linkedin: ["1:1", "4:5", "16:9"],
@@ -32,21 +32,10 @@ export function formatsForNetwork(net) {
   return (NETWORK_FORMATS[net] || ["16:9"]).map((id) => FORMATS[id]).filter(Boolean);
 }
 
-export function defaultFormatFor(net) {
-  return (NETWORK_FORMATS[net] || ["16:9"])[0];
-}
-
 // True for vertical-ish ratios (portrait video frame), false for square /
 // landscape. Lets consumers pick a portrait vs landscape preview frame.
 export function isPortraitFormat(id) {
   return id === "9:16" || id === "4:5";
-}
-
-// The format's aspect ratio as a CSS `aspect-ratio` value, for the surfaces
-// that draw the chosen output shape (editor viewfinder, clip thumbnails).
-// Falls back to the source's 16:9 for clips that never got an explicit format.
-export function ratioValue(id) {
-  return String((FORMATS[id] || FORMATS["16:9"]).ratio);
 }
 
 // ── Clip-draft "pick an export format" quick-picker items ────────────────
@@ -55,7 +44,7 @@ export function ratioValue(id) {
 
 // Order the aspect-ratio tiles the way creators think of them: landscape,
 // vertical, then the squarer ratios.
-export const CLIP_RATIO_ORDER = ["16:9", "9:16", "4:3", "1:1", "4:5"];
+const CLIP_RATIO_ORDER = ["16:9", "9:16", "4:3", "1:1", "4:5"];
 
 // A small proportion tile — a rectangle drawn at the format's true aspect ratio
 // (CSS `aspect-ratio`) with the ratio label centered inside. Styled in

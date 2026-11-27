@@ -5,8 +5,8 @@
 
 /* Thumbnail wrapper button — sits at the top of the card (before the
    content zone), edge-to-edge, with rounded top corners matching the
-   card's --app-radius-card. Clicking opens the video clips modal (which
-   acts as the preview/edit surface in this prototype). */
+   card's --app-radius-card. Clicking opens the clip in the Clips space's
+   editor. */
 .clip-card__thumb-btn {
   position: relative;
   display: block;

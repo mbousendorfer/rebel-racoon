@@ -21,34 +21,6 @@ export const FLAGS = Object.freeze([
       "legitimate here and nowhere else.",
   },
   {
-    id: "playbookWorkspace",
-    group: "Playbook",
-    tip: "One active Playbook, picked in the rail, scopes everything below it. Off: each chat picks its own Playbook.",
-    label: "Playbook as a workspace (rail switcher)",
-    // OFF: byte-for-byte the per-chat model — the Playbook is a field on a
-    // session, asked in the composer on a fresh chat and fixed after that.
-    default: false,
-    hides:
-      "Whether the Playbook is a FIELD on the things you make, or the LEVEL " +
-      "ABOVE them. When OFF (default), each surface asks its own question: the " +
-      "composer's select on a new chat, `?pb=` on the Topic Feed and its " +
-      "settings, an implicit default Playbook for the clip / batch / repurpose " +
-      "flows, and the Insights title. Any two of them could disagree.\n\n" +
-      "When ON, one Playbook is active at all times, chosen from the switcher " +
-      "under the wordmark in the rail, and everything below it is that brand's " +
-      "work: the chat list, a new chat, the Topic Feed and its count, Insights, " +
-      "the studios' drafts. The six pickers that each asked the question " +
-      "(composer, feed toolbar, feed settings, batch / clip / repurpose) are " +
-      "gone: the rail names the brand, nothing else re-asks it.\n\nThe cost is stated in " +
-      "active-playbook.js: a scope HIDES. There is deliberately no " +
-      '"All playbooks" view, which is why the switcher is permanent and always ' +
-      "prints the brand name — the scope is only safe while it is legible. " +
-      "/contexts stays unfiltered: it is the catalogue the switcher picks from — " +
-      "and in this mode it lives on the account HOME the wordmark opens (/home), " +
-      "beside a hero that starts a chat on the brand you pick and a Chats tab " +
-      "listing every chat, all brands.",
-  },
-  {
     id: "connectors",
     group: "New surfaces",
     tip: "Adds live MCP connectors: the /connectors gallery, and connected sources in the composer and the Sources panel.",
@@ -59,28 +31,6 @@ export const FLAGS = Object.freeze([
       "Connectors gallery (route /connectors + sidebar nav) and modal, the " +
       "composer Add → 'Connected sources' submenu, the Sources panel 'Live " +
       "connectors' group, and the Add-source modal's Connectors tab.",
-  },
-  {
-    id: "clipsSpace",
-    group: "New surfaces",
-    tip: "Adds Clips to the rail: a video library per Playbook, one editor for every clip tool (reframe, transcript, subtitles…), drafts made right there.",
-    label: "Clips space (/clips)",
-    // OFF: the Clip Studio session, the Video Clips modal and the chat's clip
-    // flow, byte for byte. The flag gates the routes as well as the rail row.
-    default: false,
-    hides:
-      "When OFF (default), clips are made in a chat: the Clip Studio session, " +
-      "the Clips tab of the side panel, the Video Clips modal and the draft " +
-      "questions in the thread.\n\nWhen ON, a Clips row in the rail opens the " +
-      "brand's VIDEO library (/clips). The flow is the video first, the posts " +
-      "last, in the order prod runs it: adding a video starts the analysis at " +
-      "once, you review and pick the moments, set the format and subtitles for " +
-      "the whole video, refine any clip in ONE editor that holds every tool — " +
-      "Reframe (the crop editor: per-segment One / Two / Fit framing), " +
-      "Transcript (its cleanup at the head), Subtitles, Text, Brand — then create one " +
-      "draft per clip × account and schedule them, without a chat. The " +
-      '"Extract video clips" starter leads here; a chat keeps its clips and ' +
-      'gains "Open in Clips".',
   },
   {
     id: "conversationStatusCard",
@@ -191,26 +141,6 @@ export const FLAGS = Object.freeze([
       "I offer to mention it.",
   },
   {
-    id: "newConversationStyles",
-    group: "Chat & drafts",
-    tip: "The thread mirrored: Archie on the left, you on the right, one avatar column per side and white object chips. Off: the thread as of Oct 5.",
-    label: "New conversation styles",
-    // OFF: the thread as of Monday 2026-10-05 — every conversation restyle
-    // since then (Tuesday's card system included) is ON only; the Monday
-    // values live in styles/chat-legacy.css (body:not(.conv-new)). Figma
-    // "Conversation styles" § E1–E4 is the reference for ON. ON by default
-    // since 2026-10-29.
-    default: true,
-    hides:
-      "When ON, every turn of the chat takes one shape, mirrored: Archie on the " +
-      "left, you on the right, each with a 24px avatar disc on the turn's " +
-      "first line and the content beside it (no names; the time on hover, " +
-      "in the gutter). Archie's status pill sits on his avatar's line; " +
-      "consecutive turns of one side share one avatar; every object (source, " +
-      "pick, result) is the same white chip. Butter stays Archie's alone. " +
-      "OFF shows the thread as it was on Monday 5 October, for a before / after.",
-  },
-  {
     id: "uiIdeaCard",
     group: "Chat & drafts",
     tip: "The idea card says what it is (Story idea), where it comes from (From notes.pdf) and what you can do with it.",
@@ -228,52 +158,7 @@ export const FLAGS = Object.freeze([
       "actions alone, under a hairline, on the right; hovering the card " +
       "lights up its Draft post, since a click on the card drafts.",
   },
-  {
-    id: "emptyStateGround",
-    group: "Playbook",
-    tip: "The Playbooks and Chats empty states sit on the Playbook creation's warm ground, lighter, instead of grey.",
-    label: "UI-Empty states: Archie ground",
-    // OFF: the scene on the page's grey-bg, its dot field in grey-20.
-    default: false,
-    hides:
-      "When ON, the first-run empty states of the home (Playbooks tab, the " +
-      "catalogue, and the Chats tab: the scene with its example) leave the " +
-      "grey canvas for the ground of the Playbook creation, toned down: " +
-      "white, butter rising from the bottom left, a faint orange corner, and " +
-      "the dot field behind the scene in Archie's orange pixels instead of " +
-      "grey dots. OFF keeps the grey page.",
-  },
-  {
-    id: "newChatHero",
-    group: "Chat & drafts",
-    tip: "On a new chat, the three workflows become rows (title + description) instead of three big cards.",
-    label: "UP-New chat: workflow rows",
-    // OFF: the three big starter cards and six Topics. Same three workflows,
-    // same handlers either way. ON by default since R3 (2026-10-28): a first
-    // screen with one main action and two quiet ways in beats ten entries.
-    default: true,
-    hides:
-      "When ON, a new chat keeps its wordmark, sub-line and composer, and the " +
-      "three workflows (batch from a source, clip a video, repurpose a top " +
-      "post) become a short list of rows (title + its description) aligned " +
-      "on the composer, instead of three big cards. A soft halo of Archie's " +
-      "pixels frames the composer; a click sends a ripple through it. Below, one row of " +
-      "three Topics to review instead of six.",
-  },
-  {
-    id: "demoMode",
-    group: "Onboarding",
-    tip: "From the first screen, try Archie on a made-up brand (Bramble & Bean) with pretend accounts: one wave of drafts, nothing can be scheduled.",
-    label: "UP-Onboarding: demo brand",
-    default: false,
-    hides:
-      "When ON, the first screen of the first-time run offers Try it with a " +
-      "demo brand: a chat on Bramble & Bean, a coffee roaster I made up, with " +
-      "a generic voice and three pretend accounts already connected. I write " +
-      "one wave of real drafts, then the demo stops (the drafts stay to look " +
-      "at and edit). Scheduling opens a This is a demo dialog instead; Exit " +
-      "demo in the topbar wipes it all and goes back to the real setup.",
-  },
+
   {
     id: "newStart4",
     group: "Onboarding",

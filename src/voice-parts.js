@@ -10,8 +10,8 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2928";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2928";
+import { escapeHtml } from "./utils.js?v=2929";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2929";
 import {
   networkMeta,
   networkLabel,
@@ -21,7 +21,7 @@ import {
   getConnectedProfiles,
   profileForNetwork,
   NETWORKS,
-} from "./social-profiles.js?v=2928";
+} from "./social-profiles.js?v=2929";
 
 // `hint`: what the part holds, said under its title — on the Playbook's tab
 // and in a voice proposal (one source for both).
@@ -108,7 +108,7 @@ export function baseValue(ctx, field) {
 // reads « For LinkedIn »; a rule without it comes from the default voice.
 
 // The networks a Playbook publishes on, once each, in its own order.
-// `connectedSocials` holds network slugs — or, in the demo, account ids.
+// `connectedSocials` holds network slugs — or account ids.
 export function playbookNetworks(ctx) {
   const nets = (ctx?.connectedSocials || []).map((s) =>
     networkMeta(s) ? normalizeNetwork(s) : normalizeNetwork(getConnectedProfileById(s)?.platform),

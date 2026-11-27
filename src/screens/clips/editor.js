@@ -1,5 +1,5 @@
-// /clips/:id/edit/:clipId — the ONE clip editor of the Clips space (flag
-// clipsSpace), rebuilt 2026-11-23 as a desktop editing workspace (« soit
+// /clips/:id/edit/:clipId — the ONE clip editor of the Clips space,
+// rebuilt 2026-11-23 as a desktop editing workspace (« soit
 // ambitieux… on peut tout refaire »), after Premiere, Resolve, CapCut:
 //
 //   ┌ library ┐┌──────── viewer ────────┐┌ inspector ┐
@@ -24,19 +24,18 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2928";
-import { isFlagOn } from "../../feature-flags.js?v=2928";
-import { parseHashParams } from "../../url-state.js?v=2928";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2928";
-import { showToast } from "../../components/toast.js?v=2928";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2928";
-import { open as openRename } from "../../components/rename-modal.js?v=2928";
-import { getContextById } from "../../contexts-store.js?v=2928";
-import { escapeHtml } from "../../utils.js?v=2928";
-import * as ce from "../../caption-editor.js?v=2928";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2928";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2928";
-import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2928";
+import { navigate } from "../../router.js?v=2929";
+import { parseHashParams } from "../../url-state.js?v=2929";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2929";
+import { showToast } from "../../components/toast.js?v=2929";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2929";
+import { open as openRename } from "../../components/rename-modal.js?v=2929";
+import { getContextById } from "../../contexts-store.js?v=2929";
+import { escapeHtml } from "../../utils.js?v=2929";
+import * as ce from "../../caption-editor.js?v=2929";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2929";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2929";
+import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2929";
 import {
   framingContext,
   initialSegments,
@@ -50,7 +49,7 @@ import {
   merge,
   snapMs,
   resetSegment,
-} from "../../clip-framing.js?v=2928";
+} from "../../clip-framing.js?v=2929";
 import {
   RATIO_IDS,
   ratioOf,
@@ -62,8 +61,8 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2928";
-import { writePostsInChat } from "../../clips-chat.js?v=2928";
+} from "./shared.js?v=2929";
+import { writePostsInChat } from "../../clips-chat.js?v=2929";
 import {
   timelineShellHTML,
   paintTimeline,
@@ -78,8 +77,8 @@ import {
   timelineWheel,
   timelineDrop,
   revealPlayhead,
-} from "./editor-timeline.js?v=2928";
-import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2928";
+} from "./editor-timeline.js?v=2929";
+import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2929";
 
 const FPS = 25;
 export const FRAME_MS = 1000 / FPS;
@@ -144,10 +143,6 @@ const uid = (p) => `${p}${Date.now().toString(36)}${Math.random().toString(36).s
 // ── Lifecycle ───────────────────────────────────────────────────────
 
 export function renderClipEditor(params, el) {
-  if (!isFlagOn("clipsSpace")) {
-    navigate("/");
-    return undefined;
-  }
   const video = getVideo(params.id);
   const clip = getClip(params.id, params.clipId);
   if (!video || !clip) {

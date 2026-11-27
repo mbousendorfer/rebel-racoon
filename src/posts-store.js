@@ -11,10 +11,10 @@
 //     Archie's last rewrite; called again, it redoes it
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { newId } from "./utils.js?v=2928";
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2928";
-import { isNewUser } from "./user-mode.js?v=2928";
-import { createSessionNotifier } from "./store-utils.js?v=2928";
+import { newId } from "./utils.js?v=2929";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2929";
+import { isNewUser } from "./user-mode.js?v=2929";
+import { createSessionNotifier } from "./store-utils.js?v=2929";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).
@@ -68,7 +68,7 @@ export function addPostDraft(
     firstComment: null,
     hasImage: false,
     stats: { likes: 0, comments: 0, reposts: 0 },
-    // Optional video-source reference — set by the Video Clips modal so the
+    // Optional video-source reference — set by the clip draft flow so the
     // post card renders a native-feeling video player in place of the
     // "Generate an image" placeholder. `hue` drives the faux thumbnail's
     // gradient color so the demo looks like a real frame extraction.
@@ -78,8 +78,8 @@ export function addPostDraft(
           end: clipRef.end,
           sourceName: clipRef.sourceName,
           hue: typeof clipRef.hue === "number" ? clipRef.hue : 24,
-          // Back-references to the source clip so the post card can reopen it
-          // in the Video Clips modal for editing. Null for legacy/manual refs.
+          // Back-references to the source clip so the post card can open it
+          // in the Clips space's editor. Null for legacy/manual refs.
           sourceId: clipRef.sourceId || null,
           clipId: clipRef.clipId || null,
         }
@@ -116,21 +116,6 @@ export function setSubtitleStyle(sessionId, postIds, style) {
     }
   }
   if (touched) notify(sessionId);
-}
-
-// Re-sync a draft's denormalized clip fields after the user edits the
-// underlying clip in the Video Clips modal (trim window, export format,
-// subtitle style). Leaves text / hashtags untouched — only the video-PIP
-// metadata changes. `subtitleStyle` accepts a caption-preset id or "none".
-export function updatePostClip(sessionId, postId, { start, end, format, subtitleStyle } = {}) {
-  const posts = getPosts(sessionId);
-  const post = posts.find((p) => p.id === postId);
-  if (!post || !post.clipRef) return;
-  if (typeof start === "number") post.clipRef.start = start;
-  if (typeof end === "number") post.clipRef.end = end;
-  if (format !== undefined) post.format = format || null;
-  if (subtitleStyle !== undefined) post.subtitleStyle = subtitleStyle === "none" ? null : subtitleStyle || null;
-  notify(sessionId);
 }
 
 // Update a post's image (called from the generate-image modal callback). A

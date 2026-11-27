@@ -6,16 +6,16 @@
 // the side-effecting actions wired by the panel's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2928";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2928";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2928";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2928";
-import { getRole, setRole, ORG } from "./org.js?v=2928";
-import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2928";
-import { resetIntro } from "./components/voice-intro-modal.js?v=2928";
-import { getContexts, updateContext } from "./contexts-store.js?v=2928";
-import { showToast } from "./components/toast.js?v=2928";
-import { failNextAnalysis } from "./videos-store.js?v=2928";
+import { html, raw, escapeHtml } from "./utils.js?v=2929";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2929";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2929";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2929";
+import { getRole, setRole, ORG } from "./org.js?v=2929";
+import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2929";
+import { resetIntro } from "./components/voice-intro-modal.js?v=2929";
+import { getContexts, updateContext } from "./contexts-store.js?v=2929";
+import { showToast } from "./components/toast.js?v=2929";
+import { failNextAnalysis } from "./videos-store.js?v=2929";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
@@ -213,27 +213,23 @@ export function renderAdminMenu() {
           >In a chat, Preview in chat › Voice (above) plays the voice step, a voice change and feedback.</span
         >
       </div>
-      ${raw(
-        isFlagOn("clipsSpace")
-          ? `<div class="admin-menu__section">
-              <span class="admin-menu__section-title">Clips</span>
-              <button type="button" class="admin-menu__doc" data-admin-clips-fail="empty">
-                <span class="admin-menu__opt-text">
-                  <span class="admin-menu__opt-label">No clips in the next video</span>
-                  <span class="admin-menu__opt-hint">Prod's NO_SPEECH: the reason, Upload another video and Remove</span>
-                </span>
-                <i class="ap-icon-warning" aria-hidden="true"></i>
-              </button>
-              <button type="button" class="admin-menu__doc" data-admin-clips-fail="crash">
-                <span class="admin-menu__opt-text">
-                  <span class="admin-menu__opt-label">Crash the next analysis</span>
-                  <span class="admin-menu__opt-hint">The job fails at Transcribing audio: Try again and Remove</span>
-                </span>
-                <i class="ap-icon-warning" aria-hidden="true"></i>
-              </button>
-            </div>`
-          : "",
-      )}
+      <div class="admin-menu__section">
+        <span class="admin-menu__section-title">Clips</span>
+        <button type="button" class="admin-menu__doc" data-admin-clips-fail="empty">
+          <span class="admin-menu__opt-text">
+            <span class="admin-menu__opt-label">No clips in the next video</span>
+            <span class="admin-menu__opt-hint">Prod's NO_SPEECH: the reason, Upload another video and Remove</span>
+          </span>
+          <i class="ap-icon-warning" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="admin-menu__doc" data-admin-clips-fail="crash">
+          <span class="admin-menu__opt-text">
+            <span class="admin-menu__opt-label">Crash the next analysis</span>
+            <span class="admin-menu__opt-hint">The job fails at Transcribing audio: Try again and Remove</span>
+          </span>
+          <i class="ap-icon-warning" aria-hidden="true"></i>
+        </button>
+      </div>
       <div class="admin-menu__section">
         <span class="admin-menu__section-title">Docs</span>
         <a class="admin-menu__doc" href="handoff/overlays.html" target="_blank" rel="noopener">

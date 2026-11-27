@@ -15,12 +15,10 @@
 // earlier generation mapped each preset to a `.vc-cap--<id>` class; those classes
 // were never written and that generation is gone.
 
-export const DEFAULT_PRESET = "clean";
-
 // Tokenise the clip's headline text into short on-screen caption lines and
 // distribute them evenly across the clip's duration. Deterministic: same clip
 // in → same captions out (no randomness, safe for resume/replays).
-export function buildCaptions(clip) {
+function buildCaptions(clip) {
   if (!clip) return [];
   const clipStart = clip.start || 0;
   const dur = Math.max(1, (clip.end || 0) - clipStart);
@@ -268,8 +266,7 @@ export const PRESETS = [
 ];
 
 // The eight rich presets prod burns (content/studio … tools/subtitle-presets.ts),
-// in prod's order, plus "none". The Clips space (flag clipsSpace) offers these
-// only; the Video Clips modal keeps the whole catalog above.
+// in prod's order, plus "none". The Clips space offers these only.
 export const PROD_PRESET_IDS = Object.freeze([
   "none",
   "karaoke",

@@ -2,29 +2,28 @@
 // date buckets, the rows, and their pin / rename / delete. Moved out of
 // sidebar.js, unchanged.
 
-import { isWorkspaceMode, scopeSessions } from "../../active-playbook.js?v=2928";
 import {
   getSessions,
   getSessionById,
   togglePin as togglePinSession,
   updateSession,
   deleteSession,
-} from "../../sessions-store.js?v=2928";
-import { isNewUser } from "../../user-mode.js?v=2928";
-import { escapeHtml } from "../../utils.js?v=2928";
-import { getContextById } from "../../contexts-store.js?v=2928";
-import { canView } from "../../playbook-access.js?v=2928";
-import { showToast } from "../toast.js?v=2928";
-import { open as openRenameModal } from "../rename-modal.js?v=2928";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2928";
-import { clearSession as clearAssistantSession } from "../../assistant.js?v=2928";
-import { clearSession as clearPostsSession } from "../../posts-store.js?v=2928";
-import { clearSession as clearLibrarySession } from "../../library.js?v=2928";
-import { clearSession as clearSourcesSession } from "../../sources-stream.js?v=2928";
-import { clearSession as clearPostPlansSession } from "../../post-plan-store.js?v=2928";
-import { getPath, navigate } from "../../router.js?v=2928";
-import { closePanel as closeRightPanel } from "../right-panel.js?v=2928";
-import { getOrganizePrefs } from "../sidebar.js?v=2928";
+} from "../../sessions-store.js?v=2929";
+import { isNewUser } from "../../user-mode.js?v=2929";
+import { escapeHtml } from "../../utils.js?v=2929";
+import { getContextById } from "../../contexts-store.js?v=2929";
+import { canView } from "../../playbook-access.js?v=2929";
+import { showToast } from "../toast.js?v=2929";
+import { open as openRenameModal } from "../rename-modal.js?v=2929";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2929";
+import { clearSession as clearAssistantSession } from "../../assistant.js?v=2929";
+import { clearSession as clearPostsSession } from "../../posts-store.js?v=2929";
+import { clearSession as clearLibrarySession } from "../../library.js?v=2929";
+import { clearSession as clearSourcesSession } from "../../sources-stream.js?v=2929";
+import { clearSession as clearPostPlansSession } from "../../post-plan-store.js?v=2929";
+import { getPath, navigate } from "../../router.js?v=2929";
+import { closePanel as closeRightPanel } from "../right-panel.js?v=2929";
+import { getOrganizePrefs } from "../sidebar.js?v=2929";
 
 // "Sort & group" control — options for the two rows. Grouping is limited to the
 // dimensions the session record supports: Playbook (contextId) and Date
@@ -35,18 +34,6 @@ const ORGANIZE_GROUP_OPTIONS = [
   { value: "playbook", label: "Playbook" },
   { value: "date", label: "Date" },
 ];
-
-// The options actually offered, and the grouping actually applied. In workspace
-// mode the list already IS one Playbook, so "Group by → Playbook" would draw a
-// single heading over everything — the option goes, and a preference stored
-// before the switch falls back to None rather than rendering that heading.
-function organizeGroupOptions() {
-  return isWorkspaceMode() ? ORGANIZE_GROUP_OPTIONS.filter((o) => o.value !== "playbook") : ORGANIZE_GROUP_OPTIONS;
-}
-
-function effectiveGroupBy(groupBy) {
-  return isWorkspaceMode() && groupBy === "playbook" ? "none" : groupBy;
-}
 
 const ORGANIZE_SORT_OPTIONS = [
   { value: "recency", label: "Recency" },
@@ -152,7 +139,7 @@ export function renderOrganizeHeader() {
         <i class="ap-icon-filter"></i>
       </button>
       <div class="ap-action-dropdown app-sidebar__organize-menu" role="menu" data-sidebar-organize-menu hidden>
-        ${renderOrganizeSection("Group by", "groupBy", organizeGroupOptions(), effectiveGroupBy(groupBy))}
+        ${renderOrganizeSection("Group by", "groupBy", ORGANIZE_GROUP_OPTIONS, groupBy)}
         <div class="ap-action-dropdown-divider" role="separator"></div>
         ${renderOrganizeSection("Sort by", "sortBy", ORGANIZE_SORT_OPTIONS, sortBy)}
       </div>
@@ -163,31 +150,24 @@ export function renderOrganizeHeader() {
 // Pinned + Recent groups. Search lives in a dedicated modal now
 // (./search-modal.js) — the sidebar always renders the full list.
 export function renderRecentLists(activeSessionId) {
-  // Scoped to the active Playbook in workspace mode — the rail under the
-  // switcher is that brand's work and nothing else.
-  const allSessions = scopeSessions(getSessions());
+  const allSessions = getSessions();
   if (isNewUser() || allSessions.length === 0) {
     // FIND-E4: first-run anchor for the recent-conversations list. The
     // bare "No conversations yet" was a dead end — anchor a soft hint
     // that points at the New conversation button just above this list,
     // so the user has an obvious next move without duplicating the
     // primary CTA.
-    // A scope that hides has to say so: chats DO exist, just not in this
-    // brand, and "No chats yet" under a switcher would read as "the app is
-    // empty" instead of "you're looking at Acme".
-    const scopedEmpty = !isNewUser() && getSessions().length > 0;
     return `
       <div class="app-sidebar__empty app-sidebar__empty--first-run">
         <div class="app-sidebar__empty-icon">
           <i class="ap-icon-single-chat-bubble" aria-hidden="true"></i>
         </div>
-        <span class="app-sidebar__empty-text">${scopedEmpty ? "No chats in this Playbook yet" : "No chats yet"}</span>
-        <span class="app-sidebar__empty-hint">${scopedEmpty ? "Start one with New chat, or switch Playbooks above." : "Start one with New chat above."}</span>
+        <span class="app-sidebar__empty-text">No chats yet</span>
+        <span class="app-sidebar__empty-hint">Start one with New chat above.</span>
       </div>
     `;
   }
-  const { groupBy: storedGroupBy, sortBy } = getOrganizePrefs();
-  const groupBy = effectiveGroupBy(storedGroupBy);
+  const { groupBy, sortBy } = getOrganizePrefs();
 
   const pinned = sortSessions(
     allSessions.filter((s) => s.pinned),
