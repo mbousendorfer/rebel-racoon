@@ -1012,6 +1012,9 @@ body.playbook-revoked .session__composer-card {
      the aside's grid, so it can be a size container. */
   container-type: size;
   padding-block: 0;
+  /* Two screens, each a snap point: a scroll lands on one or the other, never
+     halfway (asked: « ça scrolle pas l'écran complètement »). */
+  scroll-snap-type: y proximity;
 }
 
 /* ── Flag newChatHero — two screens ──────────────────────────────────────
@@ -1035,6 +1038,7 @@ body.playbook-revoked .session__composer-card {
   width: 100%;
   min-height: 100cqh;
   padding-block: var(--ref-spacing-xl) var(--ref-spacing-xxl);
+  scroll-snap-align: start;
 }
 
 /* Over the pixel field (0), under the composer (3). */
@@ -1043,34 +1047,70 @@ body.playbook-revoked .session__composer-card {
   z-index: 1;
 }
 
+/* The way down, and back up: a chevron, quiet, its words shown on hover or
+   focus (« Discover Archie », « Back to the chat »). */
 .empty-chat__more {
   position: absolute;
   bottom: var(--ref-spacing-sm);
   left: 50%;
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
   translate: -50% 0;
   border: 0;
-  border-radius: var(--app-radius-circle);
+  border-radius: var(--app-radius-md);
   background: none;
+  font: inherit;
   color: var(--ref-color-grey-80);
   cursor: pointer;
+}
+
+.empty-chat__more > i {
   animation: hero-more-nudge 2.4s var(--app-ease-standard) 1.5s infinite;
 }
 
-.empty-chat__more:hover,
-.empty-chat__more:focus-visible {
+.empty-chat__more--up {
+  top: var(--ref-spacing-sm);
+  bottom: auto;
+}
+
+.empty-chat__more--up > i {
+  animation-name: hero-more-nudge-up;
+}
+
+.empty-chat__more-label {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity var(--ref-animation-short) var(--app-ease-standard),
+    transform var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.empty-chat__more--up .empty-chat__more-label {
+  transform: translateY(-4px);
+}
+
+.empty-chat__more:is(:hover, :focus-visible) {
   outline: none;
   color: var(--ref-color-electric-blue-100);
+}
+
+.empty-chat__more:is(:hover, :focus-visible) .empty-chat__more-label {
+  opacity: 1;
+  transform: none;
 }
 
 .empty-chat__more:focus-visible {
   box-shadow: 0 0 0 2px var(--ref-color-electric-blue-100);
 }
 
-/* A small nudge down every few seconds, then rest. */
+/* A small nudge toward where it goes every few seconds, then rest. */
 @keyframes hero-more-nudge {
   0%,
   60%,
@@ -1082,12 +1122,30 @@ body.playbook-revoked .session__composer-card {
   }
 }
 
+@keyframes hero-more-nudge-up {
+  0%,
+  60%,
+  100% {
+    transform: none;
+  }
+  75% {
+    transform: translateY(-4px);
+  }
+}
+
+/* The second screen: a full thread's height too, so the way down shows it
+   alone, the way back up at its top. */
 .empty-chat__features {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   width: 100%;
   max-width: 740px;
-  padding-block: var(--ref-spacing-xl) var(--ref-spacing-xxl);
+  min-height: 100cqh;
+  padding-block: calc(var(--ref-spacing-xxl) + var(--ref-spacing-sm)) var(--ref-spacing-xl);
   text-align: left;
-  scroll-margin-top: var(--ref-spacing-md);
+  scroll-snap-align: start;
 }
 
 .empty-chat__features-title {

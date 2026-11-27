@@ -31,7 +31,7 @@ import {
   startPending,
   updatePending,
   finishPending,
-} from "./assistant.js?v=2967";
+} from "./assistant.js?v=2968";
 import {
   createAltDraft,
   readAltWebsite,
@@ -44,12 +44,12 @@ import {
   getDraft,
   patchDraft,
   save,
-} from "./context-builder.js?v=2967";
-import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2967";
-import { LANGUAGE_OPTIONS } from "./languages.js?v=2967";
-import { connectors as connectorMocks } from "./mocks.js?v=2967";
-import { buildConnectedProfileItems } from "./social-profiles.js?v=2967";
-import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2967";
+} from "./context-builder.js?v=2968";
+import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2968";
+import { LANGUAGE_OPTIONS } from "./languages.js?v=2968";
+import { connectors as connectorMocks } from "./mocks.js?v=2968";
+import { buildConnectedProfileItems } from "./social-profiles.js?v=2968";
+import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2968";
 import {
   OTHER_WAYS,
   VOICE_WAYS,
@@ -57,8 +57,8 @@ import {
   DOC_READS,
   normalizeUrl,
   fallbackFor,
-} from "./screens/welcome-alt-steps.js?v=2967";
-import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2967";
+} from "./screens/welcome-alt-steps.js?v=2968";
+import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2968";
 
 // « 2 of 5 », counted on the run's own steps.
 function stepLabel(step) {
