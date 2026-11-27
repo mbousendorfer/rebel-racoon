@@ -14,6 +14,11 @@
   --ns-tone: var(--ref-color-grey-100);
 }
 
+/* The requests' rotor (renderAsks): a custom element, inline by default. */
+archie-asks {
+  display: block;
+}
+
 .ns-tile {
   flex: none;
   display: inline-grid;

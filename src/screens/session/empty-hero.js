@@ -1,19 +1,19 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2929";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2929";
-import { getContextById, getContexts } from "../../contexts-store.js?v=2929";
-import { renderTopicCard } from "../../components/topic-card.js?v=2929";
-import { findTopicSource } from "../../topics-catalog.js?v=2929";
-import { html, raw } from "../../utils.js?v=2929";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2929";
-import { renderStarterCards } from "../../components/starter-card.js?v=2929";
-import { isNewStartOn } from "../../feature-flags.js?v=2929";
-import { voicesToFinish } from "../../voice-parts.js?v=2929";
-import { networkLabel } from "../../social-profiles.js?v=2929";
-import { parseHashParams } from "../../url-state.js?v=2929";
-import { renderNewStart } from "./new-start.js?v=2929";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2933";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2933";
+import { getContextById, getContexts } from "../../contexts-store.js?v=2933";
+import { renderTopicCard } from "../../components/topic-card.js?v=2933";
+import { findTopicSource } from "../../topics-catalog.js?v=2933";
+import { html, raw } from "../../utils.js?v=2933";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2933";
+import { renderStarterCards } from "../../components/starter-card.js?v=2933";
+import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2933";
+import { voicesToFinish } from "../../voice-parts.js?v=2933";
+import { networkLabel } from "../../social-profiles.js?v=2933";
+import { parseHashParams } from "../../url-state.js?v=2933";
+import { renderAsks, renderNewStart } from "./new-start.js?v=2933";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -65,20 +65,44 @@ export function renderTopicPickerRow() {
 //
 // Renders nothing at all when there is nothing to say, so a hero with no Topics
 // is byte-for-byte the hero this app has always had.
-
-function renderFreshTopics(session) {
+//
+// `staged` (flag newChatHero): ONE row of three, the scope and the way out in a
+// header line instead of a footer, so the whole hero holds in a 900px laptop
+// viewport — the feed is one click away for the other five.
+function renderFreshTopics(session, { staged = false } = {}) {
   const pbId = session?.contextId || null;
   const feed = pbId ? getFeedForPlaybook(pbId) : null;
   if (!feed) return "";
-  const topics = getFreshTopics(feed.id);
+  const topics = getFreshTopics(feed.id).slice(0, staged ? 3 : undefined);
   if (!topics.length) return "";
   const total = countFresh(feed.id);
   const pb = getContextById(pbId);
   const scopeHref = `#/topics?pb=${encodeURIComponent(pbId)}`;
 
   const cards = topics
-    .map((t) => renderTopicCard(t, { source: findTopicSource(t.sourceId), variant: "picker", withUse: true }))
+    .map((t) =>
+      renderTopicCard(t, { source: findTopicSource(t.sourceId), variant: "picker", withUse: true, useAsLink: staged }),
+    )
     .join("");
+
+  if (staged) {
+    return html`
+      <section class="empty-chat__topics empty-chat__topics--staged" aria-labelledby="freshTopicsLabel">
+        <header class="empty-chat__topics-head">
+          <div>
+            <h2 class="empty-chat__topics-title" id="freshTopicsLabel">Topics to review</h2>
+            <p class="empty-chat__topics-lede">
+              ${topics.length} of ${total} from this week's listening${pb ? ` for ${pb.name}` : ""}.
+            </p>
+          </div>
+          <a class="ap-link standalone small" href="${raw(scopeHref)}"
+            >Open Topic Feed<i class="ap-icon-arrow-right" aria-hidden="true"></i
+          ></a>
+        </header>
+        <div class="empty-chat__topics-grid">${raw(cards)}</div>
+      </section>
+    `;
+  }
 
   return html`
     <h2 class="empty-chat__starter-label" id="freshTopicsLabel">
@@ -125,6 +149,37 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
     (s) => (s.kind || "").toLowerCase() === "video" && s.status === "Processed" && typeof s.durationSec === "number",
   );
   const videoLabel = firstVideo ? `"${firstVideo.filename}"` : "your video";
+  // Flag newChatHero: the same wordmark + sub-line, the composer in a halo of
+  // Archie's pixels, then the three workflows as rows under it (they share the
+  // composer's 740px column).
+  if (isFlagOn("newChatHero")) {
+    return html`
+      <div class="empty-chat empty-chat--rows" data-empty-chat>
+        ${raw(noPlaybookBlock())} ${raw(playbookReadyBlock(session))}
+        <span class="empty-chat__logo" role="img" aria-label="Archie">
+          <img class="empty-chat__logo-word empty-chat__logo-word--a" src="assets/logos/archie-wordmark.svg" alt="" />
+          <img class="empty-chat__logo-mono" src="assets/logos/archie-mono.svg" alt="" />
+          <img
+            class="empty-chat__logo-word empty-chat__logo-word--b"
+            src="assets/logos/archie-alt-wordmark.svg"
+            alt=""
+          />
+        </span>
+        <div class="empty-chat__sub">${heroSub()}</div>
+        <div class="empty-chat__lead">
+          <!-- The FUX's pixel field without its box: pale, masked into the
+               ground, a wide halo on both sides of the composer. -->
+          <archie-pixels class="empty-chat__pixels" data-quiet data-ripple aria-hidden="true"></archie-pixels>
+          ${raw(composerMarkup)}
+        </div>
+        ${raw(renderAsks("empty-chat__asks"))}
+        <div class="starter-rows" role="group" aria-label="Start from a workflow">
+          ${raw(renderStarterCards({ sourceLabel, videoLabel, rows: true }))}
+        </div>
+        ${raw(finishVoicesRow(session))} ${raw(renderFreshTopics(session, { staged: true }))}
+      </div>
+    `;
+  }
   // The three cards come from components/starter-card.js.
   const cards = renderStarterCards({ sourceLabel, videoLabel });
   return html`
@@ -178,6 +233,27 @@ function finishVoicesRow(session) {
         <button type="button" class="ap-button stroked grey" data-finish-voices="${ctx.id}" data-finish-voices-net="${nets[0]}">
           <span>${nets.length === 1 ? "Add its voice" : "Add their voices"}</span>
         </button>
+      </div>
+    </div>`;
+}
+
+// No Playbook at all yet (flag newChatHero, 2026-11-27, asked: « un bloc /
+// infobox pour dire aux utilisateurs qu'ils n'ont pas de playbook et qu'il faut
+// en mettre »). At the top, where « Your Playbook is ready » shows once one is
+// made, so it holds above the fold; the DS warning infobox of « Finish your
+// voices »; the promise and the door of New Start's « Sound like your Brand »
+// (the setup run, the one way a Playbook is made).
+function noPlaybookBlock() {
+  if (getContexts().length) return "";
+  return `
+    <div class="ap-infobox warning has-title empty-chat__ready" role="status">
+      <i class="ap-icon-warning_fill" aria-hidden="true"></i>
+      <div class="ap-infobox-content">
+        <div class="ap-infobox-texts">
+          <span class="ap-infobox-title">No Playbook yet</span>
+          <span class="ap-infobox-message">My posts will sound generic. Show me your website or a few files, and I'll learn your voice, your audience, and your look.</span>
+        </div>
+        <a class="ap-button stroked grey" href="#/welcome-alt"><span>Create my Playbook</span></a>
       </div>
     </div>`;
 }

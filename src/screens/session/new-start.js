@@ -21,8 +21,8 @@
 // video door is the clips starter. What is local (the rotation, the typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2929";
-import { escapeHtml } from "../../utils.js?v=2929";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2933";
+import { escapeHtml } from "../../utils.js?v=2933";
 
 const esc = escapeHtml;
 
@@ -185,13 +185,22 @@ export function renderNewStart(composer = "") {
     </div>
     <div class="ns-turn ns-turn--next" data-ns-next>
       <span class="ns-turn__gutter" aria-hidden="true"></span>
-      <div class="ns-turn__body ns-suggests" data-ns-rotor>
-        <p class="ns-say" data-ns-reveal style="--i: 4">${SKEL.line}Or ask me something like:</p>
-        ${SETS.map((s, i) => `<ul class="ns-suggests__set" data-ns-set="${i}"${i ? " hidden" : ""} aria-label="Things you can ask me">${s.map((x, n) => suggestion(x, n)).join("")}</ul>`).join("")}
-      </div>
+      ${renderAsks("ns-turn__body")}
     </div>
     <div class="ns__composer">${composer}</div>
   </archie-new-start>`;
+}
+
+// « Or ask me something like: » and the rotating requests — one renderer, two
+// hosts: this page's third turn, and the new chat's hero under the composer
+// (flag newChatHero, 2026-11-27, asked: « pareil pour les prompts en dessous du
+// composer, tu peux t'inspirer de … newchat4 »). `cls` is the host's layout.
+export function renderAsks(cls = "") {
+  return `
+      <archie-asks class="${cls} ns-suggests" data-ns-rotor>
+        <p class="ns-say" data-ns-reveal style="--i: 4">${SKEL.line}Or ask me something like:</p>
+        ${SETS.map((s, i) => `<ul class="ns-suggests__set" data-ns-set="${i}"${i ? " hidden" : ""} aria-label="Things you can ask me">${s.map((x, n) => suggestion(x, n)).join("")}</ul>`).join("")}
+      </archie-asks>`;
 }
 
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -200,20 +209,39 @@ const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 // focus), the page is hidden, or motion is reduced. The set stays where it was
 // across a re-render of the hero.
 let shown = 0;
-let greeted = false;
-class ArchieNewStart extends HTMLElement {
+class ArchieAsks extends HTMLElement {
   connectedCallback() {
     this.show(shown);
-    this.hello();
     this.timer = setInterval(() => {
-      const rotor = this.querySelector("[data-ns-rotor]");
-      if (reduced() || document.hidden || rotor?.matches(":hover, :focus-within")) return;
+      if (reduced() || document.hidden || this.matches(":hover, :focus-within")) return;
       this.show((shown + 1) % SETS.length, true);
     }, 6000);
   }
 
   disconnectedCallback() {
     clearInterval(this.timer);
+  }
+
+  // `deal`: a new set comes in row after row (a rotation, not the first paint,
+  // which reveals itself).
+  show(i, deal = false) {
+    shown = i;
+    this.querySelectorAll("[data-ns-set]").forEach((ul) => {
+      ul.hidden = Number(ul.dataset.nsSet) !== i;
+      ul.classList.toggle("is-dealt", deal && !ul.hidden);
+    });
+  }
+}
+
+if (!customElements.get("archie-asks")) customElements.define("archie-asks", ArchieAsks);
+
+let greeted = false;
+class ArchieNewStart extends HTMLElement {
+  connectedCallback() {
+    this.hello();
+  }
+
+  disconnectedCallback() {
     clearTimeout(this.typing);
   }
 
@@ -235,16 +263,6 @@ class ArchieNewStart extends HTMLElement {
       else this.classList.replace("is-typing", "is-revealing");
     };
     this.typing = setTimeout(step, 350);
-  }
-
-  // `deal`: a new set comes in row after row (a rotation, not the first paint,
-  // which reveals itself).
-  show(i, deal = false) {
-    shown = i;
-    this.querySelectorAll("[data-ns-set]").forEach((ul) => {
-      ul.hidden = Number(ul.dataset.nsSet) !== i;
-      ul.classList.toggle("is-dealt", deal && !ul.hidden);
-    });
   }
 }
 
