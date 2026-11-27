@@ -1,19 +1,19 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2958";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2958";
-import { getContextById, getContexts } from "../../contexts-store.js?v=2958";
-import { renderTopicCard } from "../../components/topic-card.js?v=2958";
-import { findTopicSource } from "../../topics-catalog.js?v=2958";
-import { html, raw } from "../../utils.js?v=2958";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2958";
-import { renderStarterCards } from "../../components/starter-card.js?v=2958";
-import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2958";
-import { voicesToFinish } from "../../voice-parts.js?v=2958";
-import { networkLabel } from "../../social-profiles.js?v=2958";
-import { parseHashParams } from "../../url-state.js?v=2958";
-import { renderAsks, renderDoors, renderNewStart } from "./new-start.js?v=2958";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2959";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2959";
+import { getContextById, getContexts } from "../../contexts-store.js?v=2959";
+import { renderTopicCard } from "../../components/topic-card.js?v=2959";
+import { findTopicSource } from "../../topics-catalog.js?v=2959";
+import { html, raw } from "../../utils.js?v=2959";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2959";
+import { renderStarterCards } from "../../components/starter-card.js?v=2959";
+import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2959";
+import { voicesToFinish } from "../../voice-parts.js?v=2959";
+import { networkLabel } from "../../social-profiles.js?v=2959";
+import { parseHashParams } from "../../url-state.js?v=2959";
+import { renderAsks, renderDoors, renderNewStart } from "./new-start.js?v=2959";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -150,8 +150,8 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
           <span class="empty-chat__dots" aria-hidden="true"></span>
           ${raw(composerMarkup)}
         </div>
-        ${raw(renderAsks("empty-chat__asks"))} ${raw(renderDoors({ brand: !getContexts().length, hero: true }))}
-        ${raw(finishVoicesRow(session))}
+        ${raw(renderAsks("empty-chat__asks"))}
+        ${raw(renderDoors({ brand: !getContexts().length, hero: true, voices: voicesToFinishDoor(session) }))}
       </div>
     `;
   }
@@ -184,6 +184,17 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
 // finish (2026-10-29, asked: « quand des voice sont incomplètes … un bloc sur la
 // home avec un nudge », then « Un starter de plus »). It goes when they're all
 // done; it opens the Playbook's Voice tab on the first one.
+// The hero's voices door (renderDoors' `voices`): the same networks and the
+// same way in as « Finish your voices » below, as a door beside the clips one.
+function voicesToFinishDoor(session) {
+  const ctx = session?.contextId ? getContextById(session.contextId) : null;
+  const nets = voicesToFinish(ctx);
+  if (!nets.length) return null;
+  const names = nets.map(networkLabel);
+  const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+  return { ctxId: ctx.id, net: nets[0], label: names[0], list, count: nets.length };
+}
+
 function finishVoicesRow(session) {
   const ctx = session?.contextId ? getContextById(session.contextId) : null;
   const nets = voicesToFinish(ctx);

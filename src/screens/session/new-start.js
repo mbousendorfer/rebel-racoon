@@ -21,8 +21,8 @@
 // video door is the clips starter. What is local (the rotation, the typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2958";
-import { escapeHtml } from "../../utils.js?v=2958";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2959";
+import { escapeHtml } from "../../utils.js?v=2959";
 
 const esc = escapeHtml;
 
@@ -101,7 +101,42 @@ const FRAME = `<span class="ns-cut__frame"><svg viewBox="0 0 90 160" preserveAsp
 // once there is a Playbook (only the hero has that case). `hero`: the door is
 // named for what is missing, the status card keeps only the cost (asked:
 // « Sound like your brand devrait plutôt s'appeler "no Playbook created yet" »).
-export function renderDoors({ brand = true, hero = false } = {}) {
+// `voices` (the hero, once a Playbook exists): { ctxId, net, label, list,
+// count } — the networks still on the default voice. It takes the Playbook
+// door's place, with the same anatomy: the orange status card on top, a stage
+// that plays the default voice becoming the network's, the way to add them
+// (asked 2026-11-27: « Une fois que j'ai fait mon premier playbook et pas de
+// voix remplies, j'aimerais avoir un bloc de rappel pour les voix, de la même
+// façon que pour le playbook manquant »).
+function voicesDoor(v) {
+  return `
+        <button type="button" class="ns-door ns-door--missing" data-finish-voices="${esc(v.ctxId)}" data-finish-voices-net="${esc(v.net)}" data-ns-reveal style="--i: 1">
+          ${SKEL.door}
+          <span class="ap-status-card orange ns-door__status">
+            <span class="upper">
+              <i class="ap-icon-warning_fill" aria-hidden="true"></i>
+              <span class="flow">${esc(v.list)} ${v.count === 1 ? "uses" : "use"} your default voice.</span>
+            </span>
+          </span>
+          <span class="ns-door__stage ns-voice" aria-hidden="true">
+            <span class="ns-voice__post ns-voice__post--before">
+              <span class="ap-status grey no-dot">Default voice</span>
+              <span class="ns-voice__text">Our spring collection is now available. Discover the new pieces on our website today.</span>
+              <span class="ns-voice__sweep"></span>
+            </span>
+            <span class="ns-voice__post ns-voice__post--after">
+              <span class="ap-status green no-dot">${esc(v.label)} voice</span>
+              <span class="ns-voice__text ns-voice__write">Spring just landed. <mark>Six new pieces</mark>, one rule: wear them your way. Which one's yours?</span>
+            </span>
+            ${SPARKS}
+          </span>
+          <span class="ns-door__title">Finish your voices</span>
+          <span class="ns-door__desc">Each network rewards its own way of talking. Give ${v.count === 1 ? "it" : "each one"} a voice and its drafts will fit where they're posted.</span>
+          <span class="ap-link standalone ns-door__go">${v.count === 1 ? "Add its voice" : "Add their voices"}<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
+        </button>`;
+}
+
+export function renderDoors({ brand = true, hero = false, voices = null } = {}) {
   return `
       <div class="ns-doors">
 ${
@@ -137,7 +172,9 @@ ${
           <span class="ap-link standalone ns-door__go">Create my Playbook<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
         ${hero ? "</button>" : "</a>"}
 `
-    : ""
+    : voices
+      ? voicesDoor(voices)
+      : ""
 }
 
         <button type="button" class="ns-door" ${starterAttrs("open-video-clips")} data-ns-reveal style="--i: 2">
