@@ -1012,9 +1012,10 @@ body.playbook-revoked .session__composer-card {
      the aside's grid, so it can be a size container. */
   container-type: size;
   padding-block: 0;
-  /* Two screens, each a snap point: a scroll lands on one or the other, never
-     halfway (asked: « ça scrolle pas l'écran complètement »). */
-  scroll-snap-type: y proximity;
+  /* Two screens, moved between by the arrows only: no wheel or trackpad
+     scroll (asked: « je ne veux pas que l'utilisateur puisse scroller lui
+     même »). The arrows scroll it by script, which overflow: hidden allows. */
+  overflow-y: hidden;
 }
 
 /* ── Flag newChatHero — two screens ──────────────────────────────────────
@@ -1036,9 +1037,11 @@ body.playbook-revoked .session__composer-card {
   justify-content: center;
   gap: var(--ref-spacing-sm);
   width: 100%;
-  min-height: 100cqh;
+  height: 100cqh;
   padding-block: var(--ref-spacing-xl) var(--ref-spacing-xxl);
-  scroll-snap-align: start;
+  /* Taller than the thread (a short window): it scrolls inside itself. */
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* Over the pixel field (0), under the composer (3). */
@@ -1142,10 +1145,10 @@ body.playbook-revoked .session__composer-card {
   justify-content: center;
   width: 100%;
   max-width: 740px;
-  min-height: 100cqh;
+  height: 100cqh;
   padding-block: calc(var(--ref-spacing-xxl) + var(--ref-spacing-sm)) var(--ref-spacing-xl);
   text-align: left;
-  scroll-snap-align: start;
+  overflow-y: auto;
 }
 
 .empty-chat__features-title {

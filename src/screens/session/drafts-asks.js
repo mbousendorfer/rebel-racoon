@@ -5,8 +5,8 @@
 // the thread. Plus the post-plan switch and the schedule plan's "Adjust dates".
 // Moved out of session.js, unchanged; it touches none of the screen's state.
 
-import { escapeHtml, formatDayLabel, formatTimeOfDay } from "../../utils.js?v=2971";
-import { networkLabel, networkIcon } from "../../social-profiles.js?v=2971";
+import { escapeHtml, formatDayLabel, formatTimeOfDay } from "../../utils.js?v=2972";
+import { networkLabel, networkIcon } from "../../social-profiles.js?v=2972";
 import {
   getThread,
   postAssistantMessage,
@@ -19,38 +19,38 @@ import {
   startPending,
   finishPending,
   postActivity,
-} from "../../assistant.js?v=2971";
-import { startRewrite, languageOf, TRANSLATE_LANGUAGES } from "../../draft-rewrite.js?v=2971";
-import { startPostPlan } from "../../post-plan-flow.js?v=2971";
+} from "../../assistant.js?v=2972";
+import { startRewrite, languageOf, TRANSLATE_LANGUAGES } from "../../draft-rewrite.js?v=2972";
+import { startPostPlan } from "../../post-plan-flow.js?v=2972";
 import {
   MENTION_ASK,
   UNMENTION_ASK,
   mentionNamesIn,
   mentionInDrafts,
   unmentionInDrafts,
-} from "../../mention-flow.js?v=2971";
+} from "../../mention-flow.js?v=2972";
 import {
   getPlans as getPostPlans,
   getActivePlan as getActivePostPlan,
   setActivePlan as setActivePostPlan,
-} from "../../post-plan-store.js?v=2971";
-import { getSources } from "../../library.js?v=2971";
-import { getPosts, removePost, addPostDraft, updatePostContent } from "../../posts-store.js?v=2971";
-import * as inlineQuestion from "../../inline-question.js?v=2971";
-import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../../schedule-engine.js?v=2971";
-import { addToQueue } from "../../schedule-store.js?v=2971";
-import { refLabel } from "../../chat-refs.js?v=2971";
+} from "../../post-plan-store.js?v=2972";
+import { getSources } from "../../library.js?v=2972";
+import { getPosts, removePost, addPostDraft, updatePostContent } from "../../posts-store.js?v=2972";
+import * as inlineQuestion from "../../inline-question.js?v=2972";
+import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../../schedule-engine.js?v=2972";
+import { addToQueue } from "../../schedule-store.js?v=2972";
+import { refLabel } from "../../chat-refs.js?v=2972";
 import {
   openScheduleForPosts,
   onPostImage,
   openAssignForPosts,
   commitAssigned,
-} from "../../components/right-panel/drafts-view.js?v=2971";
-import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER } from "../../org.js?v=2971";
-import { isPostValid } from "../../post-validation.js?v=2971";
-import { reviewBlock } from "../../components/assign-modal.js?v=2971";
-import { isFlagOn } from "../../feature-flags.js?v=2971";
-import { focusInPanel } from "../../components/right-panel.js?v=2971";
+} from "../../components/right-panel/drafts-view.js?v=2972";
+import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER } from "../../org.js?v=2972";
+import { isPostValid } from "../../post-validation.js?v=2972";
+import { reviewBlock } from "../../components/assign-modal.js?v=2972";
+import { isFlagOn } from "../../feature-flags.js?v=2972";
+import { focusInPanel } from "../../components/right-panel.js?v=2972";
 
 // "Delete all the drafts" — a destructive, irreversible ask, so I confirm it in
 // the chat (Quickpicker) instead of acting on the sentence. Same set the Drafts
