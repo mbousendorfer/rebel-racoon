@@ -14,8 +14,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2976";
-import { navigate } from "../router.js?v=2976";
+import { html, raw, escapeHtml } from "../utils.js?v=2980";
+import { navigate } from "../router.js?v=2980";
 import {
   getDraft,
   patchDraft,
@@ -24,12 +24,12 @@ import {
   writeAltManually,
   analyzeAltInterview,
   setAltVoiceSource,
-} from "../context-builder.js?v=2976";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2976";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2976";
-import { connectors as connectorMocks } from "../mocks.js?v=2976";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2976";
-import { networkIcon } from "../social-profiles.js?v=2976";
+} from "../context-builder.js?v=2980";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2980";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2980";
+import { connectors as connectorMocks } from "../mocks.js?v=2980";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT, voiceAccounts } from "./welcome-alt-shell.js?v=2980";
+import { networkIcon } from "../social-profiles.js?v=2980";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
@@ -310,7 +310,7 @@ export function renderWelcomeAltLanguage(_params, target) {
       const d = getDraft(sid);
       const current = d?.primaryLanguage || (d?.languages || [])[0] || DEFAULT_LANGUAGE;
       return html`
-        <h1 class="welcome-flow__title" id="welcomeFlowTitle">Which language do I write in?</h1>
+        <h1 class="welcome-flow__title" id="welcomeFlowTitle">Which language should I write in?</h1>
         <p class="welcome-intro__sub">The one I'll draft your posts in. You can add more later, in your Playbook.</p>
         <form data-choice-form novalidate>
           <ul class="welcome-flow__options">
@@ -349,7 +349,7 @@ export const VOICE_WAYS = [
     value: "document",
     icon: "ap-icon-upload",
     title: "Use a document you wrote",
-    desc: "A PDF, Word, text or Markdown file.",
+    desc: "A PDF, Word, text, or Markdown file.",
   },
   {
     value: "custom",
@@ -451,9 +451,7 @@ export function renderWelcomeAltVoiceFrom(_params, target) {
       const ways = VOICE_WAYS.filter((w) => w.value !== "profile" || voiceAccounts().length);
       return html`
         <h1 class="welcome-flow__title" id="welcomeFlowTitle">How should I learn your voice?</h1>
-        <p class="welcome-intro__sub">
-          Your voice is how your posts sound: the tone, the words, the length. Every draft I write follows it.
-        </p>
+        <p class="welcome-intro__sub">Your voice is how your posts sound. Every draft I write follows it.</p>
         <ul class="welcome-flow__options">
           ${(fallback ? [...ways, { ...fallback, value: "fallback" }] : ways).map(
             (w) => html`

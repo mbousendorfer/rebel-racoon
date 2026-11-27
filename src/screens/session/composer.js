@@ -4,18 +4,18 @@
 // session.js, unchanged; the mention picker stays there, since bindSession
 // writes its highlight state.
 
-import { isFlagOn } from "../../feature-flags.js?v=2976";
-import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2976";
-import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2976";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2976";
-import { getSources, getIdeas } from "../../library.js?v=2976";
-import { getThread } from "../../assistant.js?v=2976";
-import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2976";
-import { revokedContextFor } from "../../playbook-access.js?v=2976";
-import { getSessionById } from "../../sessions-store.js?v=2976";
-import { getActiveConnector } from "../../composer-connector.js?v=2976";
-import { COMPOSER_DEFAULT_PLACEHOLDER } from "../session.js?v=2976";
-import { renderTopicPickerRow } from "./empty-hero.js?v=2976";
+import { isFlagOn } from "../../feature-flags.js?v=2980";
+import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2980";
+import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2980";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2980";
+import { getSources, getIdeas } from "../../library.js?v=2980";
+import { getThread } from "../../assistant.js?v=2980";
+import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2980";
+import { revokedContextFor } from "../../playbook-access.js?v=2980";
+import { getSessionById } from "../../sessions-store.js?v=2980";
+import { getActiveConnector } from "../../composer-connector.js?v=2980";
+import { COMPOSER_DEFAULT_PLACEHOLDER } from "../session.js?v=2980";
+import { renderTopicPickerRow } from "./empty-hero.js?v=2980";
 
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the
@@ -104,9 +104,9 @@ function humanizeLoadingMessage(m) {
   // the bar would name it a second time (« Thinking… » twice, 2026-10-30). It
   // keeps the background work.
   if (["assistant", "pending", "system", "system-notice"].includes(m.role)) return null;
-  if (m.role === "idea-extraction") return `Extracting ideas from ${m.filename || "source"}…`;
+  if (m.role === "idea-extraction") return `Finding ideas in ${m.filename || "source"}…`;
   if (m.role === "clip-extraction") return `Extracting clips from ${m.filename || "source"}…`;
-  return "Working…";
+  return "Thinking…";
 }
 
 // One unified descriptor for the composer status slot. `shape` drives the
@@ -134,7 +134,7 @@ export function computeComposerStatus(sessionId) {
     if (label) labels.push(label);
   }
   if (labels.length > 0) {
-    const label = labels.length === 1 ? labels[0] : `Working on ${labels.length} things…`;
+    const label = labels.length === 1 ? labels[0] : `${labels.length} tasks running…`;
     return { shape: "grey", variant: "grey", labels, label, key: `grey|${label}` };
   }
   const draft = draftBanners.get(sessionId);
@@ -159,7 +159,7 @@ export function computeComposerStatus(sessionId) {
 }
 
 const PLAN_STAGE = {
-  planning: "Being planned",
+  planning: "Planning",
   ready: "Ready",
   writing: "Writing",
   written: "Drafts written",
@@ -315,7 +315,7 @@ export function renderComposer(attachedContext, session, selectable) {
   const revoked = revokedContextFor(session);
   // A new chat invites a first move: there is nothing to follow up on yet.
   const placeholder = revoked
-    ? "This Playbook isn't shared with you anymore. Start a chat with another one"
+    ? "Playbook no longer shared. Start a new chat."
     : selectable
       ? "Paste a link, drop a file, or tell me what to post…"
       : COMPOSER_DEFAULT_PLACEHOLDER;
@@ -358,11 +358,11 @@ export function renderComposer(attachedContext, session, selectable) {
               <button
                 type="button"
                 class="ap-button stroked grey assistant-attach__trigger"
-                aria-label="Add a source"
+                aria-label="Add source"
                 data-assistant-attach-toggle
               >
                 <i class="ap-icon-plus"></i>
-                <span>Add</span>
+                <span>Add source</span>
               </button>
               <div class="ap-action-dropdown assistant-attach__menu" data-assistant-attach-menu hidden role="menu">
                 <button type="button" class="ap-action-dropdown-item" data-add-source="pdf" role="menuitem">
@@ -422,7 +422,7 @@ export function renderComposer(attachedContext, session, selectable) {
               aria-expanded="false"
               aria-controls="composerMentionPicker"
               data-composer-mention-trigger
-              ${hasMentionable ? 'title="Mention a source or idea so I use it (@)"' : 'disabled title="Attach a source or extract an idea first"'}
+              ${hasMentionable ? 'title="Reference a source or idea (@)"' : 'disabled title="Add a source or find ideas first"'}
             >
               <i class="ap-icon-at"></i>
               <span>Reference</span>

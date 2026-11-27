@@ -30,11 +30,11 @@
 // underlying state stays in one place. The user-facing toast is fired here
 // (a single shared place for the wording).
 
-import { appendExtractedIdeas, removeIdeasForSources, removeIdeas, getIdeas } from "./library.js?v=2976";
-import { removeSources as streamRemoveSources, getSources as streamGetSources } from "./sources-stream.js?v=2976";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2976";
-import { showToast } from "./components/toast.js?v=2976";
-import { addMention } from "./composer-mentions.js?v=2976";
+import { appendExtractedIdeas, removeIdeasForSources, removeIdeas, getIdeas } from "./library.js?v=2980";
+import { removeSources as streamRemoveSources, getSources as streamGetSources } from "./sources-stream.js?v=2980";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2980";
+import { showToast } from "./components/toast.js?v=2980";
+import { addMention } from "./composer-mentions.js?v=2980";
 
 // ── Bulk-bar HTML renderers ──────────────────────────────────────────────
 
@@ -50,7 +50,7 @@ export function renderSourcesBulkBar(count) {
         </button>
         <button type="button" class="ap-button stroked grey" data-bulk-delete>
           <i class="ap-icon-trash"></i>
-          <span>Delete</span>
+          <span>Delete ${noun}</span>
         </button>
         <button type="button" class="ap-button ghost grey" data-bulk-cancel>Cancel</button>
       </div>
@@ -66,7 +66,7 @@ export function renderIdeasBulkBar(count) {
       <div class="content-workspace__bulk-actions">
         <button type="button" class="ap-button stroked grey" data-bulk-idea-delete>
           <i class="ap-icon-trash"></i>
-          <span>Delete</span>
+          <span>Delete ${noun}</span>
         </button>
         <button type="button" class="ap-button ghost grey" data-bulk-idea-cancel>Cancel</button>
       </div>

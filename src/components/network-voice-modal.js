@@ -20,19 +20,19 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2976";
-import { getContextById } from "../contexts-store.js?v=2976";
-import { networkLabel, networkIcon } from "../social-profiles.js?v=2976";
+} from "../modal-coordinator.js?v=2980";
+import { getContextById } from "../contexts-store.js?v=2980";
+import { networkLabel, networkIcon } from "../social-profiles.js?v=2980";
 import {
   missingNetworkVoices,
   voiceChoices,
   useDefaultVoice,
   editNetworkVoiceInPlaybook,
   documentName,
-} from "../network-voice-flow.js?v=2976";
-import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2976";
-import { openVoiceProposal } from "./voice-proposal-modal.js?v=2976";
-import { escapeHtml } from "../utils.js?v=2976";
+} from "../network-voice-flow.js?v=2980";
+import { open as openFillDocumentModal } from "./fill-document-modal.js?v=2980";
+import { openVoiceProposal } from "./voice-proposal-modal.js?v=2980";
+import { escapeHtml } from "../utils.js?v=2980";
 
 const MODAL_ID = "network-voice";
 
@@ -100,6 +100,7 @@ export function requireNetworkVoicesInDialog(contextId, networks, onReady, { giv
     : missing.length === 1
       ? `How should I write on ${one}?`
       : `How should I write on these ${missing.length} networks?`;
+  confirmBtn.textContent = giving || missing.length === 1 ? `Set ${one} voice` : "Set voices";
   bodyEl.innerHTML = `<p class="network-voice-modal__lead">${
     giving
       ? `These drafts use your default voice. Once ${escapeHtml(one)} has its own voice, you can rewrite each one.`

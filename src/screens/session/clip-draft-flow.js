@@ -14,15 +14,15 @@
 // right panel (the only external caller) imports just this flow instead of the
 // whole screen.
 
-import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2976";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2976";
+import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2980";
+import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2980";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "../../social-profiles.js?v=2976";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2976";
-import { requireNetworkVoices } from "../../network-voice-flow.js?v=2976";
+} from "../../social-profiles.js?v=2980";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2980";
+import { requireNetworkVoices } from "../../network-voice-flow.js?v=2980";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -33,9 +33,9 @@ import {
   startPending,
   finishPending,
   GENERATION_TOOLS,
-} from "../../assistant.js?v=2976";
-import * as inlineQuestion from "../../inline-question.js?v=2976";
-import { addPostDraft } from "../../posts-store.js?v=2976";
+} from "../../assistant.js?v=2980";
+import * as inlineQuestion from "../../inline-question.js?v=2980";
+import { addPostDraft } from "../../posts-store.js?v=2980";
 
 // The generationContext a clip-derived draft carries — the "why this draft
 // exists" header shown on the post card.
@@ -71,7 +71,7 @@ export function startClipDraftFromSpace(sessionId, { entries, format, style }) {
   const n = entries.length;
   setGreeting(
     sessionId,
-    `Hi. ${n === 1 ? "Your clip from" : `Your ${n} clips from`} « ${entries[0].sourceName.replace(/\.[a-z0-9]+$/i, "")} » ${n === 1 ? "is" : "are"} here, in the look you set in Clips. Let's write the posts.`,
+    `Hi. ${n === 1 ? "Your clip from" : `Your ${n} clips from`} "${entries[0].sourceName.replace(/\.[a-z0-9]+$/i, "")}" ${n === 1 ? "is" : "are"} here, in the look you set in Clips. Pick the accounts and I'll write the drafts.`,
   );
   postSelectionEcho(sessionId, {
     icon: "ap-icon-file--video",
@@ -150,7 +150,7 @@ function askClipAccounts(sessionId, entries, format, style) {
     skipLabel: "Cancel",
     multi: true,
     defaultSelected: preset,
-    submitLabel: "Continue",
+    submitLabel: "Write drafts",
     // A long list of destinations gets a live search box to narrow it down.
     searchable: clipProfileItems.length > PROFILE_SEARCH_THRESHOLD,
     searchPlaceholder: "Search accounts by name, handle, or network…",

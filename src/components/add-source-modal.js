@@ -9,29 +9,29 @@
 // upload state machines live outside in sources-stream.js so they
 // continue running even after the modal closes.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2976";
-import { iconFor } from "../file-kinds.js?v=2976";
-import { connectorDocs } from "../mocks.js?v=2976";
+import { html, raw, escapeHtml } from "../utils.js?v=2980";
+import { iconFor } from "../file-kinds.js?v=2980";
+import { connectorDocs } from "../mocks.js?v=2980";
 import {
   getConnectors,
   findConnector,
   setConnectorStatus,
   subscribe as subscribeConnectors,
-} from "../connectors-store.js?v=2976";
-import { postConnectPrompt } from "../assistant.js?v=2976";
-import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2976";
+} from "../connectors-store.js?v=2980";
+import { postConnectPrompt } from "../assistant.js?v=2980";
+import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2980";
 import {
   requestOpen,
   notifyClose,
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2976";
-import { navigate } from "../router.js?v=2976";
-import { renderConnectorLogo } from "../connectors-view.js?v=2976";
-import { isFlagOn } from "../feature-flags.js?v=2976";
-import { showToast } from "./toast.js?v=2976";
-import { dropzoneHTML } from "./dropzone.js?v=2976";
+} from "../modal-coordinator.js?v=2980";
+import { navigate } from "../router.js?v=2980";
+import { renderConnectorLogo } from "../connectors-view.js?v=2980";
+import { isFlagOn } from "../feature-flags.js?v=2980";
+import { showToast } from "./toast.js?v=2980";
+import { dropzoneHTML } from "./dropzone.js?v=2980";
 
 const MODAL_ID = "addSource";
 import {
@@ -43,7 +43,7 @@ import {
   cancelUpload,
   getUploads,
   subscribeUploads,
-} from "../sources-stream.js?v=2976";
+} from "../sources-stream.js?v=2980";
 
 let backdrop, modal, contentEl, footerEl, fileInput;
 let initialized = false;
@@ -70,7 +70,7 @@ const TITLES = {
   upload: "Attach a file",
   url: "Add a URL",
   pasteText: "Paste text",
-  connectors: "Add a source",
+  connectors: "Attach a source",
 };
 
 const ACCEPT = ".pdf,.doc,.docx,.txt,.md,.mp4,.mov,.mp3,.wav,.m4a,.png,.jpg,.jpeg";
@@ -122,7 +122,7 @@ const HTML = `
   aria-hidden="true"
 >
   <div class="ap-dialog-header">
-    <span class="ap-dialog-title" id="addSourceTitle">Add a source</span>
+    <span class="ap-dialog-title" id="addSourceTitle">Attach a source</span>
   </div>
   <button class="ap-dialog-close" type="button" id="addSourceClose" aria-label="Close">
     <i class="ap-icon-close"></i>
@@ -645,7 +645,7 @@ function render() {
   // No tab switcher — the modal is dedicated to whatever method it was
   // opened in. Just title it and render that one form.
   const titleEl = document.getElementById("addSourceTitle");
-  if (titleEl) titleEl.textContent = TITLES[state.activeTab] || "Add a source";
+  if (titleEl) titleEl.textContent = TITLES[state.activeTab] || "Attach a source";
   renderContent();
   renderFooter();
 }

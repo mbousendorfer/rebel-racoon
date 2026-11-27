@@ -112,7 +112,10 @@ export async function toPngBlob({ svg, width, height, layers = [] }) {
     ctx.filter = "none";
     await drawLayers(ctx, layers, width, height);
     return await new Promise((resolve, reject) =>
-      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Export failed."))), "image/png"),
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error("I couldn't export the image. Try again."))),
+        "image/png",
+      ),
     );
   } finally {
     URL.revokeObjectURL(url);

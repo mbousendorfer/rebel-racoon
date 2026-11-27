@@ -2,12 +2,12 @@
 // and the first-run scene (whose word-by-word text the Topic Feed and Insights
 // reuse).
 
-import { isMine, accessLabel, canEdit, canManageSharing, canDelete, canView } from "../../playbook-access.js?v=2976";
-import { escapeAttr, escapeText } from "../../utils.js?v=2976";
-import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2976";
-import { renderEmptyState } from "../../components/empty-state.js?v=2976";
-import { voicesToFinish } from "../../voice-parts.js?v=2976";
-import { networkIcon, networkLabel, renderAvatar } from "../../social-profiles.js?v=2976";
+import { isMine, accessLabel, canEdit, canManageSharing, canDelete, canView } from "../../playbook-access.js?v=2980";
+import { escapeAttr, escapeText } from "../../utils.js?v=2980";
+import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2980";
+import { renderEmptyState } from "../../components/empty-state.js?v=2980";
+import { voicesToFinish } from "../../voice-parts.js?v=2980";
+import { networkIcon, networkLabel, renderAvatar } from "../../social-profiles.js?v=2980";
 
 // The brand's own mark where the analysis found a logo, its initials where it
 // didn't — so the column keeps one width and one shape, and never a stretched
@@ -204,7 +204,7 @@ export function renderGhostCard() {
       <span class="contexts-card__body">
         <span class="contexts-card__mark"><span class="contexts-card--ghost__glyph"><i class="ap-icon-archie-official" aria-hidden="true"></i></span></span>
         <span class="contexts-card__name">Create a Playbook</span>
-        <span class="contexts-card__brief">One Brand, its voice and its goal. I write every draft from it.</span>
+        <span class="contexts-card__brief">Add another Brand.</span>
       </span>
     </button>
   `;

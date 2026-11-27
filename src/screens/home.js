@@ -1,20 +1,20 @@
-import { escapeAttr, html, raw } from "../utils.js?v=2976";
-import { conceptText } from "../concepts.js?v=2976";
-import { renderTopbar, setTopbarActions } from "../components/topbar.js?v=2976";
+import { escapeAttr, html, raw } from "../utils.js?v=2980";
+import { conceptText } from "../concepts.js?v=2980";
+import { renderTopbar, setTopbarActions } from "../components/topbar.js?v=2980";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=2976";
-import { navigate } from "../router.js?v=2976";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2976";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2976";
-import { visibleContexts, isMine } from "../playbook-access.js?v=2976";
-import { voicesToFinish } from "../voice-parts.js?v=2976";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2976";
-import { showToast } from "../components/toast.js?v=2976";
-import { renderContextCard, renderContextsEmpty, renderGhostCard } from "./home/lists.js?v=2976";
+} from "../contexts-store.js?v=2980";
+import { navigate } from "../router.js?v=2980";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2980";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2980";
+import { visibleContexts, isMine, deletePlaybookBody } from "../playbook-access.js?v=2980";
+import { voicesToFinish } from "../voice-parts.js?v=2980";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2980";
+import { showToast } from "../components/toast.js?v=2980";
+import { renderContextCard, renderContextsEmpty, renderGhostCard } from "./home/lists.js?v=2980";
 
 // The Playbooks catalogue (`/contexts`).
 //
@@ -188,7 +188,7 @@ function renderOwnerTabs(all) {
   };
   return `
     <div class="ap-tabs">
-      <div class="ap-tabs-nav" role="tablist" aria-label="Sort Playbooks by owner">
+      <div class="ap-tabs-nav" role="tablist" aria-label="Filter Playbooks by owner">
         ${item("all", "All", all.length)}
         ${item("mine", "Mine", all.length - shared)}
         ${item("shared", "Shared with me", shared)}
@@ -206,19 +206,6 @@ function filter(list, { query }) {
       (c.brandName || "").toLowerCase().includes(q) ||
       (c.briefSummary || "").toLowerCase().includes(q),
   );
-}
-
-// A shared Playbook takes other people's work down with it, so the confirm says
-// how many chats and what survives — not just "this will be removed".
-function deleteBody(ctx) {
-  if (ctx.scope !== "organization") {
-    return `"${ctx.name}" will be removed. Chats using it will need a new Playbook. This can't be undone.`;
-  }
-  const n = ctx.usedIn || 0;
-  const who = n === 1 ? "1 chat" : `${n} chats`;
-  return n
-    ? `"${ctx.name}" is shared with everyone in your organization, and ${who} use it. They keep their drafts and can still save or schedule them, but I can't draft anything new in them. This can't be undone.`
-    : `"${ctx.name}" is shared with everyone in your organization. It disappears from everyone's list. Copies duplicated from it stay untouched. This can't be undone.`;
 }
 
 function bind(root) {
@@ -278,7 +265,7 @@ function bind(root) {
       // accessible, themed, and consistent with the rest of the prototype.
       openConfirmModal({
         title: "Delete Playbook?",
-        body: deleteBody(ctx),
+        body: deletePlaybookBody(ctx),
         confirmLabel: "Delete Playbook",
         cancelLabel: "Keep",
         danger: true,

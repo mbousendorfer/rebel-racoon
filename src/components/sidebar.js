@@ -1,22 +1,22 @@
-import { html, newChatPath, raw } from "../utils.js?v=2976";
-import { navigate, getPath } from "../router.js?v=2976";
-import { open as openBugReportModal } from "./bug-report-modal.js?v=2976";
-import { open as openFeedbackModal } from "./feedback-modal.js?v=2976";
-import { open as openSearchModal } from "./search-modal.js?v=2976";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2976";
-import { subscribe as subscribeSessions } from "../sessions-store.js?v=2976";
-import { isFlagOn } from "../feature-flags.js?v=2976";
-import { subscribe as subscribeContexts } from "../contexts-store.js?v=2976";
-import { playbookForNewWork } from "../active-playbook.js?v=2976";
+import { html, newChatPath, raw } from "../utils.js?v=2980";
+import { navigate, getPath } from "../router.js?v=2980";
+import { open as openBugReportModal } from "./bug-report-modal.js?v=2980";
+import { open as openFeedbackModal } from "./feedback-modal.js?v=2980";
+import { open as openSearchModal } from "./search-modal.js?v=2980";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2980";
+import { subscribe as subscribeSessions } from "../sessions-store.js?v=2980";
+import { isFlagOn } from "../feature-flags.js?v=2980";
+import { subscribe as subscribeContexts } from "../contexts-store.js?v=2980";
+import { playbookForNewWork } from "../active-playbook.js?v=2980";
 // A Playbook nobody shared with me must not surface here either — the store
 // still holds it (see playbook-access.js), the sidebar just doesn't name it.
-import { visibleContexts } from "../playbook-access.js?v=2976";
-import { voicesToFinish } from "../voice-parts.js?v=2976";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2976";
-import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=2976";
-import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=2976";
-import { getVideos } from "../videos-store.js?v=2976";
-import { closePanel as closeRightPanel } from "./right-panel.js?v=2976";
+import { visibleContexts } from "../playbook-access.js?v=2980";
+import { voicesToFinish } from "../voice-parts.js?v=2980";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2980";
+import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=2980";
+import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=2980";
+import { getVideos } from "../videos-store.js?v=2980";
+import { closePanel as closeRightPanel } from "./right-panel.js?v=2980";
 import {
   deleteSidebarSession,
   matchSessionId,
@@ -24,7 +24,7 @@ import {
   renderRecentLists,
   startRenameSidebar,
   togglePinSidebar,
-} from "./sidebar/recent-chats.js?v=2976";
+} from "./sidebar/recent-chats.js?v=2980";
 
 // Global app sidebar — Brand / + New conversation / Recent chats / User footer.
 // Rendered once at boot into #sidebar; re-rendered on every route change so the
@@ -540,7 +540,7 @@ const NAV = [
     path: "/contexts",
     icon: "ap-icon-target",
     label: "Playbooks",
-    hint: "Each Brand's voice, audience, and look. Every draft starts from one.",
+    hint: "Manage your Playbooks",
     // Warnings, not Playbooks (2026-10-29, asked: « le compteur dans la sidebar
     // devrait pas représenter le nombre de playbooks, mais le nombre de
     // warnings »): the network voices to finish, in orange; none, no counter.
@@ -553,7 +553,7 @@ const NAV = [
     path: "/connectors",
     icon: "ap-icon-view-grid",
     label: "Connectors",
-    hint: "Tools I can search live in a chat, like Notion or Google Drive",
+    hint: "Manage connectors",
     countLabel: (n) => `${n} connected`,
     flag: "connectors",
     match: (p) => p === "/connectors",
@@ -577,7 +577,7 @@ const NAV = [
     path: "/insights",
     icon: "ap-icon-bar-graph",
     label: "Insights",
-    hint: "Your objectives, and whether your posts are moving them",
+    hint: "Track your objectives",
     flag: "insightsHub",
     match: (p) => p.startsWith("/insights"),
   },
@@ -587,7 +587,7 @@ const NAV = [
     path: "/clips",
     icon: "ap-icon-video",
     label: "Clips",
-    hint: "Turn a long video into clips, framed and subtitled, then into drafts",
+    hint: "Cut clips from your videos",
     countLabel: (n) => `${n} video${n === 1 ? "" : "s"}`,
     match: (p) => p === "/clips" || p.startsWith("/clips/"),
     count: () => getVideos(playbookForNewWork()?.id).length,
@@ -596,7 +596,7 @@ const NAV = [
     path: "/topics",
     icon: "ap-icon-antenna",
     label: "Topic Feed",
-    hint: "What your listening surfaced, ready to turn into posts",
+    hint: "Review Topics from your listening",
     countLabel: (n) => `${n} to review`,
     // Prefix, not equality: the row stays lit on /topics/settings, which is
     // still the Topic Feed rather than somewhere else.
@@ -620,7 +620,7 @@ function renderNav(path) {
       class="app-sidebar__nav-item"
       data-sidebar-new
       aria-label="New chat"
-      title="New chat (⇧⌘O)"
+      title="Shortcut: ⇧⌘O"
     >
       <i class="ap-icon-plus"></i>
       <span>New chat</span>

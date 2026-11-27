@@ -7,7 +7,7 @@
 // a definition can never say two different things on two screens.
 // docs/copy/copy-principles.md § Concepts.
 
-import { escapeAttr } from "./utils.js?v=2976";
+import { escapeAttr } from "./utils.js?v=2980";
 
 export const CONCEPTS = {
   playbook: {
@@ -16,7 +16,7 @@ export const CONCEPTS = {
   },
   chat: {
     name: "chat",
-    text: "A chat is where we work on one piece of content together. Its sources, ideas, and drafts stay in it.",
+    text: "A chat is where you and I work on one piece of content. Its sources, ideas, and drafts stay in it.",
   },
   topicFeed: {
     name: "Topic Feed",

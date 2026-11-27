@@ -47,11 +47,11 @@ Trois mots qui vont avec, et qui ne sont pas interchangeables :
 
 ### Session = Chat = Conversation
 
-Une **session** est un fil de conversation avec Archie. Tous synonymes :
+Une **session** est un fil de conversation avec Archie. Un seul objet, trois noms selon l'endroit :
 
-- "Session" (préféré dans le code, store `sessions-store.js`)
-- "Chat" (label UI sidebar : "Chats")
-- "Conversation" (label UI en prod)
+- "Session" dans le code (store `sessions-store.js`)
+- **"chat"** dans l'UI anglaise du proto, partout ("New chat", "Chats") ; jamais "session" ni "conversation" à l'écran
+- "Conversation" en prod et pour la future locale FR
 
 Chaque session a son propre thread (`assistant.js`), ses ideas (`library.js`), ses drafts (`posts-store.js`), ses mentions composer (`composer-mentions.js`).
 
@@ -206,6 +206,8 @@ Switch UI : panneau Admin (⇧D). Un reload est forcé pour que les stores re-se
 | "channel", "profile" (qui publie)      | "account"                           | Le compte social qui publie ; le réseau reste "network"                                 |
 | "Reuse", "winners"                     | "Repurpose", "top posts"            | Voir Repurpose plus haut                                                                |
 | "captions", "ratio", "shape"           | "subtitles", "format"               | Un seul mot par notion dans les studios                                                 |
+| "Source" pour ce qu'écoute un feed     | "Listening source"                  | Une Source vit dans un chat ; le moniteur d'entrée de l'éditeur de clips est "Original" |
+| "Generate N drafts", "Draft them"      | "Write N drafts"                    | Un seul libellé pour produire des drafts, chat et Clips (2026-11-27)                    |
 
 ## Voir aussi
 

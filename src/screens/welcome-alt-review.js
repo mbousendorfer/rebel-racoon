@@ -33,12 +33,12 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2976";
-import { navigate } from "../router.js?v=2976";
-import { getDraft, patchDraft } from "../context-builder.js?v=2976";
-import { mount } from "../playbook-view.js?v=2976";
-import { parseHashParams } from "../url-state.js?v=2976";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2976";
+import { html, raw } from "../utils.js?v=2980";
+import { navigate } from "../router.js?v=2980";
+import { getDraft, patchDraft } from "../context-builder.js?v=2980";
+import { mount } from "../playbook-view.js?v=2980";
+import { parseHashParams } from "../url-state.js?v=2980";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2980";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
 // its cards' header band, its cover and its tile in the list, so the colour
@@ -291,7 +291,7 @@ export function renderReview(target, sid, config, review) {
   });
   const navEl = document.createElement("nav");
   navEl.className = "welcome-review__nav";
-  navEl.setAttribute("aria-label", "Cards");
+  navEl.setAttribute("aria-label", "Card navigation");
   shell.sheet.append(navEl);
   // The part's confirm, at the bottom of the stage.
   const barEl = document.createElement("div");

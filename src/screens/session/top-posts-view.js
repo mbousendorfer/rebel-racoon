@@ -1,17 +1,17 @@
 // The Top posts repurpose screen as the session hosts it: its steps, the
 // winners picker, and its Playbook control. Moved out of session.js, unchanged.
 
-import { usableContexts } from "../../playbook-access.js?v=2976";
-import { escapeHtml, html, raw } from "../../utils.js?v=2976";
-import * as topPostsFlow from "../../top-posts-flow.js?v=2976";
-import { renderEmptyState } from "../../components/empty-state.js?v=2976";
-import { profileForNetwork } from "../../social-profiles.js?v=2976";
-import { renderPicker } from "../_analyse-common.js?v=2976";
-import * as inlineQuestion from "../../inline-question.js?v=2976";
-import { getContextById } from "../../contexts-store.js?v=2976";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=2976";
-import { TOP_POSTS_LIMIT, renderTopPostsBoard } from "../../components/top-post-card.js?v=2976";
-import { dotColorVar } from "../session.js?v=2976";
+import { usableContexts } from "../../playbook-access.js?v=2980";
+import { escapeHtml, html, raw } from "../../utils.js?v=2980";
+import * as topPostsFlow from "../../top-posts-flow.js?v=2980";
+import { renderEmptyState } from "../../components/empty-state.js?v=2980";
+import { profileForNetwork } from "../../social-profiles.js?v=2980";
+import { renderPicker } from "../_analyse-common.js?v=2980";
+import * as inlineQuestion from "../../inline-question.js?v=2980";
+import { getContextById } from "../../contexts-store.js?v=2980";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=2980";
+import { TOP_POSTS_LIMIT, renderTopPostsBoard } from "../../components/top-post-card.js?v=2980";
+import { dotColorVar } from "../session.js?v=2980";
 
 // Playbook picker for the top-posts step 1 (account screen) — the chosen
 // Playbook governs the voice of the repurposed drafts. Mirrors the batch / clip
@@ -57,7 +57,7 @@ const TOP_POSTS_STEPS = [
     tone: "in",
     icon: "ap-icon-feature-analytics",
     title: "Pick an account",
-    text: "Choose a connected account to pull your best-performing posts from.",
+    text: "Choose a connected account to load your top posts from.",
   },
   {
     tone: "ai",
@@ -68,7 +68,7 @@ const TOP_POSTS_STEPS = [
   {
     tone: "out",
     icon: "ap-icon-stack",
-    title: "Reuse into drafts",
+    title: "Repurpose into drafts",
     text: "I write fresh drafts in your Playbook's voice, ready to review and schedule.",
   },
 ];
@@ -96,7 +96,7 @@ export function renderTopPostsPickerScreen(session) {
             ${raw(
               renderEmptyState({
                 icon: "ap-icon-feature-analytics",
-                title: "No top posts to reuse yet",
+                title: "No top posts yet",
                 body: "Once your posts start performing, I'll surface your top posts here so you can repurpose what already works. Publish a few and come back.",
                 actionHtml:
                   '<button type="button" class="ap-button stroked" data-topposts-exit><span>Back to chat</span></button>',
@@ -154,11 +154,13 @@ export function renderTopPostsPickerScreen(session) {
       </div>
     `;
   } else if (state.stage === "loading") {
-    intro = profileName ? `Loading your top posts from ${profileName}…` : "Loading your top posts…";
+    intro = "I rank them by how far they beat your average.";
     body = html`
       <div class="top-posts-loading" role="status" aria-live="polite">
         <span class="archie-loader" style="--archie-loader-size: 44px"></span>
-        <span class="top-posts-loading__label">Pulling ${profileName || "your"} top posts…</span>
+        <span class="top-posts-loading__label"
+          >${profileName ? `Loading top posts from ${profileName}…` : "Loading top posts…"}</span
+        >
       </div>
     `;
   } else {
@@ -189,7 +191,7 @@ export function renderTopPostsPickerScreen(session) {
             <span class="top-posts-intro__badge"
               ><i class="ap-icon-feature-analytics" aria-hidden="true"></i>Top posts</span
             >
-            <h1 class="top-posts-intro__title">Reuse your best-performing posts</h1>
+            <h1 class="top-posts-intro__title">Repurpose your top posts</h1>
             <p class="top-posts-intro__sub">${intro}</p>
           </div>
           ${raw(body)}

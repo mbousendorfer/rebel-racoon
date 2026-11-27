@@ -5,7 +5,7 @@
 // openDialog() returns { el, close, setBody }. Escape and the backdrop close it;
 // focus moves in on open and back to the opener on close.
 
-import { html, toString } from "../lib/html.js?v=2976";
+import { html, toString } from "../lib/html.js?v=2980";
 
 let open = [];
 
@@ -133,7 +133,7 @@ export function closeAllDialogs() {
 // DS has no primary red, and the verb on the button says what happens
 // (design-guidelines, interaction-patterns §1). Callers may still pass
 // `danger`; it no longer changes the look.
-export function confirmDialog({ title, body, confirmLabel = "Confirm" }) {
+export function confirmDialog({ title, body, confirmLabel = "Confirm", cancelLabel = "Cancel" }) {
   return new Promise((resolve) => {
     let answered = false;
     const dialog = openDialog({
@@ -143,7 +143,7 @@ export function confirmDialog({ title, body, confirmLabel = "Confirm" }) {
       body: html`<p class="ap-body imst-dialog__text">${body}</p>`,
       footer: html`
         <div class="ap-dialog-footer-right">
-          <button type="button" class="ap-button ghost grey" data-imst-confirm="no">Cancel</button>
+          <button type="button" class="ap-button ghost grey" data-imst-confirm="no">${cancelLabel}</button>
           <button type="button" class="ap-button primary orange" data-imst-confirm="yes">${confirmLabel}</button>
         </div>
       `,

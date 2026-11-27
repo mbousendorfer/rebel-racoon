@@ -45,7 +45,7 @@ export const TOPIC_SOURCES = Object.freeze([
     howItWorks:
       "Every post your listed competitors publish is read and ranked by how far " +
       "it beat that account's own median engagement, keeping the ones that " +
-      "actually outperformed. You get the format, the hook and the angle, plus " +
+      "outperformed. You get the format, the hook, and the angle, plus " +
       "where your own strengths let you answer it differently.",
   },
   {
@@ -62,7 +62,7 @@ export const TOPIC_SOURCES = Object.freeze([
     defaultEnabled: true,
     howItWorks:
       "The creators your audience already listens to are followed, and what lands " +
-      "for them is tracked: the formats, the partnerships, the recurring themes. " +
+      "for them is tracked: the formats, the partnerships, and the recurring themes. " +
       "You get collaboration angles and creative that has already proved itself " +
       "with the people you're trying to reach.",
   },
@@ -86,7 +86,7 @@ export const TOPIC_SOURCES = Object.freeze([
     // touched again.
     showsWebsites: true,
     howItWorks:
-      "Your website is scanned regularly for new blog posts, product launches " +
+      "Your website is scanned regularly for new blog posts, product launches, " +
       "and customer stories, and what turns up becomes Topics you can draft from.",
   },
   {
@@ -98,7 +98,7 @@ export const TOPIC_SOURCES = Object.freeze([
     playbookAnchor: null,
     defaultEnabled: false,
     howItWorks:
-      "What people say to and about you in comments, DMs and reviews is read for " +
+      "What people say to and about you in comments, DMs, and reviews is read for " +
       "the pain points and requests that keep coming back. A theme is only raised " +
       "once ten or more people have voiced it, and it is tied to a real complaint " +
       "so you can answer something specific.",
@@ -126,8 +126,7 @@ export const TOPIC_SOURCES = Object.freeze([
     defaultEnabled: false,
     howItWorks:
       "Conversations gaining momentum in your industry are followed, surfacing " +
-      "the ones that grew over the last 30 days rather than the ones that were " +
-      "always loud.",
+      "the ones that grew over the last 30 days.",
   },
   {
     id: "global-trends",
@@ -138,12 +137,12 @@ export const TOPIC_SOURCES = Object.freeze([
     playbookAnchor: null,
     defaultEnabled: false,
     howItWorks:
-      "Cultural, seasonal and news moments that touch your brand are scanned for " +
+      "Cultural, seasonal, and news moments that touch your brand are scanned for " +
       "the timely angles with wide reach and low risk of landing badly.",
   },
   {
     id: "internal-ideas",
-    name: "Internal team ideas",
+    name: "Internal team docs",
     icon: "ap-icon-folder",
     accent: "soft-blue",
     live: false,
@@ -204,7 +203,7 @@ export const TOPIC_KINDS = Object.freeze([
   // lane. Note "To review" is the kind label here — the `new` STATUS (also
   // "To review" historically) is the always-shown baseline in the list and wears
   // no chip, so the two never appear as competing controls.
-  { id: "ready", label: "To review" },
+  { id: "ready", label: "Ready to draft" },
   { id: "later", label: "For later" },
 ]);
 

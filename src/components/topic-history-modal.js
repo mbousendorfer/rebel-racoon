@@ -22,10 +22,10 @@
 // trail says one thing in two places; only the placement differs, which is the
 // same split the article's identity and verbs already use.
 
-import { requestOpen, notifyClose, showOverlay, hideOverlay } from "../modal-coordinator.js?v=2976";
-import { escapeHtml } from "../utils.js?v=2976";
-import { getTopicById, topicTitle } from "../topics-store.js?v=2976";
-import { renderTopicTrail } from "../topic-article.js?v=2976";
+import { requestOpen, notifyClose, showOverlay, hideOverlay } from "../modal-coordinator.js?v=2980";
+import { escapeHtml } from "../utils.js?v=2980";
+import { getTopicById, topicTitle } from "../topics-store.js?v=2980";
+import { renderTopicTrail } from "../topic-article.js?v=2980";
 
 const MODAL_ID = "topic-history";
 
@@ -113,7 +113,7 @@ export function openTopicHistory(topicId) {
 
   // Naming the Topic is what stops this reading as a generic log. The reader came
   // from an article; the dialog has to say which one it is the trail of.
-  subEl.innerHTML = `“${escapeHtml(topicTitle(topic))}”`;
+  subEl.innerHTML = `"${escapeHtml(topicTitle(topic))}"`;
   bodyEl.innerHTML = renderTopicTrail(topic);
 
   showOverlay(modal, backdrop);

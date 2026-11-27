@@ -8,8 +8,8 @@
 // Suggested values become menthol chips (AI-suggested). Other static
 // option lists come from the brief panel renderer.
 
-import { hostname } from "./utils.js?v=2976";
-import { objectivesInText } from "./objective-measures.js?v=2976";
+import { hostname } from "./utils.js?v=2980";
+import { objectivesInText } from "./objective-measures.js?v=2980";
 
 const AGORAPULSE = {
   name: "Agorapulse",
@@ -398,9 +398,9 @@ const GENERIC = {
 export function analyzeSocialProfiles(profileIds = []) {
   const n = Array.isArray(profileIds) ? profileIds.length : 0;
   const result = clone(GENERIC);
-  result.businessSummary = `Built from ${n || "your"} connected social ${
-    n === 1 ? "profile" : "profiles"
-  }. I studied your recent posts — how you open, how you close, the formats you favor, and the tone that earns engagement — and mapped them into the sections below. Edit anything that's off.`;
+  result.businessSummary = `Built from ${n || "your"} connected ${
+    n === 1 ? "account" : "accounts"
+  }. I studied how you open, how you close, your formats, and your tone, and filled in the sections below. Edit anything that's off.`;
   Object.assign(result.suggestions, {
     contentStyle: ["Conversational", "Engagement-led"],
     objective: ["Brand awareness", "Build personal brand"],
@@ -526,7 +526,7 @@ export function analyzeBrandFiles(files = []) {
   };
   const result = clone(GENERIC);
   result.name = name;
-  result.businessSummary = `Built from your ${list.length} file${list.length === 1 ? "" : "s"}. I took the colors and the look from them — edit each section to say what the brand does and who it's for.`;
+  result.businessSummary = `Built from your ${list.length} file${list.length === 1 ? "" : "s"}. I took the colors and the look from them. Edit each section to say what the brand does and who it's for.`;
   result.suggestions.brandColors = [
     { name: "Primary", hex: hsl(hue, 62, 44), role: "primary" },
     { name: "Secondary", hex: hsl((hue + 150) % 360, 34, 42), role: "secondary" },
@@ -570,19 +570,19 @@ const INTERVIEW_TOPICS = [
 const INTERVIEW_QUESTIONS = {
   offer: [
     "What do you offer, and why do people pick you over someone else?",
-    "What do you offer — services, expertise, content — and why do people come to you?",
+    "What do you offer (services, expertise, content), and why do people come to you?",
   ],
   audience: [
     "Who are your customers? Describe one or two typical people you sell to.",
-    "Who do you want to reach — clients, followers, recruiters? Describe one or two typical people.",
+    "Who do you want to reach (clients, followers, recruiters)? Describe one or two typical people.",
   ],
   goals: [
-    "What should social media do for you — awareness, leads, sales, bookings?",
-    "What should social media do for you — a following, new clients, a new job?",
+    "What should social media do for you: awareness, leads, sales, or bookings?",
+    "What should social media do for you: a following, new clients, or a new job?",
   ],
   cta: [
-    "Where should people go after reading a post? A shop, a booking page, a newsletter… Paste the link if you have one.",
-    "Where should people go after reading a post? Your portfolio, a link-in-bio, your email… Paste the link if you have one.",
+    "Where should people go after reading a post? A shop, a booking page, or a newsletter. Paste the link if you have one.",
+    "Where should people go after reading a post? Your portfolio, a link-in-bio, or your email. Paste the link if you have one.",
   ],
   rivals: [
     "Who else does your audience look at? Name a few businesses in your space.",
@@ -713,7 +713,7 @@ export function analyzeDocument(file) {
       .replace(/\b\w/g, (c) => c.toUpperCase()) || "Untitled brand";
 
   generic.name = prettyName;
-  generic.businessSummary = `Playbook built from your document "${filename}". Edit each section below to match what's actually in the file — I'll ground every post in your written Brand guidance.`;
+  generic.businessSummary = `Playbook built from your document "${filename}". Edit each section below to match the file. I'll ground every post in your written Brand guidance.`;
   generic.suggestions.voiceProfile = {
     ...generic.suggestions.voiceProfile,
     headline: "Professional · clear · helpful",

@@ -20,15 +20,15 @@
 // Pure render + a pure reducer: the host owns the open/query UI state and the
 // draft, so this file holds no state and no listeners.
 
-import { escapeHtml as esc } from "../utils.js?v=2976";
+import { escapeHtml as esc } from "../utils.js?v=2980";
 import {
   NETWORK_LABEL,
   getConnectedProfiles,
   renderProfileTag,
   PROFILE_SEARCH_THRESHOLD,
   getConnectedProfileById,
-} from "../social-profiles.js?v=2976";
-import { isAdditiveMetric, metricLabel } from "../objective-measures.js?v=2976";
+} from "../social-profiles.js?v=2980";
+import { isAdditiveMetric, metricLabel } from "../objective-measures.js?v=2980";
 
 function profilesFor(network) {
   return getConnectedProfiles().filter((p) => p.platform === network);
@@ -59,13 +59,13 @@ function pickedIds(scope) {
 // nor how many profiles it covers, which are the only two facts a scope has.
 function scopeTriggerText(scope) {
   const all = getConnectedProfiles();
-  if (!scope?.network) return `Every connected profile · ${all.length}`;
+  if (!scope?.network) return `Every connected account · ${all.length}`;
   const netName = NETWORK_LABEL[scope.network] || scope.network;
   const profiles = profilesFor(scope.network);
   const picked = pickedIds(scope);
   const n = profiles.filter((p) => picked.has(p.id)).length;
-  if (n === profiles.length) return `${netName} · all ${profiles.length} profile${profiles.length === 1 ? "" : "s"}`;
-  return `${netName} · ${n} of ${profiles.length} profiles`;
+  if (n === profiles.length) return `${netName} · all ${profiles.length} account${profiles.length === 1 ? "" : "s"}`;
+  return `${netName} · ${n} of ${profiles.length} accounts`;
 }
 
 // The inert box: the row's click handler owns the toggle and the whole field
@@ -127,7 +127,7 @@ export function renderScopeField({ metricId, scope, i, open = false, query = "" 
         q || g.profiles.length < 2
           ? ""
           : `<div class="ap-select-option objm__scopeopt" role="option" aria-selected="${netAll}" data-mscope-net-all="${esc(g.network)}">
-               ${checkbox(netAll)}<span>All ${g.profiles.length} ${esc(label)} profiles</span>
+               ${checkbox(netAll)}<span>All ${g.profiles.length} ${esc(label)} accounts</span>
              </div>`;
       const rows = shown
         .map((pf) => {
@@ -160,11 +160,11 @@ export function renderScopeField({ metricId, scope, i, open = false, query = "" 
       ? ""
       : additive
         ? `<div class="ap-select-all objm__scopeall" role="option" aria-selected="${everyNetwork}" data-mscope-every>
-             ${checkbox(everyNetwork)}<span>Every connected profile · ${all.length}</span>
+             ${checkbox(everyNetwork)}<span>Every connected account · ${all.length}</span>
            </div>
            <div class="ap-select-divider"></div>`
         : `<div class="ap-select-all objm__scopeall disabled" aria-disabled="true" aria-selected="${everyNetwork}">
-             ${checkbox(everyNetwork)}<span>Every connected profile${everyNetwork ? ` · ${all.length}` : ""}</span>
+             ${checkbox(everyNetwork)}<span>Every connected account${everyNetwork ? ` · ${all.length}` : ""}</span>
            </div>
            <div class="ap-select-divider"></div>`;
 
@@ -174,7 +174,7 @@ export function renderScopeField({ metricId, scope, i, open = false, query = "" 
   const note =
     additive || groups.length < 2
       ? ""
-      : `<p class="objm__scopenote">${esc(metricLabel(metricId))} can't be summed across networks — picking a profile from another one moves the measure there.</p>`;
+      : `<p class="objm__scopenote">${esc(metricLabel(metricId))} can't be summed across networks. Picking an account from another one moves the measure there.</p>`;
 
   const searchable = all.length > PROFILE_SEARCH_THRESHOLD;
 
@@ -189,13 +189,13 @@ export function renderScopeField({ metricId, scope, i, open = false, query = "" 
           searchable
             ? `<div class="ap-select-search">
                  <i class="ap-icon-search ap-select-search-icon" aria-hidden="true"></i>
-                 <input class="ap-select-search-input" type="text" data-mscope-search value="${esc(query)}" placeholder="Search profiles…" aria-label="Search profiles" />
+                 <input class="ap-select-search-input" type="text" data-mscope-search value="${esc(query)}" placeholder="Search accounts…" aria-label="Search accounts" />
                </div>`
             : ""
         }
         ${everyRow}
         <div class="ap-select-options">
-          ${groupRows || `<p class="ap-select-not-found">No profile matches “${esc(query)}”.</p>`}
+          ${groupRows || `<p class="ap-select-not-found">No account matches "${esc(query)}".</p>`}
         </div>
         ${note}
       </div>

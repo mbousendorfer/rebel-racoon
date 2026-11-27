@@ -21,15 +21,15 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2976";
-import { escapeHtml as esc } from "../utils.js?v=2976";
+} from "../modal-coordinator.js?v=2980";
+import { escapeHtml as esc } from "../utils.js?v=2980";
 import {
   getConnectedProfiles,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   BRAND_INITIALS,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=2976";
+} from "../social-profiles.js?v=2980";
 
 const MODAL_ID = "analyze-profiles";
 
@@ -62,12 +62,12 @@ const HTML = `
       <input
         type="search"
         id="analyzeProfilesSearch"
-        placeholder="Search profiles by name, handle or network…"
-        aria-label="Search profiles"
+        placeholder="Search accounts by name, handle, or network…"
+        aria-label="Search accounts"
         autocomplete="off"
       />
     </div>
-    <div class="analyze-profiles-modal__list" id="analyzeProfilesList" role="group" aria-label="Connected profiles"></div>
+    <div class="analyze-profiles-modal__list" id="analyzeProfilesList" role="group" aria-label="Connected accounts"></div>
     <p class="analyze-profiles-modal__empty" id="analyzeProfilesNoMatch" hidden>No accounts match your search.</p>
     <div class="ap-infobox warning analyze-profiles-modal__warn">
       <i class="ap-icon-info_fill" aria-hidden="true"></i>
@@ -114,7 +114,7 @@ function renderList() {
           ${icon ? `<span class="ap-avatar-network"><i class="${esc(icon)}"></i></span>` : ""}
         </span>
         <span class="analyze-profiles-modal__meta">
-          <span class="analyze-profiles-modal__handle">${esc(p.handle || "Profile")}</span>
+          <span class="analyze-profiles-modal__handle">${esc(p.handle || "Account")}</span>
           ${caption ? `<span class="analyze-profiles-modal__caption">${esc(caption)}</span>` : ""}
         </span>
         ${noPosts ? `<span class="analyze-profiles-modal__note">No posts to analyze</span>` : ""}

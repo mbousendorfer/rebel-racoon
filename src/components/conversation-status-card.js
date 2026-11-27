@@ -16,8 +16,8 @@
 // the underlying stores mutate (assistant thread, sources-stream, library,
 // right-panel mode, sessions).
 
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2976";
-import { getPath } from "../router.js?v=2976";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2980";
+import { getPath } from "../router.js?v=2980";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -25,14 +25,14 @@ import {
   openSources as openSourcesPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=2976";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2976";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2976";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2976";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2976";
-import { subscribe as subscribeSessions } from "../sessions-store.js?v=2976";
-import { addMention } from "../composer-mentions.js?v=2976";
-import { isFlagOn } from "../feature-flags.js?v=2976";
+} from "./right-panel.js?v=2980";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2980";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2980";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2980";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2980";
+import { subscribe as subscribeSessions } from "../sessions-store.js?v=2980";
+import { addMention } from "../composer-mentions.js?v=2980";
+import { isFlagOn } from "../feature-flags.js?v=2980";
 
 // Two-level structure:
 //   .conversation-status-column   — fills grid column 3 with white bg
@@ -294,7 +294,7 @@ function renderSourcesSection(sources) {
       <section class="conversation-status-card__section">
         ${heading}
         <div class="conversation-status-card__empty conversation-status-card__empty--block">
-          None yet — attach a file or link to get started.
+          No sources yet. Attach a file or link to start.
         </div>
       </section>
     `;
@@ -459,9 +459,9 @@ export function pendingProcesses(thread) {
 
 function humanizePendingMessage(m) {
   // startPending's marker carries its own label ("Generating post drafts…").
-  if (m.role === "pending") return m.meta || "Working…";
+  if (m.role === "pending") return m.meta || "Thinking…";
   if (m.variant === "idea-extraction" || m.variant === "extraction") return "Extracting ideas…";
-  if (m.variant === "clip-extraction") return "Cutting your clips…";
+  if (m.variant === "clip-extraction") return "Cutting clips…";
   if (m.role === "assistant") {
     return m.meta || "Thinking…";
   }

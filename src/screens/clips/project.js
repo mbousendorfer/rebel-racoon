@@ -7,31 +7,31 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2976";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2976";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2976";
-import { showToast } from "../../components/toast.js?v=2976";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2976";
-import { open as openTrim, openAdd } from "../../components/clip-trim-modal.js?v=2976";
-import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2976";
-import { startRewrite } from "../../draft-rewrite.js?v=2976";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2976";
-import { renderPostCard } from "../../components/post-card.js?v=2976";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2976";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2976";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2976";
-import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2976";
-import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2976";
-import { open as openRename } from "../../components/rename-modal.js?v=2976";
-import { writePostsInChat } from "../../clips-chat.js?v=2976";
+import { navigate } from "../../router.js?v=2980";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2980";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2980";
+import { showToast } from "../../components/toast.js?v=2980";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2980";
+import { open as openTrim, openAdd } from "../../components/clip-trim-modal.js?v=2980";
+import { requireNetworkVoicesInDialog } from "../../components/network-voice-modal.js?v=2980";
+import { startRewrite } from "../../draft-rewrite.js?v=2980";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2980";
+import { renderPostCard } from "../../components/post-card.js?v=2980";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2980";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2980";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2980";
+import { getConnectedProfiles, renderProfileTag, NETWORK_LABEL } from "../../social-profiles.js?v=2980";
+import { getContextById, subscribe as subscribeContexts } from "../../contexts-store.js?v=2980";
+import { open as openRename } from "../../components/rename-modal.js?v=2980";
+import { writePostsInChat } from "../../clips-chat.js?v=2980";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2976";
-import { escapeHtml, plural } from "../../utils.js?v=2976";
+} from "../../posts-store.js?v=2980";
+import { escapeHtml, plural } from "../../utils.js?v=2980";
 import {
   getVideo,
   draftKey,
@@ -49,7 +49,7 @@ import {
   askForClips,
   trimClip,
   updateClip,
-} from "../../videos-store.js?v=2976";
+} from "../../videos-store.js?v=2980";
 import {
   fmtMs,
   lookSelect,
@@ -67,7 +67,7 @@ import {
   chip,
   fact,
   veil,
-} from "./shared.js?v=2976";
+} from "./shared.js?v=2980";
 
 let target = null;
 let videoId = null;
@@ -165,7 +165,7 @@ function patchSelection(v) {
   paintTopbarActions(v);
 }
 
-const ctaLabel = (n) => (n ? `Write posts with ${plural(n, "clip")}` : "Keep a clip to post it");
+const ctaLabel = (n) => (n ? "Write drafts" : "Keep a clip to write drafts");
 
 // The topbar names the video and leads back. On the clips, its right side
 // counts what is kept and holds the page's way out, Write posts (the video's
@@ -210,7 +210,7 @@ function paint() {
         <nav class="ap-stepper clips-bar__steps" aria-label="Steps">
           ${stepButton("clips", 1, "Review the clips", `<span data-clips-step-count>${v.clips.filter((c) => c.selected).length} kept</span>`, t)}
           <span class="ap-stepper-separator" aria-hidden="true"><i class="ap-icon-chevron-right"></i></span>
-          ${stepButton("drafts", 2, "Write the posts", posts.length ? `${posts.length} draft${posts.length === 1 ? "" : "s"}` : "", t)}
+          ${stepButton("drafts", 2, "Write drafts", posts.length ? `${posts.length} draft${posts.length === 1 ? "" : "s"}` : "", t)}
         </nav>
       </div>
       ${t === "drafts" ? `<div class="clips-view__page">${renderDrafts(v, posts)}</div>` : renderPage(v)}
@@ -278,10 +278,10 @@ function renderRunStatus(v) {
       <div class="clips-run__acts">
         ${
           empty
-            ? `<a class="ap-button primary blue" href="#/clips"><i class="ap-icon-upload" aria-hidden="true"></i><span>Upload another video</span></a>`
+            ? `<a class="ap-button primary blue" href="#/clips"><i class="ap-icon-upload" aria-hidden="true"></i><span>Add another video</span></a>`
             : `<button type="button" class="ap-button primary blue" data-clips-retry><i class="ap-icon-refresh" aria-hidden="true"></i><span>Try again</span></button>`
         }
-        <button type="button" class="ap-button ghost grey" data-clips-remove-video><span>Remove this video</span></button>
+        <button type="button" class="ap-button ghost grey" data-clips-remove-video><span>Delete video</span></button>
       </div>
     </div>`;
 }
@@ -298,7 +298,7 @@ function renderComing(v) {
   return `<section class="clips-group-sec" aria-label="The clips to come">
       <header class="clips-group-sec__head">
         <h2 class="clips-group-sec__title">${ask ? "From your request" : "The best moments"}</h2>
-        <span class="clips-group-sec__meta">${ask ? `« ${escapeHtml(ask.text)} » · ` : ""}${ask ? "the clips" : plural(n, "clip")}, as soon as I've found them</span>
+        <span class="clips-group-sec__meta">${ask ? `"${escapeHtml(ask.text)}" · ` : ""}${ask ? "the clips" : plural(n, "clip")}, as soon as I've found them</span>
       </header>
       <div class="media-cards" aria-hidden="true">${waitingCard().repeat(n)}</div>
     </section>`;
@@ -378,7 +378,7 @@ function renderRecap(v) {
           ${lookSelect(v.settings.ratio, v.settings.subtitlePreset)}
           <details class="clips-more">
             <summary class="ap-icon-button stroked grey" aria-label="More actions for this video" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
-            <div class="ap-action-dropdown clips-more__menu" role="menu">${menuItem("Remove this video", "trash", "data-clips-remove-video", true)}</div>
+            <div class="ap-action-dropdown clips-more__menu" role="menu">${menuItem("Delete video", "trash", "data-clips-remove-video", true)}</div>
           </details>
         </div>
         <p class="media-card__meta clips-recap__meta">Added ${added(v.addedAt)} · ${ORIGIN[v.origin] || "Uploaded"} · ${v.width}×${v.height}</p>
@@ -441,7 +441,7 @@ function renderRequest(v, r, tools = "") {
   const clips = v.clips.filter((c) => c.requestId === r.id);
   const head = `<header class="clips-group-sec__head">
       <h2 class="clips-group-sec__title">From your request</h2>
-      <span class="clips-ask__tag"><i class="ap-icon-archie-official" aria-hidden="true"></i>« ${escapeHtml(r.text)} »</span>
+      <span class="clips-ask__tag"><i class="ap-icon-archie-official" aria-hidden="true"></i>"${escapeHtml(r.text)}"</span>
       ${r.status === "done" ? `<span class="clips-group-sec__meta">${plural(clips.length, "clip")}</span>` : ""}
       ${tools}
     </header>`;
@@ -488,7 +488,7 @@ function renderCard(v, c) {
     cls: c.selected ? "is-kept" : "",
     stage: previewMarkup(v, c, { captions: false }),
     over: c.rendering ? veil("Rendering your edited clip…", { attrs: 'role="status"' }) : "",
-    tl: `<label class="media-card__keep"><span class="ap-checkbox-container"><input type="checkbox" data-clips-keep="${id}" ${c.selected ? "checked" : ""} aria-label="Keep « ${title} »" /><i></i></span></label>`,
+    tl: `<label class="media-card__keep"><span class="ap-checkbox-container"><input type="checkbox" data-clips-keep="${id}" ${c.selected ? "checked" : ""} aria-label="Keep &quot;${title}&quot;" /><i></i></span></label>`,
     bl: chip(escapeHtml(formatLabel(clipRatioId(v, c)))),
     br: chip(fmtMs(c.endMs - c.startMs)),
     title,
@@ -501,10 +501,10 @@ function renderCard(v, c) {
     foot: `<button type="button" class="ap-button ghost grey" data-clips-trim="${id}"><i class="ap-icon-shorten" aria-hidden="true"></i><span>Trim</span></button>
       <a class="ap-button ghost grey" href="#/clips/${encodeURIComponent(v.id)}/edit/${encodeURIComponent(c.id)}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit clip</span></a>
       <details class="clips-more">
-        <summary class="ap-icon-button transparent grey" aria-label="More actions for « ${title} »" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
+        <summary class="ap-icon-button transparent grey" aria-label="More actions for &quot;${title}&quot;" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
         <div class="ap-action-dropdown clips-more__menu" role="menu">
-          ${menuItem("Rename", "pen", `data-clips-rename="${id}"`)}
-          ${menuItem("Remove this clip", "trash", `data-clips-remove="${id}"`, true)}
+          ${menuItem("Rename clip", "pen", `data-clips-rename="${id}"`)}
+          ${menuItem("Remove clip", "trash", `data-clips-remove="${id}"`, true)}
         </div>
       </details>`,
   });
@@ -527,11 +527,11 @@ function renderDrafts(v, posts) {
       }<span>${label}</span></li>`;
     };
     return `<div class="clips-drafts__writing" role="status">
-      <h2 class="clips-drafts__writing-title">Turning ${w.clips} clip${w.clips === 1 ? "" : "s"} into ${w.posts} post${w.posts === 1 ? "" : "s"}</h2>
+      <h2 class="clips-drafts__writing-title">Writing ${w.posts} draft${w.posts === 1 ? "" : "s"} from ${w.clips} clip${w.clips === 1 ? "" : "s"}</h2>
       <p class="clips-drafts__writing-sub">They land on this page as drafts, ready to schedule. Nothing gets published.</p>
       <ol class="clips-drafts__stages">
         ${stage("render", `Rendering ${w.clips} clip${w.clips === 1 ? "" : "s"}: ${escapeHtml(w.look)}`)}
-        ${stage("write", `Writing ${w.posts} post${w.posts === 1 ? "" : "s"} from the clips`)}
+        ${stage("write", `Writing ${w.posts} draft${w.posts === 1 ? "" : "s"}`)}
       </ol>
     </div>`;
   }
@@ -545,7 +545,7 @@ function renderDrafts(v, posts) {
             ? `${toSchedule.length} draft${toSchedule.length === 1 ? "" : "s"} ready to schedule`
             : `All ${posts.length} draft${posts.length === 1 ? " is" : "s are"} scheduled`
         }</h2>
-        <p class="clips-toolbar__count">One post per clip and account${
+        <p class="clips-toolbar__count">One draft per clip and account${
           posts.length - toSchedule.length ? `, ${posts.length - toSchedule.length} already scheduled` : ""
         }. Change a video with Edit clip, then schedule them from here.</p>
       </div>
@@ -554,7 +554,7 @@ function renderDrafts(v, posts) {
           <i class="ap-icon-plus" aria-hidden="true"></i><span>Write more drafts</span>
         </button>
         <button type="button" class="ap-button primary orange" data-clips-schedule-all ${toSchedule.length ? "" : "disabled"}>
-          <i class="ap-icon-calendar" aria-hidden="true"></i><span>Schedule ${toSchedule.length || ""}</span>
+          <i class="ap-icon-calendar" aria-hidden="true"></i><span>${toSchedule.length ? `Schedule ${toSchedule.length} draft${toSchedule.length === 1 ? "" : "s"}` : "Schedule drafts"}</span>
         </button>
       </div>
     </div>
@@ -662,7 +662,7 @@ function renderDraftSetup(v, hasDrafts) {
           </label></li>`,
         )
         .join("")}</ul>`
-    : `<p class="clips-write__empty">No account connected yet. Connect one and I write its drafts — nothing is published.</p>
+    : `<p class="clips-write__empty">No account connected yet. Connect one and I'll write its drafts. Nothing gets published.</p>
        <div class="clips-write__connect">${connectableNetworkCards()
          .map(
            (n) => `<button type="button" class="ap-button stroked grey" data-clips-connect="${escapeHtml(n.value)}">
@@ -691,15 +691,15 @@ function renderDraftSetup(v, hasDrafts) {
         : off
           ? "This Playbook has no call to action yet."
           : o.id === "in_post"
-            ? `The caption ends with “${ctaText}”`
-            : `“${ctaText}” goes in the first comment, where a link doesn't cost reach.`;
+            ? `The post ends with "${ctaText}".`
+            : `"${ctaText}" goes in the first comment, where a link doesn't cost reach.`;
     return choice("clips-cta", "data-clips-cta", o.id, draftSetup.cta === o.id, o.label, hint, off);
   }).join("");
 
   const why = !clips.length
     ? "Keep at least one clip at step 1."
     : !profiles.length
-      ? "Connect an account to write the posts."
+      ? "Connect an account to write drafts."
       : !accounts.length
         ? "Pick one or more accounts."
         : "";
@@ -707,8 +707,8 @@ function renderDraftSetup(v, hasDrafts) {
   return `
     <section class="clips-write" aria-labelledby="clips-write-title">
       <header class="clips-write__head">
-        <h2 class="clips-write__title" id="clips-write-title">Write posts from ${plural(clips.length, "clip")}</h2>
-        <p class="clips-write__sub">I render the clips you kept, then write one post per clip and account${pb ? `, in ${escapeHtml(pb.name)}'s voice` : ""}. Nothing is published: the drafts land on this page, ready to schedule.</p>
+        <h2 class="clips-write__title" id="clips-write-title">Write drafts from ${plural(clips.length, "clip")}</h2>
+        <p class="clips-write__sub">I render the clips you kept, then write one draft per clip and account${pb ? `, in ${escapeHtml(pb.name)}'s voice` : ""}. Nothing is published: the drafts land on this page, ready to schedule.</p>
       </header>
       <div class="clips-write__form">
           <section class="clips-write__group">
@@ -728,7 +728,7 @@ function renderDraftSetup(v, hasDrafts) {
               ? `<section class="clips-write__group">
                   <div class="clips-write__group-head">
                     <h3 class="clips-write__label">How they render</h3>
-                    <button type="button" class="ap-button ghost blue" data-clips-tab="clips">Change at step 1</button>
+                    <button type="button" class="ap-button ghost blue" data-clips-tab="clips">Change look</button>
                   </div>
                   <ul class="clips-write__looks">${looks
                     .map(
@@ -747,7 +747,7 @@ function renderDraftSetup(v, hasDrafts) {
           </section>
           <section class="clips-write__group">
             <div class="clips-write__group-head"><h3 class="clips-write__label" id="clips-write-accounts">Accounts</h3></div>
-            ${profiles.length ? `<p class="clips-write__meta">Pick one or more, across networks. I write one post per clip for each.</p>` : ""}
+            ${profiles.length ? `<p class="clips-write__meta">Pick one or more, across networks. I write one draft per clip for each.</p>` : ""}
             ${accountBlock}
           </section>
       </div>
@@ -767,7 +767,7 @@ function renderDraftSetup(v, hasDrafts) {
         <div class="clips-write__actions">
           <button type="button" class="ap-button ghost grey" data-clips-setup-cancel>Cancel</button>
           <button type="button" class="ap-button primary orange" data-clips-write ${count ? "" : "disabled"}>
-            <i class="ap-icon-archie-official" aria-hidden="true"></i><span>${count ? `Write ${plural(count, "draft")}` : "Write the drafts"}</span>
+            <i class="ap-icon-archie-official" aria-hidden="true"></i><span>${count ? `Write ${plural(count, "draft")}` : "Write drafts"}</span>
           </button>
         </div>
       </footer>
@@ -931,7 +931,7 @@ function onClick(e) {
     const c = v.clips.find((x) => x.id === rename.dataset.clipsRename);
     if (!c) return undefined;
     return openRename({
-      title: "Rename this clip",
+      title: "Rename clip",
       initialName: c.title,
       placeholder: "Clip title",
       onSubmit: (title) => updateClip(v.id, c.id, { title }),
@@ -943,7 +943,7 @@ function onClick(e) {
     // back — Undo on the snackbar, then « Removed clips » at the foot of the page.
     const gone = removeClip(v.id, remove.dataset.clipsRemove);
     if (gone)
-      showToast(`« ${gone.clip.title} » removed.`, {
+      showToast(`"${gone.clip.title}" removed`, {
         action: { label: "Undo", onClick: () => restoreClip(v.id, gone.clip.id) },
       });
     return undefined;
@@ -1018,10 +1018,10 @@ function onClick(e) {
   if (del) {
     const id = del.dataset.postDelete;
     openConfirm({
-      title: "Delete this draft?",
-      body: "The post and its text are gone for good; the clip stays.",
-      confirmLabel: "Delete",
-      cancelLabel: "Cancel",
+      title: "Delete draft?",
+      body: "This draft will be deleted. You can't undo this. The clip stays.",
+      confirmLabel: "Delete draft",
+      cancelLabel: "Keep",
       danger: true,
       onConfirm: () => removePost(key, id),
     });

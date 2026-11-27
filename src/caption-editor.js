@@ -28,7 +28,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock, plural } from "./utils.js?v=2976";
+import { escapeHtml, formatClock, plural } from "./utils.js?v=2980";
 import {
   PRESETS,
   presetById,
@@ -43,7 +43,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=2976";
+} from "./clip-captions.js?v=2980";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -275,10 +275,10 @@ function renderCaptionFrame(force = false) {
 
 // One list for the Effects tab's buttons and the guide on the video.
 const DEAD_ZONE_OPTIONS = [
-  { v: "none", label: "None" },
-  { v: "tiktok", label: "TikTok" },
-  { v: "reels", label: "Reels" },
-  { v: "shorts", label: "Shorts" },
+  { v: "none", label: "No guide" },
+  { v: "tiktok", label: "TikTok zones" },
+  { v: "reels", label: "Reels zones" },
+  { v: "shorts", label: "Shorts zones" },
 ];
 
 function renderDeadzones() {
@@ -362,8 +362,32 @@ function updateActiveWord() {
 // ── Right panel tabs ─────────────────────────────────────────────────
 
 // A short choice (two or three options): the DS radio, label beside it.
+// What a screen reader hears for each control: the field's visible label,
+// never the state key.
+const A11Y = {
+  fontFamily: "Font",
+  fontSizePx: "Size",
+  fontWeight: "Weight",
+  textColor: "Text color",
+  strokeColor: "Outline color",
+  strokeWidthPx: "Outline width",
+  shadowColor: "Shadow color",
+  shadowX: "Shadow offset X",
+  shadowY: "Shadow offset Y",
+  shadowBlur: "Shadow blur",
+  highlightColor: "Word being said color",
+  highlight1Color: "Highlight color",
+  highlight2Color: "Second highlight color",
+  manualFontColor: "Colored word color",
+  position: "Position",
+  maxLines: "Max lines",
+  wordsPerCue: "Max words",
+  deadZones: "Safe area",
+};
+const a11y = (key) => A11Y[key] || key;
+
 function radios(name, current, opts) {
-  return `<div class="cap-ed-radios" role="radiogroup" aria-label="${escapeHtml(name)}">${opts
+  return `<div class="cap-ed-radios" role="radiogroup" aria-label="${escapeHtml(a11y(name))}">${opts
     .map(
       (o) => `<label class="cap-ed-radio">
         <span class="ap-radio-container"><input type="radio" name="ce-${name}" value="${escapeHtml(String(o.v))}" data-ce-seg="${name}" ${o.v === current ? "checked" : ""} /></span>
@@ -375,7 +399,7 @@ function radios(name, current, opts) {
 
 // A number: the DS input group.
 function num(key, value, min, max) {
-  return `<span class="ap-input-group cap-ed-num"><input type="number" data-ce-set="${key}" min="${min}" max="${max}" value="${value}" /></span>`;
+  return `<span class="ap-input-group cap-ed-num"><input type="number" data-ce-set="${key}" aria-label="${escapeHtml(a11y(key))}" min="${min}" max="${max}" value="${value}" /></span>`;
 }
 
 // The subtitle settings' tabs — the DS tabs, the same in both hosts.
@@ -410,7 +434,7 @@ function pick(key, current, opts) {
     )
     .join("");
   return `<details class="ap-select cap-ed-pick">
-    <summary class="ap-select-trigger" aria-label="${escapeHtml(key)}">
+    <summary class="ap-select-trigger" aria-label="${escapeHtml(a11y(key))}">
       <span class="ap-select-value">${escapeHtml(cur.label)}</span>
       <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
     </summary>
@@ -420,7 +444,7 @@ function pick(key, current, opts) {
 
 // No colour picker in the DS: the native swatch, with its hex beside it.
 function colorInput(key, value) {
-  return `<span class="cap-ed-color"><input type="color" data-ce-color="${key}" value="${value}" aria-label="${key}" /><span class="cap-ed-color__hex">${escapeHtml(String(value).toUpperCase())}</span></span>`;
+  return `<span class="cap-ed-color"><input type="color" data-ce-color="${key}" value="${value}" aria-label="${escapeHtml(a11y(key))}" /><span class="cap-ed-color__hex">${escapeHtml(String(value).toUpperCase())}</span></span>`;
 }
 
 function renderPresetsTab() {
@@ -505,7 +529,7 @@ function renderEffectsTab() {
           { v: "top", label: "Top" },
           { v: "middle", label: "Middle" },
           { v: "bottom", label: "Bottom" },
-          ...(s.position === "custom" ? [{ v: "custom", label: "Where I placed it" }] : []),
+          ...(s.position === "custom" ? [{ v: "custom", label: "Custom" }] : []),
         ]),
       )}
        ${field(
@@ -524,7 +548,7 @@ function renderEffectsTab() {
         : group(
             "Safe area",
             field(
-              "Dead zones",
+              "Guide",
               pick("deadZones", s.deadZones, DEAD_ZONE_OPTIONS),
               "Shows where the app's buttons cover the video",
             ),
@@ -1364,7 +1388,7 @@ export function getHiddenSpans() {
   if (!mounted) return [];
   const hiddenWords = words
     .filter((w) => w.removed)
-    .map((w) => ({ start: w.start, end: w.end, label: `“${w.text}” hidden` }));
+    .map((w) => ({ start: w.start, end: w.end, label: `"${w.text}" hidden` }));
   const hiddenPauses = detectPauses(words, pauseThreshold)
     .filter((p) => pausesRemoved.has(p.idx))
     .map((p) => ({ start: p.start, end: p.end, label: `${p.dur}s pause hidden` }));

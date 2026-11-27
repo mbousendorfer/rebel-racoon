@@ -23,20 +23,20 @@
 // message: the image appearing in the slot is the feedback; a failure says so
 // in a toast.
 
-import { sessionPlaybookId } from "./active-playbook.js?v=2976";
-import { showToast } from "./components/toast.js?v=2976";
-import { setHandoff } from "./handoff.js?v=2976";
-import { navigate } from "./router.js?v=2976";
-import * as inlineQuestion from "./inline-question.js?v=2976";
+import { sessionPlaybookId } from "./active-playbook.js?v=2980";
+import { showToast } from "./components/toast.js?v=2980";
+import { setHandoff } from "./handoff.js?v=2980";
+import { navigate } from "./router.js?v=2980";
+import * as inlineQuestion from "./inline-question.js?v=2980";
 import {
   finishPending,
   postAssistantMessage,
   postImageLookSet,
   postSelectionEcho,
   startPending,
-} from "./assistant.js?v=2976";
-import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=2976";
-import { escapeHtml, newChatPath } from "./utils.js?v=2976";
+} from "./assistant.js?v=2980";
+import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=2980";
+import { escapeHtml, newChatPath } from "./utils.js?v=2980";
 import {
   defaultQuickLook,
   generateQuickImage,
@@ -45,7 +45,7 @@ import {
   setImageLook,
   styleFromImages,
   suggestImageSubject,
-} from "./modules/image-studio/index.js?v=2976";
+} from "./modules/image-studio/index.js?v=2980";
 
 const FALLBACK_SUBJECT = "One simple object that stands for the idea, on a plain background. No text in the image.";
 
@@ -142,8 +142,7 @@ export function requireImageLook(sessionId, { brandId, onReady, intro = null }) 
   const notNow = () => {
     putOff.add(brandId);
     // From a draft, the image is still made — say in what. Elsewhere, onReady says it.
-    if (!intro)
-      postAssistantMessage(sessionId, `No problem. I'll use ${escapeHtml(choices.styles[0].label)} for this one.`);
+    if (!intro) postAssistantMessage(sessionId, `I'll use ${escapeHtml(choices.styles[0].label)} for this one.`);
     onReady();
   };
 
@@ -166,7 +165,7 @@ export function requireImageLook(sessionId, { brandId, onReady, intro = null }) 
           caption: "I'll learn the look from 2 to 6 of them",
           icon: "ap-icon-upload",
         },
-        { value: "ready", label: "A ready-made style", caption: "Six looks to start from", icon: "ap-icon-image" },
+        { value: "ready", label: "A ready-made style", caption: "6 looks to start from", icon: "ap-icon-image" },
       ],
       onPick: (value) => (value === "mine" ? askImages() : askStyle()),
       onSkip: notNow,
@@ -257,12 +256,12 @@ export function openImageLookChat(contextId) {
 export function startImageLookChat(sessionId, { contextId }) {
   requireImageLook(sessionId, {
     brandId: contextId,
-    intro: (brand) => `Let's settle how ${brand}'s images look. Every draft's Generate an image starts from it.`,
+    intro: (brand) => `I'll set how ${brand}'s images look. Every draft's Generate an image starts from it.`,
     onReady: () =>
       postAssistantMessage(
         sessionId,
         needsImageLook(contextId)
-          ? "Whenever you're ready. The first Generate an image on a draft will ask again."
+          ? "I'll ask again the first time you generate an image."
           : "Want to draft a post to try it on?",
       ),
   });

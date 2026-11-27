@@ -18,9 +18,9 @@
 // the stream is handled by re-looking up the target selector each tick
 // — when it disappears the stream stops and the content commits at once.
 
-import { getPosts, updatePostContent } from "./posts-store.js?v=2976";
-import { escapeText, plural } from "./utils.js?v=2976";
-import { DRAFT_TRANSLATIONS, DRAFT_TRANSLATION_FALLBACK } from "./mocks.js?v=2976";
+import { getPosts, updatePostContent } from "./posts-store.js?v=2980";
+import { escapeText, plural } from "./utils.js?v=2980";
+import { DRAFT_TRANSLATIONS, DRAFT_TRANSLATION_FALLBACK } from "./mocks.js?v=2980";
 
 const inFlight = new Map(); // postId → AbortController
 
@@ -237,7 +237,7 @@ const LEADS = {
   warmer: (s) => `I made ${s} warmer`,
   formal: (s) => `I made ${s} more formal`,
   fresh: (s) => `I gave ${s} a fresh take`,
-  voice: (s) => `I rewrote ${s} with your new rules`,
+  voice: (s) => `I rewrote ${s} in your updated voice`,
   punchier: (s) => `I tightened the hook of ${s}`,
   emoji: (s) => `I added emojis to ${s}`,
   cta: (s) => `I added a call to action to ${s}`,

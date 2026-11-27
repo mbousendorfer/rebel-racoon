@@ -25,8 +25,8 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2976";
-import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=2976";
+} from "../modal-coordinator.js?v=2980";
+import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=2980";
 import {
   canTransfer,
   isMine,
@@ -35,10 +35,10 @@ import {
   recipientsOf,
   tiedProfile,
   profileBlockFor,
-} from "../playbook-access.js?v=2976";
-import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=2976";
-import { showToast } from "./toast.js?v=2976";
-import { html, raw, escapeHtml } from "../utils.js?v=2976";
+} from "../playbook-access.js?v=2980";
+import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=2980";
+import { showToast } from "./toast.js?v=2980";
+import { html, raw, escapeHtml } from "../utils.js?v=2980";
 
 const MODAL_ID = "sharePlaybook";
 
@@ -433,7 +433,7 @@ function renderConsequence(ctx) {
   if (after === null) return "";
   const KEPT =
     "Chats they started on this Playbook keep the drafts already written, which can still be saved and " +
-    "scheduled, but nothing new will generate. Playbooks they duplicated from it are their own and stay untouched.";
+    "scheduled, but I can't draft anything new in them. Playbooks they duplicated from it are their own and stay untouched.";
   let lead = "";
   let detail = KEPT;
   if (before === null) {

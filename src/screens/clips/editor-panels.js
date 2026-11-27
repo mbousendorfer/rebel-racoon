@@ -6,12 +6,12 @@
 //     selected, the clip itself (its range, format, teaser).
 // Both are HTML builders; editor.js owns the events (data-nle-* delegation).
 
-import { ed, fmtTC, clipLen, selTexts, selSeg, capSourceHTML, ratio } from "./editor.js?v=2976";
-import { autoKind, cameraShort } from "./editor-timeline.js?v=2976";
-import { LAYOUTS, twoBlockedReason, cameraName } from "../../clip-framing.js?v=2976";
-import { dsSelect, presetLabel } from "./shared.js?v=2976";
-import * as ce from "../../caption-editor.js?v=2976";
-import { escapeHtml } from "../../utils.js?v=2976";
+import { ed, fmtTC, clipLen, selTexts, selSeg, capSourceHTML, ratio } from "./editor.js?v=2980";
+import { autoKind, cameraShort } from "./editor-timeline.js?v=2980";
+import { LAYOUTS, twoBlockedReason, cameraName } from "../../clip-framing.js?v=2980";
+import { dsSelect, presetLabel } from "./shared.js?v=2980";
+import * as ce from "../../caption-editor.js?v=2980";
+import { escapeHtml } from "../../utils.js?v=2980";
 
 // The few glyphs the DS doesn't ship (scissors, blade, magnet, speaker, frame
 // steps, loop, in / out): drawn here on the DS's 16 px grid, in currentColor.
@@ -72,7 +72,7 @@ export const TEXT_PRESETS = [
   {
     id: "cta",
     name: "Call to action",
-    hint: "On the last 3 seconds",
+    hint: "On the last 3s",
     text: (e) => e.pb?.cta || "Follow for more",
     style: "box",
     size: 56,
@@ -169,11 +169,11 @@ function brandLib() {
   return `
     <p class="nle-lead">From the ${escapeHtml(pb.name)} Playbook. What you change here applies to this clip only.</p>
     ${row("logo", "Logo on the video", pb.brandLogo ? "In a corner, out of the network's buttons." : "This Playbook has no logo yet.", !!pb.brandLogo)}
-    ${row("intro", "Intro card", "2 seconds before the clip, with the clip's title.")}
-    ${row("outro", "Outro card", "2 seconds after the clip, with your call to action.")}
+    ${row("intro", "Intro card", "2s before the clip, with the clip's title.")}
+    ${row("outro", "Outro card", "2s after the clip, with your call to action.")}
     <div class="nle-row">
       ${fromPb ? "" : btn("brand-reset", "Reset to the Playbook's look", { icon: `<i class="ap-icon-reset" aria-hidden="true"></i>`, cls: "ghost grey" })}
-      <a class="ap-link" href="#/playbook/${encodeURIComponent(pb.id)}?tab=brand">Open the Playbook</a>
+      <a class="ap-link" href="#/playbook/${encodeURIComponent(pb.id)}?tab=brand">Open Playbook</a>
     </div>`;
 }
 
@@ -220,7 +220,7 @@ function clipInsp() {
         <div><dt>Ends at</dt><dd>${fmtTC(ed.w.endMs)}</dd></div>
         <div><dt>Length</dt><dd>${fmtTC(clipLen())}</dd></div>
       </dl>
-      <p class="nle-hint">In the source video. Drag the clip's edges on the timeline to trim it.</p>
+      <p class="nle-hint">In the original video. Drag the clip's edges on the timeline to trim it.</p>
       <div class="nle-row">${btn("set-in", "Set start", { kbd: "At the playhead · I", icon: GLYPH.markIn })}${btn("set-out", "Set end", { kbd: "At the playhead · O", icon: GLYPH.markOut })}</div>`,
     )}
     ${sec(
@@ -321,7 +321,7 @@ function segInsp() {
   const r = ratio();
   const blocked = twoBlockedReason(ed.ctx, seg, r);
   const hints = {
-    AUTO: `I chose ${autoKind(seg)}`,
+    AUTO: `I chose ${(autoKind(seg) || "").toLowerCase()}`,
     ONE: "One window",
     TWO: "Stacked",
     FIT: "Whole frame, blurred fill",
@@ -345,8 +345,8 @@ function segInsp() {
   }).join("");
   const gesture =
     seg.layout === "TWO"
-      ? "On the Source, drag a window to move it, or a corner to zoom it."
-      : "On the Source, drag the window to move it, or a corner to zoom.";
+      ? "On the Original, drag a window to move it, or a corner to zoom it."
+      : "On the Original, drag the window to move it, or a corner to zoom.";
   return `
     ${sec(
       `Part ${i + 1} of ${segs.length}`,
@@ -415,7 +415,7 @@ function brandInsp() {
   const intro = item === "intro";
   return `${sec(
     intro ? "Intro card" : "Outro card",
-    `<p class="nle-hint">${intro ? "Plays for 2 seconds before the clip: your logo and the clip's title, on your brand color." : "Plays for 2 seconds after the clip: your logo and your call to action."}</p>
+    `<p class="nle-hint">${intro ? "Plays for 2s before the clip: your logo and the clip's title, on your brand color." : "Plays for 2s after the clip: your logo and your call to action."}</p>
     `,
   )}
   <div class="nle-insp__foot">${btn("delete", intro ? "Remove intro card" : "Remove outro card", { cls: "ghost grey", icon: `<i class="ap-icon-trash" aria-hidden="true"></i>` })}</div>`;

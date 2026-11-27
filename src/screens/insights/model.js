@@ -21,7 +21,7 @@
 // observation rather than act on it. The verb is gone, and with it the set, the
 // notifier it existed to fire, and the entry's removed counts.
 
-import { getActivePlaybook } from "../../active-playbook.js?v=2976";
+import { getActivePlaybook } from "../../active-playbook.js?v=2980";
 import {
   resolveObjectives,
   objectiveVerdict,
@@ -32,11 +32,11 @@ import {
   parseMetricValue,
   formatLike,
   metricLabel,
-} from "../../objective-measures.js?v=2976";
-import { TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../../objective-scoring.js?v=2976";
-import { nextMoveFor } from "../../objective-flow.js?v=2976";
-import { objectivePosts, objectivePostPool, TOP_POST_TODAY, TOP_POST_IMAGES } from "../../mocks.js?v=2976";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2976";
+} from "../../objective-measures.js?v=2980";
+import { TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../../objective-scoring.js?v=2980";
+import { nextMoveFor } from "../../objective-flow.js?v=2980";
+import { objectivePosts, objectivePostPool, TOP_POST_TODAY, TOP_POST_IMAGES } from "../../mocks.js?v=2980";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2980";
 
 /** The mock "today" — one anchor for the series' x-axis and the posts' dates. */
 const INSIGHTS_TODAY = TOP_POST_TODAY;
@@ -458,7 +458,7 @@ export function readingFor(entry) {
   // so the sentence says what is being waited for instead of repeating it.
   if (entry.collecting) {
     const metric = m?.metricLabel ? m.metricLabel.toLowerCase() : "its measures";
-    return `No verdict yet — ${metric} is still filling its first window.`;
+    return `No verdict yet: ${metric} is still filling its first period.`;
   }
   const trend = m.trend || {};
   const move =

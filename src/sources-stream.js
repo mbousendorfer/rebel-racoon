@@ -8,21 +8,21 @@
 // The state machine timers live here (not inside the modal) so uploads
 // continue in background after the user closes the modal.
 
-import { newId, prettyUrl } from "./utils.js?v=2976";
-import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=2976";
-import { isFlagOn } from "./feature-flags.js?v=2976";
-import { isNewUser } from "./user-mode.js?v=2976";
-import { createNotifier } from "./store-utils.js?v=2976";
-import { detectUrlService } from "./url-services.js?v=2976";
-import { showToast } from "./components/toast.js?v=2976";
+import { newId, prettyUrl } from "./utils.js?v=2980";
+import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=2980";
+import { isFlagOn } from "./feature-flags.js?v=2980";
+import { isNewUser } from "./user-mode.js?v=2980";
+import { createNotifier } from "./store-utils.js?v=2980";
+import { detectUrlService } from "./url-services.js?v=2980";
+import { showToast } from "./components/toast.js?v=2980";
 import {
   getVideo,
   importFromSource,
   chatClipOf,
   syncClipsFromChat,
   subscribe as subscribeVideos,
-} from "./videos-store.js?v=2976";
-import { sessionPlaybookId } from "./active-playbook.js?v=2976";
+} from "./videos-store.js?v=2980";
+import { sessionPlaybookId } from "./active-playbook.js?v=2980";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.
@@ -267,9 +267,9 @@ function formatSize(bytes) {
 // ─── State machine ───────────────────────────────────────────────────────
 
 const SIGNALS = [
-  { signal: "High signal", signalColor: "orange" },
-  { signal: "Medium signal", signalColor: "tagOrange" },
-  { signal: "Low signal", signalColor: "grey" },
+  { signal: "High relevance", signalColor: "orange" },
+  { signal: "Medium relevance", signalColor: "tagOrange" },
+  { signal: "Low relevance", signalColor: "grey" },
 ];
 
 function randomSignal() {
@@ -699,7 +699,7 @@ export function addReadySource(
     filename,
     kind,
     status: "Processed",
-    signal: "Reused",
+    signal: "Repurposed",
     signalColor: "grey",
     ideaCount: 0,
     addedAt: "just now",

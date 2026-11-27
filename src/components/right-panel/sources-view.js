@@ -3,16 +3,16 @@
 // the panel shell (open / close / resize / URL state / delegated listeners)
 // stays there.
 
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2976";
-import { isFlagOn } from "../../feature-flags.js?v=2976";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2976";
-import { escapeAttr, escapeText } from "../../utils.js?v=2976";
-import { iconFor } from "../../file-kinds.js?v=2976";
-import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2976";
-import { conceptText } from "../../concepts.js?v=2976";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2976";
-import { renderTopPostEcho } from "../top-post-card.js?v=2976";
-import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2976";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2980";
+import { isFlagOn } from "../../feature-flags.js?v=2980";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2980";
+import { escapeAttr, escapeText } from "../../utils.js?v=2980";
+import { iconFor } from "../../file-kinds.js?v=2980";
+import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2980";
+import { conceptText } from "../../concepts.js?v=2980";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2980";
+import { renderTopPostEcho } from "../top-post-card.js?v=2980";
+import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2980";
 
 // Sources mode view — list of source rows for the active session + a
 // trailing "+ Attach" button. Each row carries kind icon, filename,
@@ -105,7 +105,7 @@ function renderLiveConnectors() {
   // available right here — opens the connectors modal scoped to this chat.
   const body = connected.length
     ? `<div class="rpanel-sources__list rpanel-live-connectors__list">${rows}</div>`
-    : `<div class="rpanel-live-connectors__empty muted">Connect a tool to query its content live in chat.</div>`;
+    : `<div class="rpanel-live-connectors__empty muted">No connectors yet. Connect one and I'll search it live in this chat.</div>`;
   return `
     <div class="rpanel-live-connectors">
       <div class="rpanel-live-connectors__head">
@@ -251,7 +251,7 @@ function renderSourceRow(src) {
           <i class="ap-icon-pen"></i>
           <div class="ap-action-dropdown-item-text">
             <div class="ap-action-dropdown-item-label-container">
-              <span class="ap-action-dropdown-item-label">Rename</span>
+              <span class="ap-action-dropdown-item-label">Rename source</span>
             </div>
           </div>
         </button>
@@ -259,7 +259,7 @@ function renderSourceRow(src) {
           <i class="ap-icon-refresh"></i>
           <div class="ap-action-dropdown-item-text">
             <div class="ap-action-dropdown-item-label-container">
-              <span class="ap-action-dropdown-item-label">Reanalyze</span>
+              <span class="ap-action-dropdown-item-label">Reanalyze source</span>
             </div>
           </div>
         </button>
@@ -340,7 +340,7 @@ function renderAttachMenu(btnClass, label) {
       <summary class="ap-button ${btnClass} rpanel-sources__attach-trigger">
         <i class="ap-icon-plus" aria-hidden="true"></i><span>${label}</span>
       </summary>
-      <div class="ap-select-dropdown" role="menu" aria-label="Add a source">
+      <div class="ap-select-dropdown" role="menu" aria-label="Attach a source">
         <div class="ap-select-options">
           <div class="ap-select-option" data-rpanel-attach-method="upload" role="menuitem" tabindex="0">
             <i class="ap-icon-upload" aria-hidden="true"></i><span class="ap-select-option-text">Add file</span>

@@ -5,8 +5,8 @@
 // the thread. Plus the post-plan switch and the schedule plan's "Adjust dates".
 // Moved out of session.js, unchanged; it touches none of the screen's state.
 
-import { escapeHtml, formatDayLabel, formatTimeOfDay } from "../../utils.js?v=2976";
-import { networkLabel, networkIcon } from "../../social-profiles.js?v=2976";
+import { escapeHtml, formatDayLabel, formatTimeOfDay } from "../../utils.js?v=2980";
+import { networkLabel, networkIcon } from "../../social-profiles.js?v=2980";
 import {
   getThread,
   postAssistantMessage,
@@ -19,38 +19,38 @@ import {
   startPending,
   finishPending,
   postActivity,
-} from "../../assistant.js?v=2976";
-import { startRewrite, languageOf, TRANSLATE_LANGUAGES } from "../../draft-rewrite.js?v=2976";
-import { startPostPlan } from "../../post-plan-flow.js?v=2976";
+} from "../../assistant.js?v=2980";
+import { startRewrite, languageOf, TRANSLATE_LANGUAGES } from "../../draft-rewrite.js?v=2980";
+import { startPostPlan } from "../../post-plan-flow.js?v=2980";
 import {
   MENTION_ASK,
   UNMENTION_ASK,
   mentionNamesIn,
   mentionInDrafts,
   unmentionInDrafts,
-} from "../../mention-flow.js?v=2976";
+} from "../../mention-flow.js?v=2980";
 import {
   getPlans as getPostPlans,
   getActivePlan as getActivePostPlan,
   setActivePlan as setActivePostPlan,
-} from "../../post-plan-store.js?v=2976";
-import { getSources } from "../../library.js?v=2976";
-import { getPosts, removePost, addPostDraft, updatePostContent } from "../../posts-store.js?v=2976";
-import * as inlineQuestion from "../../inline-question.js?v=2976";
-import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../../schedule-engine.js?v=2976";
-import { addToQueue } from "../../schedule-store.js?v=2976";
-import { refLabel } from "../../chat-refs.js?v=2976";
+} from "../../post-plan-store.js?v=2980";
+import { getSources } from "../../library.js?v=2980";
+import { getPosts, removePost, addPostDraft, updatePostContent } from "../../posts-store.js?v=2980";
+import * as inlineQuestion from "../../inline-question.js?v=2980";
+import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../../schedule-engine.js?v=2980";
+import { addToQueue } from "../../schedule-store.js?v=2980";
+import { refLabel } from "../../chat-refs.js?v=2980";
 import {
   openScheduleForPosts,
   onPostImage,
   openAssignForPosts,
   commitAssigned,
-} from "../../components/right-panel/drafts-view.js?v=2976";
-import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER } from "../../org.js?v=2976";
-import { isPostValid } from "../../post-validation.js?v=2976";
-import { reviewBlock } from "../../components/assign-modal.js?v=2976";
-import { isFlagOn } from "../../feature-flags.js?v=2976";
-import { focusInPanel } from "../../components/right-panel.js?v=2976";
+} from "../../components/right-panel/drafts-view.js?v=2980";
+import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER } from "../../org.js?v=2980";
+import { isPostValid } from "../../post-validation.js?v=2980";
+import { reviewBlock } from "../../components/assign-modal.js?v=2980";
+import { isFlagOn } from "../../feature-flags.js?v=2980";
+import { focusInPanel } from "../../components/right-panel.js?v=2980";
 
 // "Delete all the drafts" — a destructive, irreversible ask, so I confirm it in
 // the chat (Quickpicker) instead of acting on the sentence. Same set the Drafts
@@ -63,11 +63,11 @@ function confirmDeleteDrafts(sessionId, drafts, { all = false } = {}) {
   postAssistantMessage(
     sessionId,
     all
-      ? `This deletes ${n === 1 ? "the only draft" : `all ${n} drafts`} in this chat. Should I go ahead?`
+      ? `This deletes ${n === 1 ? "the only draft" : `all ${n} drafts`} in this chat.`
       : `This deletes ${n === 1 ? "this draft" : `these ${n} drafts`}:${drafts.map((d) => `\n- [[post:${d.id}]]`).join("")}`,
   );
   inlineQuestion.ask(sessionId, {
-    title: n === 1 ? "Delete this draft?" : `Delete ${n} drafts?`,
+    title: n === 1 ? "Delete draft?" : `Delete ${n} drafts?`,
     subtitle: "This can't be undone.",
     stepLabel: "Confirm",
     // No rows — the two answers are the footer's buttons, bottom-right. The
@@ -75,17 +75,23 @@ function confirmDeleteDrafts(sessionId, drafts, { all = false } = {}) {
     // button, stroked — there is no filled red to take).
     items: [],
     actions: [
-      { value: "keep", label: "Keep them" },
-      { value: "delete", label: n === 1 ? "Delete the draft" : `Delete ${n} drafts`, danger: true },
+      { value: "keep", label: n === 1 ? "Keep it" : "Keep them" },
+      { value: "delete", label: n === 1 ? "Delete draft" : `Delete ${n} drafts`, danger: true },
     ],
     onPick: (choice) => {
       // The answer stays visible in the thread, like any pick.
       postUserTurn(
         sessionId,
-        choice === "delete" ? (n === 1 ? "Delete the draft" : `Delete ${n} drafts`) : "Keep them",
+        choice === "delete"
+          ? n === 1
+            ? "Yes, delete it."
+            : "Yes, delete them."
+          : n === 1
+            ? "No, keep it."
+            : "No, keep them.",
       );
       if (choice !== "delete") {
-        postAssistantMessage(sessionId, "Okay, I kept them.");
+        postAssistantMessage(sessionId, n === 1 ? "Okay, I kept it." : "Okay, I kept them.");
         return;
       }
       for (const post of drafts) removePost(sessionId, post.id);
@@ -218,7 +224,7 @@ function rewriteDrafts(sessionId, targets, intent, { language } = {}) {
 // "Regenerate" adds drafts and keeps the ones you have (prod append=true): each
 // picked draft gets a fresh sibling on the same network, same context.
 function regenerateDrafts(sessionId, targets) {
-  const pendingId = startPending(sessionId, "Generating new posts…", ["regenerate_posts"]);
+  const pendingId = startPending(sessionId, "Regenerating drafts…", ["regenerate_posts"]);
   setTimeout(() => {
     finishPending(sessionId, pendingId);
     const made = targets.map((d) => {
@@ -270,7 +276,6 @@ function firstCommentFor(sessionId, draft) {
       },
     ],
     onPick: (where) => {
-      postUserTurn(sessionId, where === "comment" ? "In the first comment" : "In the post");
       if (where === "comment") write(draft.cta, { moveCta: true });
       else write(generic);
     },
@@ -380,8 +385,8 @@ function proposeReview(sessionId, drafts, reviewer, blocked = []) {
     stepLabel: "Review",
     items: [],
     actions: [
-      { value: "adjust", label: "Adjust", stroked: true },
-      { value: "send", label: n === 1 ? "Send for review" : `Send ${n} posts for review`, primary: true },
+      { value: "adjust", label: "Adjust drafts", stroked: true },
+      { value: "send", label: n === 1 ? "Send for review" : `Send ${n} drafts for review`, primary: true },
     ],
     skipLabel: "Not now",
     onPick: (choice) => {
@@ -391,11 +396,10 @@ function proposeReview(sessionId, drafts, reviewer, blocked = []) {
           `Sent to ${assignment.reviewer.name}. ${n === 1 ? "It's" : "They're"} in their review queue now, out of this chat.`,
         );
       if (choice === "adjust") {
-        postUserTurn(sessionId, "Adjust");
         openAssignForPosts(sessionId, drafts, { reviewerId: reviewer.id, onAssigned: done });
         return;
       }
-      postUserTurn(sessionId, n === 1 ? "Send for review" : `Send ${n} posts for review`);
+      postUserTurn(sessionId, n === 1 ? "Yes, send it." : "Yes, send them.");
       const assignment = { reviewer, dueAt: null, comment: "" };
       commitAssigned(sessionId, drafts, assignment);
       done(assignment);
@@ -444,10 +448,7 @@ function routeDraftsAsk(session, text) {
   if (!drafts.length && EDITS.includes(intent)) return false;
   postUserTurn(sessionId, text);
   if (!drafts.length) {
-    postAssistantMessage(
-      sessionId,
-      `There are no drafts in this chat to ${intent === "image" ? "illustrate" : intent}.`,
-    );
+    postAssistantMessage(sessionId, "No drafts in this chat yet. Write one from an idea first.");
     return true;
   }
   const all = ALL_OF_THEM.test(text);
@@ -498,13 +499,13 @@ function askWhichDrafts(sessionId, drafts, { verb, onPick }) {
   const copy = {
     schedule: { q: "Which drafts should I schedule?", cta: "Schedule drafts", tone: "orange" },
     delete: { q: "Which drafts should I delete?", cta: "Delete drafts" },
-    image: { q: "Which draft should I make an image for?", cta: "Make image" },
+    image: { q: "Which draft should I make an image for?", cta: "Generate image" },
     modify: { q: "Which drafts should I edit?", cta: "Edit drafts" },
-    regenerate: { q: "Which drafts should I write new ones for?", cta: "Write new drafts" },
+    regenerate: { q: "Which drafts should I regenerate?", cta: "Regenerate drafts" },
     firstComment: { q: "Which draft should get a first comment?", cta: "Add first comment" },
     review: { q: "Which drafts should I send for review?", cta: "Send for review" },
     mention: { q: "Which drafts should I add the mention to?", cta: "Add mention" },
-    unmention: { q: "Which drafts should I take the mention out of?", cta: "Take it out" },
+    unmention: { q: "Which drafts should I take the mention out of?", cta: "Remove mention" },
   }[verb];
   postAssistantMessage(sessionId, copy.q);
   inlineQuestion.ask(sessionId, {
@@ -546,7 +547,7 @@ function askWhichDrafts(sessionId, drafts, { verb, onPick }) {
 // and the panel make it the same way (the Image Generator's questions under
 // sexySquirrel, a one-click image otherwise).
 function imageForDraft(sessionId, draft) {
-  postAssistantMessage(sessionId, `Let's make an image for [[post:${draft.id}]].`);
+  postAssistantMessage(sessionId, `I'm making an image for [[post:${draft.id}]].`);
   focusInPanel("post", draft.id);
   onPostImage(draft.id);
 }
@@ -598,9 +599,8 @@ function proposeSchedule(session, drafts) {
       { value: "schedule", label: `Schedule ${postsWord(n)}`, primary: true, tone: "orange" },
     ],
     onPick: (choice) => {
-      postUserTurn(sessionId, choice === "schedule" ? `Schedule ${postsWord(n)}` : "Adjust dates");
       if (choice === "adjust") {
-        postAssistantMessage(sessionId, "I opened the planner on the same dates. Change any of them, then schedule.");
+        postAssistantMessage(sessionId, "I opened the schedule on the same dates. Change any of them, then schedule.");
         openPlanInModal(sessionId, planId);
         return;
       }

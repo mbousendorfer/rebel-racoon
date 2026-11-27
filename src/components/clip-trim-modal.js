@@ -24,9 +24,9 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2976";
-import { escapeHtml } from "../utils.js?v=2976";
-import { fmtMs } from "../screens/clips/shared.js?v=2976";
+} from "../modal-coordinator.js?v=2980";
+import { escapeHtml } from "../utils.js?v=2980";
+import { fmtMs } from "../screens/clips/shared.js?v=2980";
 
 const MODAL_ID = "clip-trim";
 const PAD = 120000;
@@ -98,7 +98,7 @@ function cutBody() {
   const handle = (which, label) =>
     `<input type="range" class="clips-trim__h" data-trim-h="${which}" min="${t.lo}" max="${t.hi}" step="500" value="${which === "start" ? t.startMs : t.endMs}" aria-label="${label}" />`;
   return `
-    <p class="clip-trim-modal__sub">${t.mode === "add" ? "Move where the clip starts and ends. It runs 30 seconds to begin with." : "Move where the clip starts and ends. You can go 2 minutes either side."}</p>
+    <p class="clip-trim-modal__sub">${t.mode === "add" ? "Move where the clip starts and ends. It's 30s long to begin with." : "Move where the clip starts and ends. You can move up to 2 min either side."}</p>
     ${player()}
     <div class="clip-trim-modal__bar">
       <button type="button" class="ap-button stroked grey" data-trim-play><i class="ap-icon-play" aria-hidden="true"></i><span>Play the clip</span></button>

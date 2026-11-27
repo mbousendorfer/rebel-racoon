@@ -16,10 +16,10 @@
 // caret, drop the slider under the pointer, or replay a popover's entrance.
 // Everything else goes change → repaint.
 
-import { html, raw } from "../../lib/html.js?v=2976";
-import { delegate, wait } from "../../lib/delegate.js?v=2976";
-import { IMAGE_PRESETS, REDRAW_MS, outlineMetrics, shadowMetrics } from "../../config/edit.js?v=2976";
-import { bakeDoc } from "../../render/edit-export.js?v=2976";
+import { html, raw } from "../../lib/html.js?v=2980";
+import { delegate, wait } from "../../lib/delegate.js?v=2980";
+import { IMAGE_PRESETS, REDRAW_MS, outlineMetrics, shadowMetrics } from "../../config/edit.js?v=2980";
+import { bakeDoc } from "../../render/edit-export.js?v=2980";
 import {
   cropDoc,
   docSignature,
@@ -32,9 +32,9 @@ import {
   removeLayer,
   textLayer,
   undo,
-} from "../../state/edit-doc.js?v=2976";
-import { editFrame, textStyle } from "./canvas.js?v=2976";
-import { composer, layersPanel, redrawTarget, toolPalette, viewToggle } from "./panels.js?v=2976";
+} from "../../state/edit-doc.js?v=2980";
+import { editFrame, textStyle } from "./canvas.js?v=2980";
+import { composer, layersPanel, redrawTarget, toolPalette, viewToggle } from "./panels.js?v=2980";
 
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 const DEFAULT_CROP = { xF: 0.15, yF: 0.15, wF: 0.7, hF: 0.7 };
@@ -355,7 +355,7 @@ export function createEditor({
       ui.prompt = "";
     } catch (error) {
       entry.history.pop();
-      toast(error.message || "The redraw failed.", { variant: "error" });
+      toast(error.message || "I couldn't redraw it. Try again.", { variant: "error" });
     } finally {
       ui.busy = null;
       repaint();

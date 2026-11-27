@@ -21,8 +21,8 @@
 // video door is the clips starter. What is local (the rotation, the typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2976";
-import { escapeHtml } from "../../utils.js?v=2976";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2980";
+import { escapeHtml } from "../../utils.js?v=2980";
 
 const esc = escapeHtml;
 
@@ -165,7 +165,7 @@ const suggestion = ([k, text], n) => `
     <button type="button" class="ns-suggest" data-starter="new-start" data-starter-prompt="${esc(text)}"
       title="Edit it before sending">
       <span class="ns-tile ns-tile--sm ns-tone--${KIND[k].tone}" aria-hidden="true"><i class="${KIND[k].icon}"></i></span>
-      <span class="ns-suggest__text">“${esc(text)}”</span>
+      <span class="ns-suggest__text">"${esc(text)}"</span>
       <i class="ap-icon-pen ns-suggest__go" aria-hidden="true"></i>
     </button>
   </li>`;
@@ -191,7 +191,7 @@ export function renderNewStart(composer = "") {
     <div class="ns-turn ns-turn--next" data-ns-next>
       <span class="ns-turn__gutter" aria-hidden="true"></span>
       <div class="ns-turn__body">
-        <p class="ns-say" data-ns-reveal style="--i: 0">${SKEL.line}Here's what I do best. Pick one, or tell me what you need.</p>
+        <p class="ns-say" data-ns-reveal style="--i: 0">${SKEL.line}Here's what I can do. Pick one, or tell me what you need.</p>
         ${renderDoors()}
       </div>
     </div>

@@ -9,11 +9,11 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import { html, raw } from "../utils.js?v=2976";
-import { getPath, navigate } from "../router.js?v=2976";
-import { parseHashParams } from "../url-state.js?v=2976";
-import { altSteps, createAltDraft, getDraft, restoreDraft, subscribeDraft } from "../context-builder.js?v=2976";
-import { getConnectedProfiles } from "../social-profiles.js?v=2976";
+import { html, raw } from "../utils.js?v=2980";
+import { getPath, navigate } from "../router.js?v=2980";
+import { parseHashParams } from "../url-state.js?v=2980";
+import { altSteps, createAltDraft, getDraft, restoreDraft, subscribeDraft } from "../context-builder.js?v=2980";
+import { getConnectedProfiles } from "../social-profiles.js?v=2980";
 import {
   readSessionId,
   isIntegrated,
@@ -23,9 +23,9 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2976";
-import { paintExplainer } from "./welcome-alt-explainer.js?v=2976";
-import { setTopbarActions } from "../components/topbar.js?v=2976";
+} from "./welcome-alt-recap.js?v=2980";
+import { paintExplainer } from "./welcome-alt-explainer.js?v=2980";
+import { setTopbarActions } from "../components/topbar.js?v=2980";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -35,14 +35,14 @@ const SESSION_KEY = "welcomeAltSessionId";
 export const STEP_TEXT = {
   url: { step: "Website", title: "Share your website", desc: "Your website, a few files, or a handful of questions." },
   language: { step: "Language", title: "Pick your language", desc: "The one I'll write your posts in." },
-  documents: { step: "Documents", title: "Add brand documents", desc: "Optional: a brand book or guidelines." },
+  documents: { step: "Connectors", title: "Connect brand documents", desc: "Optional: a brand book or guidelines." },
   voiceFrom: {
-    step: "Voice source",
+    step: "Voice",
     title: "Choose how I learn your voice",
     desc: "Your posts, a document, or your own words.",
   },
   voice: {
-    step: "Voice",
+    step: "Check voice",
     title: "Check your voice",
     // Flag OFF there is one voice, not one per network: say it the review's way.
     // (Flags change with a reload, so reading it at load is enough.)

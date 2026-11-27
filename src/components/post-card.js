@@ -19,21 +19,21 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2976";
-import { isPortraitFormat } from "../clip-formats.js?v=2976";
-import { presetById } from "../clip-captions.js?v=2976";
-import { renderFeedbackControl } from "./feedback-control.js?v=2976";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2980";
+import { isPortraitFormat } from "../clip-formats.js?v=2980";
+import { presetById } from "../clip-captions.js?v=2980";
+import { renderFeedbackControl } from "./feedback-control.js?v=2980";
 import {
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=2976";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2976";
-import { REVEAL_MS } from "../archie-pixels.js?v=2976";
-import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2976";
-import { languageOf } from "../draft-rewrite.js?v=2976";
+} from "../social-profiles.js?v=2980";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2980";
+import { REVEAL_MS } from "../archie-pixels.js?v=2980";
+import { diffWords, diffParagraphs, hasChanges } from "../word-diff.js?v=2980";
+import { languageOf } from "../draft-rewrite.js?v=2980";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -70,7 +70,7 @@ function renderImagePreset(opts) {
   if (p.ask)
     return `<p class="posts__card-media-preset">First, I'll ask how ${escapeText(p.brandName)}'s images should look.</p>`;
   return p.look
-    ? `<p class="posts__card-media-preset">In ${escapeText(p.look.label)}${shape ? `, ${shape}` : ""}. ${playbook("Change")}</p>`
+    ? `<p class="posts__card-media-preset">In ${escapeText(p.look.label)}${shape ? `, ${shape}` : ""}. ${playbook("Change look")}</p>`
     : "";
 }
 
@@ -124,7 +124,7 @@ function renderEmptyMedia(post, opts) {
       <div class="posts__card-media-alt">
         <button type="button" class="ap-button stroked grey" data-post-studio="${escapeAttr(post.id)}">
           <i class="ap-icon-image"></i>
-          <span>Image Studio</span>
+          <span>Open Image Studio</span>
         </button>
         <button type="button" class="ap-button stroked grey" data-post-image-upload="${escapeAttr(post.id)}" title="Or drop an image anywhere here">
           <i class="ap-icon-upload"></i>
@@ -158,8 +158,8 @@ function renderVoiceStatus(net, opts, post) {
     return `<div class="ap-status-card blue posts__card-voice-status" role="status">
     <div class="upper">
       <i class="ap-icon-info_fill" aria-hidden="true"></i>
-      <div class="flow"><span>Your ${label} rules changed since this draft was written.</span></div>
-      <button type="button" class="ap-link small standalone" data-post-voice-rewrite="${escapeAttr(post.id)}">Rewrite it</button>
+      <div class="flow"><span>Your ${label} voice changed since I wrote this draft.</span></div>
+      <button type="button" class="ap-link small standalone" data-post-voice-rewrite="${escapeAttr(post.id)}">Rewrite draft</button>
     </div>
   </div>`;
   return "";
@@ -179,9 +179,7 @@ function changesShown(post, opts) {
 
 // A translation says where the post went: every word is new, so nothing is marked.
 function updatedLine(post) {
-  return post.revision.intent === "translate"
-    ? `Your post is now in ${languageOf(post)}.`
-    : "Your post has been updated.";
+  return post.revision.intent === "translate" ? `This draft is now in ${languageOf(post)}.` : "Draft updated";
 }
 
 function renderChangesStatus(post, opts) {
@@ -195,7 +193,7 @@ function renderChangesStatus(post, opts) {
   return `<div class="ap-status-card green posts__card-changes" role="status">
     <div class="upper">
       <i class="ap-icon-${undone ? "rotate-left" : "rounded-check_fill"}" aria-hidden="true"></i>
-      <div class="flow"><span>${undone ? "Your post is back to the previous version." : updatedLine(post)}</span></div>
+      <div class="flow"><span>${undone ? "Draft restored to its previous text" : updatedLine(post)}</span></div>
       <span class="posts__card-changes-actions">
         <button type="button" class="ap-link small standalone" data-post-changes-undo="${id}"><i class="ap-icon-rotate-${undone ? "right" : "left"}" aria-hidden="true"></i>${undone ? "Redo" : "Undo"}</button>
         ${viewButton}
@@ -319,7 +317,7 @@ export function renderPostCard(post, opts = {}) {
     // The text itself is the way into the editor (right-panel.js,
     // data-post-edit-body): it reads as a field on hover, says so in a tooltip.
     const editable = inlineEdit
-      ? ` posts__card-body--editable" data-post-edit-body="${post.id}" data-tooltip="Click to edit the text"`
+      ? ` posts__card-body--editable" data-post-edit-body="${post.id}" data-tooltip="Edit text"`
       : '"';
     editorBody = `<div class="posts__card-body${clamps ? " posts__card-body--clamp" : ""}${editable}>${bodyParagraphs} ${hashtags} ${cta}</div>${
       clamps
@@ -520,7 +518,7 @@ export function renderPostCard(post, opts = {}) {
                 type="button"
                 class="ap-icon-button stroked"
                 aria-label="Edit draft"
-                title="Edit"
+                title="Edit draft"
                 data-post-edit="${post.id}"
                 ${regenerating ? "disabled" : ""}
               >

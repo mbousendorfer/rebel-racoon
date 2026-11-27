@@ -36,8 +36,8 @@
 // on the Insights side, while this catalogue parks them. Insights marks those
 // cards "via proxy" by resolving the label here — one story, two surfaces.
 
-import { NETWORK_LABEL, getConnectedProfiles } from "./social-profiles.js?v=2976";
-import { plural } from "./utils.js?v=2976";
+import { NETWORK_LABEL, getConnectedProfiles } from "./social-profiles.js?v=2980";
+import { plural } from "./utils.js?v=2980";
 
 // The metric catalogue. Each metric names a concept, not a per-network field.
 // `type` — volume | rate | counter. A rate is scale-free (never split by
@@ -134,7 +134,7 @@ const FAMILIES = [
 // follows it now completes the clause instead.
 export const WINDOWS = [
   { id: "rolling", label: "Rolling 30 days" },
-  { id: "fixed", label: "Window ending on" },
+  { id: "fixed", label: "Period ending on" },
 ];
 
 const DEFAULT_WINDOW = { type: "rolling" };
@@ -344,7 +344,7 @@ const ALIASES = [
 ];
 
 const GENERIC_PARKED = {
-  soon: "I can't measure this yet — I'll track it with Engagement rate meanwhile.",
+  soon: "I can't measure this yet. I'll track it with Engagement rate meanwhile.",
   proxy: "engagementRate",
 };
 
@@ -417,7 +417,7 @@ export function scopeLabel(scope) {
   if (!scope?.network) return "";
   const network = NETWORK_LABEL[scope.network] || scope.network;
   const n = scope.profileIds?.length || 0;
-  return n ? `${n} ${network} ${n > 1 ? "profiles" : "profile"}` : network;
+  return n ? `${n} ${network} ${n > 1 ? "accounts" : "account"}` : network;
 }
 
 // The baseline a scoped measure opens with. One network → its authored split

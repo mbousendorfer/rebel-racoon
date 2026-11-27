@@ -1,17 +1,17 @@
-import { html, raw, escapeText, escapeAttr, formatTimeOfDay, formatClock, formatDayLabel } from "../utils.js?v=2976";
-import { showToast } from "./toast.js?v=2976";
-import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=2976";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2976";
+import { html, raw, escapeText, escapeAttr, formatTimeOfDay, formatClock, formatDayLabel } from "../utils.js?v=2980";
+import { showToast } from "./toast.js?v=2980";
+import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=2980";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2980";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
   normalizeNetwork,
-} from "../social-profiles.js?v=2976";
-import { getContextById } from "../contexts-store.js?v=2976";
-import { canEdit } from "../playbook-access.js?v=2976";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=2976";
+} from "../social-profiles.js?v=2980";
+import { getContextById } from "../contexts-store.js?v=2980";
+import { canEdit } from "../playbook-access.js?v=2980";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=2980";
 import {
   CADENCES,
   startOfDay,
@@ -21,7 +21,7 @@ import {
   planSlots,
   queueEntries,
   firstLine as extractFirstLine,
-} from "../schedule-engine.js?v=2976";
+} from "../schedule-engine.js?v=2980";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -500,7 +500,7 @@ function renderInner() {
       </div>
     </div>
 
-    <button type="button" class="ap-dialog-close" data-schedule-close aria-label="Close (Esc)">
+    <button type="button" class="ap-dialog-close" data-schedule-close aria-label="Close">
       <i class="ap-icon-close"></i>
     </button>
     ${raw(renderPeekPopover())}
@@ -636,7 +636,7 @@ function renderRhythm() {
           aria-expanded="${open ? "true" : "false"}"
           aria-controls="scheduleAdjust"
         >
-          <span>${open ? "Done" : "Adjust"}</span>
+          <span>${open ? "Done" : "Edit rhythm"}</span>
           <i class="ap-icon-chevron-down schedule-modal__adjust-arrow" aria-hidden="true"></i>
         </button>
       </div>

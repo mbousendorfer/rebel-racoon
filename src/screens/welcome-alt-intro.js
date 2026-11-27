@@ -8,11 +8,11 @@
 // this list too), then the review. Right, the scene that teaches what a
 // Playbook changes (welcome-alt-explainer.js).
 
-import { html, raw } from "../utils.js?v=2976";
-import { navigate } from "../router.js?v=2976";
-import { flowSteps, startFlow, STEP_TEXT, tint } from "./welcome-alt-shell.js?v=2976";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2976";
-import { paintExplainer } from "./welcome-alt-explainer.js?v=2976";
+import { html, raw } from "../utils.js?v=2980";
+import { navigate } from "../router.js?v=2980";
+import { flowSteps, startFlow, STEP_TEXT, tint } from "./welcome-alt-shell.js?v=2980";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2980";
+import { paintExplainer } from "./welcome-alt-explainer.js?v=2980";
 
 // What a Playbook holds, shown rather than told: its parts, under their
 // Playbook names, glyphs and tints.
@@ -36,7 +36,7 @@ export function renderWelcomeAltIntro(_params, target) {
       <section class="welcome-intro__lede" aria-labelledby="welcomeIntroTitle">
         <img class="welcome-intro__wordmark" src="assets/logos/archie-wordmark.svg" alt="Archie" />
         <div class="welcome-intro__copy">
-          <h1 class="welcome-intro__title" id="welcomeIntroTitle">Let's build your Playbook together.</h1>
+          <h1 class="welcome-intro__title" id="welcomeIntroTitle">Start with your Playbook.</h1>
           <p class="welcome-intro__sub">It tells me what you do and how you talk, so every draft sounds like you.</p>
           <ul class="welcome-intro__parts" aria-label="What a Playbook holds">
             ${PARTS.map((t) => {
@@ -66,7 +66,7 @@ export function renderWelcomeAltIntro(_params, target) {
           </ol>
           <div class="welcome-intro__actions">
             <button type="button" class="ap-button primary orange" data-welcome-begin>
-              <span>Build my Playbook</span>
+              <span>Create my Playbook</span>
               <i class="ap-icon-arrow-right"></i>
             </button>
             <span class="welcome-intro__time">${steps.length} steps · about 3 min</span>

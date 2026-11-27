@@ -28,11 +28,11 @@
 //             preset), transcript, segments (null = auto framing), texts[],
 //             brand (null = the Playbook's clip look) }
 
-import { newId } from "./utils.js?v=2976";
-import { seedVideos } from "./mocks.js?v=2976";
-import { isNewUser } from "./user-mode.js?v=2976";
-import { createNotifier } from "./store-utils.js?v=2976";
-import { getDefaultContext, getContextById } from "./contexts-store.js?v=2976";
+import { newId } from "./utils.js?v=2980";
+import { seedVideos } from "./mocks.js?v=2980";
+import { isNewUser } from "./user-mode.js?v=2980";
+import { createNotifier } from "./store-utils.js?v=2980";
+import { getDefaultContext, getContextById } from "./contexts-store.js?v=2980";
 
 const MIN_VIDEO_MS = 30 * 1000;
 const MAX_VIDEO_MS = 2 * 60 * 60 * 1000;
@@ -125,8 +125,8 @@ export function getClip(videoId, clipId) {
 
 // Prod's guard, in words — or "" when the length is fine.
 export function lengthProblem(durationMs) {
-  if (durationMs < MIN_VIDEO_MS) return "This video is shorter than 30 seconds — too short to cut clips from.";
-  if (durationMs > MAX_VIDEO_MS) return "This video is longer than 2 hours. Trim it first, then add it again.";
+  if (durationMs < MIN_VIDEO_MS) return "This video is under 30s. Add one between 30s and 2h.";
+  if (durationMs > MAX_VIDEO_MS) return "This video is over 2h. Trim it, then add it again.";
   return "";
 }
 
@@ -373,7 +373,7 @@ export function askForClips(videoId, text, { speaker = null, requestId = null } 
           endMs: startMs + 40000,
           title: titles?.[i] || `${words[0].toUpperCase()}${words.slice(1)}, moment ${i + 1}`,
           summary: "",
-          why: `You asked for « ${words} »${speaker ? `, ${speaker} speaking` : ""}.`,
+          why: `You asked for "${words}"${speaker ? `, ${speaker} speaking` : ""}.`,
           requestId: req.id,
         }),
       );
@@ -406,7 +406,7 @@ function focusedMoments(v) {
     .map((c, i) => ({
       ...c,
       title: titles?.[i] || `${req.text[0].toUpperCase()}${req.text.slice(1)}, moment ${i + 1}`,
-      why: `You asked for « ${req.text} ».`,
+      why: `You asked for "${req.text}".`,
       requestId: req.id,
     }));
   req.status = "done";

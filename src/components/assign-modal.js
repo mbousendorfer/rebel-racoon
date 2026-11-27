@@ -26,10 +26,10 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2976";
-import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER, getReviewer, hasProfileAccess } from "../org.js?v=2976";
-import { profileForNetwork } from "../social-profiles.js?v=2976";
-import { html, raw, escapeText, escapeAttr, formatDayLabel } from "../utils.js?v=2976";
+} from "../modal-coordinator.js?v=2980";
+import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER, getReviewer, hasProfileAccess } from "../org.js?v=2980";
+import { profileForNetwork } from "../social-profiles.js?v=2980";
+import { html, raw, escapeText, escapeAttr, formatDayLabel } from "../utils.js?v=2980";
 
 const MODAL_ID = "assignReview";
 
@@ -69,7 +69,7 @@ const HTML = `
     <span class="ap-dialog-title" id="assignReviewTitle">Assign for review</span>
     <span class="ap-dialog-subtitle">They leave this chat and wait for approval in Agorapulse.</span>
   </div>
-  <button class="ap-dialog-close" type="button" data-assign-close aria-label="Close (Esc)">
+  <button class="ap-dialog-close" type="button" data-assign-close aria-label="Close">
     <i class="ap-icon-close"></i>
   </button>
   <div class="ap-dialog-content assign-modal__body" id="assignReviewContent"></div>
@@ -235,7 +235,7 @@ function renderDue() {
     ${
       state.dueAt
         ? `<span class="assign-modal__due-value">${escapeText(formatDue(state.dueAt))}</span>
-           ${pick("Change")}
+           ${pick("Change due date")}
            <button type="button" class="ap-icon-button" data-assign-due-clear aria-label="Remove the due date" data-tooltip="Remove the due date"><i class="ap-icon-close"></i></button>`
         : pick("Add a due date")
     }

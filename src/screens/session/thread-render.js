@@ -4,7 +4,7 @@
 // prompt) render here. The pure, dependency-free turns stay in thread-turns.js.
 // Moved out of session.js, unchanged.
 
-import { sessionPlaybookId } from "../../active-playbook.js?v=2976";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2980";
 import {
   renderExtractingNotice,
   renderSourceIntakeTurn,
@@ -14,26 +14,26 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2976";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2976";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2976";
-import { getTopPost } from "../../top-posts-store.js?v=2976";
-import { getTopicById } from "../../topics-store.js?v=2976";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2976";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2976";
-import { escapeHtml, formatDayLabel, formatTimeOfDay, plural } from "../../utils.js?v=2976";
-import { getIdeas } from "../../library.js?v=2976";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2976";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2976";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2976";
-import { getPlans } from "../../post-plan-store.js?v=2976";
-import { isFlagOn } from "../../feature-flags.js?v=2976";
-import { CURRENT_USER } from "../../org.js?v=2976";
-import { getContextById } from "../../contexts-store.js?v=2976";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2976";
-import { getFocusKey } from "../../components/right-panel.js?v=2976";
-import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2976";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2976";
+} from "./thread-turns.js?v=2980";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2980";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2980";
+import { getTopPost } from "../../top-posts-store.js?v=2980";
+import { getTopicById } from "../../topics-store.js?v=2980";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2980";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2980";
+import { escapeHtml, formatDayLabel, formatTimeOfDay, plural } from "../../utils.js?v=2980";
+import { getIdeas } from "../../library.js?v=2980";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2980";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2980";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2980";
+import { getPlans } from "../../post-plan-store.js?v=2980";
+import { isFlagOn } from "../../feature-flags.js?v=2980";
+import { CURRENT_USER } from "../../org.js?v=2980";
+import { getContextById } from "../../contexts-store.js?v=2980";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2980";
+import { getFocusKey } from "../../components/right-panel.js?v=2980";
+import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2980";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2980";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -379,7 +379,7 @@ function renderActivityTurn(message) {
     .join("");
   return renderNotice({
     variant: "mermaid",
-    label: `Ran ${tools.length} tools${dur(totalMs)}`,
+    label: `${tools.length} step${tools.length === 1 ? "" : "s"}${dur(totalMs)}`,
     open: false,
     bodyHtml: `<ul class="assistant-notice__detail assistant-notice__tools">${rows}</ul>`,
   });
@@ -683,9 +683,7 @@ function renderConnectPromptTurn(message) {
       <div class="connect-status" role="status">
         <i class="ap-icon-rounded-check_fill connect-status__icon" aria-hidden="true"></i>
         <p class="connect-status__text">
-          <strong>${escapeHtml(message.connectorName)} connected</strong> — importing your ${escapeHtml(
-            message.noun,
-          )} now.
+          <strong>${escapeHtml(message.connectorName)} connected.</strong> Reading your ${escapeHtml(message.noun)} now.
         </p>
       </div>
     `;
@@ -706,7 +704,7 @@ function renderConnectPromptTurn(message) {
         <span class="connect-card__logo" aria-hidden="true">${logo}</span>
         <div class="connect-card__heading">
           <span class="connect-card__title">${name}</span>
-          <span class="connect-card__sub">Connect to import this ${escapeHtml(
+          <span class="connect-card__sub">Connect ${name} so I can read this ${escapeHtml(
             message.noun,
           )}. I'll retry on my own.</span>
         </div>
@@ -757,7 +755,7 @@ function renderDraftsCardTurn(message) {
               `<span class="drafts-card__network"><i class="${networkIcon(n)}" aria-hidden="true"></i>${escapeHtml(networkLabel(n))}</span>`,
           )
           .join(""),
-        cta: "Review drafts",
+        cta: "Open drafts",
       })}
     </div>
   `;
@@ -801,7 +799,7 @@ function renderExtractionTurn(message, sessionId) {
           ids: (message.ideas || []).map((i) => i.id),
           title: `${plural(count, "idea")} ready`,
           sub: `From <span class="drafts-card__sub-quote">${escapeHtml(message.filename || "your source")}</span>`,
-          cta: "View ideas",
+          cta: "Open ideas",
         })}
       </div>
     `;
@@ -913,7 +911,7 @@ function renderClipExtractionTurn(message, sessionId) {
           state: "pending",
           busyLabel: stage,
           title: stage,
-          sub: "Turning your video into clips. You can keep chatting meanwhile.",
+          sub: "You can keep chatting.",
         })}
       </div>
     `;
@@ -961,8 +959,8 @@ function renderIdeaExtractionTurn(message, sessionId) {
       <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
         ${renderResultCard({
           state: "pending",
-          busyLabel: "Reading video for ideas",
-          title: "Extracting ideas from content…",
+          busyLabel: "Finding ideas",
+          title: `Finding ideas in ${filename}…`,
           sub: "About 15s. You can keep chatting.",
         })}
       </div>
@@ -996,7 +994,7 @@ function renderIdeaExtractionTurn(message, sessionId) {
           ids,
           title: ids.length ? `${plural(ids.length, "idea")} ready` : "Ideas ready",
           sub: `From <span class="drafts-card__sub-quote">${filename}</span>`,
-          cta: "View ideas",
+          cta: "Open ideas",
         })}
       </div>
     `;
@@ -1007,7 +1005,7 @@ function renderIdeaExtractionTurn(message, sessionId) {
         state: "ready",
         title: "Ideas ready",
         sub: `From <span class="drafts-card__sub-quote">${filename}</span>`,
-        cta: { label: "View ideas" },
+        cta: { label: "Open ideas" },
         dataAttr: `data-ideas-card-open="${source.id}"`,
       })}
     </div>
@@ -1020,7 +1018,7 @@ function renderIdeaExtractionTurn(message, sessionId) {
 // leave out (only when there is something). A plan without a single fact gets
 // the prod's "likely generic" warning.
 const PLAN_STAGE_LABEL = {
-  planning: "Being planned",
+  planning: "Planning",
   ready: "Ready",
   writing: "Writing",
   written: "Drafts written",
@@ -1088,7 +1086,7 @@ function renderSchedulePlanTurn(message, sessionId) {
           </span>
           ${
             editable
-              ? `<button type="button" class="schedule-plan__when schedule-plan__when--edit" data-schedule-plan-edit="${message.id}" aria-label="Change the date: ${formatDayLabel(r.when)}, ${time(r.when)}" data-tooltip="Change date or time">
+              ? `<button type="button" class="schedule-plan__when schedule-plan__when--edit" data-schedule-plan-edit="${message.id}" aria-label="Change date or time: ${formatDayLabel(r.when)}, ${time(r.when)}" data-tooltip="Change date or time">
                   <span class="schedule-plan__day">${formatDayLabel(r.when)}</span>
                   <span class="schedule-plan__time">${time(r.when)}</span>
                   <i class="ap-icon-pen schedule-plan__edit" aria-hidden="true"></i>

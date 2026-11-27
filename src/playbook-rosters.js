@@ -8,9 +8,9 @@
 // What only the rosters use (the open detail modal, the scan, the add
 // dialog's draft) lives here.
 
-import { escapeHtml as esc, hostname } from "./utils.js?v=2976";
-import { discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2976";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2976";
+import { escapeHtml as esc, hostname } from "./utils.js?v=2980";
+import { discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2980";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2980";
 
 let rosterModal = null; // open competitor/influencer detail modal: { kind, index } or null
 let rosterScanning = null; // roster whose "Discover" scan is in flight ("competitors") or null — Influencers has no Discover
@@ -294,7 +294,7 @@ function renderRosterScan(r) {
 const PICKER_COPY = {
   competitors: {
     title: "Who you're up against",
-    hint: "I found these in your market. Tick the ones you're measured against.",
+    hint: "I found these in your market. Check the ones you're measured against.",
     empty: "I didn't find anyone yet. Add the competitors you know.",
     add: "Add another competitor",
   },
@@ -346,7 +346,7 @@ function renderRosterPicker(data, r, { addHook = "data-recap-cmp-add" } = {}) {
         }
         ${
           pending > 1
-            ? `<button type="button" class="ap-button ghost grey" data-recap-cmp-accept-all><i class="ap-icon-check"></i><span>Select all</span></button>`
+            ? `<button type="button" class="ap-button ghost grey" data-recap-cmp-accept-all><i class="ap-icon-check"></i><span>Add all</span></button>`
             : ""
         }
       </div>

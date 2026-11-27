@@ -11,8 +11,8 @@
 // Interactive hooks are data-* attributes bound identically on each surface:
 //   data-connector-open|connect|disconnect|try, data-connectors-category|search
 
-import { escapeHtml } from "./utils.js?v=2976";
-import { getConnectors } from "./connectors-store.js?v=2976";
+import { escapeHtml } from "./utils.js?v=2980";
+import { getConnectors } from "./connectors-store.js?v=2980";
 
 // Category display order — anything unlisted falls to the end alphabetically.
 const CATEGORY_ORDER = ["Docs & wikis", "Storage", "Meetings & calls", "Dev & project", "Messaging", "CRM & support"];
@@ -76,7 +76,7 @@ function renderConnectorCard(c) {
   return `
     <button type="button" class="ap-card connectors-card" data-connector-open="${escapeHtml(
       c.id,
-    )}" aria-label="${escapeHtml(c.name)}${isConnected ? " (connected)" : ""} — open details">
+    )}" aria-label="Open ${escapeHtml(c.name)} details${isConnected ? ", connected" : ""}">
       ${renderConnectorLogo(c, 36)}
       <div class="connectors-card__body">
         <div class="connectors-card__name">${escapeHtml(c.name)}</div>
@@ -99,9 +99,9 @@ function renderConnectedCard(c) {
         <div class="connectors-card__desc">${escapeHtml(meta || "Connected")}</div>
       </div>
       <div class="connectors-card__actions">
-        <button type="button" class="ap-button ghost grey" data-connector-open="${escapeHtml(c.id)}">Details</button>
+        <button type="button" class="ap-button ghost grey" data-connector-open="${escapeHtml(c.id)}">View details</button>
         <button type="button" class="ap-button primary orange" data-connector-try="${escapeHtml(c.id)}">
-          <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Ask in a chat</span>
+          <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Ask ${escapeHtml(c.name)} in a chat</span>
         </button>
       </div>
     </div>
@@ -175,7 +175,7 @@ export function renderGalleryBody(view, { showHero = true } = {}) {
     ? `<header class="connectors-view__hero">
          <div class="connectors-view__hero-text">
            <h1>Connectors</h1>
-           <p class="ap-subtitle">Connect your tools and I'll search them live while we work. Nothing gets imported.</p>
+           <p class="ap-subtitle">Connect a tool, then ask about it in any chat.</p>
          </div>
          <span class="ap-status grey no-dot connectors-view__count">${cnt.connected} of ${cnt.total} connected</span>
        </header>`
@@ -221,7 +221,7 @@ export function renderDetailBody(c) {
 
   const actions = isConnected
     ? `<button type="button" class="ap-button primary orange" data-connector-try="${escapeHtml(c.id)}">
-         <i class="ap-icon-single-chat-bubble"></i><span>Ask ${escapeHtml(c.name)} in chat</span>
+         <i class="ap-icon-single-chat-bubble"></i><span>Ask ${escapeHtml(c.name)} in a chat</span>
        </button>
        <button type="button" class="ap-button ghost grey" data-connector-disconnect="${escapeHtml(c.id)}">Disconnect</button>`
     : `<button type="button" class="ap-button primary blue" data-connector-connect="${escapeHtml(c.id)}">
@@ -284,8 +284,8 @@ export function renderDetailBody(c) {
         <p class="muted connectors-detail__section-sub">
           ${
             isConnected
-              ? `I search ${escapeHtml(c.name)} live while we chat — here's what I can look up.`
-              : `Once connected, I'll search ${escapeHtml(c.name)} live while we chat — here's what I can look up.`
+              ? `I search ${escapeHtml(c.name)} live during a chat.`
+              : `Once connected, I search ${escapeHtml(c.name)} live during a chat.`
           }
         </p>
         <ul class="connectors-detail__caps">${caps}</ul>

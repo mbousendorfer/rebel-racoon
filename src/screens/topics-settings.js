@@ -26,16 +26,16 @@
 // now does — and a row cannot without turning the list into a form. No save bar:
 // every control commits immediately through updateFeed.
 
-import { html, raw } from "../utils.js?v=2976";
-import { navigate } from "../router.js?v=2976";
-import { parseHashParams } from "../url-state.js?v=2976";
-import { renderTopbar } from "../components/topbar.js?v=2976";
-import { renderEmptyState } from "../components/empty-state.js?v=2976";
-import { getContextById, getDefaultContext } from "../contexts-store.js?v=2976";
-import { editableContexts, visibleContexts, canEdit } from "../playbook-access.js?v=2976";
-import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2976";
-import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=2976";
-import { open as openFeedback } from "../components/feedback-modal.js?v=2976";
+import { html, raw } from "../utils.js?v=2980";
+import { navigate } from "../router.js?v=2980";
+import { parseHashParams } from "../url-state.js?v=2980";
+import { renderTopbar } from "../components/topbar.js?v=2980";
+import { renderEmptyState } from "../components/empty-state.js?v=2980";
+import { getContextById, getDefaultContext } from "../contexts-store.js?v=2980";
+import { editableContexts, visibleContexts, canEdit } from "../playbook-access.js?v=2980";
+import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2980";
+import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=2980";
+import { open as openFeedback } from "../components/feedback-modal.js?v=2980";
 
 // Above this many Playbooks the picker earns a search field. Below it, a search
 // box over four rows is just noise.
@@ -123,8 +123,8 @@ function renderPage() {
                 body: "Only a Playbook's owner can change what its feed listens to. Create your own to set one up.",
               }
             : {
-                title: "Get Topics from your competitors and influencers",
-                body: "Create a Playbook and I'll read what its competitors and influencers post.",
+                title: "No Topics yet",
+                body: "Topics come from a Playbook's competitors and influencers. Create one to start.",
               }),
           actionHtml: `<button type="button" class="ap-button primary blue" data-settings-playbooks><i class="ap-icon-plus"></i><span>Create a Playbook</span></button>`,
           wrapperClass: "topics-settings__empty",
@@ -151,9 +151,9 @@ function renderPage() {
   return html`
     <div class="topics-settings__content">
       <header class="topics-settings__head">
-        <h1 class="ap-h1 topics-settings__title">Feed settings</h1>
+        <h1 class="ap-h1 topics-settings__title">Topic Feed settings</h1>
         <p class="ap-body topics-settings__lead">
-          The sources I listen to on your behalf, and how often I check them. Everything I find lands in this Playbook's
+          The listening sources I follow for you, and how often I check them. Everything I find lands in this Playbook's
           Topic Feed.
         </p>
 
@@ -176,8 +176,8 @@ function renderPage() {
           ${raw(
             differing
               ? html`<span
-                    >${differing === 1 ? "1 other Playbook listens to" : `${differing} other Playbooks listen to`}
-                    different sources.</span
+                    >${differing === 1 ? "1 other Playbook has" : `${differing} other Playbooks have`} their own
+                    listening sources.</span
                   >
                   <span aria-hidden="true">·</span>`
               : "",
@@ -191,7 +191,7 @@ function renderPage() {
              bold: at 24 / 16 the page title and the card titles already carry the
              hierarchy, and a 16px "Sources" between them just flattens it. -->
         <div class="topics-settings__group">
-          <h2 class="ap-caption-bold topics-settings__group-title">Sources</h2>
+          <h2 class="ap-caption-bold topics-settings__group-title">Listening sources</h2>
           <span aria-hidden="true">·</span>
           <span class="topics-settings__count">${count}</span>
         </div>
@@ -257,7 +257,7 @@ function renderPlaybookSelect(playbooks, active) {
       : "";
 
   return html`<details class="ap-select topics-settings__pbselect">
-    <summary class="ap-select-trigger" title="Which Playbook these sources belong to">
+    <summary class="ap-select-trigger" title="Which Playbook these listening sources belong to">
       <span class="ap-select-inline-label">Playbook</span>
       <span class="ap-select-value">${active.name}</span>
       <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
@@ -289,7 +289,7 @@ function renderCadenceSelect(feed, active) {
     </div>`;
   }).join("");
   return html`<details class="ap-select topics-settings__cadence">
-    <summary class="ap-select-trigger" title="How often I check these sources for new Topics">
+    <summary class="ap-select-trigger" title="How often I check these listening sources for new Topics">
       <span class="ap-select-inline-label">Refresh</span>
       <span class="ap-select-value">${active ? active.label : "Weekly"}</span>
       <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
@@ -338,7 +338,7 @@ function renderSourceCard(ctx, feed, source, on) {
   const need = live
     ? ""
     : html`<button type="button" class="ap-link standalone small topics-src__need" data-topics-need="${source.id}">
-        Need this source?
+        Need this listening source?
       </button>`;
   const foot =
     anchor || sites || need
@@ -445,9 +445,9 @@ function bind(target) {
       openFeedback({
         subject: {
           area: "other",
-          title: "Need this source?",
-          intro: `${src ? src.name : "This source"} isn't live yet. Tell me how you'd use it and it goes to the team building the next ones.`,
-          placeholder: "How would you use this source?",
+          title: "Need this listening source?",
+          intro: `${src ? src.name : "This listening source"} isn't live yet. Tell me how you'd use it and it goes to the team building the next ones.`,
+          placeholder: "How would you use it?",
         },
       });
       return;

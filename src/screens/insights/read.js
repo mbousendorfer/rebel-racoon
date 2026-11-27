@@ -33,8 +33,8 @@
 // Pure render helpers — strings in, strings out, no listeners. Every action is
 // a `data-ins-*` hook the shell dispatches (shell.js § Actions).
 
-import { readingFor } from "./model.js?v=2976";
-import { trendSpec } from "./charts.js?v=2976";
+import { readingFor } from "./model.js?v=2980";
+import { trendSpec } from "./charts.js?v=2980";
 import {
   statusPill,
   measurePill,
@@ -47,7 +47,7 @@ import {
   objectiveActions,
   tierCounts,
   esc,
-} from "./pieces.js?v=2976";
+} from "./pieces.js?v=2980";
 
 // ── The hero ──────────────────────────────────────────────────────────────
 //
@@ -184,7 +184,7 @@ function measureCard(entry, m, i, specs, { idPrefix, height }) {
   const overlay = entry.collecting
     ? `<div class="ins-chart-overlay">
         <span class="ap-status grey">Collecting</span>
-        <span class="ins-muted" title="I need ${entry.grace?.of ?? 7} days of data before I can say whether it's on track">day ${entry.grace?.day ?? 1} of ${entry.grace?.of ?? 7}</span>
+        <span class="ins-muted" title="I need ${entry.grace?.of ?? 7} days of data before I can say whether it's on track">Day ${entry.grace?.day ?? 1} of ${entry.grace?.of ?? 7}</span>
       </div>`
     : "";
 

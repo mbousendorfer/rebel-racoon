@@ -23,16 +23,16 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=2976";
-import { conceptText } from "../concepts.js?v=2976";
-import { navigate, getPath } from "../router.js?v=2976";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2976";
-import { renderTopbar } from "../components/topbar.js?v=2976";
-import { showToast } from "../components/toast.js?v=2976";
-import { renderEmptyState } from "../components/empty-state.js?v=2976";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2976";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2976";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2976";
+import { html, raw, escapeAttr } from "../utils.js?v=2980";
+import { conceptText } from "../concepts.js?v=2980";
+import { navigate, getPath } from "../router.js?v=2980";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2980";
+import { renderTopbar } from "../components/topbar.js?v=2980";
+import { showToast } from "../components/toast.js?v=2980";
+import { renderEmptyState } from "../components/empty-state.js?v=2980";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2980";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2980";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2980";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -43,7 +43,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=2976";
+} from "../topics-store.js?v=2980";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -52,20 +52,20 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=2976";
-import { renderTopicCard } from "../components/topic-card.js?v=2976";
-import { renderAvatar } from "../social-profiles.js?v=2976";
+} from "../topics-catalog.js?v=2980";
+import { renderTopicCard } from "../components/topic-card.js?v=2980";
+import { renderAvatar } from "../social-profiles.js?v=2980";
 import {
   renderTopicArticle,
   renderTopicHeader,
   renderTopicActions,
   renderTopicStates,
-} from "../topic-article.js?v=2976";
-import { firstRunText, FIRST_RUN_BRAND } from "./home/lists.js?v=2976";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2976";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=2976";
-import { useTopicInChat } from "../topic-flow.js?v=2976";
-import { canEdit } from "../playbook-access.js?v=2976";
+} from "../topic-article.js?v=2980";
+import { firstRunText, FIRST_RUN_BRAND } from "./home/lists.js?v=2980";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2980";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=2980";
+import { useTopicInChat } from "../topic-flow.js?v=2980";
+import { canEdit } from "../playbook-access.js?v=2980";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -491,7 +491,7 @@ function renderFilters() {
       ${raw(
         renderFilterLeaf(
           "Topics",
-          "To review: ready to draft now. For later: kept, not enough to draft from yet. Both show until you pick one.",
+          "Ready to draft: enough to draft from now. For later: kept, not enough to draft from yet. Both show until you pick one.",
           renderKindSelect(),
           true,
         ),
@@ -506,7 +506,7 @@ function renderFilters() {
       )}
       ${raw(
         renderFilterLeaf(
-          "Sources",
+          "Listening sources",
           "Where I found the Topic. All of them show until you pick one.",
           renderSourceSelect(),
           false,
@@ -547,7 +547,7 @@ function renderKindSelect() {
     .map((k) => html`<span class="ap-tag grey"><span>${k.label}</span></span>`)
     .join("");
   const options = TOPIC_KINDS.map((k) => filterCheckbox("kind", k.id, k.label, picked.includes(k.id))).join("");
-  return renderMultiSelect("kind", view.kindOpen, chips, "To review and For later", options, "what to show");
+  return renderMultiSelect("kind", view.kindOpen, chips, "Ready to draft and For later", options, "Topic lanes");
 }
 
 // ── The two multi-selects — the DS Select, chips in the trigger ────────────
@@ -597,7 +597,7 @@ function renderMarkedSelect() {
     const st = findTopicState(id);
     return filterCheckbox("marked", id, st.label, picked.includes(id));
   }).join("");
-  return renderMultiSelect("marked", view.markedOpen, chips, "None", options, "what to show");
+  return renderMultiSelect("marked", view.markedOpen, chips, "None", options, "marked statuses");
 }
 
 // Sources: each selected source shown as its provenance badge + name — the same
@@ -620,7 +620,7 @@ function renderSourceSelect() {
   const options = TOPIC_SOURCES.map((s) =>
     filterCheckbox("source", s.id, s.name, picked.includes(s.id), !isLiveSource(s.id)),
   ).join("");
-  return renderMultiSelect("sources", view.sourcesOpen, chips, "All sources", options, "sources");
+  return renderMultiSelect("sources", view.sourcesOpen, chips, "All listening sources", options, "listening sources");
 }
 
 // One checkbox row inside a multi-select's dropdown. `.ap-select-option` gives the
@@ -690,7 +690,7 @@ function renderPaneSkeleton() {
       return html`<span class="topic-ghost__bar${raw(cls)}" style="width:${raw(w)}"></span>`;
     })
     .join("");
-  return html`<section class="topics-view__pane topics-view__pane--waiting" aria-label="Loading topic">
+  return html`<section class="topics-view__pane topics-view__pane--waiting" aria-label="Loading Topic">
     <div class="topics-view__pane-body">
       <div class="topic-ghost topic-ghost--article" style="--ghost-delay: 0.14s">${raw(bars)}</div>
     </div>
@@ -780,12 +780,12 @@ function renderInfluencerInvite() {
   const open = !!view?.inviteOpen;
   return html`<article
     class="topic-card topic-card--feed topic-card--invite${raw(open ? " is-reading" : "")}"
-    aria-label="New Topic source"
+    aria-label="New listening source"
   >
     <button type="button" class="topic-card__body" data-topic-invite-open aria-expanded="${open ? "true" : "false"}">
       <span class="topic-card__meta">
         <span class="topic-badge topic-badge--red" aria-hidden="true"><i class="ap-icon-star"></i></span
-        ><span class="topic-card__source">New source for this feed</span>
+        ><span class="topic-card__source">New listening source</span>
       </span>
       <span class="topic-card__headline">Hear from the creators your audience follows</span>
       <span class="topic-card__summary">
@@ -814,12 +814,12 @@ function renderInvitePane() {
     html`<div class="topic-ghost topic-ghost--static topics-invite-pane__post">
       ${raw(bars(["30%"], " topic-ghost__bar--meta"))}${raw(bars(["100%", "86%", "54%"]))}
     </div>`;
-  return html`<section class="topics-view__pane" aria-label="New Topic source">
+  return html`<section class="topics-view__pane" aria-label="New listening source">
     <header class="topics-view__pane-head">
       <div class="topic-article__head">
         <div class="topic-article__provenance">
           <span class="topic-badge topic-badge--red" aria-hidden="true"><i class="ap-icon-star"></i></span
-          ><span class="topic-article__source">New source for this feed</span>
+          ><span class="topic-article__source">New listening source</span>
         </div>
         <h2 class="topic-article__title">Hear from the creators your audience follows</h2>
       </div>
@@ -832,8 +832,7 @@ function renderInvitePane() {
           ></span>
           <h3 class="topic-article__later-title">Influencers can feed this list too</h3>
           <p class="topic-article__later-body">
-            Your competitors show what the market ships. The creators your audience follows show what it talks about.
-            Add a few to your Playbook and their posts become Topics here.
+            Creators your audience follows show what it talks about. Add a few and their posts become Topics here.
           </p>
         </div>
         <div class="topics-invite-pane__preview" aria-hidden="true">
@@ -926,15 +925,15 @@ function renderTopicsFirstRun(feed) {
         title: "Your first Topics are on their way",
         body: `I'm reading what this Playbook's competitors and influencers post. I check them ${findCadence(feed.cadence)?.adverb || "weekly"}.`,
         action:
-          '<button type="button" class="ap-button stroked grey" data-topic-settings><i class="ap-icon-cog"></i><span>Feed settings</span></button>',
-        hint: "Switch on more sources and there'll be more to read.",
+          '<button type="button" class="ap-button stroked grey" data-topic-settings><i class="ap-icon-cog"></i><span>Topic Feed settings</span></button>',
+        hint: "Switch on more listening sources and there'll be more to read.",
       }
     : {
-        title: "See what's working around you",
-        body: "I read what your competitors and influencers post, and bring you the Topics worth a post.",
+        title: "No Topics yet",
+        body: "Topics come from a Playbook's competitors and influencers. Create one to start.",
         action:
-          '<button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create my Playbook</span></button>',
-        hint: "I listen for a Playbook, so create one first.",
+          '<button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create a Playbook</span></button>',
+        hint: "",
       };
   return `
     <div class="pb-first pb-first--topics" style="${brand}">
@@ -971,7 +970,7 @@ function renderTopicsFirstRun(feed) {
       </div>
       <div class="pb-first__action">
         ${copy.action}
-        <p class="pb-first__hint">${copy.hint}</p>
+        ${copy.hint ? `<p class="pb-first__hint">${copy.hint}</p>` : ""}
       </div>
     </div>`;
 }
@@ -1022,7 +1021,7 @@ function renderPanePlaceholder() {
       renderEmptyState({
         icon: "ap-icon-note",
         title: "No Topic open",
-        body: "Pick a Topic on the left to read my analysis and the posts behind it.",
+        body: "Pick a Topic on the left to read my analysis and its source posts.",
         wrapperClass: "topics-view__pane-blank",
       }),
     )}

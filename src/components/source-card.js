@@ -22,10 +22,10 @@
 //
 // Source shape: { id, filename, kind, status, ideaCount, addedAt, ... }
 
-import { iconFor } from "../file-kinds.js?v=2976";
-import { SOURCE_USE_LABEL } from "../sources-stream.js?v=2976";
-import { escapeHtml } from "../utils.js?v=2976";
-import { installMoreMenu } from "./more-menu.js?v=2976";
+import { iconFor } from "../file-kinds.js?v=2980";
+import { SOURCE_USE_LABEL } from "../sources-stream.js?v=2980";
+import { escapeHtml } from "../utils.js?v=2980";
+import { installMoreMenu } from "./more-menu.js?v=2980";
 
 // ── Overflow menu — one open at a time (shared behaviour) ──────────────
 // Per-row Extract / Delete close the menu after firing; the actions run via
@@ -111,7 +111,7 @@ export function renderSourceCard(
         ${isProcessing ? 'aria-disabled="true" tabindex="-1"' : ""}
       >
         <i class="ap-icon-single-chat-bubble"></i>
-        <span>Ask</span>
+        <span>Ask about source</span>
       </button>`;
 
   // "Mention" — only when rendered inside a session (sessionId provided)

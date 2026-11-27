@@ -11,13 +11,13 @@
 // weights and a test on three subjects. The system presets are NOT shown here:
 // they belong to no Playbook, and the fiche lists only what is this brand's.
 
-import { html, toString } from "../lib/html.js?v=2976";
-import { navigate } from "../../../router.js?v=2976";
-import { styleThumb } from "../ui/style-thumb.js?v=2976";
-import { confirmDialog } from "../ui/dialog.js?v=2976";
-import { toast } from "../ui/toast.js?v=2976";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=2976";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=2976";
+import { html, toString } from "../lib/html.js?v=2980";
+import { navigate } from "../../../router.js?v=2980";
+import { styleThumb } from "../ui/style-thumb.js?v=2980";
+import { confirmDialog } from "../ui/dialog.js?v=2980";
+import { toast } from "../ui/toast.js?v=2980";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=2980";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=2980";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 
@@ -115,7 +115,9 @@ export function renderPlaybookStyles(playbookId, { canEdit = true, newTile: with
         )
       : "";
   if (!own.length && !editable)
-    return toString(html`<p class="ap-body imst-pbstyles__empty">No custom styles yet.</p>`);
+    return toString(
+      html`<p class="ap-body imst-pbstyles__empty">No styles yet. A style is made from a few reference images.</p>`,
+    );
   return toString(html`
     <div class="imst-pbstyles">
       <div class="imst-pbstyles__grid">${tile}${own.map((s) => styleCard(s, brand, editable))}</div>
@@ -142,8 +144,9 @@ export function handlePlaybookStylesClick(event, playbookId, { onChange = () => 
   } else if (action === "delete") {
     const style = getStyle(styleId);
     confirmDialog({
-      title: `Delete ${style?.label || "this style"}?`,
-      body: "Images already made with it stay as they are. This can't be undone.",
+      title: "Delete style?",
+      body: `"${style?.label || "This style"}" will be deleted. Images already made with it stay. You can't undo this.`,
+      cancelLabel: "Keep",
       confirmLabel: "Delete style",
       danger: true,
     }).then((ok) => {

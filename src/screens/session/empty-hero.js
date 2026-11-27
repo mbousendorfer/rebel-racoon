@@ -1,19 +1,19 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2976";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2976";
-import { getContextById, getContexts } from "../../contexts-store.js?v=2976";
-import { renderTopicCard } from "../../components/topic-card.js?v=2976";
-import { findTopicSource } from "../../topics-catalog.js?v=2976";
-import { html, raw, escapeHtml } from "../../utils.js?v=2976";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2976";
-import { renderStarterCards } from "../../components/starter-card.js?v=2976";
-import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2976";
-import { voicesToFinish } from "../../voice-parts.js?v=2976";
-import { networkLabel } from "../../social-profiles.js?v=2976";
-import { parseHashParams } from "../../url-state.js?v=2976";
-import { renderAsks, renderDoors, renderNewStart, starterAttrs } from "./new-start.js?v=2976";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2980";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2980";
+import { getContextById, getContexts } from "../../contexts-store.js?v=2980";
+import { renderTopicCard } from "../../components/topic-card.js?v=2980";
+import { findTopicSource } from "../../topics-catalog.js?v=2980";
+import { html, raw, escapeHtml } from "../../utils.js?v=2980";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2980";
+import { renderStarterCards } from "../../components/starter-card.js?v=2980";
+import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2980";
+import { voicesToFinish } from "../../voice-parts.js?v=2980";
+import { networkLabel } from "../../social-profiles.js?v=2980";
+import { parseHashParams } from "../../url-state.js?v=2980";
+import { renderAsks, renderDoors, renderNewStart, starterAttrs } from "./new-start.js?v=2980";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -82,7 +82,7 @@ function renderFreshTopics(session) {
 
   return html`
     <h2 class="empty-chat__starter-label" id="freshTopicsLabel">
-      <span>Topics to review — what your listening surfaced</span>
+      <span>Topics to review from your Topic Feed</span>
       ${raw(pb ? html`<span class="empty-chat__topics-scope">· ${pb.name}</span>` : "")}
     </h2>
     <div class="empty-chat__topics" role="group" aria-labelledby="freshTopicsLabel">
@@ -159,7 +159,7 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
           </div>
           ${raw(renderAsks("empty-chat__asks"))} ${raw(heroWarning(session))}
           <button type="button" class="empty-chat__more" data-hero-more>
-            <span class="empty-chat__more-label">Discover Archie</span>
+            <span class="empty-chat__more-label">See what I can do</span>
             <i class="ap-icon-chevron-down" aria-hidden="true"></i>
           </button>
         </section>
@@ -215,8 +215,8 @@ function renderFeatures() {
       stage: `<span class="hero-feature__file"><i class="ap-icon-file--pdf"></i>Q3 report.pdf</span>
         <i class="ap-icon-arrow-right hero-feature__arrow"></i>
         <span class="hero-feature__stack">${sheet("ap-icon-linkedin-official")}${sheet("ap-icon-x-official")}${sheet("ap-icon-instagram-official")}</span>`,
-      title: "Batch from a source",
-      desc: "Give me an article, a PDF or a page. I'll pull the strongest ideas and draft a set of posts across your networks.",
+      title: "Write a batch from a source",
+      desc: "Give me an article, a PDF, or a page. I'll pull the strongest ideas and draft a set of posts across your networks.",
       go: "Try it with a source",
     }),
     renderDoors({ brand: false })
@@ -238,7 +238,7 @@ function renderFeatures() {
           <span class="hero-feature__topic"><span class="ap-status grey no-dot">Competitors</span><b></b><b></b></span>
         </span>`,
       title: "Find what to post about",
-      desc: "I follow your industry, your competitors and the people you watch, and bring you topics worth a post.",
+      desc: "I follow your industry, your competitors, and the people you watch. Then I bring you Topics worth a post.",
       go: "Open Topic Feed",
     }),
   ].join("");
@@ -246,10 +246,10 @@ function renderFeatures() {
     <section class="empty-chat__features" id="heroFeatures" aria-labelledby="heroFeaturesTitle">
       <button type="button" class="empty-chat__more empty-chat__more--up" data-hero-top>
         <i class="ap-icon-chevron-up" aria-hidden="true"></i>
-        <span class="empty-chat__more-label">Back to the chat</span>
+        <span class="empty-chat__more-label">Back to chat</span>
       </button>
       <h2 class="empty-chat__features-title" id="heroFeaturesTitle">What I can do</h2>
-      <p class="empty-chat__features-lede">Pick one to start, or just tell me what you need.</p>
+      <p class="empty-chat__features-lede">Pick one to start, or tell me what you need.</p>
       <div class="ns-doors hero-features">${cards}</div>
     </section>`;
 }
@@ -267,7 +267,7 @@ function heroWarning(session) {
   if (!getContexts().length) {
     return warningRow({
       attrs: `data-starter="create-playbook" data-starter-action="create-playbook" data-starter-prompt="Help me create my Playbook"`,
-      title: "No Playbook created yet",
+      title: "No Playbook yet",
       text: "Your posts will sound generic until I learn your Brand: your voice, your audience, your look.",
       go: "Create my Playbook",
     });
@@ -275,7 +275,10 @@ function heroWarning(session) {
   const nets = voicesToFinish(ctx);
   if (!nets.length) return "";
   const names = nets.map(networkLabel);
-  const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+  const list =
+    names.length === 1
+      ? names[0]
+      : `${names.slice(0, -1).join(", ")}${names.length > 2 ? "," : ""} and ${names.at(-1)}`;
   return warningRow({
     attrs: `data-starter="finish-voices" data-starter-action="finish-voices" data-starter-prompt="Help me finish my voices" data-voices-ctx="${escapeHtml(ctx.id)}" data-voices-nets="${escapeHtml(nets.join(","))}"`,
     title: "Finish your voices",
@@ -306,7 +309,10 @@ function finishVoicesRow(session) {
   // Says what it costs (asked: « expliquer que la qualité de génération des
   // drafts pour ce network ne sera pas terrible du coup »), naming the networks.
   const names = nets.map(networkLabel);
-  const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+  const list =
+    names.length === 1
+      ? names[0]
+      : `${names.slice(0, -1).join(", ")}${names.length > 2 ? "," : ""} and ${names.at(-1)}`;
   const desc = `${list} still ${nets.length === 1 ? "uses" : "use"} your default voice, so ${nets.length === 1 ? "its" : "their"} drafts may miss what works there.`;
   // A DS warning infobox (asked: « est-ce que ça ne devrait pas être une
   // infobox tout simplement ? ») — the same one the Playbooks catalogue shows,

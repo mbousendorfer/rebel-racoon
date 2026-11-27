@@ -8,11 +8,11 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=2976";
-import { renderTopPostCard } from "../../components/top-post-card.js?v=2976";
-import { getContexts } from "../../contexts-store.js?v=2976";
-import { progressBar } from "./charts.js?v=2976";
-import { signedPct } from "./model.js?v=2976";
+import { escapeHtml as esc } from "../../utils.js?v=2980";
+import { renderTopPostCard } from "../../components/top-post-card.js?v=2980";
+import { getContexts } from "../../contexts-store.js?v=2980";
+import { progressBar } from "./charts.js?v=2980";
+import { signedPct } from "./model.js?v=2980";
 
 // ── The page's head — the scope, worn as the heading ─────────────────────
 //
@@ -194,7 +194,12 @@ export function originMark(entry, { short = false } = {}) {
 export function windowLine(entry) {
   const w = entry.window;
   if (w.type === "fixed") {
-    const left = w.daysLeft == null ? "" : w.daysLeft > 0 ? ` · ${w.daysLeft} days left` : " · window closed";
+    const left =
+      w.daysLeft == null
+        ? ""
+        : w.daysLeft > 0
+          ? ` · ${w.daysLeft} day${w.daysLeft === 1 ? "" : "s"} left`
+          : " · period closed";
     return `${cap(w.short)}${left}`;
   }
   return cap(w.label);
@@ -216,7 +221,7 @@ export function trendGlyph(m, { label = false } = {}) {
   const t = m.trend || { dir: "flat", pct: 0 };
   const good = t.dir === "up";
   return `<span class="ins-trend ${good ? "ins-trend--up" : ""}" title="${esc(t.label)} ${signedPct(t.pct)} this period">
-    <i class="${TREND_ICON[t.dir] || TREND_ICON.flat} ap-icon-sm" aria-hidden="true"></i><span>${signedPct(t.pct)}</span>${label ? `<span class="ins-trend__label">over the window</span>` : ""}
+    <i class="${TREND_ICON[t.dir] || TREND_ICON.flat} ap-icon-sm" aria-hidden="true"></i><span>${signedPct(t.pct)}</span>${label ? `<span class="ins-trend__label">over the period</span>` : ""}
   </span>`;
 }
 
@@ -371,13 +376,13 @@ export function postsEmpty() {
  * is. Orange stays: this is the AI door.
  */
 export function objectiveActions(entry) {
-  const chatLabel = entry.nextMove?.cta || "Open a chat about it";
+  const chatLabel = entry.nextMove?.cta || "Start a chat about it";
   return `<div class="ins-actions">
     <button type="button" class="ap-button secondary orange" data-ins-chat="${esc(entry.key)}">
       <i class="ap-icon-sparkles" aria-hidden="true"></i><span>${esc(chatLabel)}</span>
     </button>
     <button type="button" class="ap-button stroked grey" data-ins-adjust="${esc(entry.key)}">
-      <i class="ap-icon-pen" aria-hidden="true"></i><span>Adjust objective</span>
+      <i class="ap-icon-pen" aria-hidden="true"></i><span>Edit objective</span>
     </button>
   </div>`;
 }
@@ -390,9 +395,9 @@ export function objectiveActions(entry) {
  * to the index, one click back.
  */
 export function objectiveTopbarActions(entry) {
-  const chatLabel = entry.nextMove?.cta || "Open a chat about it";
+  const chatLabel = entry.nextMove?.cta || "Start a chat about it";
   return `<button type="button" class="ap-button stroked grey" data-ins-adjust="${esc(entry.key)}">
-      <i class="ap-icon-pen" aria-hidden="true"></i><span>Adjust objective</span>
+      <i class="ap-icon-pen" aria-hidden="true"></i><span>Edit objective</span>
     </button>
     <button type="button" class="ap-button primary orange" data-ins-chat="${esc(entry.key)}">
       <i class="ap-icon-sparkles" aria-hidden="true"></i><span>${esc(chatLabel)}</span>

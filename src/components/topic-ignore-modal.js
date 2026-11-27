@@ -23,9 +23,9 @@
 // destroyed and red would flag a danger that is not there. The primary slot is
 // deliberately empty — there is no action here worth spotlighting.
 
-import { requestOpen, notifyClose, showOverlay, hideOverlay } from "../modal-coordinator.js?v=2976";
-import { escapeHtml } from "../utils.js?v=2976";
-import { getTopicById, topicTitle } from "../topics-store.js?v=2976";
+import { requestOpen, notifyClose, showOverlay, hideOverlay } from "../modal-coordinator.js?v=2980";
+import { escapeHtml } from "../utils.js?v=2980";
+import { getTopicById, topicTitle } from "../topics-store.js?v=2980";
 
 const MODAL_ID = "topic-ignore";
 
@@ -52,7 +52,7 @@ const HTML = `
   <div class="ap-dialog-content">
     <p class="topic-ignore__sub" id="topicIgnoreSub"></p>
     <div class="ap-textarea-field resizable">
-      <label for="topicIgnoreInput">What was off about it? (optional)</label>
+      <label for="topicIgnoreInput">What was off about it? · optional</label>
       <textarea
         class="topic-ignore__input"
         id="topicIgnoreInput"
@@ -66,7 +66,7 @@ const HTML = `
         <div class="ap-infobox-texts">
           <span class="ap-infobox-message"
             >An ignored Topic stays off this list even if it starts trending or gets updated. To see it again,
-            tick <strong>Ignored</strong> under Filters › Marked as. Your reason stays on its card.</span
+            check <strong>Ignored</strong> under Filters › Marked as. Your reason stays on its card.</span
           >
         </div>
       </div>

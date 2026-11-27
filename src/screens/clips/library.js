@@ -9,12 +9,12 @@
 // it the collection, filtered by state, in a grid or a list (Vimeo,
 // ElevenLabs Studio).
 
-import { navigate } from "../../router.js?v=2976";
-import { renderTopbar } from "../../components/topbar.js?v=2976";
-import { playbookForNewWork } from "../../active-playbook.js?v=2976";
-import { getPosts } from "../../posts-store.js?v=2976";
-import { escapeHtml, plural } from "../../utils.js?v=2976";
-import { renderAvatar } from "../../social-profiles.js?v=2976";
+import { navigate } from "../../router.js?v=2980";
+import { renderTopbar } from "../../components/topbar.js?v=2980";
+import { playbookForNewWork } from "../../active-playbook.js?v=2980";
+import { getPosts } from "../../posts-store.js?v=2980";
+import { escapeHtml, plural } from "../../utils.js?v=2980";
+import { renderAvatar } from "../../social-profiles.js?v=2980";
 import {
   getVideos,
   exampleVideo,
@@ -24,7 +24,7 @@ import {
   standInForUrl,
   retryAnalysis,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2976";
+} from "../../videos-store.js?v=2980";
 import {
   fmtMs,
   previewMarkup,
@@ -37,7 +37,7 @@ import {
   fact,
   veil,
   formatLabel,
-} from "./shared.js?v=2976";
+} from "./shared.js?v=2980";
 
 let target = null;
 let disposeShowcase = null;
@@ -126,7 +126,7 @@ function paint() {
 
 // ── The add box ──────────────────────────────────────────────────────
 
-const RULES = "MP4, MOV or WebM · 30 seconds to 2 hours · up to 5 GB";
+const RULES = "MP4, MOV, or WebM · 30s to 2h · up to 5 GB";
 const FOCUS_EXAMPLES = ["About pricing", "With a guest", "In the first 10 minutes", "Under 30 seconds"];
 // What the box holds until Find: a staged file, a YouTube link, a request.
 const add = { file: null, url: "", specific: false, focus: "" };
@@ -157,7 +157,7 @@ function renderAddBox() {
             <span class="clips-box__drop-title">Drop your video here</span>
             <span class="clips-box__rules">${RULES}</span>
           </span>
-          <button type="button" class="ap-button stroked grey" data-clips-browse><span>Upload a video</span></button>
+          <button type="button" class="ap-button stroked grey" data-clips-browse><span>Add a video</span></button>
         </div>
         <div class="clips-box__or" aria-hidden="true"><span>or</span></div>
         <div class="clips-box__yt">
@@ -214,7 +214,7 @@ function renderAddBox() {
           : `<footer class="clips-box__foot">
         <span class="clips-box__hint">One clip per 2 minutes of video, 3 to 10 clips.</span>
         <span class="clips-box__foot-end">
-          <button type="button" class="ap-button stroked grey" data-clips-specific="on"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Looking for something specific?</span></button>
+          <button type="button" class="ap-button stroked grey" data-clips-specific="on"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Find specific moments</span></button>
           <button type="button" class="ap-button primary orange" data-clips-start>
             <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Find the best moments</span></button>
         </span>
@@ -241,7 +241,7 @@ function syncGo() {
 // the request when one was written.
 function start() {
   if (!ready()) {
-    addError("Add a video first: drop a file, upload one, or paste a YouTube link.");
+    addError("Add a video first: drop a file, browse for one, or paste a YouTube link.");
     target?.querySelector(".clips-box__drop")?.classList.add("is-asking");
     return undefined;
   }
@@ -331,7 +331,7 @@ function renderShowcase(v) {
         </div>
         ${step}
         <div class="clips-showcase__col clips-showcase__out">
-          <span class="clips-showcase__labels"><span>Posts</span></span>
+          <span class="clips-showcase__labels"><span>Drafts</span></span>
           <div class="clips-showcase__posts">
             ${clips
               .map(
@@ -419,7 +419,7 @@ const FILTERS = [
   { id: "all", label: "All" },
   { id: "running", label: "Analyzing" },
   { id: "pick", label: "Clips to review" },
-  { id: "posts", label: "Posts written" },
+  { id: "posts", label: "Drafts written" },
   { id: "empty", label: "No clips" },
 ];
 const list = { query: "", sort: "newest", filter: "all", view: "grid" };
@@ -483,7 +483,7 @@ function renderCollection(videos) {
       ${
         list.view === "list"
           ? `<table class="ap-table outer-border header-background clickable-rows clips-library__table">
-              <thead><tr><th scope="col">Video</th><th scope="col">Status</th><th scope="col" class="right">Length</th><th scope="col" class="right">Clips</th><th scope="col" class="right">Kept</th><th scope="col" class="right">Posts</th><th scope="col" class="right"><span class="clips-library__sr">Next</span></th></tr></thead>
+              <thead><tr><th scope="col">Video</th><th scope="col">Status</th><th scope="col" class="right">Length</th><th scope="col" class="right">Clips</th><th scope="col" class="right">Kept</th><th scope="col" class="right">Drafts</th><th scope="col" class="right"><span class="clips-library__sr">Next</span></th></tr></thead>
               <tbody>${items.map(renderRow).join("")}</tbody></table>`
           : `<div class="clips-library__grid media-cards">${items.map(renderCard).join("")}</div>`
       }
@@ -499,7 +499,7 @@ function renderRow(v) {
     running: `<span class="ap-status blue no-dot" data-clips-stage-of="${escapeHtml(v.id)}">${escapeHtml(stageLabel(v))}</span>`,
     empty: `<span class="ap-status red">${v.failure?.kind === "crash" ? "Stopped" : "No clips"}</span>`,
     pick: `<span class="ap-status orange">${plural(v.clips.length, "clip")} to review</span>`,
-    posts: `<span class="ap-status green">${plural(posts, "post")}</span>`,
+    posts: `<span class="ap-status green">${plural(posts, "draft")}</span>`,
   }[st];
   const next = nextOf(v);
   return `<tr data-clips-card data-state="${st}" data-name="${escapeHtml(v.name.toLowerCase())}" data-href="#/clips/${encodeURIComponent(v.id)}${next?.tab || ""}">
@@ -530,7 +530,9 @@ function applySearch() {
   const none = target.querySelector("[data-clips-no-match]");
   if (none) {
     none.hidden = shown > 0;
-    none.textContent = words.length ? `No video matches « ${list.query.trim()} ».` : "No video here yet.";
+    none.textContent = words.length
+      ? `No videos match "${list.query.trim()}".`
+      : "No videos yet. Add one above to start.";
   }
 }
 
@@ -553,9 +555,9 @@ function renderFailedCard(v) {
     title: escapeHtml(v.name),
     titleTip: v.name,
     meta: [`Added ${addedOn(v)}`, ORIGIN[v.origin] || "Uploaded"],
-    desc: `<span class="ap-form-message error" role="alert">${escapeHtml(v.failure?.reason || "I couldn't analyze this video.")}</span>`,
+    desc: `<span class="ap-form-message error" role="alert">${escapeHtml(v.failure?.reason || "I couldn't analyze this video. Try again, or add another one.")}</span>`,
     foot: `${crash ? `<button type="button" class="ap-button stroked grey" data-clips-retry="${escapeHtml(v.id)}"><i class="ap-icon-refresh" aria-hidden="true"></i><span>Try again</span></button>` : ""}
-      <button type="button" class="ap-button ghost grey" data-clips-remove-video="${escapeHtml(v.id)}"><span>Remove</span></button>`,
+      <button type="button" class="ap-button ghost grey" data-clips-remove-video="${escapeHtml(v.id)}"><span>Delete video</span></button>`,
   });
 }
 
@@ -590,7 +592,7 @@ function nextOf(v) {
   if (!v.clips.length) return { text: "Add a clip", tab: "" };
   if (!posts.length) return { text: "Review the clips", tab: "" };
   if (toSchedule) return { text: `Schedule ${toSchedule} draft${toSchedule === 1 ? "" : "s"}`, tab: "?tab=drafts" };
-  return { text: "Write more posts", tab: "?tab=drafts" };
+  return { text: "Write more drafts", tab: "?tab=drafts" };
 }
 
 function renderCard(v) {
@@ -638,11 +640,11 @@ function renderCard(v) {
     // confirmRemoveVideo says so).
     foot: `${next ? `<a class="media-card__next" href="${href}">${next.text}<i class="ap-icon-arrow-right" aria-hidden="true"></i></a>` : ""}
       <details class="clips-more">
-        <summary class="ap-icon-button transparent grey" aria-label="More actions for « ${escapeHtml(v.name)} »" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
+        <summary class="ap-icon-button transparent grey" aria-label="More actions for &quot;${escapeHtml(v.name)}&quot;" data-tooltip="More"><i class="ap-icon-more" aria-hidden="true"></i></summary>
         <div class="ap-action-dropdown clips-more__menu" role="menu">
           <button type="button" role="menuitem" class="ap-action-dropdown-item red-mode" data-clips-remove-video="${escapeHtml(v.id)}">
             <i class="ap-icon-trash" aria-hidden="true"></i>
-            <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">Remove this video</span></div></div>
+            <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">Delete video</span></div></div>
           </button>
         </div>
       </details>`,
@@ -786,14 +788,15 @@ function onDrop(e) {
   e.preventDefault();
   zone.classList.remove("is-dragover");
   const file = [...(e.dataTransfer?.files || [])].find((f) => f.type.startsWith("video/"));
-  if (!file) return addError("That's not a video. Drop an MP4, a MOV or a WebM.");
+  if (!file) return addError("That's not a video. Drop an MP4, a MOV, or a WebM.");
   return stageFile(file);
 }
 
 // The file plays for real, from memory: read its length first, refuse what
 // prod refuses, then stage it in the box (prod: the preview, then the CTA).
 function stageFile(file) {
-  if (file.size > 5 * 1024 * 1024 * 1024) return addError("Video too large. Maximum size is 5GB");
+  if (file.size > 5 * 1024 * 1024 * 1024)
+    return addError("This video is over 5 GB. Compress or trim it, then add it again.");
   const url = URL.createObjectURL(file);
   const probe = document.createElement("video");
   probe.preload = "metadata";

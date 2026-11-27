@@ -9,13 +9,13 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2976";
-import { navigate } from "../router.js?v=2976";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2976";
-import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2976";
-import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2976";
-import { onlyNetwork } from "../voice-parts.js?v=2976";
-import { networkLabel } from "../social-profiles.js?v=2976";
+import { html, raw } from "../utils.js?v=2980";
+import { navigate } from "../router.js?v=2980";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2980";
+import { finishLabel, finishRun, isIntegrated } from "./welcome-alt-recap.js?v=2980";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2980";
+import { onlyNetwork } from "../voice-parts.js?v=2980";
+import { networkLabel } from "../social-profiles.js?v=2980";
 
 // Where the default voice was read from, said on the reveal.
 const READ_FROM = { website: "your site", documents: "your files", interview: "your answers" };
@@ -52,7 +52,7 @@ function learnedParts(d) {
   const parts = [d?.businessSummary && "business", "audience", "look", d?.competitors?.length && "competitors"].filter(
     Boolean,
   );
-  return `Your ${parts.slice(0, -1).join(", ")} and ${parts.at(-1)}.`;
+  return `Your ${parts.slice(0, -1).join(", ")}${parts.length > 2 ? "," : ""} and ${parts.at(-1)}.`;
 }
 
 export function renderWelcomeAltReady(_params, target) {
@@ -97,7 +97,7 @@ export function renderWelcomeAltReady(_params, target) {
               // what I found carries the Playbook's own mark.
               icon: manual ? "ap-icon-pen" : "ap-icon-buildings",
               title: manual ? "Fill in my Playbook" : "Check what I learned",
-              desc: manual ? "Part by part, card by card." : learnedParts(getDraft(sid)),
+              desc: manual ? "One part at a time." : learnedParts(getDraft(sid)),
             }),
           )}
           ${raw(

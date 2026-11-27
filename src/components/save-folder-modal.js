@@ -17,9 +17,9 @@ import {
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2976";
-import { getFolders, addFolder } from "../folders-store.js?v=2976";
-import { escapeHtml } from "../utils.js?v=2976";
+} from "../modal-coordinator.js?v=2980";
+import { getFolders, addFolder } from "../folders-store.js?v=2980";
+import { escapeHtml } from "../utils.js?v=2980";
 
 const MODAL_ID = "saveFolder";
 
@@ -213,14 +213,14 @@ function renderItems() {
       })
       .join("");
   } else {
-    itemsEl.innerHTML = `<div class="ap-selection-dropdown-empty">No folders match “${escapeHtml(raw)}”</div>`;
+    itemsEl.innerHTML = `<div class="ap-selection-dropdown-empty">No folders match "${escapeHtml(raw)}"</div>`;
   }
 
   // Show the create item when there's a name typed that doesn't already exist.
   const exact = q && all.some((f) => norm(f.name) === q);
   const showCreate = q.length > 0 && !exact;
   footerEl.hidden = !showCreate;
-  if (showCreate) createLabelEl.textContent = `Create “${raw}”`;
+  if (showCreate) createLabelEl.textContent = `Create "${raw}"`;
 }
 
 function createFolderFromSearch() {
@@ -258,6 +258,7 @@ export function open({ count = 0, onConfirm = null } = {}) {
 
   const draftWord = count === 1 ? "draft" : "drafts";
   titleEl.textContent = count ? `Save ${count} ${draftWord}` : "Save drafts";
+  saveBtn.textContent = titleEl.textContent;
   // One draft: « separate » and « these drafts » mean nothing, so the options say it singular.
   const one = count === 1;
   const say = (mode, title, desc) => {

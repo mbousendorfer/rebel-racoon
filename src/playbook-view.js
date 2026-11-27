@@ -14,9 +14,9 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { escapeHtml as esc, html, prettyUrl, raw } from "./utils.js?v=2976";
-import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2976";
-import { conceptHint } from "./concepts.js?v=2976";
+import { escapeHtml as esc, html, prettyUrl, raw } from "./utils.js?v=2980";
+import { brandCoverStyle, voiceSentence } from "./brand-cover.js?v=2980";
+import { conceptHint } from "./concepts.js?v=2980";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -31,13 +31,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2976";
-import { analyzeWebsite } from "./context-mock-analysis.js?v=2976";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2976";
-import { isFlagOn } from "./feature-flags.js?v=2976";
-import { clipLookOf } from "./videos-store.js?v=2976";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2976";
-import { parseHashParams } from "./url-state.js?v=2976";
+} from "./playbook-brand-kit.js?v=2980";
+import { analyzeWebsite } from "./context-mock-analysis.js?v=2980";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2980";
+import { isFlagOn } from "./feature-flags.js?v=2980";
+import { clipLookOf } from "./videos-store.js?v=2980";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2980";
+import { parseHashParams } from "./url-state.js?v=2980";
 import {
   isListPart,
   voiceParts,
@@ -56,19 +56,19 @@ import {
   ADAPTED_FROM,
   voiceHasRules,
   partQuestion,
-} from "./voice-parts.js?v=2976";
-import { showToast } from "./components/toast.js?v=2976";
-import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2976";
+} from "./voice-parts.js?v=2980";
+import { showToast } from "./components/toast.js?v=2980";
+import { introSeen, voiceAskHtml, learnedVoiceHtml } from "./components/voice-intro-modal.js?v=2980";
 import {
   voiceChoices,
   saveNetworkVoice,
   learnPhases,
   LEARN_PHASE_MS,
   proposeNetworkVoice,
-} from "./network-voice-flow.js?v=2976";
-import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2976";
-import { consumeHandoff } from "./handoff.js?v=2976";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2976";
+} from "./network-voice-flow.js?v=2980";
+import { openVoiceProposal } from "./components/voice-proposal-modal.js?v=2980";
+import { consumeHandoff } from "./handoff.js?v=2980";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2980";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
@@ -77,7 +77,7 @@ import {
   getConnectedProfiles,
   normalizeNetwork,
   NETWORKS,
-} from "./social-profiles.js?v=2976";
+} from "./social-profiles.js?v=2980";
 import {
   ROSTERS,
   REF_NETWORKS,
@@ -94,7 +94,7 @@ import {
   stopRosterScan,
   handleRosterClick,
   handleInfAddInput,
-} from "./playbook-rosters.js?v=2976";
+} from "./playbook-rosters.js?v=2980";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -130,7 +130,7 @@ const SECTIONS = [
 const FIELD_HINTS = {
   languages: {
     q: "Which languages do you publish in?",
-    a: "Pick one or more. I write each post natively in the language you choose, never as a translation.",
+    a: "Pick one or more. I write each post in its language from the start.",
   },
   businessSummary: {
     q: "Does this describe your business correctly?",
@@ -147,7 +147,7 @@ const FIELD_HINTS = {
     a: "I shape every post's angle and framing for them.",
   },
   contentStyle: {
-    q: "What content style fits your brand?",
+    q: "What content style fits your Brand?",
     a: "I follow this for the structure and format of every post.",
   },
   objective: {
@@ -1381,7 +1381,7 @@ function voiceIntroHtml(data) {
       <div class="ap-infobox-texts">
         <span class="ap-infobox-title">Each network can now have its own voice</span>
         <span class="ap-infobox-message">On top of your default voice, I add what works on each network: from your posts, or by adapting it.</span>
-        <button type="button" class="ap-link" data-vi-open="${esc(data.id || "")}">Show me</button>
+        <button type="button" class="ap-link" data-vi-open="${esc(data.id || "")}">Show network voices</button>
       </div>
     </div>
   </div>`;
@@ -1559,7 +1559,7 @@ function renderHeader2(data) {
             ${conceptHint("playbook")}
             ${
               cfg.onEditName
-                ? `<button type="button" class="ap-icon-button transparent grey" data-recap-edit-name title="Rename" aria-label="Rename Playbook"><i class="ap-icon-pen"></i></button>`
+                ? `<button type="button" class="ap-icon-button transparent grey" data-recap-edit-name title="Rename Playbook" aria-label="Rename Playbook"><i class="ap-icon-pen"></i></button>`
                 : ""
             }
             ${
@@ -1688,7 +1688,9 @@ function pb2TabHead(
   if (cfg?.stack) return ""; // the stack heads each part itself (renderStack)
   const edit =
     canEditView() && !noEdit
-      ? `<button type="button" class="ap-button stroked blue" data-recap-edit-card="${scope}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></button>`
+      ? `<button type="button" class="ap-button stroked blue" data-recap-edit-card="${scope}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit ${esc(
+          title ? title.replace(/^Default/, "default") : TABS.find((t) => t.id === scope)?.title || "",
+        )}</span></button>`
       : "";
   return `
     <header class="pb2-tabhead">
@@ -1957,7 +1959,7 @@ function renderRuleEditor(field, items) {
           <div class="ap-textarea-field resizable"><textarea rows="2" data-vr-list="${field}" data-vr-index="${i}" data-vr-key="text" placeholder="${esc(PART_COPY[field].placeholder)}" aria-label="${esc(PART_COPY[field].placeholder)}">${esc(it.text || "")}</textarea></div>
           ${
             it.examples?.length
-              ? `<p class="pb2-rule-edit__examples">From your posts: ${it.examples.map((x) => `“${esc(x)}”`).join(" · ")}</p>`
+              ? `<p class="pb2-rule-edit__examples">From your posts: ${it.examples.map((x) => `"${esc(x)}"`).join(" · ")}</p>`
               : ""
           }
         </div>
@@ -2064,7 +2066,7 @@ function voiceSplitBlock(data, index) {
   const later = "You can give a network its own voice later, in your Playbook.";
   return pb2Block(
     "Your networks",
-    `<div class="pb2-voice-split" role="radiogroup" aria-label="Rules per network">
+    `<div class="pb2-voice-split" role="radiogroup" aria-label="Voice per network">
       ${option("same", "The same voice everywhere", `I write for ${names} in your default voice. ${later}`)}
       ${option("each", "A voice for each network", `I add what works on ${names} on top of your default voice.`)}
     </div>`,
@@ -2447,9 +2449,10 @@ function resetNetworkVoice(net) {
   const d = cfg.getData();
   const label = networkLabel(net);
   openConfirmModal({
-    title: `Use your default voice on ${label}?`,
-    body: `I remove the ${label} voice, and ${label} follows your default voice. Drafts already written keep their text.`,
-    confirmLabel: "Remove the voice",
+    title: `Remove ${label} voice?`,
+    body: `${label} goes back to your default voice. Drafts already written keep their text.`,
+    confirmLabel: `Remove ${label} voice`,
+    cancelLabel: "Keep",
     danger: true,
     onConfirm: () => {
       saveNetworkVoice(d.id, net, brandVoiceAsIs(d));
@@ -2529,12 +2532,12 @@ function networkVoiceLead(net, voice, data) {
   const label = networkLabel(net);
   const base = "Your default voice";
   if (voice?.learnedFrom === ADAPTED_FROM)
-    return `${base}, adapted for ${label}: what's specific to ${label} is tagged « For ${label} ».`;
+    return `${base}, adapted for ${label}: what's specific to ${label} is tagged "For ${label}".`;
   if (voice?.optimizedBy === "learned")
     return voice.postCount
-      ? `${base}, plus what I learned from ${voice.postCount} posts of ${voice.learnedFrom}, tagged « For ${label} ».`
-      : `${base}, plus what I learned from ${voice.learnedFrom}, tagged « For ${label} ».`;
-  return `${base}, plus what you wrote for ${label}, tagged « For ${label} ».`;
+      ? `${base}, plus what I learned from ${voice.postCount} posts of ${voice.learnedFrom}, tagged "For ${label}".`
+      : `${base}, plus what I learned from ${voice.learnedFrom}, tagged "For ${label}".`;
+  return `${base}, plus what you wrote for ${label}, tagged "For ${label}".`;
 }
 
 // A network's voice, read — its row selected in the list: Learn from…
@@ -2729,7 +2732,7 @@ function renderClipLook(data) {
       attr: "data-pb2-cliplook-preset",
       options: SUBTITLE_IDS.map((id) => ({ id, label: presetLabel(id) })),
     })}
-    ${toggle("logo", data.brandLogo ? "The logo on every clip" : "The logo on every clip. Add a logo first", b.logo && !!data.brandLogo, !data.brandLogo)}
+    ${toggle("logo", data.brandLogo ? "The logo on every clip" : "The logo on every clip. Add a logo first.", b.logo && !!data.brandLogo, !data.brandLogo)}
     ${
       b.logo && data.brandLogo
         ? dsSelect({
@@ -3115,7 +3118,7 @@ function saveOnLeave() {
   const before = snapshot;
   const revert = cfg.revert;
   commitEdit(data);
-  showToast(`${title} changes saved.`, {
+  showToast(`${title} saved`, {
     action: {
       label: "Undo",
       onClick: () => {

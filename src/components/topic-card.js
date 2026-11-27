@@ -73,10 +73,10 @@
 // Everything inside the body is a <span> for the same reason — a button may only
 // contain phrasing content, so no h3 and no p in there.
 
-import { html, raw, escapeAttr } from "../utils.js?v=2976";
-import { topicTitle } from "../topics-store.js?v=2976";
-import { renderTopicStates } from "../topic-article.js?v=2976";
-import { findTopicSource } from "../topics-catalog.js?v=2976";
+import { html, raw, escapeAttr } from "../utils.js?v=2980";
+import { topicTitle } from "../topics-store.js?v=2980";
+import { renderTopicStates } from "../topic-article.js?v=2980";
+import { findTopicSource } from "../topics-catalog.js?v=2980";
 
 // ── The state chips ───────────────────────────────────────────────────────
 // `renderTopicStates` comes from topic-article.js, which is where a Topic's
@@ -267,14 +267,14 @@ export function renderTopicsWidget({ topics = [], selected = [], answered = fals
           data-topics-widget-confirm
           ${raw(sel.size ? "" : "disabled")}
         >
-          <span>Use this Topic</span>
+          <span>Use in chat</span>
         </button>
       </div>`;
   return html`<div class="topics-widget${raw(answered ? " topics-widget--answered" : "")}" data-topics-widget>
     <div class="topics-widget__head">
       <span class="topics-widget__title">
         <i class="ap-icon-antenna" aria-hidden="true"></i>
-        Draft-ready Topics
+        Topics to review
       </span>
       <span class="topics-widget__hint muted">Pick one</span>
     </div>
@@ -314,12 +314,12 @@ function renderKebab(topic, menuOpen) {
             ${raw(menuRow(topic.id, "data-topic-use", "ap-icon-single-chat-bubble", "Use in chat"))}
             ${raw(
               ignored
-                ? menuRow(topic.id, "data-topic-unignore", "ap-icon-eye-on", "Restore", "Put it back in the feed")
+                ? menuRow(topic.id, "data-topic-unignore", "ap-icon-eye-on", "Restore Topic", "Put it back in the feed")
                 : menuRow(
                     topic.id,
                     "data-topic-ignore",
                     "ap-icon-eye-off",
-                    "Ignore",
+                    "Ignore Topic",
                     "Kept off this list, even if it trends or updates",
                   ),
             )}

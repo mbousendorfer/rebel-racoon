@@ -21,12 +21,12 @@
 // module instances are shared — each holds per-session state in a module-local
 // Map, and a second copy at a different URL would hold its own.
 
-import { newChatPath } from "./utils.js?v=2976";
-import { navigate } from "./router.js?v=2976";
-import { setHandoff } from "./handoff.js?v=2976";
-import { postAssistantMessage, sendMessage } from "./assistant.js?v=2976";
-import * as inlineQuestion from "./inline-question.js?v=2976";
-import { objectiveNextMoves } from "./mocks.js?v=2976";
+import { newChatPath } from "./utils.js?v=2980";
+import { navigate } from "./router.js?v=2980";
+import { setHandoff } from "./handoff.js?v=2980";
+import { postAssistantMessage, sendMessage } from "./assistant.js?v=2980";
+import * as inlineQuestion from "./inline-question.js?v=2980";
+import { objectiveNextMoves } from "./mocks.js?v=2980";
 
 export const OBJECTIVE_CHAT_HANDOFF = "pendingObjectiveChat";
 
@@ -50,35 +50,35 @@ export function nextMoveFor(entry) {
   const metric = weakMeasureLabel(entry);
   if (entry.collecting) {
     return {
-      pitch: `Let's publish what feeds ${metric.toLowerCase()}, before the first verdict lands.`,
+      pitch: `I'll draft posts that feed ${metric.toLowerCase()} before the first verdict lands.`,
       cta: "Plan it in a chat",
-      opening: `"${entry.label}" is still in its collecting window — no verdict yet, which makes this the cheapest moment to act. Let's publish what feeds ${metric.toLowerCase()} so the first verdict lands with data behind it.`,
+      opening: `"${entry.label}" is still collecting data. No verdict yet, so now is the time to act. I'll draft posts that feed ${metric.toLowerCase()} so the first verdict has data behind it.`,
     };
   }
   if (entry.verdict?.tier === "on-track") {
     return {
-      pitch: `Let's name what carries ${metric.toLowerCase()} and make more of it.`,
+      pitch: `I'll find what carries ${metric.toLowerCase()} and write more of it.`,
       cta: "Double down in a chat",
-      opening: `"${entry.label}" is on track. The useful question now is what carries it — let's name what's working on ${metric.toLowerCase()} and make more of exactly that.`,
+      opening: `"${entry.label}" is on track. I'll find what's working on ${metric.toLowerCase()} and write more of it.`,
     };
   }
   return {
-    pitch: `Let's draft the posts that move ${metric.toLowerCase()}.`,
+    pitch: `I'll draft the posts that move ${metric.toLowerCase()}.`,
     cta: "Fix this in a chat",
-    opening: `This chat is about "${entry.label}" — ${metric.toLowerCase()} is the measure deciding the verdict right now. Let's look at what you've published against it and draft what moves it.`,
+    opening: `This chat is about "${entry.label}". The verdict depends on ${metric.toLowerCase()} right now. I'll look at what you've published against it and draft what moves it.`,
   };
 }
 
 const DEFAULT_ANGLES = [
   { value: "What should we publish to move this measure?", label: "What should we publish?" },
   { value: "What in my recent posts worked against this objective?", label: "What worked so far?" },
-  { value: "Draft two posts aimed at this objective.", label: "Draft 2 posts for it" },
+  { value: "Draft 2 posts aimed at this objective.", label: "Draft 2 posts for it" },
 ];
 
 // The angles a REPURPOSE opens on: the post already worked, so the question is
 // how to get more of it — not what is wrong.
 const POST_ANGLES = [
-  { value: "Draft two more posts like this one.", label: "Draft 2 more like it" },
+  { value: "Draft 2 more posts like this one.", label: "Draft 2 more like it" },
   { value: "What made this post work?", label: "Why did it work?" },
   { value: "Adapt this post for my other networks.", label: "Adapt it elsewhere" },
 ];
@@ -142,13 +142,13 @@ export function startObjectiveChat(sessionId, payload) {
     const p = payload.post;
     postAssistantMessage(
       sessionId,
-      `"${p.excerpt}" — your ${p.network} post from ${p.date}${p.contribution ? `, ${p.contribution}` : ""} on "${payload.label}". It worked; let's get more of it.`,
+      `Your ${p.network} post from ${p.date}${p.contribution ? `, ${p.contribution}` : ""} on "${payload.label}": "${p.excerpt}". It worked, so I'll write more like it.`,
     );
     inlineQuestion.ask(sessionId, {
       title: "How should I build on it?",
       stepLabel: "Repurpose",
       items: POST_ANGLES.map((a) => ({ value: a.value, label: a.label, icon: "ap-icon-sparkles" })),
-      customPlaceholder: "Tell me how you'd like to reuse it…",
+      customPlaceholder: "Or say how, in your words",
       onPick: (text) => sendMessage(sessionId, text),
       onCustom: (text) => sendMessage(sessionId, text),
       onSkip: () => {},
@@ -158,7 +158,7 @@ export function startObjectiveChat(sessionId, payload) {
   const move = objectiveNextMoves[payload.key] || null;
   const opening =
     move?.opening ||
-    `This chat is about "${payload.label}". Let's look at what you've published against it and draft what moves it.`;
+    `This chat is about "${payload.label}". I'll look at what you've published against it and draft what moves it.`;
   postAssistantMessage(sessionId, opening);
 
   inlineQuestion.ask(sessionId, {

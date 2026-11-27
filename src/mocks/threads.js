@@ -118,7 +118,7 @@ export const threadsBySession = {
       role: "assistant",
       meta: "Archie",
       text: [
-        "I drafted 4 posts grounded in [[idea:idea-acme-1]], each sized for its network and following the “Acme · Q2 marketing” Playbook:",
+        'I drafted 4 posts grounded in [[idea:idea-acme-1]], each sized for its network and following the "Acme · Q2 marketing" Playbook:',
         "- [[post:post-acme-1]], ready",
         "- [[post:post-acme-3]], ready",
         "- [[post:post-acme-2]], needs an image before Instagram will publish it",
@@ -549,11 +549,11 @@ export const threadsBySession = {
     },
     // The look was picked here, on the first draft's first image — what
     // requireImageLook leaves in a thread. The Playbook's defaultLook matches.
-    { role: "assistant", meta: "Archie", text: "Let's make an image for [[post:post-bjj-1]]." },
+    { role: "assistant", meta: "Archie", text: "I'm making an image for [[post:post-bjj-1]]." },
     {
       role: "assistant",
       meta: "Archie",
-      text: "First image for Alliance Jiu Jitsu Carlsbad — how should its images look? I'll start every draft's image from your answer.",
+      text: "First image for Alliance Jiu Jitsu Carlsbad. How should its images look? I'll start every draft's image from your answer.",
     },
     {
       role: "assistant",

@@ -22,7 +22,7 @@
 // exists only under newChatHero, opened from its « No Playbook created yet »
 // card; everywhere else the run's screens make the Playbook.
 
-import { getThread, refreshThread, postAssistantMessage, postUserTurn, postVoiceTurn } from "./assistant.js?v=2976";
+import { getThread, refreshThread, postAssistantMessage, postUserTurn, postVoiceTurn } from "./assistant.js?v=2980";
 import {
   createAltDraft,
   readAltWebsite,
@@ -35,12 +35,12 @@ import {
   getDraft,
   patchDraft,
   save,
-} from "./context-builder.js?v=2976";
-import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2976";
-import { LANGUAGE_OPTIONS } from "./languages.js?v=2976";
-import { connectors as connectorMocks } from "./mocks.js?v=2976";
-import { buildConnectedProfileItems } from "./social-profiles.js?v=2976";
-import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2976";
+} from "./context-builder.js?v=2980";
+import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2980";
+import { LANGUAGE_OPTIONS } from "./languages.js?v=2980";
+import { connectors as connectorMocks } from "./mocks.js?v=2980";
+import { buildConnectedProfileItems } from "./social-profiles.js?v=2980";
+import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2980";
 import {
   OTHER_WAYS,
   VOICE_WAYS,
@@ -48,8 +48,8 @@ import {
   DOC_READS,
   normalizeUrl,
   fallbackFor,
-} from "./screens/welcome-alt-steps.js?v=2976";
-import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2976";
+} from "./screens/welcome-alt-steps.js?v=2980";
+import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2980";
 
 // « 2 of 5 », counted on the run's own steps.
 function stepLabel(step) {
@@ -221,7 +221,7 @@ export function startPlaybookChat(sid, { onSaved = () => {} } = {}) {
   const run = { sid, onSaved, turns: [], groups: [], readings: [] };
   postAssistantMessage(
     sid,
-    "Let's build your Playbook together: a few questions, one at a time. I'll learn how you sound, who you speak to, and how you look.",
+    "A few questions, one at a time, and I'll build your Playbook: how you sound, who you speak to, and how you look.",
   );
   askWebsite(run);
 }
@@ -345,7 +345,7 @@ const SUGGESTED = {
     ],
     [
       "My expertise, through consulting and coaching",
-      "Content I create: articles, videos and talks",
+      "Content I create: articles, videos, and talks",
       "Freelance work for clients in my field",
     ],
   ],
@@ -466,7 +466,7 @@ function askDocuments(run) {
       subtitle: "A brand book or guidelines help me get the details right. Optional: you can connect more later.",
       step: stepLabel("documents"),
       items: items.map((c) => ({ value: c.id, title: c.name, desc: DOC_READS[c.id], imgSrc: c.logo })),
-      submitLabel: "Continue",
+      submitLabel: "Read these documents",
       skipLabel: "Skip for now",
       back: true,
     },
@@ -695,13 +695,13 @@ function review(run) {
         caption: `${stepLabel("recap")} · Playbook: ${d.name || "Your Brand"}`,
         rows,
         actions: [
-          { value: "fix", label: "Fix it in the Playbook" },
+          { value: "fix", label: "Edit in the Playbook" },
           { value: "ok", label: "Looks good", primary: true },
         ],
       },
       {
         onAct: (v, id) => {
-          settle(sid, id, v === "fix" ? "Fix it in the Playbook" : "Looks good");
+          settle(sid, id, v === "fix" ? "Edit in the Playbook" : "Looks good");
           if (v === "fix") return finish(run, { open: true });
           next(run, "recap");
         },

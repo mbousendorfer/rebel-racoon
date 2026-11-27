@@ -2,14 +2,14 @@
 // editor share: time formatting, the video-wide options (format, subtitles),
 // and the live reframed previews.
 
-import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2976";
-import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2976";
-import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2976";
-import { escapeHtml } from "../../utils.js?v=2976";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2976";
-import { showToast } from "../../components/toast.js?v=2976";
-import { navigate } from "../../router.js?v=2976";
-import { getVideo, getVideos, removeVideo, subscribe as subscribeVideos } from "../../videos-store.js?v=2976";
+import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2980";
+import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2980";
+import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2980";
+import { escapeHtml } from "../../utils.js?v=2980";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2980";
+import { showToast } from "../../components/toast.js?v=2980";
+import { navigate } from "../../router.js?v=2980";
+import { getVideo, getVideos, removeVideo, subscribe as subscribeVideos } from "../../videos-store.js?v=2980";
 
 // A footage well shows a loading sheen until its first frame is in (clips.css,
 // `:not(.is-ready)`): every well is marked here, once, from the media events
@@ -33,7 +33,7 @@ subscribeVideos(() => {
       v.status === "ready"
         ? `${v.clips.length} clip${v.clips.length === 1 ? "" : "s"} ready · ${v.name}`
         : v.failure?.kind === "crash"
-          ? `I couldn't finish ${v.name}`
+          ? `I couldn't finish analyzing ${v.name}. Open it to try again.`
           : `No clips in ${v.name}`;
     showToast(msg, {
       variant: v.status === "ready" ? "success" : "error",
@@ -87,7 +87,7 @@ function clipSegments(video, clip) {
 // The CTA placement — prod's ctaPreference.
 export const CTA_OPTIONS = [
   { id: "none", label: "No call to action", hint: "The post ends on the clip's message." },
-  { id: "in_post", label: "In the post", hint: "I end the caption with the Playbook's call to action." },
+  { id: "in_post", label: "In the post", hint: "I end the post with the Playbook's call to action." },
   {
     id: "first_comment",
     label: "In the first comment",
@@ -312,12 +312,12 @@ export function confirmRemoveVideo(id, { onRemoved } = {}) {
   openConfirm({
     // The clips go with the video: the dialog says it in its title and its
     // button, not only in its body (2026-11-23).
-    title: v.clips.length ? "Remove this video and its clips?" : "Remove this video?",
+    title: v.clips.length ? "Delete video and clips?" : "Delete video?",
     body: v.clips.length
-      ? `« ${v.name} » leaves Clips with its ${v.clips.length} clip${v.clips.length === 1 ? "" : "s"}: you won't be able to review, edit or post them anymore. This can't be undone. Posts already written in a chat stay.`
-      : `« ${v.name} » leaves Clips. This can't be undone.`,
-    confirmLabel: v.clips.length ? "Remove the video and its clips" : "Remove the video",
-    cancelLabel: "Cancel",
+      ? `"${v.name}" and its ${v.clips.length} clip${v.clips.length === 1 ? "" : "s"} will be deleted. You can't undo this. Drafts already written in a chat stay.`
+      : `"${v.name}" will be deleted. You can't undo this.`,
+    confirmLabel: v.clips.length ? "Delete video and clips" : "Delete video",
+    cancelLabel: "Keep",
     danger: true,
     onConfirm: () => {
       removeVideo(id);

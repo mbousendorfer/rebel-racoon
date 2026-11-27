@@ -12,15 +12,15 @@
 // render; no module-local state (the active sort lives in top-posts-flow's
 // picker state).
 
-import { compactNumber, html, raw } from "../utils.js?v=2976";
+import { compactNumber, html, raw } from "../utils.js?v=2980";
 import {
   profileForNetwork,
   NETWORK_ICON_BY_PLATFORM,
   BRAND_INITIALS,
   networkLabel,
   networkMeta,
-} from "../social-profiles.js?v=2976";
-import { renderEmptyState } from "./empty-state.js?v=2976";
+} from "../social-profiles.js?v=2980";
+import { renderEmptyState } from "./empty-state.js?v=2980";
 
 // Sort options for the toolbar. `key` matches data-top-post-sort + the picker
 // state; `compare` sorts descending by the decision-useful value (recent sorts
@@ -410,7 +410,7 @@ export function renderTopPostsWidget({ network, posts = [], selected = [], answe
           data-topposts-widget-confirm
           ${sel.size ? "" : "disabled"}
         >
-          <span>Reuse this post</span>
+          <span>Repurpose this post</span>
         </button>
       </div>`;
   return html`

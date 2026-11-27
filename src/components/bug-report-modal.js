@@ -17,16 +17,16 @@
 // On submit we simulate a ~1.4s round-trip and flash a success state; the
 // modal then closes itself. Nothing is actually posted.
 
-import { escapeHtml, formatTimeOfDay } from "../utils.js?v=2976";
-import { getSessionById } from "../sessions-store.js?v=2976";
+import { escapeHtml, formatTimeOfDay } from "../utils.js?v=2980";
+import { getSessionById } from "../sessions-store.js?v=2980";
 import {
   requestOpen,
   notifyClose,
   bindOverlayDismissal,
   showOverlay,
   hideOverlay,
-} from "../modal-coordinator.js?v=2976";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2976";
+} from "../modal-coordinator.js?v=2980";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=2980";
 
 const MODAL_ID = "bugReport";
 
@@ -95,7 +95,7 @@ const HTML = `
       </div>
 
       <div class="ap-form-field">
-        <label>Screenshot <small>(optional)</small></label>
+        <label>Screenshot <small>· optional</small></label>
         <div class="bug-report-dropzone has-file" id="bugScreenshotPreview" hidden>
           <div class="bug-report-preview">
             <img id="bugPreviewImg" src="" alt="Screenshot" />
@@ -107,7 +107,7 @@ const HTML = `
           ${dropzoneHTML({
             id: "bugDropzone",
             lead: "Drop an image here, or",
-            sub: "PNG, JPG or GIF, up to 10 MB",
+            sub: "PNG, JPG, or GIF, up to 10 MB",
             accept: "image/png,image/jpeg,image/gif",
             inputId: "bugFileInput",
             compact: true,
@@ -183,8 +183,18 @@ function currentContext() {
   const hash = window.location.hash || "#/";
   const [path, qs] = hash.replace(/^#/, "").split("?");
   const params = new URLSearchParams(qs || "");
-  let area = "Dashboard";
-  if (path.startsWith("/session/")) area = "Chat";
+  // The area the route belongs to, named as the UI names it (ROUTES.md).
+  const AREAS = [
+    ["/session/", "Chat"],
+    ["/contexts", "Playbooks"],
+    ["/playbook/", "Playbook"],
+    ["/topics", "Topic Feed"],
+    ["/insights", "Insights"],
+    ["/connectors", "Connectors"],
+    ["/clips", "Clips"],
+    ["/welcome-alt", "Onboarding"],
+  ];
+  const area = AREAS.find(([prefix]) => path.startsWith(prefix))?.[1] || "Chat";
 
   const tab = params.get("tab") || params.get("view");
   // A chat is named by its title, never by its id (2026-10-28).

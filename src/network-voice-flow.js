@@ -34,7 +34,7 @@
 // onReady() runs IMMEDIATELY when every network already has a voice, so
 // callers wrap unconditionally.
 
-import { sessionPlaybookId } from "./active-playbook.js?v=2976";
+import { sessionPlaybookId } from "./active-playbook.js?v=2980";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -44,13 +44,13 @@ import {
   postVoiceTurn,
   resolveTurn,
   getThread,
-} from "./assistant.js?v=2976";
-import { getContextById, updateContext } from "./contexts-store.js?v=2976";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2976";
-import { setHandoff } from "./handoff.js?v=2976";
-import { navigate } from "./router.js?v=2976";
-import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2976";
-import { getPosts } from "./posts-store.js?v=2976";
+} from "./assistant.js?v=2980";
+import { getContextById, updateContext } from "./contexts-store.js?v=2980";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2980";
+import { setHandoff } from "./handoff.js?v=2980";
+import { navigate } from "./router.js?v=2980";
+import { open as openFillDocumentModal } from "./components/fill-document-modal.js?v=2980";
+import { getPosts } from "./posts-store.js?v=2980";
 import {
   networkVoice,
   canLearnFrom,
@@ -58,7 +58,7 @@ import {
   brandVoiceAsIs,
   voiceNetworks,
   adaptNetworkVoice,
-} from "./voice-parts.js?v=2976";
+} from "./voice-parts.js?v=2980";
 
 // Learning a voice takes a moment, and says what it's doing.
 export const LEARN_PHASE_MS = 1400;
@@ -126,13 +126,13 @@ export function voiceChoices(net, { needed = false } = {}) {
       label: "Learn from a document",
       caption:
         account && !learn
-          ? `${account.handle} has too few posts to learn from — a style guide or a brief works too.`
+          ? `${account.handle} has too few posts to learn from. A style guide or a brief works too.`
           : `A style guide or a brief about how you write on ${label}.`,
     },
     {
       value: "edit",
       icon: "ap-icon-pen",
-      tile: "Write them myself",
+      tile: "Write it myself",
       hint: "In your Voice profile",
       label: "Write it myself",
       caption: `I open ${label} in your Voice profile, starting from your default voice.`,
@@ -140,7 +140,7 @@ export function voiceChoices(net, { needed = false } = {}) {
     needed && {
       value: "default",
       label: "Use my default voice",
-      caption: `Nothing specific to ${label} — length, format, hashtags — so drafts may miss what works there.`,
+      caption: `Nothing specific to ${label} (length, format, hashtags), so drafts may miss what works there.`,
     },
   ].filter(Boolean);
   return { account, items };
@@ -224,8 +224,8 @@ export function finishNetworkVoices(sessionId, ctxId, nets) {
   postAssistantMessage(
     sessionId,
     nets.length === 1
-      ? `Let's give ${list} its own voice.`
-      : `Let's give each network its own voice: ${list}. One at a time.`,
+      ? `I'll give ${list} its own voice.`
+      : `I'll give each network its own voice: ${list}. One at a time.`,
   );
   askVoice(
     sessionId,
@@ -239,7 +239,8 @@ export function finishNetworkVoices(sessionId, ctxId, nets) {
     {
       giving: true,
       line: (net) => `${networkLabel(net)} still uses your default voice, so its drafts may miss what works there.`,
-      cancelLine: "OK. The others keep your default voice for now. You can finish them anytime in your Voice profile.",
+      cancelLine:
+        "Okay. The others keep your default voice for now. You can finish them anytime in your Voice profile.",
     },
   );
 }
@@ -257,7 +258,7 @@ function orphanProposal(sessionId, turnId) {
     ctxId: m.contextId,
     net: m.network,
     voice: m.voice,
-    go: () => postAssistantMessage(sessionId, `Added. I'll write for ${label} with these rules from now on.`),
+    go: () => postAssistantMessage(sessionId, `Added. I'll write for ${label} in this voice from now on.`),
   };
 }
 
@@ -267,14 +268,14 @@ export function answerLearnedVoice(sessionId, turnId, action) {
   awaiting.delete(turnId);
   resolveTurn(sessionId, turnId);
   if (action === "use") {
-    postUserTurn(sessionId, "Add to Voice profile");
+    postUserTurn(sessionId, "Add it.");
     saveNetworkVoice(wait.ctxId, wait.net, wait.voice);
     return wait.go();
   }
-  postUserTurn(sessionId, "Edit in the Playbook");
+  postUserTurn(sessionId, "I'll edit it.");
   postAssistantMessage(
     sessionId,
-    `I've opened these rules in your Voice profile. Change what you want, save, then ask me again for the drafts.`,
+    `I've opened the ${networkLabel(wait.net)} voice in your Voice profile. Change what you want, save, then ask me again for the drafts.`,
   );
   editNetworkVoiceInPlaybook(wait.ctxId, wait.net, wait.voice);
 }
@@ -294,7 +295,7 @@ export function answerVoiceAsk(sessionId, turnId, choice) {
 // a string, or (net) => string for each network. `cancelLine`: what « Not now »
 // answers. The options carry over to the next network.
 function askVoice(sessionId, ctxId, nets, onReady, opts = {}) {
-  const { giving = false, line = null, cancelLine = "OK, I won't write anything for now." } = opts;
+  const { giving = false, line = null, cancelLine = "Okay, I won't write anything for now." } = opts;
   const [net, ...rest] = nets;
   const label = networkLabel(net);
   const { items } = voiceChoices(net, { needed: !giving });
@@ -311,7 +312,7 @@ function askVoice(sessionId, ctxId, nets, onReady, opts = {}) {
   const answered = (echo) => {
     asking.delete(turnId);
     resolveTurn(sessionId, turnId);
-    postUserTurn(sessionId, echo);
+    if (echo) postUserTurn(sessionId, echo);
   };
   const keepDefault = () => {
     useDefaultVoice(ctxId, net);
@@ -337,7 +338,7 @@ function askVoice(sessionId, ctxId, nets, onReady, opts = {}) {
   };
   asking.set(turnId, (choice) => {
     if (choice === "cancel") {
-      answered("Not now");
+      answered();
       return postAssistantMessage(sessionId, cancelLine);
     }
     const item = items.find((i) => i.value === choice);
@@ -355,7 +356,7 @@ function askVoice(sessionId, ctxId, nets, onReady, opts = {}) {
     if (choice === "learn" || choice === "adapt") return learning(choice);
     postAssistantMessage(
       sessionId,
-      `I've opened ${label} in your Voice profile, starting from your default voice. Add your rules, save, then ask me again.`,
+      `I've opened ${label} in your Voice profile, starting from your default voice. Edit it, save, then ask me again.`,
     );
     editNetworkVoiceInPlaybook(ctxId, net);
   });

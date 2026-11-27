@@ -12,13 +12,13 @@
 // draft changes at once. Your pick echoes as a chip; I answer in one sentence,
 // no « what changed » card.
 
-import { postAssistantMessage, postUserTurn, postActivity, postUserProfilesTurn } from "./assistant.js?v=2976";
-import * as inlineQuestion from "./inline-question.js?v=2976";
-import { getPosts, updatePostContent } from "./posts-store.js?v=2976";
-import { isFlagOn } from "./feature-flags.js?v=2976";
-import { networkLabel, networkIcon, normalizeNetwork } from "./social-profiles.js?v=2976";
-import { focusInPanel } from "./components/right-panel.js?v=2976";
-import { escapeHtml } from "./utils.js?v=2976";
+import { postAssistantMessage, postUserTurn, postActivity, postUserProfilesTurn } from "./assistant.js?v=2980";
+import * as inlineQuestion from "./inline-question.js?v=2980";
+import { getPosts, updatePostContent } from "./posts-store.js?v=2980";
+import { isFlagOn } from "./feature-flags.js?v=2980";
+import { networkLabel, networkIcon, normalizeNetwork } from "./social-profiles.js?v=2980";
+import { focusInPanel } from "./components/right-panel.js?v=2980";
+import { escapeHtml } from "./utils.js?v=2980";
 import {
   HANDLE_RE,
   joinList,
@@ -33,9 +33,9 @@ import {
   removeMentions,
   mentionsNamedIn,
   nameForHandle,
-} from "./mentions.js?v=2976";
+} from "./mentions.js?v=2980";
 
-export { MENTION_ASK, UNMENTION_ASK, mentionNamesIn } from "./mentions.js?v=2976";
+export { MENTION_ASK, UNMENTION_ASK, mentionNamesIn } from "./mentions.js?v=2980";
 
 const initials = (name) =>
   name
@@ -135,7 +135,7 @@ function askAccounts(sessionId, network, said, step, done, again = false) {
           postUserTurn(sessionId, value.trim());
           postAssistantMessage(
             sessionId,
-            `${wrong.length ? `${joinList(wrong.map((h) => `@${escapeHtml(h)}`))} ${wrong.length === 1 ? "isn't a valid" : "aren't valid"} ${label} username${wrong.length === 1 ? "" : "s"}` : "I need a username"}: letters, numbers, periods and underscores, up to 30.`,
+            `${wrong.length ? `${joinList(wrong.map((h) => `@${escapeHtml(h)}`))} ${wrong.length === 1 ? "isn't a valid" : "aren't valid"} ${label} username${wrong.length === 1 ? "" : "s"}` : "I need a username"}: letters, numbers, periods, and underscores, up to 30.`,
           );
           return askAccounts(sessionId, network, said, step, done, true);
         }
@@ -160,7 +160,7 @@ function askAccounts(sessionId, network, said, step, done, again = false) {
   postAssistantMessage(
     sessionId,
     [
-      sure.length ? `I ticked ${names(sure)} on ${label}.` : "",
+      sure.length ? `I selected ${names(sure)} on ${label}.` : "",
       unsure.length
         ? `${names(unsure)} ${unsure.length === 1 ? "has" : "have"} more than one account: pick the right one.`
         : "",
@@ -171,7 +171,7 @@ function askAccounts(sessionId, network, said, step, done, again = false) {
   );
   inlineQuestion.ask(sessionId, {
     title: `Who should I mention on ${label}?`,
-    subtitle: `${FINDS[network]} Tick one or more, and check a profile before you do.`,
+    subtitle: `${FINDS[network]} Select one or more, and check a profile before you do.`,
     stepLabel: step,
     multi: true,
     // One name: the search opens on it. Several: every account shows, each
@@ -319,7 +319,6 @@ export function offerMentions(sessionId, drafts) {
       { value: "yes", label: yes, primary: true },
     ],
     onPick: (choice) => {
-      postUserTurn(sessionId, choice === "yes" ? yes : "Not now");
       if (choice === "yes") mentionInDrafts(sessionId, m.drafts, [{ name: m.name }]);
       else postAssistantMessage(sessionId, "Okay, no mention.");
     },

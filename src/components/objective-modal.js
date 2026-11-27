@@ -21,12 +21,12 @@
 // Replaces objective-editor-modal (the field-stack editor): the sentence form
 // is the editor now. Body-level, modal-coordinator, closes on route change.
 
-import { escapeHtml as esc, newId } from "../utils.js?v=2976";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2976";
-import { getContexts } from "../contexts-store.js?v=2976";
-import { getActivePlaybookId } from "../active-playbook.js?v=2976";
-import { createCatalogFlow, searchSelectorFor } from "./objective-catalog-panel.js?v=2976";
-import { renderScopeField, scopeFromClick } from "./measure-scope-field.js?v=2976";
+import { escapeHtml as esc, newId } from "../utils.js?v=2980";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2980";
+import { getContexts } from "../contexts-store.js?v=2980";
+import { getActivePlaybookId } from "../active-playbook.js?v=2980";
+import { createCatalogFlow, searchSelectorFor } from "./objective-catalog-panel.js?v=2980";
+import { renderScopeField, scopeFromClick } from "./measure-scope-field.js?v=2980";
 import {
   resolveObjectives,
   materializeMeasureEntries,
@@ -35,7 +35,7 @@ import {
   scopedBaselineFor,
   proposeTargetFrom,
   WINDOWS,
-} from "../objective-measures.js?v=2976";
+} from "../objective-measures.js?v=2980";
 
 const MODAL_ID = "objectiveModal";
 
@@ -142,7 +142,7 @@ export function open({ data = null, label = null, mode = "adjust", contextId = n
     });
   }
   catalogFlow = null;
-  titleEl.textContent = mode === "create" ? "New objective" : "Adjust objective";
+  titleEl.textContent = mode === "create" ? "New objective" : "Edit objective";
   paint();
   backdrop.hidden = false;
   panel.focus?.();
@@ -190,7 +190,7 @@ function paint(opts = {}) {
   }
   const nameInput = bodyEl.querySelector("[data-objm-name]");
   if (nameInput) draft.name = nameInput.value;
-  titleEl.textContent = draft.mode === "create" ? "New objective" : "Adjust objective";
+  titleEl.textContent = draft.mode === "create" ? "New objective" : "Edit objective";
   setSubtitle("");
   // Typing in the scope menu's search re-renders the form under the caret, so
   // put it back where it was — the same treatment the catalogue's own search
@@ -289,7 +289,7 @@ function renderForm() {
         // is missing.
         hasMeasures
           ? ""
-          : `<p class="objm__caption">Its status — on track, at risk, or off track — comes from these measures. Nothing else to set.</p>`
+          : `<p class="objm__caption">Its status (On track, At risk, or Off track) comes from these measures. Nothing else to set.</p>`
       }
       ${hasMeasures ? `<div class="objm__measures">${draft.measures.map((entry, i) => renderMeasureCard(entry, i)).join("")}</div>` : ""}
       <div class="objm__addrow">
@@ -421,7 +421,7 @@ function renderMeasureCard(entry, i) {
   // control to leave out (§ the date input, same rule).
   const winOverride =
     draft.window.type === "fixed"
-      ? `<div class="objm__winover" role="group" aria-label="Window for ${esc(name)}">
+      ? `<div class="objm__winover" role="group" aria-label="Period for ${esc(name)}">
            <button type="button" class="ap-filter-chip" aria-pressed="${!entry.window}" data-objm-mwindow="inherit" data-objm-i="${i}"><span>Same as objective</span></button>
            <button type="button" class="ap-filter-chip" aria-pressed="${!!entry.window}" data-objm-mwindow="rolling" data-objm-i="${i}"><span>Rolling 30 days</span></button>
          </div>`
@@ -441,7 +441,7 @@ function renderMeasureCard(entry, i) {
     [rate ? "Hold above" : "Grow from", `<div class="objm__cardbody">${body}${hint}</div>`],
     ["Measured on", `<div class="objm__cardscope">${scopeField}</div>`],
   ];
-  if (winOverride) rows.push(["Window", winOverride]);
+  if (winOverride) rows.push(["Period", winOverride]);
 
   return `
     <div class="objm__card${entry.fresh ? " objm__card--fresh" : ""}">

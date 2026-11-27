@@ -84,7 +84,7 @@ export function renderPicker(picker) {
     // type="file">. Wired by session.js — change → inlineQuestion.submitFile.
     customFile = false,
     customFileAccept = "",
-    customFileLabel = "Drop a file here, or click to browse",
+    customFileLabel = "Drop a file here, or browse",
     customFileHint = "",
     customFileIcon = "ap-icon-upload",
     customFileMultiple = false,
@@ -137,7 +137,7 @@ export function renderPicker(picker) {
     searchPlaceholder = "Search…",
     searchQuery = "",
     // The line a searchable picker shows when nothing matches (default below).
-    emptyText = "No matches — try a different search.",
+    emptyText = "No matches. Try a different search.",
     // Multi: the submit's label for N rows ticked, kept live as rows toggle
     // (session.js reads data-count-label). A function of n.
     submitCountLabel = null,
@@ -265,7 +265,7 @@ export function renderPicker(picker) {
             data-step-value="${it.value}"
             ${disabled ? "disabled" : ""}
             tabindex="-1"
-            aria-label="${dir === "inc" ? "Increase" : "Decrease"} versions for ${it.label}"
+            aria-label="${dir === "inc" ? "Increase" : "Decrease"} drafts for ${it.label}"
           ><i class="${icon}"></i></button>
         `;
         return `

@@ -3,9 +3,9 @@
 // `message`-shaped object (or opts) and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2976";
-import { iconFor } from "../../file-kinds.js?v=2976";
-import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2976";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2980";
+import { iconFor } from "../../file-kinds.js?v=2980";
+import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2980";
 
 // Chat-switch skeleton — shown for ~340ms inside .session__assistant-thread
 // when switching chats, then swapped for the real thread.
@@ -88,7 +88,7 @@ export function renderSourceIntakeTurn(message, source = null, { focusable = fal
             <span class="source-chip__progress" aria-hidden="true"><span class="source-chip__progress-fill" style="width: ${percent}%"></span></span>
             <span class="source-chip__status-text">Uploading…</span>
           </span>`
-        : `<span class="source-chip__status" role="status">${spinner}<span class="source-chip__status-text">Extracting…</span></span>`;
+        : `<span class="source-chip__status" role="status">${spinner}<span class="source-chip__status-text">Reading…</span></span>`;
   } else if (message.sourceId) {
     const ideas = src?.ideaCount || 0;
     const clips = Array.isArray(src?.clips) ? src.clips.length : 0;
@@ -199,7 +199,7 @@ export function renderChoiceTurn(message) {
     .join("");
   const choicesRowClass = hasPreviews ? "chat-bubble-choices chat-bubble-choices--visual" : "chat-bubble-choices";
 
-  const submitLabel = message.submitLabel || "Submit";
+  const submitLabel = message.submitLabel || "Send";
   // Instant pickers (single click = submit) skip the Submit button — the
   // chip-click handler fires the handler directly.
   const footer =
@@ -286,7 +286,7 @@ export function renderSystemNotice(message) {
   const hasDetail = !!message.text;
   return renderNotice({
     variant: message.variant === "mermaid" ? "mermaid" : "grey",
-    label: message.meta || "Update",
+    label: message.meta || "Thinking",
     open: !!message.open,
     loading: message.status === "loading",
     showChevron: hasDetail,
@@ -300,7 +300,7 @@ export function renderExtractingNotice(label) {
   // The prod's progress copy (studio i18n, chat.tool.progress.*): the flow
   // names what it is doing ("Generating post drafts…"); the default is the
   // extraction's.
-  const text = escapeHtml(label || "Extracting ideas from content…");
+  const text = escapeHtml(label || "Finding ideas…");
   return `
     <div class="chat-turn chat-turn--ai chat-turn--extracting">
       <div class="extracting-notice" role="status" aria-label="${text}">

@@ -24,12 +24,12 @@
 // card (defined in right-panel.css). Classes prefixed `clip-card__*`
 // own clip-specific bits (thumbnail, timeframe overlay).
 
-import { iconFor } from "../file-kinds.js?v=2976";
-import { escapeText, escapeAttr, formatClock } from "../utils.js?v=2976";
-import { installMoreMenu } from "./more-menu.js?v=2976";
-import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=2976";
-import { videoForClip } from "../clip-captions.js?v=2976";
-import { FORMATS } from "../clip-formats.js?v=2976";
+import { iconFor } from "../file-kinds.js?v=2980";
+import { escapeText, escapeAttr, formatClock } from "../utils.js?v=2980";
+import { installMoreMenu } from "./more-menu.js?v=2980";
+import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=2980";
+import { videoForClip } from "../clip-captions.js?v=2980";
+import { FORMATS } from "../clip-formats.js?v=2980";
 
 const fmtTime = (s) => formatClock(s);
 
@@ -126,7 +126,7 @@ export function renderClipCard(
               aria-hidden="true"
             ></video>
           </span>
-          <span class="clip-card__ratio" aria-label="Export ratio ${fmt.tag}">${fmt.tag}</span>
+          <span class="clip-card__ratio" aria-label="Format ${fmt.tag}">${fmt.tag}</span>
           <span class="clip-card__thumb-play" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="26" height="26"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
           </span>
@@ -192,7 +192,7 @@ export function renderClipCard(
                 <i class="ap-icon-trash"></i>
                 <div class="ap-action-dropdown-item-text">
                   <div class="ap-action-dropdown-item-label-container">
-                    <span class="ap-action-dropdown-item-label">Remove clip</span>
+                    <span class="ap-action-dropdown-item-label">Delete clip</span>
                   </div>
                 </div>
               </button>

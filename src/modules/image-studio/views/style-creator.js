@@ -9,22 +9,22 @@
 // active Playbook. (A three-subject "Test run" column was removed at the user's
 // request, 2026-10-06: "ça n'a pas de sens".)
 
-import { html, toString } from "../lib/html.js?v=2976";
-import { delegate } from "../lib/delegate.js?v=2976";
-import { getPath } from "../../../router.js?v=2976";
-import { setTopbarActions } from "../../../components/topbar.js?v=2976";
-import { renderFrame } from "./frame.js?v=2976";
-import { renderEmpty } from "../ui/empty.js?v=2976";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=2976";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2976";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=2976";
-import { toast } from "../ui/toast.js?v=2976";
-import { confirmDialog } from "../ui/dialog.js?v=2976";
-import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2976";
-import { copyService } from "../services/index.js?v=2976";
-import { lookFromColors } from "../render/visual.js?v=2976";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2976";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2976";
+import { html, toString } from "../lib/html.js?v=2980";
+import { delegate } from "../lib/delegate.js?v=2980";
+import { getPath } from "../../../router.js?v=2980";
+import { setTopbarActions } from "../../../components/topbar.js?v=2980";
+import { renderFrame } from "./frame.js?v=2980";
+import { renderEmpty } from "../ui/empty.js?v=2980";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=2980";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=2980";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=2980";
+import { toast } from "../ui/toast.js?v=2980";
+import { confirmDialog } from "../ui/dialog.js?v=2980";
+import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=2980";
+import { copyService } from "../services/index.js?v=2980";
+import { lookFromColors } from "../render/visual.js?v=2980";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=2980";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=2980";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -77,9 +77,10 @@ export function mount(target, params, ctx, { embed = null } = {}) {
   const leave = (go) => {
     if (JSON.stringify(state.draft) === initial) return go();
     confirmDialog({
-      title: editing ? "Discard your changes?" : "Discard this style?",
+      title: editing ? "Discard changes?" : "Discard style?",
       body: editing ? `${editing.label} stays as it was.` : "The name and images you added won't be kept.",
-      confirmLabel: "Discard",
+      confirmLabel: editing ? "Discard changes" : "Discard style",
+      cancelLabel: "Keep",
       danger: true,
     }).then((ok) => ok && go());
   };
@@ -203,7 +204,7 @@ export function mount(target, params, ctx, { embed = null } = {}) {
               >${state.promptBusy
                 ? "Reading your images…"
                 : d.stylePrompt
-                  ? "Generate again"
+                  ? "Regenerate"
                   : "Generate from the images"}</span
             >
           </button>

@@ -32,10 +32,10 @@ import {
   postUserTurn,
   postUserProfilesTurn,
   reportDraftFailure,
-} from "./assistant.js?v=2976";
-import { getTopPosts, getTopPost } from "./top-posts-store.js?v=2976";
-import { addPostDraft } from "./posts-store.js?v=2976";
-import { addReadySource } from "./sources-stream.js?v=2976";
+} from "./assistant.js?v=2980";
+import { getTopPosts, getTopPost } from "./top-posts-store.js?v=2980";
+import { addPostDraft } from "./posts-store.js?v=2980";
+import { addReadySource } from "./sources-stream.js?v=2980";
 import {
   getConnectedProfiles,
   BRAND_INITIALS,
@@ -45,13 +45,13 @@ import {
   networkMeta,
   normalizeNetwork,
   getConnectedProfileById,
-} from "./social-profiles.js?v=2976";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2976";
-import { requireNetworkVoices } from "./network-voice-flow.js?v=2976";
-import { withPendingChip } from "./draft-flow.js?v=2976";
-import { SORTS, PERIODS } from "./components/top-post-card.js?v=2976";
-import * as inlineQuestion from "./inline-question.js?v=2976";
-import { playbookForNewWork } from "./active-playbook.js?v=2976";
+} from "./social-profiles.js?v=2980";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2980";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2980";
+import { withPendingChip } from "./draft-flow.js?v=2980";
+import { SORTS, PERIODS } from "./components/top-post-card.js?v=2980";
+import * as inlineQuestion from "./inline-question.js?v=2980";
+import { playbookForNewWork } from "./active-playbook.js?v=2980";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;
@@ -364,12 +364,12 @@ export function startTopPostsInline(sessionId) {
   // Default the drafts' voice the same way the studio does (parity); the inline
   // flow keeps it implicit either way to stay short.
   repurposeContexts.set(sessionId, playbookForNewWork()?.id || null);
-  postAssistantMessage(sessionId, "Which account should I pull your top posts from?");
+  postAssistantMessage(sessionId, "Which account should I load your top posts from?");
   inlineQuestion.ask(
     sessionId,
     accountPickerOpts({
       title: "Pick an account",
-      subtitle: "I'll pull its top posts next.",
+      subtitle: "I'll load its top posts next.",
       onAccount: (account, network) => {
         echoAccount(sessionId, account, network);
         askPeriod(sessionId, network);
@@ -398,7 +398,6 @@ function askPeriod(sessionId, network) {
     title: "Time period",
     subtitle: "I'll only rank posts published in that window.",
     onPick: (periodKey) => {
-      echoPeriodPick(sessionId, periodKey);
       askRankCriterion(sessionId, network, periodKey);
     },
     // Back to the account question (re-arm it without re-posting the intro).
@@ -407,7 +406,7 @@ function askPeriod(sessionId, network) {
         sessionId,
         accountPickerOpts({
           title: "Pick an account",
-          subtitle: "I'll pull its top posts next.",
+          subtitle: "I'll load its top posts next.",
           onAccount: (account, net) => {
             echoAccount(sessionId, account, net);
             askPeriod(sessionId, net);
@@ -415,12 +414,6 @@ function askPeriod(sessionId, network) {
         }),
       ),
   });
-}
-
-// Echo the chosen time window as a user text turn.
-function echoPeriodPick(sessionId, periodKey) {
-  const choice = PERIOD_CHOICES.find((c) => c.value === periodKey);
-  postUserTurn(sessionId, choice ? choice.label : periodKey);
 }
 
 // Which metric ranks the winners — the same lenses the studio board sorts by
@@ -440,7 +433,6 @@ function askRankCriterion(sessionId, network, period = "1m") {
     title: "Rank by",
     subtitle: "I'll put the strongest posts for that metric first.",
     onPick: (sortKey) => {
-      echoRankPick(sessionId, sortKey);
       presentWinners(sessionId, network, sortKey, period);
     },
     // Back to the period question (re-arm it without re-posting the intro).
@@ -450,17 +442,10 @@ function askRankCriterion(sessionId, network, period = "1m") {
         title: "Time period",
         subtitle: "I'll only rank posts published in that window.",
         onPick: (periodKey) => {
-          echoPeriodPick(sessionId, periodKey);
           askRankCriterion(sessionId, network, periodKey);
         },
       }),
   });
-}
-
-// Echo the chosen ranking metric as a user text turn.
-function echoRankPick(sessionId, sortKey) {
-  const choice = RANK_CHOICES.find((c) => c.value === sortKey);
-  postUserTurn(sessionId, choice ? choice.label : sortKey);
 }
 
 // Metric chosen → brief "finding your winners" beat, then drop the interactive
@@ -478,7 +463,7 @@ function presentWinners(sessionId, network, sortKey = "performance", period = "1
       .map((p) => p.id);
     postAssistantMessage(
       sessionId,
-      `Here are your top ${networkLabel(net)} posts by ${sort.label.toLowerCase()} — pick one to repurpose.`,
+      `Here are your top ${networkLabel(net)} posts by ${sort.label.toLowerCase()}. Pick one to repurpose.`,
     );
     postTopPostsWidget(sessionId, { network: net, postIds });
   }, PROFILE_LOAD_MS);
@@ -680,6 +665,6 @@ function repurposeTitle(posts, count, capped) {
   const base =
     posts.length === 1
       ? `New takes on your top ${networkLabel(posts[0].network)} post`
-      : `Fresh takes on ${posts.length} of your top posts`;
+      : `New takes on ${posts.length} of your top posts`;
   return capped ? `${base} · first ${count}` : base;
 }

@@ -4,8 +4,8 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { newChatPath } from "../utils.js?v=2976";
-import { navigate } from "../router.js?v=2976";
+import { newChatPath } from "../utils.js?v=2980";
+import { navigate } from "../router.js?v=2980";
 import {
   getDraft,
   isAnalysisReady,
@@ -13,23 +13,23 @@ import {
   patchDraft,
   restoreDraft,
   sectionPatchFromAnalysis,
-} from "../context-builder.js?v=2976";
+} from "../context-builder.js?v=2980";
 import {
   RECAP_SECTIONS,
   editVoiceNetwork,
   networkVoiceFilled,
   setNetworkRules,
   proposeVoiceInline,
-} from "../playbook-view.js?v=2976";
-import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2976";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2976";
+} from "../playbook-view.js?v=2980";
+import { renderPageReview, renderReview } from "./welcome-alt-review.js?v=2980";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2980";
 import {
   getConnectedProfiles,
   networkIcon,
   networkLabel,
   normalizeNetwork,
   NETWORKS,
-} from "../social-profiles.js?v=2976";
+} from "../social-profiles.js?v=2980";
 import {
   canLearnFrom,
   learnNetworkVoice,
@@ -38,14 +38,14 @@ import {
   ownNetworkVoices,
   voiceNetworks,
   onlyNetwork,
-} from "../voice-parts.js?v=2976";
-import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2976";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2976";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2976";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2976";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2976";
-import { showToast } from "../components/toast.js?v=2976";
-import { open as openConfirm } from "../components/confirm-modal.js?v=2976";
+} from "../voice-parts.js?v=2980";
+import { analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2980";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2980";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2980";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2980";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2980";
+import { showToast } from "../components/toast.js?v=2980";
+import { open as openConfirm } from "../components/confirm-modal.js?v=2980";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -56,11 +56,11 @@ const WELCOME_ALT_RETURN_KEY = "welcomeAltReturnTo";
 // that land once the stage is done — a line no stage
 // names lands as soon as it's known (the site's colours, the competitors).
 export const LOADING_STAGES = [
-  { title: "Reading your website", sub: "Scanning your pages, copy, and brand cues.", lands: ["summary"] },
-  { title: "Learning your voice", sub: "Capturing your tone, vocabulary, and rhythm.", lands: ["voice"] },
+  { title: "Reading your website", sub: "Looking through your pages.", lands: ["summary"] },
+  { title: "Learning your voice", sub: "Picking up how you write.", lands: ["voice"] },
   {
     title: "Mapping your audience",
-    sub: "Working out who you're for, and what moves them.",
+    sub: "Finding who you're for.",
     lands: ["audience", "goal"],
   },
   { title: "Putting it together", sub: "Turning it all into a Playbook every draft draws from." },
@@ -73,7 +73,7 @@ export const FILE_LOADING_STAGES = [
   { title: "Picking out your colors", sub: "Sampling the palette your visuals already use.", lands: ["branding"] },
   {
     title: "Mapping your audience",
-    sub: "Working out who you're for, and what moves them.",
+    sub: "Finding who you're for.",
     lands: ["audience", "goal"],
   },
   { title: "Putting it together", sub: "Turning it all into a Playbook every draft draws from.", lands: ["voice"] },
@@ -89,7 +89,7 @@ export const INTERVIEW_LOADING_STAGES = [
     lands: ["branding"],
   },
   {
-    title: "Drafting your Playbook",
+    title: "Building your Playbook",
     sub: "Audience, goals, and voice, from your own words.",
     lands: ["audience", "goal", "voice"],
   },
@@ -137,8 +137,8 @@ const playbookReview = () => ({
   title: "Check what I learned",
   sub: "Fix anything that's off. I save as you type.",
   parts: RECAP_SECTIONS.filter((t) => t.id !== "voice"),
-  next: { label: "Check my voice", go: () => navigate("/welcome-alt/voice") },
-  lastLabel: "Looks good, on to your voice",
+  next: { label: "Check your voice", go: () => navigate("/welcome-alt/voice") },
+  lastLabel: "Looks good, check your voice",
   back: "/welcome-alt/ready",
 });
 
@@ -255,8 +255,8 @@ function voiceReview(sid, overrides = {}) {
       0,
     );
     openConfirm({
-      title: `New default voice from ${from}`,
-      body: `${p.voiceSummary ? `« ${p.voiceSummary} » ` : ""}Plus ${rules} rule${rules === 1 ? "" : "s"} for how you write. Your current voice stays until you add this one.`,
+      title: `Replace your default voice?`,
+      body: `${p.voiceSummary ? `"${p.voiceSummary}" ` : ""}plus ${rules} rule${rules === 1 ? "" : "s"} for how you write. Your current voice stays until you add this one.`,
       confirmLabel: "Add to Voice profile",
       cancelLabel: "Keep my voice",
       onConfirm: () => {
@@ -329,9 +329,9 @@ function voiceReview(sid, overrides = {}) {
       propose({
         voice: learnNetworkVoice(getDraft(sid), net, source),
         phases: [
-          `Reading ${source.postCount} posts of ${source.from}…`,
+          `Reading ${source.postCount} posts from ${source.from}…`,
           `Finding what works on ${networkLabel(net)}…`,
-          `Writing your ${networkLabel(net)} rules…`,
+          `Writing your ${networkLabel(net)} voice…`,
         ],
       });
     });
@@ -430,7 +430,7 @@ function renderDraftView(host) {
       integrated
         ? `<button type="button" class="ap-button primary orange" data-welcome-done><span>Save Playbook</span></button>`
         : `<button type="button" class="ap-button primary orange" data-welcome-done>
-        <span>Save Playbook and start</span>
+        <span>Draft my first post</span>
         <i class="ap-icon-arrow-right"></i>
       </button>`,
     onFooter: (event) => {
@@ -473,7 +473,7 @@ export function finishRun(sid) {
   // never added, it uses the default voice (2026-11-05, the fiche's model).
   return isIntegrated() ? finishIntegrated(sid) : enterArchie(sid);
 }
-export const finishLabel = () => (isIntegrated() ? "Save my Playbook" : "Draft my first post");
+export const finishLabel = () => (isIntegrated() ? "Save Playbook" : "Draft my first post");
 
 export function enterArchie(sid) {
   patchDraft(sid, { onComplete: null });

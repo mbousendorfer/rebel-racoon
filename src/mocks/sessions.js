@@ -111,7 +111,7 @@ export const chatStarters = [
     id: "starter-batch",
     icon: "ap-icon-archie-official",
     tone: "mermaid",
-    title: "Batch from a source",
+    title: "Write a batch from a source",
     subtitle: "Pull the strongest ideas and draft a set of posts across your networks.",
     cta: "Start drafting",
     prompt: "Draft a set of posts from a source.",

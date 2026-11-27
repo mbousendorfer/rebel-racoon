@@ -20,13 +20,13 @@
 // list scroll position survives — same rationale as the clip/idea thumbs it
 // replaces.
 
-import { escapeAttr, escapeText } from "../utils.js?v=2976";
-import { showToast } from "./toast.js?v=2976";
-import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2976";
-import { getContextById } from "../contexts-store.js?v=2976";
-import { networkLabel } from "../social-profiles.js?v=2976";
-import { feedbackNetworkVoice } from "../voice-parts.js?v=2976";
-import { openVoiceProposal } from "./voice-proposal-modal.js?v=2976";
+import { escapeAttr, escapeText } from "../utils.js?v=2980";
+import { showToast } from "./toast.js?v=2980";
+import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2980";
+import { getContextById } from "../contexts-store.js?v=2980";
+import { networkLabel } from "../social-profiles.js?v=2980";
+import { feedbackNetworkVoice } from "../voice-parts.js?v=2980";
+import { openVoiceProposal } from "./voice-proposal-modal.js?v=2980";
 
 // "What was off?" reasons per element kind. value = stable key, label = UI.
 const REASONS = {
@@ -66,7 +66,7 @@ export function renderFeedbackThumbs(targetId, { kind } = {}) {
     const active = verdict === side;
     const base = side === "up" ? "ap-icon-thumb-up" : "ap-icon-thumb-down";
     const icon = active ? `${base}_fill` : base;
-    const label = side === "up" ? `Mark this ${noun} as good` : `Mark this ${noun} as needing work`;
+    const label = side === "up" ? `Mark ${noun} as good` : `Mark ${noun} as needing work`;
     return `
       <button
         type="button"
@@ -115,7 +115,7 @@ export function renderFeedbackPanel(targetId, { kind, voice = null } = {}) {
           data-fb-comment
           rows="2"
           aria-label="Anything else about this ${NOUN[kind] || "result"}? Optional"
-          placeholder="Anything else? (optional)"
+          placeholder="Anything else? · optional"
         >${escapeText(rec?.comment || "")}</textarea>
       </div>
       <div class="fb__panel-actions">
@@ -210,9 +210,9 @@ export function offerVoiceUpdate(playbookId, net, feedback) {
     net,
     voice: proposal.voice,
     only: proposal.added,
-    title: `Thanks. Add this to your ${label} rules?`,
+    title: `Thanks. Add this to your ${label} voice?`,
     useLabel: "Add to Voice profile",
-    onUse: () => showToast(`Added to your ${label} rules.`, { duration: 3200 }),
+    onUse: () => showToast(`Added to your ${label} voice`, { duration: 3200 }),
   });
   return true;
 }

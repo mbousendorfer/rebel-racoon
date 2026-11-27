@@ -15,32 +15,32 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=2976";
-import { delegate } from "../lib/delegate.js?v=2976";
-import { hashString } from "../lib/prng.js?v=2976";
-import { renderEmpty } from "../ui/empty.js?v=2976";
-import { preserveFocus } from "../ui/fields.js?v=2976";
-import { toast } from "../ui/toast.js?v=2976";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=2976";
-import { styleThumb } from "../ui/style-thumb.js?v=2976";
-import { openDialog } from "../ui/dialog.js?v=2976";
-import { menu } from "../ui/menu.js?v=2976";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=2976";
-import { QUICK_PRESETS, STYLE_PRESETS } from "../config/style-presets.js?v=2976";
-import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=2976";
-import { networkById } from "../config/networks.js?v=2976";
-import { copyService, imageGenerationService } from "../services/index.js?v=2976";
-import { unbranded, getPlaybookReferences } from "../state/playbook-brand.js?v=2976";
-import { resolveLayers } from "../render/layout.js?v=2976";
-import { svgToDataUrl } from "../render/visual.js?v=2976";
-import { REVEAL_MS } from "../../../archie-pixels.js?v=2976";
-import { splitVisual } from "../render/split.js?v=2976";
-import { bakeDoc } from "../render/edit-export.js?v=2976";
-import { subjectKindFor } from "../render/subjects.js?v=2976";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=2976";
-import { createEditor } from "./edit/editor.js?v=2976";
-import { mount as mountStyleCreator } from "./style-creator.js?v=2976";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=2976";
+import { html, raw, toString } from "../lib/html.js?v=2980";
+import { delegate } from "../lib/delegate.js?v=2980";
+import { hashString } from "../lib/prng.js?v=2980";
+import { renderEmpty } from "../ui/empty.js?v=2980";
+import { preserveFocus } from "../ui/fields.js?v=2980";
+import { toast } from "../ui/toast.js?v=2980";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=2980";
+import { styleThumb } from "../ui/style-thumb.js?v=2980";
+import { openDialog } from "../ui/dialog.js?v=2980";
+import { menu } from "../ui/menu.js?v=2980";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=2980";
+import { QUICK_PRESETS, STYLE_PRESETS } from "../config/style-presets.js?v=2980";
+import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=2980";
+import { networkById } from "../config/networks.js?v=2980";
+import { copyService, imageGenerationService } from "../services/index.js?v=2980";
+import { unbranded, getPlaybookReferences } from "../state/playbook-brand.js?v=2980";
+import { resolveLayers } from "../render/layout.js?v=2980";
+import { svgToDataUrl } from "../render/visual.js?v=2980";
+import { REVEAL_MS } from "../../../archie-pixels.js?v=2980";
+import { splitVisual } from "../render/split.js?v=2980";
+import { bakeDoc } from "../render/edit-export.js?v=2980";
+import { subjectKindFor } from "../render/subjects.js?v=2980";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=2980";
+import { createEditor } from "./edit/editor.js?v=2980";
+import { mount as mountStyleCreator } from "./style-creator.js?v=2980";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=2980";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -51,15 +51,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=2976";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=2976";
+} from "../state/store.js?v=2980";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=2980";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=2976";
+} from "../state/creation-actions.js?v=2980";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 const MAX_SLIDES = 10;
@@ -305,7 +305,7 @@ export function mountStudio(
       entries.set(src.key, entry);
     } catch (error) {
       state.mode = "generate";
-      toast(error.message || "The layers couldn't be separated.", { variant: "error" });
+      toast(error.message || "I couldn't separate the layers. Try again.", { variant: "error" });
     }
     paint();
   }
@@ -322,7 +322,7 @@ export function mountStudio(
   // subject is when it names one (the mock reads kinds, not prose).
   async function redrawEntry(entry, kinds, prompt) {
     const src = sources.get(entry.doc.key);
-    if (!src) throw new Error("This image can't be redrawn.");
+    if (!src) throw new Error("I can't redraw this image. Try another one.");
     const seeds = { ...entry.doc.seeds };
     const fresh = () => Math.floor(Math.random() * 2 ** 31);
     if (kinds.includes("background")) seeds.bgSeed = fresh();
@@ -435,7 +435,7 @@ export function mountStudio(
       setStyle(style.id);
     } catch (error) {
       state.oneOffBusy = false;
-      toast(error.message || "The image couldn't be read.", { variant: "error" });
+      toast(error.message || "I couldn't read this image. Try another one.", { variant: "error" });
       paint();
     }
   }
@@ -884,7 +884,7 @@ ${b.prompt}</textarea
     const shapeSection = html` <section class="imst-ctl" aria-labelledby="imst-ctl-shape">
       <header class="imst-ctl__head">
         <div class="imst-ctl__title">
-          <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-shape">Shape</h3>
+          <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-shape">Format</h3>
           ${sharedNets ? bestFor(sharedNets) : ""}
         </div>
         <span class="ap-caption imst-ctl__meta">${format.width} × ${format.height} px</span>
@@ -954,7 +954,7 @@ ${b.prompt}</textarea
           tabindex="0"
           role="img"
           aria-label="What writing the text into the image changes"
-          data-tooltip="Written in: painted into the picture in the style's lettering, so you can't edit it later. Left off: a layer you can change anytime."
+          data-tooltip="On: painted in, you can't edit it later. Off: a layer you can change."
         ></i>
       </div>
       <span class="ap-caption imst-ctl__note"
@@ -1162,10 +1162,8 @@ ${b.prompt}</textarea
         <i class="ap-icon-warning_fill" aria-hidden="true"></i>
         <div class="ap-infobox-content">
           <div class="ap-infobox-texts">
-            <div class="ap-infobox-title">Generation failed</div>
-            <div class="ap-infobox-message">
-              Nothing was lost — your description and settings are still on the left.
-            </div>
+            <div class="ap-infobox-title">I couldn't generate the images</div>
+            <div class="ap-infobox-message">Nothing was lost. Your description and settings are still on the left.</div>
           </div>
           <button type="button" class="ap-button ghost blue" data-imst-action="generate">Try again</button>
         </div>
@@ -1271,7 +1269,7 @@ ${b.prompt}</textarea
     const kind = of > 1 ? "Carousel" : "Variation";
     const title =
       of > 1
-        ? `Slide ${state.slide + 1} / ${of}`
+        ? `Slide ${state.slide + 1} of ${of}`
         : strip.length > 1
           ? `Variation ${index + 1} of ${strip.length}`
           : "Your image";
@@ -1551,7 +1549,7 @@ ${b.prompt}</textarea
             ${running ? "disabled" : ""}
           >
             <i class="ap-icon-sparkles" aria-hidden="true"></i
-            ><span>${running ? "Generating…" : result ? "Generate again" : "Generate"}</span>
+            ><span>${running ? "Generating…" : result ? "Regenerate" : "Generate"}</span>
           </button>`
         : ""}
       ${result
@@ -1826,7 +1824,7 @@ ${b.prompt}</textarea
       else onUse?.(urls[0]);
     } catch (error) {
       state.using = false;
-      toast(error.message || "The image couldn't be added.", { variant: "error" });
+      toast(error.message || "I couldn't add the image. Try again.", { variant: "error" });
       paint();
     }
   }

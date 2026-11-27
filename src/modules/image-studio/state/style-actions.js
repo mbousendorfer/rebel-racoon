@@ -1,14 +1,14 @@
 // Image Generator — every write a custom style undergoes. A custom style is the
 // BRAND's: it lives on the Playbook and is listed first in the studio's picker.
 
-import { storageService as storage } from "../services/index.js?v=2976";
-import { createAsset, createStyle } from "../model/schema.js?v=2976";
-import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=2976";
-import { sampleColors } from "../render/sample-colors.js?v=2976";
-import { uid } from "../lib/id.js?v=2976";
-import { lookFromColors } from "../render/visual.js?v=2976";
-import { getAsset } from "./store.js?v=2976";
-import { deletePlaybookStyle, findPlaybookStyle, savePlaybookStyle } from "./playbook-brand.js?v=2976";
+import { storageService as storage } from "../services/index.js?v=2980";
+import { createAsset, createStyle } from "../model/schema.js?v=2980";
+import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=2980";
+import { sampleColors } from "../render/sample-colors.js?v=2980";
+import { uid } from "../lib/id.js?v=2980";
+import { lookFromColors } from "../render/visual.js?v=2980";
+import { getAsset } from "./store.js?v=2980";
+import { deletePlaybookStyle, findPlaybookStyle, savePlaybookStyle } from "./playbook-brand.js?v=2980";
 
 /** A custom style can write text into the image when the look read from its images can. */
 function deriveEmbeddedText(sources) {
@@ -81,7 +81,7 @@ export async function uploadReference(brandId, file) {
 /** A style read from uploaded images, for one image only (state/store.js). */
 export async function oneOffStyleFrom(brandId, files) {
   const images = [...files].filter((f) => f.type.startsWith("image/")).slice(0, CUSTOM_STYLE_LIMITS.images);
-  if (!images.length) throw new Error("That isn't an image — drop a picture whose look you want.");
+  if (!images.length) throw new Error("That isn't an image. Drop a picture whose look you want.");
   const assets = await Promise.all(images.map((f) => uploadReference(brandId, f)));
   // The colours travel ON the source: the images behind a one-off are deleted
   // when the studio closes, and what was generated with it still has to redraw.

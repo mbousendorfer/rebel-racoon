@@ -3,15 +3,15 @@
 // the network's shape — asked once, the first time, when the Playbook has no look. The studio stays one click away for
 // everything else. Headless, and the same services as the studio.
 
-import { CUSTOM_STYLE_LIMITS, QUICK_PRESETS } from "./config/style-presets.js?v=2976";
-import { MOCK } from "./config/mock.js?v=2976";
-import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=2976";
-import { hashString } from "./lib/prng.js?v=2976";
-import { copyService, imageGenerationService } from "./services/index.js?v=2976";
-import { styleThumbUrl } from "./ui/style-thumb.js?v=2976";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand, registerOneOffStyle } from "./state/store.js?v=2976";
-import { oneOffStyleFrom, saveStyle, uploadReference } from "./state/style-actions.js?v=2976";
-import { setPlaybookDefaultLook } from "./state/playbook-brand.js?v=2976";
+import { CUSTOM_STYLE_LIMITS, QUICK_PRESETS } from "./config/style-presets.js?v=2980";
+import { MOCK } from "./config/mock.js?v=2980";
+import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=2980";
+import { hashString } from "./lib/prng.js?v=2980";
+import { copyService, imageGenerationService } from "./services/index.js?v=2980";
+import { styleThumbUrl } from "./ui/style-thumb.js?v=2980";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand, registerOneOffStyle } from "./state/store.js?v=2980";
+import { oneOffStyleFrom, saveStyle, uploadReference } from "./state/style-actions.js?v=2980";
+import { setPlaybookDefaultLook } from "./state/playbook-brand.js?v=2980";
 
 /**
  * What the chat can offer: six styles (the Playbook's own first, then one
@@ -112,7 +112,7 @@ export function setImageLook(brandId, styleId) {
 export async function styleFromImages(brandId, files) {
   const brand = getBrand(brandId);
   const images = [...files].filter((f) => f.type.startsWith("image/")).slice(0, CUSTOM_STYLE_LIMITS.images);
-  if (!brand || !images.length) throw new Error("Those aren't images.");
+  if (!brand || !images.length) throw new Error("Those aren't images. Drop a PNG or a JPG.");
   const assets = await Promise.all(images.map((f) => uploadReference(brand.id, f)));
   const style = saveStyle({
     brandId: brand.id,
@@ -122,7 +122,7 @@ export async function styleFromImages(brandId, files) {
     fidelity: "essential",
     stylePrompt: "",
   });
-  if (!style) throw new Error("I couldn't save that style.");
+  if (!style) throw new Error("I couldn't save that style. Try again.");
   return { id: style.id, label: style.label, thumbUrl: styleThumbUrl(style, brand, { seed: hashString(style.id) }) };
 }
 
@@ -169,7 +169,7 @@ export async function generateQuickImage({ brandId, prompt, styleId, formatId })
   const brand = getBrand(brandId);
   const style = getStyle(styleId);
   const format = formatById(formatId);
-  if (!brand || !style || !format) throw new Error("I couldn't set up that image.");
+  if (!brand || !style || !format) throw new Error("I couldn't set up that image. Try again.");
   const brief = { prompt, headline: "", styleId, productId: null, formatIds: [format.id], textMode: "layer", count: 1 };
   await imageGenerationService.generate({ brief, brand, style, product: null, format, textMode: "layer", count: 1 });
   const id = MOCK.photos[Math.floor(Math.random() * MOCK.photos.length)];

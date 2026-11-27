@@ -12,27 +12,27 @@
 // The intake card lives OUTSIDE [data-batch-rest]; staging-loader ticks repaint
 // only the rest (list + commit), so the field is never clobbered mid-typing.
 
-import * as batchStudio from "../../batch-studio.js?v=2976";
-import { isFlagOn } from "../../feature-flags.js?v=2976";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2976";
-import { escapeHtml, html, raw } from "../../utils.js?v=2976";
-import { dropzoneHTML } from "../../components/dropzone.js?v=2976";
-import { getContextById } from "../../contexts-store.js?v=2976";
-import { renderSourceCard } from "../../components/source-card.js?v=2976";
-import { playbookForNewWork } from "../../active-playbook.js?v=2976";
-import { usableContexts } from "../../playbook-access.js?v=2976";
+import * as batchStudio from "../../batch-studio.js?v=2980";
+import { isFlagOn } from "../../feature-flags.js?v=2980";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2980";
+import { escapeHtml, html, raw } from "../../utils.js?v=2980";
+import { dropzoneHTML } from "../../components/dropzone.js?v=2980";
+import { getContextById } from "../../contexts-store.js?v=2980";
+import { renderSourceCard } from "../../components/source-card.js?v=2980";
+import { playbookForNewWork } from "../../active-playbook.js?v=2980";
+import { usableContexts } from "../../playbook-access.js?v=2980";
 import {
   classifyFile,
   startFileUpload,
   startUrlImport,
   startTextImport,
   startConnectorImport,
-} from "../../sources-stream.js?v=2976";
-import { showToast } from "../../components/toast.js?v=2976";
-import { setHashQuery } from "../../url-state.js?v=2976";
-import { navigate } from "../../router.js?v=2976";
-import { dotColorVar } from "../session.js?v=2976";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=2976";
+} from "../../sources-stream.js?v=2980";
+import { showToast } from "../../components/toast.js?v=2980";
+import { setHashQuery } from "../../url-state.js?v=2980";
+import { navigate } from "../../router.js?v=2980";
+import { dotColorVar } from "../session.js?v=2980";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=2980";
 
 // Origin sub-line for a staged batch source, shown in the source-card's meta row
 // (in place of the usual "N ideas · Processed · Added X").
@@ -126,7 +126,7 @@ export function renderBatchStudio(session) {
           <div class="batch-studio__dropzone">
             ${raw(
               dropzoneHTML({
-                lead: "Drag & drop files here",
+                lead: "Drop files here",
                 sub: "PDF, Word, text, video, audio, or images · up to 100 MB each",
                 large: true,
                 withInput: false,
@@ -138,7 +138,7 @@ export function renderBatchStudio(session) {
             <div class="batch-studio__dropzone-extra">
               <span class="batch-studio__dropzone-extra-label">Or add another way</span>
               <button type="button" class="ap-button stroked grey batch-studio__method" data-batch-link>
-                <i class="ap-icon-link" aria-hidden="true"></i><span>Add link</span>
+                <i class="ap-icon-link" aria-hidden="true"></i><span>Add URL</span>
               </button>
               <button type="button" class="ap-button stroked grey batch-studio__method" data-batch-paste>
                 <i class="ap-icon-file--text" aria-hidden="true"></i><span>Paste text</span>
@@ -228,7 +228,7 @@ function renderBatchPlaybookControl(ctx) {
     .join("");
   const valueMarkup = ctx
     ? `<span class="ap-select-value">${escapeHtml(ctx.name)}</span>`
-    : `<span class="ap-select-value ap-select-placeholder">Select a Playbook</span>`;
+    : `<span class="ap-select-value ap-select-placeholder">Choose a Playbook</span>`;
   return `
     <details class="ap-select batch-studio__playbook" data-batch-playbook>
       <summary class="ap-select-trigger" title="Choose the Playbook for this chat">

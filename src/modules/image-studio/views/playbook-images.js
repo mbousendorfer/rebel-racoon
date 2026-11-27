@@ -15,15 +15,15 @@
 // Styles and reference images save as they change, like the styles always did:
 // no Edit. The Generate block's look and formats wait for its Save changes.
 
-import { html, raw, toString } from "../lib/html.js?v=2976";
-import { navigate } from "../../../router.js?v=2976";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=2976";
-import { toast } from "../ui/toast.js?v=2976";
-import { renderEmpty } from "../ui/empty.js?v=2976";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=2976";
-import { shapesFor } from "../config/formats.js?v=2976";
-import { networkById } from "../config/networks.js?v=2976";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=2976";
+import { html, raw, toString } from "../lib/html.js?v=2980";
+import { navigate } from "../../../router.js?v=2980";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=2980";
+import { toast } from "../ui/toast.js?v=2980";
+import { renderEmpty } from "../ui/empty.js?v=2980";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=2980";
+import { shapesFor } from "../config/formats.js?v=2980";
+import { networkById } from "../config/networks.js?v=2980";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=2980";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -32,8 +32,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=2976";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=2976";
+} from "../state/playbook-brand.js?v=2980";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=2980";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -303,7 +303,7 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
         <section class="imst-images-part" aria-labelledby="imst-images-format">
           <header class="imst-images-part__head">
             <h3 class="imst-images-part__title" id="imst-images-format">Format</h3>
-            <p class="ap-caption imst-images-part__hint">The shape each network gets. Its usual one until you pick.</p>
+            <p class="ap-caption imst-images-part__hint">The format each network gets. Its usual one until you pick.</p>
           </header>
           ${formatsList(playbookId, editable, p?.formats)}
         </section>

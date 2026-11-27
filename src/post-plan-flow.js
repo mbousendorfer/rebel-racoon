@@ -21,16 +21,16 @@ import {
   postActivity,
   postDraftResult,
   GENERATION_TOOLS,
-} from "./assistant.js?v=2976";
-import * as inlineQuestion from "./inline-question.js?v=2976";
-import { addPostDraft } from "./posts-store.js?v=2976";
-import { getSessionById } from "./sessions-store.js?v=2976";
-import { getContextById } from "./contexts-store.js?v=2976";
-import { playbookForNewWork } from "./active-playbook.js?v=2976";
-import { getConnectedProfiles, buildConnectedProfileItems } from "./social-profiles.js?v=2976";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2976";
-import { requireNetworkVoices } from "./network-voice-flow.js?v=2976";
-import { createPlan, updatePlan, getPlans } from "./post-plan-store.js?v=2976";
+} from "./assistant.js?v=2980";
+import * as inlineQuestion from "./inline-question.js?v=2980";
+import { addPostDraft } from "./posts-store.js?v=2980";
+import { getSessionById } from "./sessions-store.js?v=2980";
+import { getContextById } from "./contexts-store.js?v=2980";
+import { playbookForNewWork } from "./active-playbook.js?v=2980";
+import { getConnectedProfiles, buildConnectedProfileItems } from "./social-profiles.js?v=2980";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2980";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2980";
+import { createPlan, updatePlan, getPlans } from "./post-plan-store.js?v=2980";
 
 // "write / draft / create a post about X" — the ask this flow answers. The
 // topic is everything after "about".
@@ -67,10 +67,7 @@ export function startPostPlan(sessionId, text) {
   const leftOut = LEAVE_OUT.filter(([, re]) => re.test(text)).map(([label]) => label);
   postUserTurn(sessionId, text);
   const plan = createPlan(sessionId, { topic, leftOut });
-  postAssistantMessage(
-    sessionId,
-    `Let's plan this post about ${topic}. Two quick questions, so I write from what's true and not from guesses.`,
-  );
+  postAssistantMessage(sessionId, `I'll plan this post about ${topic}. Two questions first, so I write from facts.`);
   askAudience(sessionId, plan.id);
   return true;
 }
@@ -109,7 +106,7 @@ function askAudience(sessionId, planId) {
 function askFact(sessionId, planId) {
   postAssistantMessage(
     sessionId,
-    "What's one fact I should build it on? A number, a date, a name, a price — anything real.",
+    "What's one fact I should build it on? A number, a date, a name, a price: anything real.",
   );
   inlineQuestion.ask(sessionId, {
     title: null,
@@ -145,8 +142,8 @@ function showPlan(sessionId, planId) {
     "Each network gets its usual length",
   ];
   const missing = [];
-  if (!plan.facts.length) missing.push("A concrete fact or number — I'll keep it general instead");
-  missing.push("A date or a link — I'll leave a placeholder");
+  if (!plan.facts.length) missing.push("A concrete fact or number: I'll keep it general instead");
+  missing.push("A date or a link: I'll leave a placeholder");
   updatePlan(sessionId, planId, {
     assumptions,
     missing,
@@ -157,27 +154,26 @@ function showPlan(sessionId, planId) {
   postPostPlan(sessionId, { planId });
   inlineQuestion.ask(sessionId, {
     title: "Write drafts from this plan?",
+    subtitle: `${plan.perProfile} draft${plan.perProfile === 1 ? "" : "s"} per account.`,
     stepLabel: "Post plan",
     items: [],
     actions: [
-      { value: "adjust", label: "Adjust", stroked: true },
-      { value: "write", label: `Write ${plan.perProfile} drafts per account`, primary: true },
+      { value: "adjust", label: "Adjust plan", stroked: true },
+      { value: "write", label: "Write drafts", primary: true },
     ],
     skipLabel: "Not now",
     onPick: (value) => {
       if (value === "adjust") {
-        postUserTurn(sessionId, "Adjust");
         updatePlan(sessionId, planId, { stage: "planning" });
         askAudience(sessionId, planId);
         return;
       }
-      postUserTurn(sessionId, "Write the drafts");
       requireConnectedProfiles(sessionId, {
         stepLabel: "Account",
         onReady: () => askAccounts(sessionId, planId),
       });
     },
-    onSkip: () => postAssistantMessage(sessionId, "Okay — the plan stays here. Say the word when you want the drafts."),
+    onSkip: () => postAssistantMessage(sessionId, "Okay, the plan stays here. Say the word when you want the drafts."),
   });
 }
 
@@ -209,7 +205,8 @@ function writeFromPlan(sessionId, planId, accounts) {
   const plan = getPlans(sessionId).find((p) => p.id === planId);
   if (!plan) return;
   updatePlan(sessionId, planId, { stage: "writing" });
-  const pendingId = startPending(sessionId, "Generating post drafts…", GENERATION_TOOLS);
+  const total = accounts.length * plan.perProfile;
+  const pendingId = startPending(sessionId, `Writing ${total} draft${total === 1 ? "" : "s"}…`, GENERATION_TOOLS);
   setTimeout(() => {
     finishPending(sessionId, pendingId);
     const fact = plan.facts[0];
@@ -234,7 +231,7 @@ function writeFromPlan(sessionId, planId, accounts) {
             label: "Post plan",
             detail:
               [plan.audience && `For ${plan.audience}`, fact && `Built on: ${fact}`].filter(Boolean).join(" · ") ||
-              "No fact given — kept general",
+              "No fact given, kept general",
           },
         };
         drafts.push(d);

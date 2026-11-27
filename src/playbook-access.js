@@ -22,10 +22,10 @@
 // surface asks here, and `revokedContextFor()` is the one place allowed to look
 // past the gate.
 
-import { getContexts, getContextById } from "./contexts-store.js?v=2976";
-import { isFlagOn } from "./feature-flags.js?v=2976";
-import { CURRENT_USER, isManager, memberName, getMember, hasProfileAccess } from "./org.js?v=2976";
-import { getConnectedProfileById } from "./social-profiles.js?v=2976";
+import { getContexts, getContextById } from "./contexts-store.js?v=2980";
+import { isFlagOn } from "./feature-flags.js?v=2980";
+import { CURRENT_USER, ORG, isManager, memberName, getMember, hasProfileAccess } from "./org.js?v=2980";
+import { getConnectedProfileById } from "./social-profiles.js?v=2980";
 
 // Single choke point. Flag OFF ⇒ the app behaves exactly as it did before
 // sharing existed: one implicit user, everything visible, everything editable.
@@ -41,6 +41,20 @@ export function recipientsOf(ctx) {
 
 export function isOrgShared(ctx) {
   return !!ctx && ctx.scope === "organization";
+}
+
+// The Delete Playbook confirm's body, one text for the catalogue (home.js) and
+// the fiche (screens/playbook.js). A shared Playbook takes other people's work
+// down with it, so it says how many chats and what survives. Plain text: the
+// confirm modal sets it with textContent.
+export function deletePlaybookBody(ctx) {
+  const name = ctx?.name || "This Playbook";
+  if (!isOrgShared(ctx))
+    return `"${name}" will be removed. Chats using it will need a new Playbook. This can't be undone.`;
+  const n = ctx.usedIn || 0;
+  return n
+    ? `"${name}" is shared with everyone at ${ORG.name}, and ${n === 1 ? "1 chat uses" : `${n} chats use`} it. They keep their drafts and can still save or schedule them, but I can't draft anything new in them. This can't be undone.`
+    : `"${name}" is shared with everyone at ${ORG.name}. It disappears from everyone's list. Copies duplicated from it stay untouched. This can't be undone.`;
 }
 
 // A `members` Playbook with nobody in the list reaches no one — it is private

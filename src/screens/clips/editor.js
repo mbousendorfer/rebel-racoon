@@ -24,18 +24,18 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2976";
-import { parseHashParams } from "../../url-state.js?v=2976";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2976";
-import { showToast } from "../../components/toast.js?v=2976";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2976";
-import { open as openRename } from "../../components/rename-modal.js?v=2976";
-import { getContextById } from "../../contexts-store.js?v=2976";
-import { escapeHtml } from "../../utils.js?v=2976";
-import * as ce from "../../caption-editor.js?v=2976";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2976";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2976";
-import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2976";
+import { navigate } from "../../router.js?v=2980";
+import { parseHashParams } from "../../url-state.js?v=2980";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2980";
+import { showToast } from "../../components/toast.js?v=2980";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2980";
+import { open as openRename } from "../../components/rename-modal.js?v=2980";
+import { getContextById } from "../../contexts-store.js?v=2980";
+import { escapeHtml } from "../../utils.js?v=2980";
+import * as ce from "../../caption-editor.js?v=2980";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2980";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2980";
+import { getVideo, getClip, updateClip, clipLookOf, renderClip } from "../../videos-store.js?v=2980";
 import {
   framingContext,
   initialSegments,
@@ -49,7 +49,7 @@ import {
   merge,
   snapMs,
   resetSegment,
-} from "../../clip-framing.js?v=2976";
+} from "../../clip-framing.js?v=2980";
 import {
   RATIO_IDS,
   ratioOf,
@@ -61,8 +61,8 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2976";
-import { writePostsInChat } from "../../clips-chat.js?v=2976";
+} from "./shared.js?v=2980";
+import { writePostsInChat } from "../../clips-chat.js?v=2980";
 import {
   timelineShellHTML,
   paintTimeline,
@@ -77,8 +77,8 @@ import {
   timelineWheel,
   timelineDrop,
   revealPlayhead,
-} from "./editor-timeline.js?v=2976";
-import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2976";
+} from "./editor-timeline.js?v=2980";
+import { libraryHTML, inspectorHTML, TEXT_PRESETS, GLYPH } from "./editor-panels.js?v=2980";
 
 const FPS = 25;
 export const FRAME_MS = 1000 / FPS;
@@ -295,14 +295,14 @@ function paintTopbar() {
       <i class="ap-icon-arrow-left" aria-hidden="true"></i>
     </button>
     <h1 class="ap-h2 nle-title" data-nle-title>${escapeHtml(ed.w.title)}</h1>
-    <button type="button" class="ap-icon-button" data-nle="rename" aria-label="Rename the clip" data-tooltip="Rename the clip">
+    <button type="button" class="ap-icon-button" data-nle="rename" aria-label="Rename clip" data-tooltip="Rename clip">
       <i class="ap-icon-pen" aria-hidden="true"></i>
     </button>
     ${clipNavHTML()}`;
   const right = `
     <button type="button" class="ap-button ghost grey" data-nle="undo" data-tooltip="⌘Z" ${ed.undo.length ? "" : "disabled"}><span>Undo</span></button>
     <button type="button" class="ap-button ghost grey" data-nle="redo" data-tooltip="⇧⌘Z" ${ed.redo.length ? "" : "disabled"}><span>Redo</span></button>
-    <button type="button" class="ap-button stroked grey" data-nle="draft"><i class="ap-icon-archie-official" aria-hidden="true"></i><span>Write a post</span></button>
+    <button type="button" class="ap-button stroked grey" data-nle="draft"><i class="ap-icon-archie-official" aria-hidden="true"></i><span>Write a draft</span></button>
     <button type="button" class="ap-button primary blue" data-nle="save" data-tooltip="⌘S" ${ed.dirty ? "" : "disabled"}>${saveHTML()}</button>`;
   setTopbarActions(`/clips/${ed.video.id}/edit/${ed.clip.id}`, `<div class="nle-topbar-actions">${right}</div>`, {
     left,
@@ -360,9 +360,9 @@ function shellHTML() {
     <section class="nle-viewer" data-nle-viewer aria-label="Viewer">
       <header class="nle-viewer__bar" data-nle-viewer-bar></header>
       <div class="nle-viewer__stage nle-well" data-nle-stage>
-        <section class="nle-monitor nle-monitor--source" aria-label="Source">
+        <section class="nle-monitor nle-monitor--source" aria-label="Original">
           <header class="nle-monitor__bar">
-            <span class="nle-monitor__name">Source</span>
+            <span class="nle-monitor__name">Original</span>
             <span class="nle-monitor__meta">${ed.ctx.W}×${ed.ctx.H} · <span data-nle-src-tc></span></span>
           </header>
           <div class="nle-monitor__body" data-nle-source-body>
@@ -373,7 +373,7 @@ function shellHTML() {
           </div>
         </section>
         <div class="nle-splitter" data-nle-splitter role="separator" aria-orientation="vertical"
-          aria-label="Resize Source and Output" aria-valuemin="30" aria-valuemax="80" aria-valuenow="55" tabindex="0"></div>
+          aria-label="Resize Original and Output" aria-valuemin="30" aria-valuemax="80" aria-valuenow="55" tabindex="0"></div>
         <section class="nle-monitor nle-monitor--program" aria-label="Output">
           <header class="nle-monitor__bar">
             <span class="nle-monitor__name">Output</span>
@@ -837,7 +837,7 @@ function paintViewerBar() {
   const videoRatio = ed.video.settings.ratio;
   const own = ed.w.ratioId !== videoRatio;
   host.innerHTML = `
-    <div class="ap-segmented-control" role="group" aria-label="Monitors">${seg("program", "Output")}${seg("dual", "Source + output")}</div>
+    <div class="ap-segmented-control" role="group" aria-label="Monitors">${seg("program", "Output")}${seg("dual", "Original + output")}</div>
     <div class="nle-viewer__opts">
       ${dsSelect({
         label: "Safe area",
@@ -1117,7 +1117,7 @@ function setInOut(which) {
   if (!ok) {
     ed.undo.pop();
     return showToast(
-      `A clip can't be shorter than ${MIN_CLIP_MS / 1000} seconds. Move the playhead further from the other edge.`,
+      `A clip can't be shorter than ${MIN_CLIP_MS / 1000}s. Move the playhead further from the other edge.`,
       { variant: "error" },
     );
   }
@@ -1189,7 +1189,7 @@ function splitAtPlayhead() {
 
 export function splitPartAt(ms) {
   if (ed.tracks.video.locked)
-    return showToast("The Video track is locked. Unlock it to split a part.", { variant: "error" });
+    return showToast("The video track is locked. Unlock it to split a part.", { variant: "error" });
   const { t } = snapMs(ed.ctx, Math.round(ms), { on: ed.snap });
   pushUndo();
   if (!split(ed.ctx, ed.w.segments, t)) {
@@ -1525,7 +1525,7 @@ function handleClick(e) {
       return leave(`/clips/${ed.video.id}`);
     case "rename":
       return openRename({
-        title: "Rename the clip",
+        title: "Rename clip",
         initialName: ed.w.title,
         placeholder: "Clip title",
         confirmLabel: "Rename",

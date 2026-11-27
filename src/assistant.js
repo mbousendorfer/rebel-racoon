@@ -6,16 +6,16 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { newId } from "./utils.js?v=2976";
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2976";
-import { findConnector } from "./connectors-store.js?v=2976";
-import { createSessionNotifier } from "./store-utils.js?v=2976";
-import { addPostDraft } from "./posts-store.js?v=2976";
-import { showToast } from "./components/toast.js?v=2976";
-import { isFlagOn, isNewStartOn } from "./feature-flags.js?v=2976";
-import { getContexts } from "./contexts-store.js?v=2976";
-import { offerMentions } from "./mention-flow.js?v=2976";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2976";
+import { newId } from "./utils.js?v=2980";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2980";
+import { findConnector } from "./connectors-store.js?v=2980";
+import { createSessionNotifier } from "./store-utils.js?v=2980";
+import { addPostDraft } from "./posts-store.js?v=2980";
+import { showToast } from "./components/toast.js?v=2980";
+import { isFlagOn, isNewStartOn } from "./feature-flags.js?v=2980";
+import { getContexts } from "./contexts-store.js?v=2980";
+import { offerMentions } from "./mention-flow.js?v=2980";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2980";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -196,7 +196,7 @@ export function sendConnectorMessage(sessionId, connectorId, text) {
     role: "system",
     meta: `Searching ${connector.name}…`,
     variant: "mermaid",
-    text: `Running ${mcpCallTrace(connector)}…`,
+    text: `Searching ${connector.name}…`,
     open: true,
     status: "loading",
     createdAt: Date.now(),
@@ -256,9 +256,9 @@ const failedRetries = new Map();
 // error", no action named), GENERIC_FAILURE: the title alone, then Retry.
 const DRAFT_FAILURE = {
   title: "Couldn't create those drafts",
-  text: "Something unexpected happened on my side. Nothing was lost.",
+  text: "I hit an error on my side. Nothing was lost.",
 };
-export const GENERIC_FAILURE = { title: "Something went wrong on my side", text: "" };
+export const GENERIC_FAILURE = { title: "I couldn't finish this", text: "" };
 
 export function reportDraftFailure(sessionId, err, retry, source = "draft-flow", copy = DRAFT_FAILURE) {
   // eslint-disable-next-line no-console
@@ -468,29 +468,29 @@ const TOOL_MS = { extract_ideas: 1600, start_generation: 200, generate_drafts: 2
 // fix_practices, which read as "the first draft failed") stays hidden, as prod
 // hides them. chat.tool.progress.* below is what a finished step unfolds.
 const TOOL_LABELS = {
-  extract_ideas: ["Extracting ideas", "Extracted ideas"],
+  extract_ideas: ["Finding ideas", "Found ideas"],
   generate_drafts: ["Writing drafts", "Wrote drafts"],
-  regenerate_posts: ["Rewriting drafts", "Rewrote drafts"],
-  modify_post: ["Editing the post", "Edited the post"],
-  answer_pdf_question: ["Reading the document", "Read the document"],
+  regenerate_posts: ["Regenerating drafts", "Regenerated drafts"],
+  modify_post: ["Editing the draft", "Edited the draft"],
+  answer_pdf_question: ["Reading the source", "Read the source"],
   get_best_times: ["Finding the best times", "Found the best times"],
   schedule_post: ["Scheduling", "Scheduled"],
   manage_first_comment: ["Writing the first comment", "Wrote the first comment"],
   update_post_brief: ["Updating the post plan", "Updated the post plan"],
-  assign_posts: ["Assigning posts", "Assigned posts"],
+  assign_posts: ["Sending drafts for review", "Sent drafts for review"],
 };
 const TOOL_PROGRESS = {
   analyze_context: "Analyzing context…",
   analyze_tone: "Analyzing writing tone…",
-  answer_pdf_question: "Analyzing document…",
+  answer_pdf_question: "Reading the source…",
   check_post_quality: "Checking best practices…",
-  extract_ideas: "Extracting ideas from content…",
+  extract_ideas: "Finding ideas…",
   generate_drafts: "Generating post drafts…",
-  modify_post: "Modifying post content…",
+  modify_post: "Editing the draft…",
   manage_first_comment: "Writing the first comment…",
   update_post_brief: "Updating the post plan…",
-  regenerate_posts: "Generating new posts…",
-  request_config: "Updating configuration…",
+  regenerate_posts: "Regenerating drafts…",
+  request_config: "Setting up the drafts…",
   schedule_post: "Scheduling post…",
   start_generation: "Starting post generation…",
 };
@@ -676,7 +676,7 @@ export function postSelectionEcho(sessionId, echo) {
 // "pick a path" questions.
 export function postAssistantChoice(
   sessionId,
-  { text, choices, multi = true, handler = "", context = {}, submitLabel = "Submit", instant = false },
+  { text, choices, multi = true, handler = "", context = {}, submitLabel = "Send", instant = false },
 ) {
   const thread = getThread(sessionId);
   thread.push({
@@ -1019,17 +1019,6 @@ function leadIdeaTitle() {
   return _lastLeadIdeaTitle;
 }
 
-// Build a fake MCP tool-call trace from a connector's capabilities, e.g.
-// "notion.search → notion.read → notion.query". Each capability's leading verb
-// becomes a lowercase method on the connector's namespace; reads like a real
-// MCP server invocation in the reasoning chip.
-function mcpCallTrace(connector) {
-  const verb = (cap) => (cap || "").trim().split(/\s+/)[0].toLowerCase() || "call";
-  const caps = Array.isArray(connector.capabilities) ? connector.capabilities : [];
-  const tools = (caps.length ? caps : ["query"]).slice(0, 3).map((c) => `${connector.id}.${verb(c)}`);
-  return tools.join(" → ");
-}
-
 // Scripted reply for a live connector query. Grounds the answer in 1–2 items
 // from the connector's mock doc pool and cites them, so a simulated MCP query
 // reads like it actually pulled from the workspace. Voice stays first-person.
@@ -1041,9 +1030,9 @@ function mockConnectorReply(connector, prompt) {
     ? `\n\nSources I pulled:\n${cited.map((d) => `• ${d.title} · ${d.kind}`).join("\n")}`
     : "";
 
-  const reasoning = `Called ${connector.name} over MCP and ran ${mcpCallTrace(connector)}. Scanned the workspace and pulled the ${
-    cited.length || "most"
-  } most relevant item${cited.length === 1 ? "" : "s"} to ground the answer.`;
+  const reasoning = cited.length
+    ? `Searched ${connector.name} and pulled the ${cited.length} most relevant item${cited.length === 1 ? "" : "s"} to ground the answer.`
+    : `Searched ${connector.name} and found nothing relevant to ground the answer.`;
 
   // No content to cite — connector is connected but its pool is empty.
   if (!lead) {
@@ -1056,11 +1045,11 @@ function mockConnectorReply(connector, prompt) {
   const p = prompt || "";
   let body;
   if (/contrarian|angle|hot take|provocative/i.test(p)) {
-    body = `Pulling from "${lead.title}", here's a contrarian angle worth posting: take the prevailing assumption it documents and argue the inverse, backed by the specifics inside. That tension is what stops the scroll.`;
+    body = `Pulling from "${lead.title}", here's a contrarian angle worth posting: take the assumption it documents and argue the opposite, using the specifics inside.`;
   } else if (/summar|tl;?dr|bullet|recap/i.test(p)) {
     body = `Here's the recap from ${connector.name}, drawn mainly from "${lead.title}": the core decision, the reasoning behind it, and the one open question still worth resolving. I can turn any of those three into a post.`;
   } else if (/post|draft|repurpose|content|idea/i.test(p)) {
-    body = `Based on "${lead.title}", the most post-worthy thread is the concrete before/after it captures. Let's open a draft on that change. Readers believe it, and it earns the claim.`;
+    body = `Based on "${lead.title}", the most post-worthy thread is the concrete before/after it captures. I'd draft a post on that change, since a real before/after is easy to believe.`;
   } else {
     body = `Here's what I found in ${connector.name}, grounded in "${lead.title}": the clearest, most specific point is the one I'd build on. Want me to draft a post from it, or dig into another item?`;
   }
@@ -1138,7 +1127,7 @@ function mockAiReply({ prompt, sessionId }) {
   if (/pin|priority|strongest|signal|actionable/i.test(prompt)) {
     return {
       reasoning: `Looked across ${ideaCount} ideas for the one closest to "specific, believable, publishable". "${leadIdea.title}" scored highest on all three.`,
-      text: `The strongest idea right now is ${lead}: specific, believable, close to publishable. I'd pin it, pressure-test it against one alternative, then draft the first post.`,
+      text: `The strongest idea right now is ${lead}. It's specific and close to publishable. I'd pin it, compare it with one alternative, then draft the first post.`,
     };
   }
 

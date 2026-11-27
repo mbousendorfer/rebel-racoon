@@ -1,15 +1,15 @@
-import { html, raw, escapeText } from "../utils.js?v=2976";
-import { showToast } from "./toast.js?v=2976";
-import { bindReorder } from "../drag-reorder.js?v=2976";
+import { html, raw, escapeText } from "../utils.js?v=2980";
+import { showToast } from "./toast.js?v=2980";
+import { bindReorder } from "../drag-reorder.js?v=2980";
 import {
   getQueueOn,
   busyCountsByDay,
   dayKey,
   addToQueue,
   subscribe as subscribeQueue,
-} from "../schedule-store.js?v=2976";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2976";
-import { renderProfileTag, profileForNetwork } from "../social-profiles.js?v=2976";
+} from "../schedule-store.js?v=2980";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2980";
+import { renderProfileTag, profileForNetwork } from "../social-profiles.js?v=2980";
 // The optimal-times map and the date helpers are the engine's; this file keeps
 // only what differs (its CADENCES wording, its NETWORK_ICON).
 import {
@@ -18,8 +18,8 @@ import {
   startOfDay,
   defaultStartFrom,
   pickHour,
-} from "../schedule-engine.js?v=2976";
-import { toDateInput, toLocalInput } from "./schedule-modal.js?v=2976";
+} from "../schedule-engine.js?v=2980";
+import { toDateInput, toLocalInput } from "./schedule-modal.js?v=2980";
 
 // ⚠️ LEGACY — the schedule modal as it was before the redesign, kept behind
 // the `newScheduleModal` flag ("New SM", default ON) so the two can be
@@ -587,8 +587,8 @@ function renderInner() {
       <span class="ap-dialog-title" id="${ROOT_ID}Title">Schedule ${n} ${n === 1 ? "draft" : "drafts"}</span>
       <span class="ap-dialog-subtitle">
         ${n === 1
-          ? "Pick a posting rhythm — I'll find the best time around what's already scheduled."
-          : "Pick a posting rhythm — I'll spread your drafts across the best times, around what's already scheduled."}
+          ? "Pick a posting rhythm. I'll find the best time around what's already scheduled."
+          : "Pick a posting rhythm. I'll spread your drafts across the best times, around what's already scheduled."}
       </span>
     </div>
 
@@ -810,7 +810,7 @@ function renderSlotList({ header = true } = {}) {
     ? `
     <div class="schedule-modal-legacy__slots-head">
       <span class="schedule-modal-legacy__slots-count">${state.posts.length} ${state.posts.length === 1 ? "draft" : "drafts"}</span>
-      ${multi ? `<span class="schedule-modal-legacy__slots-hint muted">Drag to reorder — dates follow the order</span>` : ""}
+      ${multi ? `<span class="schedule-modal-legacy__slots-hint muted">Drag to reorder. Dates follow the order.</span>` : ""}
     </div>
   `
     : "";
@@ -936,7 +936,7 @@ function renderCalendarPanel() {
         type="button"
         class="schedule-modal-legacy__day ${inMonth ? "" : "is-out"} ${isToday ? "is-today" : ""} ${isFocused ? "is-focused" : ""} ${queued > 0 ? "has-batch" : ""}"
         data-schedule-day="${k}"
-        aria-label="${d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} — ${aria}"
+        aria-label="${d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}, ${aria}"
       >
         <span class="schedule-modal-legacy__day-num">${d.getDate()}</span>
         ${dots.length ? `<span class="schedule-modal-legacy__day-dots">${dots.join("")}</span>` : ""}
@@ -1006,7 +1006,7 @@ function renderDayList() {
     return `
       <div class="schedule-modal-legacy__day-list">
         <div class="schedule-modal-legacy__day-list-head">${heading} <span class="muted">nothing scheduled</span></div>
-        <div class="schedule-modal-legacy__day-list-empty">No posts on this day — a good window to schedule.</div>
+        <div class="schedule-modal-legacy__day-list-empty">No posts on this day yet.</div>
       </div>
     `;
   }

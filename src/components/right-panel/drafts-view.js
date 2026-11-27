@@ -4,8 +4,8 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { sessionPlaybookId } from "../../active-playbook.js?v=2976";
-import { NETWORK_LABEL, networkMeta } from "../../social-profiles.js?v=2976";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2980";
+import { NETWORK_LABEL, networkMeta } from "../../social-profiles.js?v=2980";
 import {
   getPosts,
   removePost,
@@ -14,26 +14,26 @@ import {
   attachImageToDraft,
   attachCarouselToDraft,
   undoRevision,
-} from "../../posts-store.js?v=2976";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2976";
-import { renderPostCard } from "../post-card.js?v=2976";
-import { isPostValid } from "../../post-validation.js?v=2976";
-import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2976";
-import { html, raw } from "../../utils.js?v=2976";
-import { isFlagOn } from "../../feature-flags.js?v=2976";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2976";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2976";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2976";
-import { open as openAssignModal } from "../assign-modal.js?v=2976";
-import { showToast } from "../toast.js?v=2976";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2976";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2976";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2976";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2976";
-import { navigate } from "../../router.js?v=2976";
-import { giveNetworkVoice } from "../../network-voice-flow.js?v=2976";
-import { startRewrite } from "../../draft-rewrite.js?v=2976";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2976";
+} from "../../posts-store.js?v=2980";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2980";
+import { renderPostCard } from "../post-card.js?v=2980";
+import { isPostValid } from "../../post-validation.js?v=2980";
+import { draftVoice, voiceChangedAt } from "../../voice-parts.js?v=2980";
+import { html, raw } from "../../utils.js?v=2980";
+import { isFlagOn } from "../../feature-flags.js?v=2980";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2980";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2980";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2980";
+import { open as openAssignModal } from "../assign-modal.js?v=2980";
+import { showToast } from "../toast.js?v=2980";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2980";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2980";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2980";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2980";
+import { navigate } from "../../router.js?v=2980";
+import { giveNetworkVoice } from "../../network-voice-flow.js?v=2980";
+import { startRewrite } from "../../draft-rewrite.js?v=2980";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2980";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -289,7 +289,7 @@ export function renderDraftsView() {
     const blockedTip = `${blocked} selected ${blocked === 1 ? "draft needs" : "drafts need"} fixing first. Fix or unselect ${blocked === 1 ? "it" : "them"} to continue.`;
     const gate = (button) => (blocked ? `<span data-tooltip="${blockedTip}">${button}</span>` : button);
     const scheduleBtn = `<button type="button" class="ap-button primary orange" data-rpanel-section-schedule="${network}" ${blocked ? "disabled" : ""}>
-              <i class="ap-icon-calendar" aria-hidden="true"></i> Schedule
+              <i class="ap-icon-calendar" aria-hidden="true"></i> Schedule drafts
             </button>`;
     const actions = selecting
       ? `
@@ -515,7 +515,7 @@ export function commitAssigned(sid, posts, assignment) {
   }
   renderPanel();
   const n = snapshot.length;
-  showToast(`Sent ${n} ${n === 1 ? "post" : "posts"} to ${assignment.reviewer.name} for review`, {
+  showToast(`Sent ${n} ${n === 1 ? "draft" : "drafts"} to ${assignment.reviewer.name} for review`, {
     action: {
       label: "Undo",
       onClick: () => {
@@ -552,7 +552,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2976"), import("../../folders-store.js?v=2976")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2980"), import("../../folders-store.js?v=2980")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -981,7 +981,7 @@ export function handleDraftsClick(event) {
     if (!ref || !ref.sourceId || !ref.clipId) return true;
     const source = getStreamSources(sid).find((s) => s.id === ref.sourceId);
     if (!source) return true;
-    import("../../screens/clips/open-in-clips.js?v=2976").then(({ openInClips }) =>
+    import("../../screens/clips/open-in-clips.js?v=2980").then(({ openInClips }) =>
       openInClips(sid, source, ref.clipId),
     );
     return true;

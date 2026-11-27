@@ -17,10 +17,10 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=2976";
-import { parseHashParams } from "../url-state.js?v=2976";
-import { escapeHtml as esc, newChatPath, prettyUrl } from "../utils.js?v=2976";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2976";
+import { navigate, getPath } from "../router.js?v=2980";
+import { parseHashParams } from "../url-state.js?v=2980";
+import { escapeHtml as esc, newChatPath, prettyUrl } from "../utils.js?v=2980";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2980";
 import {
   getContextById,
   getContexts,
@@ -28,30 +28,32 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=2976";
-import { mount, snapshotEditable, learnNetworkVoiceInline } from "../playbook-view.js?v=2976";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2976";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2976";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2976";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2976";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2976";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=2976";
+} from "../contexts-store.js?v=2980";
+import { mount, snapshotEditable, learnNetworkVoiceInline } from "../playbook-view.js?v=2980";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2980";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2980";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2980";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2980";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2980";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=2980";
 import {
   canView,
   canEdit,
   canGovern,
   isOrgShared,
+  deletePlaybookBody,
   canDelete,
   canManageSharing,
   accessLabel,
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=2976";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2976";
-import { showToast } from "../components/toast.js?v=2976";
-import { learnNetworkVoice } from "../voice-parts.js?v=2976";
-import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2976";
+} from "../playbook-access.js?v=2980";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2980";
+import { showToast } from "../components/toast.js?v=2980";
+import { ORG } from "../org.js?v=2980";
+import { learnNetworkVoice } from "../voice-parts.js?v=2980";
+import { getConnectedProfiles, networkLabel } from "../social-profiles.js?v=2980";
 
 const AUTOFILL_MS = 1500;
 
@@ -95,7 +97,7 @@ function buildTopbarActions(ctx) {
       ? `<button type="button" class="ap-button stroked grey" data-playbook-share><i class="ap-icon-share"></i><span>Share Playbook</span></button>`
       : "",
     editable
-      ? `<button type="button" class="ap-button stroked grey" data-fill-website><i class="ap-icon-refresh"></i><span>Re-analyze website</span></button>`
+      ? `<button type="button" class="ap-button stroked grey" data-fill-website><i class="ap-icon-refresh"></i><span>Reanalyze website</span></button>`
       : "",
     // Last and orange: starting a chat hands the brand to Archie — the AI action.
     `<button type="button" class="ap-button primary orange" data-playbook-start><i class="ap-icon-double-chat-bubbles"></i><span>Start a chat</span></button>`,
@@ -133,7 +135,7 @@ function buildNotice(ctx) {
   // headline says which, because they are not the same promise: one follows the
   // org, the other is a list its owner wrote by hand.
   const headline = isOrgShared(ctx)
-    ? `${esc(ownerName(ctx))} shared this Playbook with everyone in your organization`
+    ? `${esc(ownerName(ctx))} shared this Playbook with everyone at ${esc(ORG.name)}`
     : `${esc(ownerName(ctx))} shared this Playbook with you`;
   const message = canGovern(ctx)
     ? `You can use it in chats, share it, transfer ownership, or delete it. Only ${esc(ownerName(ctx))} can edit it. Duplicate it to make your own version.`
@@ -174,7 +176,7 @@ export function renderPlaybook(params, target) {
   function note(ctx, action) {
     if (!ctx) return;
     appendHistory(ctx.id, action);
-    if (!isMine(ctx)) toast(`${ownerName(ctx)} will be notified.`);
+    if (!isMine(ctx)) toast(`${ownerName(ctx)} will be notified`);
   }
 
   // ── Menus ──────────────────────────────────────────────────────────
@@ -230,7 +232,7 @@ export function renderPlaybook(params, target) {
 
   // ── Auto-fill (overwrite + loader) ──────────────────────────────────
   // patchFn() returns the field patch to apply once the (mock) analysis lands.
-  function runAutofill(stages, patchFn, message = "Playbook sections updated.") {
+  function runAutofill(stages, patchFn, message = "Playbook sections updated") {
     analyzing = true;
     analysisReady = false;
     analysisLoader = stages;
@@ -259,7 +261,7 @@ export function renderPlaybook(params, target) {
   function onAnalyzeVoice() {
     openAnalyzeProfilesModal({
       onConfirm: (ids) =>
-        runAutofill(STAGES.social, () => voicePatchFromAnalysis(analyzeSocialProfiles(ids)), "Voice profile updated."),
+        runAutofill(STAGES.social, () => voicePatchFromAnalysis(analyzeSocialProfiles(ids)), "Voice profile updated"),
     });
   }
 
@@ -302,21 +304,14 @@ export function renderPlaybook(params, target) {
       toast("Can't delete your only Playbook. Every chat needs one, so create another first.");
       return;
     }
-    const shared = ctx?.scope === "organization";
-    const n = ctx?.usedIn || 0;
-    const body = shared
-      ? `"${esc(ctx?.name || "This Playbook")}" is shared with everyone in your organization${
-          n ? `, and ${n === 1 ? "1 chat uses" : `${n} chats use`} it` : ""
-        }. They keep their drafts and can still save or schedule them, but I can't draft anything new in them. This can't be undone.`
-      : `"${esc(ctx?.name || "This Playbook")}" will be removed. Chats using it will need a new Playbook. This can't be undone.`;
     openConfirmModal({
       title: "Delete Playbook?",
-      body,
+      body: deletePlaybookBody(ctx),
       confirmLabel: "Delete Playbook",
       cancelLabel: "Keep",
       danger: true,
       onConfirm: () => {
-        if (ctx && !isMine(ctx)) toast(`${ownerName(ctx)} will be notified.`);
+        if (ctx && !isMine(ctx)) toast(`${ownerName(ctx)} will be notified`);
         deleteContext(id);
         toast("Playbook deleted");
         navigate("/contexts");
@@ -340,11 +335,7 @@ export function renderPlaybook(params, target) {
     openFillDocumentModal({
       onConfirm: ({ file, url }) => {
         const fileLike = file || { name: docNameFromUrl(url) };
-        runAutofill(
-          STAGES.documents,
-          () => voicePatchFromAnalysis(analyzeDocument(fileLike)),
-          "Voice profile updated.",
-        );
+        runAutofill(STAGES.documents, () => voicePatchFromAnalysis(analyzeDocument(fileLike)), "Voice profile updated");
       },
     });
   }
@@ -406,7 +397,7 @@ export function renderPlaybook(params, target) {
       closeMenus();
       const copy = duplicateContext(id);
       if (copy) {
-        toast("Playbook duplicated. The copy is yours to edit.");
+        toast("Playbook duplicated");
         navigate(`/playbook/${copy.id}`);
       }
       return true;
@@ -417,9 +408,9 @@ export function renderPlaybook(params, target) {
       const ctx = getContextById(id);
       const domain = prettyUrl(ctx?.websiteUrl) || "the website";
       openConfirmModal({
-        title: "Re-analyze website?",
+        title: "Reanalyze website?",
         body: `Every section will be rebuilt from ${esc(domain)}, replacing the current content. This can't be undone.`,
-        confirmLabel: "Re-analyze website",
+        confirmLabel: "Reanalyze website",
         cancelLabel: "Cancel",
         onConfirm: () =>
           runAutofill(STAGES.website, () => sectionPatchFromAnalysis(analyzeWebsite(getContextById(id)?.websiteUrl))),

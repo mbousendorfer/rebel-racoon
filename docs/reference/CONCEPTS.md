@@ -94,7 +94,7 @@ Deux Playbooks pour Acme n'est donc **pas** une incohérence : même identité, 
 Un Playbook naît d'une **analyse** (le site, des posts, des documents) puis ne change **que par un geste explicite** :
 
 - édition d'une section (une à la fois, Save/Cancel sur snapshot) ;
-- **Re-analyze website**, derrière une confirmation ;
+- **Reanalyze website**, derrière une confirmation ;
 - ajout d'une proposition d'Archie que l'utilisateur accepte.
 
 **Aucune écriture silencieuse.** Archie ne réécrit pas la fiche parce qu'il a « appris » quelque chose au fil des chats. Le seul motif de proposition existant l'illustre : un competitor découvert arrive avec `suggested: true`, hors du Playbook, dans un bac séparé — il n'en fait partie qu'après un clic. C'est le patron à reprendre pour toute future suggestion : **proposer à côté, jamais écrire dedans**.

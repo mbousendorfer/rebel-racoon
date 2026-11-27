@@ -18,11 +18,11 @@
 // modal EMBEDS (the panel is a view of that dialog, the design's own "the panel
 // slides"); `open()` wraps the same flow in a standalone body-level dialog.
 
-import { escapeHtml as esc, newId } from "../utils.js?v=2976";
-import { getConnectedProfileById } from "../social-profiles.js?v=2976";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2976";
-import { getContextById } from "../contexts-store.js?v=2976";
-import { catalogEntries } from "../objective-measures.js?v=2976";
+import { escapeHtml as esc, newId } from "../utils.js?v=2980";
+import { getConnectedProfileById } from "../social-profiles.js?v=2980";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2980";
+import { getContextById } from "../contexts-store.js?v=2980";
+import { catalogEntries } from "../objective-measures.js?v=2980";
 
 // ── The shared flow ──────────────────────────────────────────────────────────
 // One view. All interactions are click-driven except the search input (the host
@@ -139,7 +139,7 @@ export function createCatalogFlow({ contextId, taken = [], onAdd, onBack, reques
                   <span class="ap-list-panel-item-text">
                     <span class="objc__row-name">${esc(m.label)}</span>
                     <span class="objc__soonwhy">Needs Google Analytics ·
-                      <button type="button" class="ap-link standalone small" data-objc-proxy-pick="${m.proxyId}">use ${esc(m.proxyLabel || "the proxy")}</button>
+                      <button type="button" class="ap-link standalone small" data-objc-proxy-pick="${m.proxyId}">Use ${esc(m.proxyLabel || "a stand-in")} instead</button>
                     </span>
                   </span>
                 </div>`;
