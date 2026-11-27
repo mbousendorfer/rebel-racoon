@@ -128,7 +128,7 @@ User mode (`user-mode.js`): `"returning"` (populated mocks, default) or `"new-al
 | `draftMentions`          | OFF     | « mention Notion in the LinkedIn post » from the chat (`mention-flow.js`)                                                                        |
 | `uiIdeaCard`             | OFF     | the clearer compact idea card (`renderClearIdeaCard`)                                                                                            |
 | `newStart4`              | OFF     | a first-time user with no Playbook lands on a chat that introduces Archie (`session/new-start.js`)                                               |
-| `newChatHero`            | OFF     | the new chat's composer in a pixel halo, New Start's example requests, a « No Playbook yet » infobox; no workflow cards nor rows                 |
+| `newChatHero`            | OFF     | a first-time user's new chat (turning it on switches to new-alt): composer in a pixel halo, example requests, « No Playbook yet » infobox        |
 
 ## Design System — read first before UI/CSS work
 

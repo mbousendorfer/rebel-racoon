@@ -2,12 +2,12 @@
 // and the first-run scene (whose word-by-word text the Topic Feed and Insights
 // reuse).
 
-import { isMine, accessLabel, canEdit, canManageSharing, canDelete, canView } from "../../playbook-access.js?v=2935";
-import { escapeAttr, escapeText } from "../../utils.js?v=2935";
-import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2935";
-import { renderEmptyState } from "../../components/empty-state.js?v=2935";
-import { voicesToFinish } from "../../voice-parts.js?v=2935";
-import { networkIcon, networkLabel, renderAvatar } from "../../social-profiles.js?v=2935";
+import { isMine, accessLabel, canEdit, canManageSharing, canDelete, canView } from "../../playbook-access.js?v=2936";
+import { escapeAttr, escapeText } from "../../utils.js?v=2936";
+import { brandCoverStyle, voiceSentence } from "../../brand-cover.js?v=2936";
+import { renderEmptyState } from "../../components/empty-state.js?v=2936";
+import { voicesToFinish } from "../../voice-parts.js?v=2936";
+import { networkIcon, networkLabel, renderAvatar } from "../../social-profiles.js?v=2936";
 
 // The brand's own mark where the analysis found a logo, its initials where it
 // didn't — so the column keeps one width and one shape, and never a stretched

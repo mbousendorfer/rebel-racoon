@@ -957,49 +957,6 @@ archie-pixels.empty-chat__pixels {
   min-height: 76px;
 }
 
-/* Flag newChatHero — Topics under the rows: a title and a one-line lede, the way out on the
-   right of the same line; one row of three cards. */
-/* In the composer's 740px column, like the rows above: one left edge for the
-   whole hero (it ran 1016px wide, its own column; decided 2026-10-30, CH-16). */
-.empty-chat__topics--staged {
-  margin-top: var(--ref-spacing-md);
-}
-
-/* Doubled class: the base .empty-chat__topics (1040px) comes later in this file. */
-.empty-chat__topics.empty-chat__topics--staged {
-  max-width: 740px;
-}
-
-@media (max-width: 900px) {
-  .empty-chat__topics--staged .empty-chat__topics-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.empty-chat__topics-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--ref-spacing-sm);
-  margin-bottom: var(--ref-spacing-xs);
-}
-
-.empty-chat__topics-title {
-  margin: 0;
-  font-size: var(--sys-text-style-h4-size);
-  line-height: var(--sys-text-style-h4-line-height);
-  font-weight: var(--sys-text-style-h4-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.empty-chat__topics-lede {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
-}
-
 /* Assistant notice (Figma 25:1043 / 25:1054) — a mermaid `.ap-status` pill
    with an 8px mermaid-purple dot + "Drafting" / "Extracted N ideas" label,
    followed by a chevron that toggles the optional detail body. */

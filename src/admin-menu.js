@@ -6,12 +6,12 @@
 // the side-effecting actions wired by the panel's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2935";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2935";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2935";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2935";
-import { getRole, setRole, ORG } from "./org.js?v=2935";
-import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2935";
+import { html, raw, escapeHtml } from "./utils.js?v=2936";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2936";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2936";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2936";
+import { getRole, setRole, ORG } from "./org.js?v=2936";
+import { NETWORKS, isNetworkConnected, setNetworkConnected } from "./social-profiles.js?v=2936";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
@@ -75,12 +75,14 @@ export function networksSummary() {
 }
 
 // Flip a feature flag, then reload so every store / surface re-reads it.
-// New Start only shows to a first-time user with no Playbook: turning one on
-// also switches to that mode, or the flag would do nothing visible.
+// New Start and the new chat's hero (newChatHero) are first-time-user
+// screens: turning one on also switches to that mode (empty stores, no
+// Playbook), or the flag would show a populated account instead.
+const FIRST_TIME_FLAGS = (id) => id.startsWith("newStart") || id === "newChatHero";
 export function toggleFlag(id) {
   const on = !getFlags()[id];
   setFlag(id, on);
-  if (on && id.startsWith("newStart") && getUserMode() !== "new-alt") {
+  if (on && FIRST_TIME_FLAGS(id) && getUserMode() !== "new-alt") {
     try {
       window.sessionStorage.clear();
     } catch {

@@ -1,19 +1,19 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2935";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2935";
-import { getContextById, getContexts } from "../../contexts-store.js?v=2935";
-import { renderTopicCard } from "../../components/topic-card.js?v=2935";
-import { findTopicSource } from "../../topics-catalog.js?v=2935";
-import { html, raw } from "../../utils.js?v=2935";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2935";
-import { renderStarterCards } from "../../components/starter-card.js?v=2935";
-import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2935";
-import { voicesToFinish } from "../../voice-parts.js?v=2935";
-import { networkLabel } from "../../social-profiles.js?v=2935";
-import { parseHashParams } from "../../url-state.js?v=2935";
-import { renderAsks, renderNewStart } from "./new-start.js?v=2935";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2936";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2936";
+import { getContextById, getContexts } from "../../contexts-store.js?v=2936";
+import { renderTopicCard } from "../../components/topic-card.js?v=2936";
+import { findTopicSource } from "../../topics-catalog.js?v=2936";
+import { html, raw } from "../../utils.js?v=2936";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2936";
+import { renderStarterCards } from "../../components/starter-card.js?v=2936";
+import { isFlagOn, isNewStartOn } from "../../feature-flags.js?v=2936";
+import { voicesToFinish } from "../../voice-parts.js?v=2936";
+import { networkLabel } from "../../social-profiles.js?v=2936";
+import { parseHashParams } from "../../url-state.js?v=2936";
+import { renderAsks, renderNewStart } from "./new-start.js?v=2936";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -65,44 +65,20 @@ export function renderTopicPickerRow() {
 //
 // Renders nothing at all when there is nothing to say, so a hero with no Topics
 // is byte-for-byte the hero this app has always had.
-//
-// `staged` (flag newChatHero): ONE row of three, the scope and the way out in a
-// header line instead of a footer, so the whole hero holds in a 900px laptop
-// viewport — the feed is one click away for the other five.
-function renderFreshTopics(session, { staged = false } = {}) {
+
+function renderFreshTopics(session) {
   const pbId = session?.contextId || null;
   const feed = pbId ? getFeedForPlaybook(pbId) : null;
   if (!feed) return "";
-  const topics = getFreshTopics(feed.id).slice(0, staged ? 3 : undefined);
+  const topics = getFreshTopics(feed.id);
   if (!topics.length) return "";
   const total = countFresh(feed.id);
   const pb = getContextById(pbId);
   const scopeHref = `#/topics?pb=${encodeURIComponent(pbId)}`;
 
   const cards = topics
-    .map((t) =>
-      renderTopicCard(t, { source: findTopicSource(t.sourceId), variant: "picker", withUse: true, useAsLink: staged }),
-    )
+    .map((t) => renderTopicCard(t, { source: findTopicSource(t.sourceId), variant: "picker", withUse: true }))
     .join("");
-
-  if (staged) {
-    return html`
-      <section class="empty-chat__topics empty-chat__topics--staged" aria-labelledby="freshTopicsLabel">
-        <header class="empty-chat__topics-head">
-          <div>
-            <h2 class="empty-chat__topics-title" id="freshTopicsLabel">Topics to review</h2>
-            <p class="empty-chat__topics-lede">
-              ${topics.length} of ${total} from this week's listening${pb ? ` for ${pb.name}` : ""}.
-            </p>
-          </div>
-          <a class="ap-link standalone small" href="${raw(scopeHref)}"
-            >Open Topic Feed<i class="ap-icon-arrow-right" aria-hidden="true"></i
-          ></a>
-        </header>
-        <div class="empty-chat__topics-grid">${raw(cards)}</div>
-      </section>
-    `;
-  }
 
   return html`
     <h2 class="empty-chat__starter-label" id="freshTopicsLabel">
@@ -150,8 +126,9 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
   );
   const videoLabel = firstVideo ? `"${firstVideo.filename}"` : "your video";
   // Flag newChatHero: the same wordmark + sub-line, the composer in a halo of
-  // Archie's pixels, New Start's example requests under it. No workflows: the
-  // rows went on 2026-11-27 (asked: « supprimes ça »).
+  // Archie's pixels, New Start's example requests under it. No workflows nor
+  // Topics: both went on 2026-11-27 (asked: « supprimes ça », « pareil, ça vire
+  // ça »).
   if (isFlagOn("newChatHero")) {
     return html`
       <div class="empty-chat empty-chat--rows" data-empty-chat>
@@ -173,7 +150,6 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
           ${raw(composerMarkup)}
         </div>
         ${raw(renderAsks("empty-chat__asks"))} ${raw(finishVoicesRow(session))}
-        ${raw(renderFreshTopics(session, { staged: true }))}
       </div>
     `;
   }
