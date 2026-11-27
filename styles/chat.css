@@ -28,50 +28,97 @@
 }
 
 /* What the Playbook conversation learned (renderPlaybookLearnedTurn, flag
-   newChatHero): a card in Archie's turn, white on grey-20, the title by weight,
-   the facts as label over value. No uppercase labels, inks grey-80 … 100. */
-.pb-learned {
-  display: grid;
+   newChatHero): prod's playbook-proposal-card (studio chat, 2026-11-25),
+   transcribed — a butter head over a white body of labelled rows, the answer
+   under the card. */
+.pb-proposal-wrap {
+  display: flex;
+  flex-direction: column;
   gap: var(--ref-spacing-xs);
+  width: 100%;
+  max-width: 520px;
   margin-top: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-sm);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-card, 12px);
+}
+
+.pb-proposal {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--ref-color-white);
-}
-
-.pb-learned__title {
-  font-size: var(--sys-text-style-h4-size);
-  line-height: var(--sys-text-style-h4-line-height);
-  font-weight: var(--sys-text-style-h4-weight);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
   color: var(--ref-color-grey-100);
 }
 
-.pb-learned__text {
-  margin: 0;
+.pb-proposal__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-sm);
+  background: var(--app-butter);
+}
+
+.pb-proposal__title {
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+}
+
+.pb-proposal__caption {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
 }
 
-.pb-learned__facts {
-  display: grid;
+.pb-proposal__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.pb-proposal__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  margin: 0;
+}
+
+.pb-proposal__rows dt {
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-80);
+}
+
+.pb-proposal__rows dd {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  margin: var(--ref-spacing-xxxs) 0 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  white-space: pre-line;
+}
+
+.pb-proposal__actions {
+  display: flex;
+  align-items: center;
   gap: var(--ref-spacing-xs);
-  margin: 0;
 }
 
-.pb-learned__fact dt {
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.pb-learned__fact dd {
-  margin: 0;
+.pb-proposal__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
 }
 
-.pb-learned__fact ul {
-  margin: 0;
-  padding-left: var(--ref-spacing-sm);
-  list-style: disc;
+.pb-proposal__done {
+  color: var(--ref-color-green-100);
 }
 
 /* Suggested answers under a question in words (renderPbSayTurn): blue tags
@@ -90,13 +137,17 @@
    it, then the run's own rows / URL field / answer box (welcome.css). Answered,
    it folds to the question and a check + the answer. */
 .pb-ask {
+  /* Prod's playbook-creation-card (studio chat, 2026-11-25): white, grey-20,
+     the card radius, md padding, sm gap; the title in body bold, captions in
+     grey-80, the actions on the right. */
   display: grid;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-sm);
   margin-top: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-md);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card, 12px);
   background: var(--ref-color-white);
+  color: var(--ref-color-grey-100);
 }
 
 /* One width for every open card, whatever it holds (a confirm is as wide as
@@ -114,9 +165,9 @@
 }
 
 .pb-ask__title {
-  font-size: var(--sys-text-style-h4-size);
-  line-height: var(--sys-text-style-h4-line-height);
-  font-weight: var(--sys-text-style-h4-weight);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--ref-color-grey-100);
 }
 
@@ -130,7 +181,14 @@
 .pb-ask__sub,
 .pb-ask__or {
   margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
+}
+
+/* Title and caption hold together, as in prod's head. */
+.pb-ask__head + .pb-ask__sub {
+  margin-top: calc(-1 * var(--ref-spacing-sm) + var(--ref-spacing-xxxs));
 }
 
 .pb-ask__or {
@@ -150,13 +208,14 @@
 
 .pb-ask__actions {
   display: flex;
+  justify-content: flex-end;
   align-items: center;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xs);
 }
 
-/* The answer leads on the right; Back and Skip stay on the left. */
-.pb-ask__actions > .pb-ask__primary {
-  margin-left: auto;
+/* Back keeps the left; the answer and Skip go right, as in prod. */
+.pb-ask__actions > [data-pb-act="back"] {
+  margin-right: auto;
 }
 
 .pb-ask.is-resolved {

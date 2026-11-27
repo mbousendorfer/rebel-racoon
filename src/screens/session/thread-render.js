@@ -4,7 +4,7 @@
 // prompt) render here. The pure, dependency-free turns stay in thread-turns.js.
 // Moved out of session.js, unchanged.
 
-import { sessionPlaybookId } from "../../active-playbook.js?v=2972";
+import { sessionPlaybookId } from "../../active-playbook.js?v=2973";
 import {
   renderExtractingNotice,
   renderSourceIntakeTurn,
@@ -14,26 +14,26 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2972";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2972";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2972";
-import { getTopPost } from "../../top-posts-store.js?v=2972";
-import { getTopicById } from "../../topics-store.js?v=2972";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2972";
-import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2972";
-import { escapeHtml, formatDayLabel, formatTimeOfDay, plural } from "../../utils.js?v=2972";
-import { getIdeas } from "../../library.js?v=2972";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2972";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2972";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2972";
-import { getPlans } from "../../post-plan-store.js?v=2972";
-import { isFlagOn } from "../../feature-flags.js?v=2972";
-import { CURRENT_USER } from "../../org.js?v=2972";
-import { getContextById } from "../../contexts-store.js?v=2972";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2972";
-import { getFocusKey } from "../../components/right-panel.js?v=2972";
-import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2972";
-import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2972";
+} from "./thread-turns.js?v=2973";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2973";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2973";
+import { getTopPost } from "../../top-posts-store.js?v=2973";
+import { getTopicById } from "../../topics-store.js?v=2973";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2973";
+import { renderProfileEchoCard, networkLabel, networkIcon } from "../../social-profiles.js?v=2973";
+import { escapeHtml, formatDayLabel, formatTimeOfDay, plural } from "../../utils.js?v=2973";
+import { getIdeas } from "../../library.js?v=2973";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2973";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2973";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2973";
+import { getPlans } from "../../post-plan-store.js?v=2973";
+import { isFlagOn } from "../../feature-flags.js?v=2973";
+import { CURRENT_USER } from "../../org.js?v=2973";
+import { getContextById } from "../../contexts-store.js?v=2973";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2973";
+import { getFocusKey } from "../../components/right-panel.js?v=2973";
+import { revisionSummary, revisionGroupSummary } from "../../draft-rewrite.js?v=2973";
+import { learnedVoiceHtml, voiceAskHtml } from "../../components/voice-intro-modal.js?v=2973";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -499,26 +499,42 @@ function renderVoiceLearnedTurn(message) {
 }
 
 // What the Playbook conversation learned (playbook-chat-flow.js, flag
-// newChatHero): the Brand, then the voice, each as a card in Archie's turn —
-// a title, a paragraph, and a few labelled facts (a line, or a short list).
+// newChatHero), in prod's playbook-proposal-card shape: a butter head (the
+// step, the Playbook), a white body of labelled rows, and the answer under
+// the card — ghost grey, then primary blue; answered, a green check and the
+// choice. Its buttons go through handlePbAsk ([data-pb-ask] / [data-pb-act]).
 function renderPlaybookLearnedTurn(message) {
-  const facts = (message.facts || [])
+  const e = escapeHtml;
+  const rows = (message.rows || [])
     .map(
-      (f) => `<div class="pb-learned__fact">
-        <dt>${escapeHtml(f.label)}</dt>
-        <dd>${
-          f.list ? `<ul>${f.list.map((t) => `<li>${escapeHtml(t)}</li>`).join("")}</ul>` : escapeHtml(f.text || "")
-        }</dd>
+      (r) => `<div class="pb-proposal__row">
+        <dt>${e(r.label)}</dt>
+        <dd>${r.list ? r.list.map((t) => `<span>${e(t)}</span>`).join("") : e(r.text || "")}</dd>
       </div>`,
     )
     .join("");
+  const answer = message.resolved
+    ? `<span class="pb-proposal__status"><i class="ap-icon-rounded-check_fill pb-proposal__done" aria-hidden="true"></i>${e(message.answer || "")}</span>`
+    : message.actions?.length
+      ? `<div class="pb-proposal__actions">${message.actions
+          .map(
+            (a) =>
+              `<button type="button" class="ap-button ${a.primary ? "primary blue" : "ghost grey"}" data-pb-act="${e(a.value)}"><span>${e(a.label)}</span></button>`,
+          )
+          .join("")}</div>`
+      : "";
   return renderMessageBubble({
     role: "assistant",
-    text: `${escapeHtml(message.intro || "")}
-      <div class="pb-learned">
-        <span class="pb-learned__title">${escapeHtml(message.title || "")}</span>
-        ${message.text ? `<p class="pb-learned__text">${escapeHtml(message.text)}</p>` : ""}
-        ${facts ? `<dl class="pb-learned__facts">${facts}</dl>` : ""}
+    text: `${message.intro ? e(message.intro) : ""}
+      <div class="pb-proposal-wrap" data-pb-ask="${e(message.id)}">
+        <div class="pb-proposal" role="group" aria-label="${e(message.title || "")}">
+          <div class="pb-proposal__head">
+            <span class="pb-proposal__title">${e(message.title || "")}</span>
+            ${message.caption ? `<span class="pb-proposal__caption">${e(message.caption)}</span>` : ""}
+          </div>
+          ${rows ? `<div class="pb-proposal__content"><dl class="pb-proposal__rows">${rows}</dl></div>` : ""}
+        </div>
+        ${answer}
       </div>`,
   });
 }
@@ -619,8 +635,6 @@ function renderPbAskTurn(message) {
         <button type="button" class="ap-button stroked grey" data-pb-act="files"><i class="ap-icon-upload"></i><span>${e(a.fileLabel || "Choose files")}</span></button>
         <input type="file" hidden data-pb-file accept="${e(a.accept || "")}" ${a.multiple ? "multiple" : ""} />
       </div>${actions()}`;
-  } else if (a.kind === "confirm") {
-    body = actions(primary('type="button" data-pb-act="confirm"'));
   } else {
     body = `${list}${actions()}`;
   }

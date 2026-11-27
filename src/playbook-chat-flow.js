@@ -22,7 +22,7 @@
 // exists only under newChatHero, opened from its « No Playbook created yet »
 // card; everywhere else the run's screens make the Playbook.
 
-import { getThread, refreshThread, postAssistantMessage, postUserTurn, postVoiceTurn } from "./assistant.js?v=2972";
+import { getThread, refreshThread, postAssistantMessage, postUserTurn, postVoiceTurn } from "./assistant.js?v=2973";
 import {
   createAltDraft,
   readAltWebsite,
@@ -35,12 +35,12 @@ import {
   getDraft,
   patchDraft,
   save,
-} from "./context-builder.js?v=2972";
-import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2972";
-import { LANGUAGE_OPTIONS } from "./languages.js?v=2972";
-import { connectors as connectorMocks } from "./mocks.js?v=2972";
-import { buildConnectedProfileItems } from "./social-profiles.js?v=2972";
-import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2972";
+} from "./context-builder.js?v=2973";
+import { nextInterviewQuestion } from "./context-mock-analysis.js?v=2973";
+import { LANGUAGE_OPTIONS } from "./languages.js?v=2973";
+import { connectors as connectorMocks } from "./mocks.js?v=2973";
+import { buildConnectedProfileItems } from "./social-profiles.js?v=2973";
+import { flowSteps, STEP_TEXT, voiceAccounts } from "./screens/welcome-alt-shell.js?v=2973";
 import {
   OTHER_WAYS,
   VOICE_WAYS,
@@ -48,8 +48,8 @@ import {
   DOC_READS,
   normalizeUrl,
   fallbackFor,
-} from "./screens/welcome-alt-steps.js?v=2972";
-import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2972";
+} from "./screens/welcome-alt-steps.js?v=2973";
+import { LOADING_STAGES, FILE_LOADING_STAGES, INTERVIEW_LOADING_STAGES } from "./screens/welcome-alt-recap.js?v=2973";
 
 // « 2 of 5 », counted on the run's own steps.
 function stepLabel(step) {
@@ -665,49 +665,47 @@ function whenReady(run, then) {
 
 // ── 6 · What I learned ─────────────────────────────────────────────────────
 
+// Prod's in-thread Playbook proposal (playbook-proposal-card, studio chat,
+// 2026-11-25), reused (asked 2026-11-27: « on a littéralement travaillé sur
+// les styles de ces éléments cette semaine sur Archie en prod, j'aimerais que
+// tu réutilises ces styles »): what I learned is ONE card — a butter head (the
+// step, the Playbook), labelled rows — and the answer sits under it, ghost
+// grey then primary blue; answered, a green check and what was chosen.
+function proposal(run, card, handlers) {
+  const id = postVoiceTurn(run.sid, "playbook-learned", { contextId: null, network: null, ...card });
+  handlersById.set(id, { run, handlers });
+  run.groups.push([id]);
+  return id;
+}
+
 function review(run) {
   const { sid } = run;
   whenReady(run, () => {
     const d = getDraft(sid) || {};
-    const facts = [];
-    if (d.audience?.[0]) facts.push({ label: "Audience", text: d.audience[0] });
-    if (d.objective?.length) facts.push({ label: "Goal", text: d.objective.slice(0, 2).join(", ") });
-    if (d.tones?.length) facts.push({ label: "Tone", text: d.tones.slice(0, 3).join(", ") });
-    const learned = postVoiceTurn(sid, "playbook-learned", {
-      contextId: null,
-      network: null,
-      intro: run.source === "manual" ? "Your Playbook is ready to fill in." : "Here's what I learned.",
-      title: d.name || "Your Brand",
-      text: d.businessSummary || "",
-      facts,
-    });
-    ask(
+    const rows = [];
+    if (d.businessSummary) rows.push({ label: "What you do", text: d.businessSummary });
+    if (d.audience?.[0]) rows.push({ label: "Audience", text: d.audience[0] });
+    if (d.objective?.length) rows.push({ label: "Goal", text: d.objective.slice(0, 2).join(", ") });
+    if (d.tones?.length) rows.push({ label: "Tone", text: d.tones.slice(0, 3).join(", ") });
+    proposal(
       run,
       {
-        kind: "choices",
+        intro: run.source === "manual" ? "Your Playbook is ready to fill in." : "Here's what I learned.",
         title: STEP_TEXT.recap.title,
-        subtitle: STEP_TEXT.recap.desc,
-        step: stepLabel("recap"),
-        items: [
-          { value: "ok", title: "Looks good", desc: "Next, your voice.", icon: "ap-icon-check" },
-          {
-            value: "fix",
-            title: "Fix it in the Playbook",
-            desc: "I save it, then open it for you.",
-            icon: "ap-icon-pen",
-          },
+        caption: `${stepLabel("recap")} · Playbook: ${d.name || "Your Brand"}`,
+        rows,
+        actions: [
+          { value: "fix", label: "Fix it in the Playbook" },
+          { value: "ok", label: "Looks good", primary: true },
         ],
-        back: true,
       },
       {
-        onPick: (v, id) => {
+        onAct: (v, id) => {
           settle(sid, id, v === "fix" ? "Fix it in the Playbook" : "Looks good");
           if (v === "fix") return finish(run, { open: true });
           next(run, "recap");
         },
-        onBack: previous("recap"),
       },
-      { withIds: [learned] },
     );
   });
 }
@@ -718,37 +716,31 @@ function checkVoice(run) {
   const { sid } = run;
   const d = getDraft(sid) || {};
   const rules = (list) => (list || []).map((r) => r?.text || r).filter(Boolean);
-  const facts = [];
-  if (rules(d.voiceAlways).length) facts.push({ label: "Always", list: rules(d.voiceAlways).slice(0, 3) });
-  if (rules(d.voiceNever).length) facts.push({ label: "Never", list: rules(d.voiceNever).slice(0, 2) });
-  const learned = postVoiceTurn(sid, "playbook-learned", {
-    contextId: null,
-    network: null,
-    intro: "And this is how you'll sound.",
-    title: "Your voice",
-    text:
-      (d.voiceMode === "manual" ? d.voiceManual : d.voiceSummary) ||
-      (facts.length ? "" : "Not set yet. Describe it in the Playbook and every draft will follow it."),
-    facts,
-  });
-  ask(
+  const summary = d.voiceMode === "manual" ? d.voiceManual : d.voiceSummary;
+  const rows = [];
+  if (summary) rows.push({ label: "How you sound", text: summary });
+  if (rules(d.voiceAlways).length) rows.push({ label: "Always", list: rules(d.voiceAlways).slice(0, 3) });
+  if (rules(d.voiceNever).length) rows.push({ label: "Never", list: rules(d.voiceNever).slice(0, 2) });
+  if (!rows.length)
+    rows.push({
+      label: "How you sound",
+      text: "Not set yet. Describe it in the Playbook and every draft will follow it.",
+    });
+  proposal(
     run,
     {
-      kind: "confirm",
+      intro: "And this is how you'll sound.",
       title: STEP_TEXT.voice.title,
-      subtitle: STEP_TEXT.voice.desc,
-      step: stepLabel("voice"),
-      submitLabel: "Save my Playbook",
-      back: true,
+      caption: `${stepLabel("voice")} · ${STEP_TEXT.voice.desc}`,
+      rows,
+      actions: [{ value: "save", label: "Save my Playbook", primary: true }],
     },
     {
       onAct: (_act, id) => {
-        settle(sid, id, "Saved");
+        settle(sid, id, "Playbook saved");
         finish(run);
       },
-      onBack: (r) => review(r),
     },
-    { withIds: [learned] },
   );
 }
 
