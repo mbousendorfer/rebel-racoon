@@ -44,8 +44,9 @@
   background: var(--app-bg);
 }
 
-/* No composer at the foot here: the thread drops the room it keeps for one,
-   so the block centres in the page. */
+/* The composer is in the block (sticky at its foot): the thread drops the
+   room it keeps for one, so the block centres in the page (same padding
+   above and below). */
 .session__assistant-thread:has(> .empty-chat.ns) {
   padding-bottom: var(--ref-spacing-md);
 }
@@ -327,14 +328,33 @@
   border-radius: 15px 15px 0 0;
 }
 
+/* The composer comes under the turns while the block fits; when the screen is
+   too short, it sticks to the foot and the turns scroll behind it, as in a
+   conversation (2026-11-27, asked: « si je réduis l'écran je ne vois plus
+   l'input … comme si c'était une conversation »). Its ground is the page's,
+   so it shows only once the turns pass under it. */
 .ns__composer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
   margin-top: var(--ref-spacing-md);
+  padding-bottom: var(--ref-spacing-sm);
+  background: var(--app-bg);
+  container-type: scroll-state;
 }
 
-/* In the block, the card lines up with the turns (Archie's mark), not inset
-   by the padding it keeps at the foot of a started chat. */
+/* The card lines up with the turns (Archie's mark), not inset by the padding
+   it keeps at the foot of a started chat. */
 .ns__composer > .session__composer {
   padding: 0;
+}
+
+/* Stuck: the turns fade into it, like the foot of a started chat (the hero
+   turns that fade off). Browsers without scroll-state queries keep a hard edge. */
+@container scroll-state(stuck: bottom) {
+  .ns__composer > .session__composer::before {
+    display: block;
+  }
 }
 
 /* Both stages run on one 9s loop, so the two doors breathe together. */
