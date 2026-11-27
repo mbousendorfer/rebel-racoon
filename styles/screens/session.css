@@ -998,9 +998,8 @@ body.playbook-revoked .session__composer-card {
 }
 
 /* In the hero the composer sits near the top with the page below it, so the
-   Add and Playbook menus open DOWN (at the foot of a thread they open up):
-   opening up, their first rows went off the top of the screen. */
-.empty-chat--rows .composer-playbook__dropdown,
+   Add menu opens DOWN (at the foot of a thread it opens up): opening up,
+   its first rows went off the top of the screen. */
 .empty-chat--rows .ap-action-dropdown.assistant-attach__menu {
   top: calc(100% + var(--ref-spacing-xxs));
   bottom: auto;
@@ -1921,16 +1920,10 @@ body.playbook-revoked .session__composer-card {
   max-width: calc(100% - var(--sys-button-height) - var(--ref-spacing-xs));
 }
 
-.session__composer-toolbar .composer-playbook,
-.session__composer-toolbar .composer-playbook__trigger {
-  min-width: 0;
-}
-
 /* Lock the natural width of the icon-text buttons in the toolbar
    (Add / Mention / Send). Without this, the flex container's shrink
    pressure clips their text mid-word when the composer column is
-   narrow — at narrow widths only the Playbook select's value text
-   should ellipsis-truncate. */
+   narrow. */
 .session__composer-toolbar > .ap-button,
 .session__composer-toolbar > .assistant-attach > .ap-button {
   flex-shrink: 0;
@@ -1944,93 +1937,6 @@ body.playbook-revoked .session__composer-card {
   height: 12px;
   border-radius: var(--ref-border-radius-sm);
   flex-shrink: 0;
-}
-
-/* Playbook control — DS .ap-select with inline label "Playbook"
-   (cf. Figma form-select node 515:367). Positioning only; the DS
-   provides the trigger, dropdown, and item layout. */
-.composer-playbook {
-  position: relative;
-  display: inline-flex;
-}
-
-/* A started chat's Playbook is information, not a disabled control (its
-   grey-60 value was 2.32:1): the « Playbook » caption and the name as text,
-   centred on the toolbar's button height. */
-.composer-playbook--static {
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  min-height: var(--comp-button-height);
-  min-width: 0;
-}
-
-/* Body, like the select's « Playbook » label on a new chat: the word keeps its
-   size once the chat starts (it dropped from 14 to 12). The ink ranks it. */
-.composer-playbook__label {
-  flex-shrink: 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  font-weight: var(--sys-text-style-body-weight);
-  color: var(--ref-color-grey-80);
-}
-
-.composer-playbook__name {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  font-weight: var(--sys-text-style-body-weight);
-  color: var(--ref-color-grey-100);
-}
-
-/* The DS .ap-select-trigger ships full-width — clamp it to its content
-   width so the playbook control sits inline with the @Mention + attach
-   buttons in the toolbar. */
-.composer-playbook__trigger {
-  width: auto;
-}
-
-.composer-playbook[open] > summary,
-.composer-playbook__trigger {
-  user-select: none;
-}
-
-/* Native marker on <summary> — remove the disclosure triangle Chrome/
-   Firefox add by default so only the chevron renders. */
-.composer-playbook > summary::-webkit-details-marker {
-  display: none;
-}
-
-.composer-playbook > summary {
-  list-style: none;
-}
-
-/* The composer sits at the bottom of the screen, so the dropdown
-   floats UPWARDS from the trigger. Clear the DS top/right anchoring
-   (which dropped the menu DOWNWARDS) and re-anchor to the trigger's
-   top-left so we can offset upward via bottom. */
-.composer-playbook__dropdown {
-  position: absolute;
-  top: auto;
-  right: auto;
-  left: 0;
-  bottom: calc(100% + var(--ref-spacing-xxs));
-  min-width: 240px;
-  width: max-content;
-  max-width: 360px;
-  margin-top: 0;
-  z-index: var(--app-z-overlay);
-  /* Reset text-align from the empty-chat hero (which centres its
-     children); a select dropdown is always left-aligned. */
-  text-align: left;
-}
-
-/* Dropdown rows carry the playbook's colour dot before the label so
-   the user can scan picks by colour. */
-.composer-playbook__dropdown .composer-context__dot {
-  margin-right: var(--ref-spacing-xxs);
 }
 
 /* Empty-state block */

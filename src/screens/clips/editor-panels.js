@@ -6,12 +6,12 @@
 //     selected, the clip itself (its range, format, teaser).
 // Both are HTML builders; editor.js owns the events (data-nle-* delegation).
 
-import { ed, fmtTC, clipLen, selTexts, selSeg, capSourceHTML, ratio } from "./editor.js?v=2982";
-import { autoKind, cameraShort } from "./editor-timeline.js?v=2982";
-import { LAYOUTS, twoBlockedReason, cameraName } from "../../clip-framing.js?v=2982";
-import { dsSelect, presetLabel } from "./shared.js?v=2982";
-import * as ce from "../../caption-editor.js?v=2982";
-import { escapeHtml } from "../../utils.js?v=2982";
+import { ed, fmtTC, clipLen, selTexts, selSeg, capSourceHTML, ratio } from "./editor.js?v=2983";
+import { autoKind, cameraShort } from "./editor-timeline.js?v=2983";
+import { LAYOUTS, twoBlockedReason, cameraName } from "../../clip-framing.js?v=2983";
+import { dsSelect, presetLabel } from "./shared.js?v=2983";
+import * as ce from "../../caption-editor.js?v=2983";
+import { escapeHtml } from "../../utils.js?v=2983";
 
 // The few glyphs the DS doesn't ship (scissors, blade, magnet, speaker, frame
 // steps, loop, in / out): drawn here on the DS's 16 px grid, in currentColor.

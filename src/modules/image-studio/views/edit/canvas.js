@@ -14,9 +14,9 @@
 // ⚠️ Three class families are built by concatenation, as in the studio:
 // `__crop-handle--{nw,ne,sw,se}`, `__popover--{kind}`, `__tt-{kind}`.
 
-import { html, raw } from "../../lib/html.js?v=2982";
-import { EDIT_FONTS, TEXT_COLORS, outlineMetrics, shadowMetrics, textFamily } from "../../config/edit.js?v=2982";
-import { isBase, layerName } from "../../state/edit-doc.js?v=2982";
+import { html, raw } from "../../lib/html.js?v=2983";
+import { EDIT_FONTS, TEXT_COLORS, outlineMetrics, shadowMetrics, textFamily } from "../../config/edit.js?v=2983";
+import { isBase, layerName } from "../../state/edit-doc.js?v=2983";
 
 // ── The frame ───────────────────────────────────────────────────────────────
 

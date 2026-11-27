@@ -21,8 +21,8 @@
 // video door is the clips starter. What is local (the rotation, the typing)
 // lives in <archie-new-start>, which wires itself.
 
-import { seedVideos, chatStarters } from "../../mocks.js?v=2982";
-import { escapeHtml } from "../../utils.js?v=2982";
+import { seedVideos, chatStarters } from "../../mocks.js?v=2983";
+import { escapeHtml } from "../../utils.js?v=2983";
 
 const esc = escapeHtml;
 
@@ -114,7 +114,7 @@ ${
           <span class="ap-status-card orange ns-door__status">
             <span class="upper">
               <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-              <span class="flow"><span>No Playbook yet.</span> My posts will sound generic.</span>
+              <span class="flow"><span>No Playbook yet.</span> Your posts will sound generic.</span>
             </span>
           </span>
           <span class="ns-door__stage ns-voice" aria-hidden="true">
